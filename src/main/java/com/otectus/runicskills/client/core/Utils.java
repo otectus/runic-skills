@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.client.core;
+package com.otectus.runicskills.client.core;
 
-import com.seniors.justlevelingfork.registry.RegistrySounds;
+import com.otectus.runicskills.registry.RegistrySounds;
 import com.mojang.authlib.GameProfile;
 
 import java.awt.Color;
@@ -26,7 +26,7 @@ import net.minecraftforge.fml.ModList;
 
 
 public class Utils {
-    public static int FONT_COLOR = (new Color(62, 62, 62)).getRGB();
+    public static int FONT_COLOR = Color.WHITE.getRGB();
     public static final Minecraft client = Minecraft.getInstance();
 
     public static ItemStack playerHead() {
