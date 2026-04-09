@@ -118,7 +118,6 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    mavenCentral()
     // Cloth Config API
     maven {
         url = "https://maven.shedaniel.me/"
@@ -247,14 +246,6 @@ dependencies {
     // QuiltMC Parsers
     implementation("org.quiltmc.parsers:json:0.2.1")
     implementation("org.quiltmc.parsers:gson:0.2.1")
-
-    // JUnit 5 for unit tests (Track 5a regression coverage)
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-}
-
-tasks.named('test', Test).configure {
-    useJUnitPlatform()
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
