@@ -1,10 +1,10 @@
-package com.seniors.justlevelingfork.client.gui;
+package com.otectus.runicskills.client.gui;
 
-import com.seniors.justlevelingfork.client.core.Aptitudes;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.handler.HandlerAptitude;
-import com.seniors.justlevelingfork.registry.RegistryCapabilities;
+import com.otectus.runicskills.common.model.Skills;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerSkill;
+import com.otectus.runicskills.registry.RegistryCapabilities;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.awt.Color;
@@ -22,20 +22,20 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 @OnlyIn(Dist.CLIENT)
-public class OverlayAptitudeGui {
+public class OverlaySkillGui {
     private final Minecraft client = Minecraft.getInstance();
-    private static List<Aptitudes> aptitudes = null;
+    private static List<Skills> skills = null;
     private static int showTicks = 0;
 
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onHudRender(CustomizeGuiOverlayEvent.DebugText event) {
         GuiGraphics matrixStack = event.getGuiGraphics();
-        if (this.client.level != null && this.client.player != null && showTicks > 0 && this.client.player.getCapability(RegistryCapabilities.APTITUDE).isPresent()) {
+        if (this.client.level != null && this.client.player != null && showTicks > 0 && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             matrixStack.pose().pushPose();
             int xOff = this.client.getWindow().getGuiScaledWidth() / 2;
             int yOff = this.client.getWindow().getGuiScaledHeight() / 4;
 
-            MutableComponent overlayMessage = Component.translatable("overlay.aptitude.message");
+            MutableComponent overlayMessage = Component.translatable("overlay.skill.message");
             int overlayWidth = this.client.font.width(overlayMessage) / 2;
 
             RenderSystem.enableBlend();
@@ -48,17 +48,17 @@ public class OverlayAptitudeGui {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
             Utils.drawCenterWithShadow(matrixStack, overlayMessage, xOff, yOff, 16733525);
 
-            for (int j = 0; j < aptitudes.size(); j++) {
-                Aptitudes abilities = aptitudes.get(j);
-                String level = Integer.toString(abilities.getAptitudeLvl());
-                boolean met = (AptitudeCapability.get().getAptitudeLevel(abilities.getAptitude()) >= abilities.getAptitudeLvl());
+            for (int j = 0; j < skills.size(); j++) {
+                Skills abilities = skills.get(j);
+                String level = Integer.toString(abilities.getSkillLvl());
+                boolean met = (SkillCapability.getLocal().getSkillLevel(abilities.getSkill()) >= abilities.getSkillLvl());
 
-                int x = xOff + j * 24 - aptitudes.size() * 12;
+                int x = xOff + j * 24 - skills.size() * 12;
                 int y = yOff + 15;
 
                 RenderSystem.enableBlend();
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-                matrixStack.blit(abilities.getAptitude().getLockedTexture(abilities.getAptitudeLvl()), x, y, 0.0F, 0.0F, 16, 16, 16, 16);
+                matrixStack.blit(abilities.getSkill().getLockedTexture(abilities.getSkillLvl()), x, y, 0.0F, 0.0F, 16, 16, 16, 16);
                 Utils.drawCenterWithShadow(matrixStack, level, x + 16, y + 12, met ? 5635925 : 16733525);
             }
 
@@ -72,9 +72,10 @@ public class OverlayAptitudeGui {
         if (showTicks > 0) showTicks--;
     }
 
-    public static void showWarning(String aptitude) {
-        aptitudes = HandlerAptitude.getValue(aptitude);
-        showTicks = 90;
+    public static void showWarning(String skill) {
+        skills = HandlerSkill.getValue(skill);
+        int requirementCount = (skills != null) ? skills.size() : 0;
+        showTicks = Math.min(60 + 15 * requirementCount, 150);
     }
 }
 

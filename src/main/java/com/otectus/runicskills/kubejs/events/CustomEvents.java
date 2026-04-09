@@ -1,10 +1,10 @@
-package com.seniors.justlevelingfork.kubejs.events;
+package com.otectus.runicskills.kubejs.events;
 
 import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
 
 public interface CustomEvents {
-    EventGroup GROUP = EventGroup.of("JLForkEvents");
+    EventGroup GROUP = EventGroup.of("RunicSkillsEvents");
 
-    EventHandler APTITUDE_LEVELUP = GROUP.client("aptitudeLevelUp", () -> LevelUpEvent.class);
+    EventHandler SKILL_LEVELUP = GROUP.client("skillLevelUp", () -> LevelUpEvent.class);
 }

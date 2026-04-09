@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistryAttributes;
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryAttributes;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -104,24 +104,38 @@ public abstract class MixLivingEntity {
 
     }
 
+    /**
+     * Re-implements vanilla's effect-addition logic from LivingEntity.addEffect(MobEffectInstance, Entity)
+     * to support Lion Heart's duration reduction for harmful effects.
+     *
+     * Invariants preserved from vanilla:
+     * - canBeAffected() gate is respected
+     * - MobEffectEvent.Added is posted on the Forge bus
+     * - activeEffects map is updated via put() (new) or update() (existing), matching vanilla's own pattern
+     * - onEffectAdded / onEffectUpdated callbacks fire correctly
+     *
+     * Risk: if vanilla changes activeEffects handling in a patch, this must be updated in sync.
+     * The mixin targets a specific method descriptor, so signature changes will fail-fast at load.
+     */
     @Unique
     private boolean this$onAddEffect(MobEffectInstance effect, Player player) {
         int duration = effect.getDuration();
-        if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL && (RegistrySkills.LION_HEART != null && RegistrySkills.LION_HEART.get().isEnabled(player))) {
-            duration -= (int)((double)effect.getDuration() * RegistrySkills.LION_HEART.get().getValue()[0] / 100.0D);
+        if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL && (RegistryPerks.LION_HEART != null && RegistryPerks.LION_HEART.get().isEnabled(player))) {
+            duration -= (int)((double)effect.getDuration() * RegistryPerks.LION_HEART.get().getValue()[0] / 100.0D);
         }
 
         MobEffectInstance newEffect = new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier());
-        if (!this.canBeAffected(effect)) {
+        // H3-H5: Pass newEffect (with modified duration) to canBeAffected, event, and update
+        if (!this.canBeAffected(newEffect)) {
             return false;
         } else {
             MobEffectInstance mobeffectinstance = this.activeEffects.get(effect.getEffect());
-            MinecraftForge.EVENT_BUS.post(new Added(this.this$class, mobeffectinstance, effect, player));
+            MinecraftForge.EVENT_BUS.post(new Added(this.this$class, mobeffectinstance, newEffect, player));
             if (mobeffectinstance == null) {
                 this.activeEffects.put(newEffect.getEffect(), newEffect);
                 this.onEffectAdded(newEffect, player);
                 return true;
-            } else if (mobeffectinstance.update(effect)) {
+            } else if (mobeffectinstance.update(newEffect)) {
                 this.onEffectUpdated(newEffect, true, player);
                 return true;
             } else {
@@ -130,13 +144,18 @@ public abstract class MixLivingEntity {
         }
     }
 
+    /**
+     * Same pattern as this$onAddEffect but for potion-drinking context.
+     * Applies Alchemy Manipulation amplifier boost and Beneficial Effect duration extension.
+     * Same vanilla invariants as above.
+     */
     @Unique
     private boolean this$onDrinkPotion(MobEffectInstance effect, Player player) {
         int duration = effect.getDuration();
         int amplifier = effect.getAmplifier();
         if (effect.getEffect().getCategory() == MobEffectCategory.BENEFICIAL && player.isUsingItem() && (player.getMainHandItem().getItem() instanceof PotionItem || player.getOffhandItem().getItem() instanceof PotionItem)) {
-            if (RegistrySkills.ALCHEMY_MANIPULATION != null && RegistrySkills.ALCHEMY_MANIPULATION.get().isEnabled(player)) {
-                amplifier += (int)RegistrySkills.ALCHEMY_MANIPULATION.get().getValue()[0];
+            if (RegistryPerks.ALCHEMY_MANIPULATION != null && RegistryPerks.ALCHEMY_MANIPULATION.get().isEnabled(player)) {
+                amplifier += (int)RegistryPerks.ALCHEMY_MANIPULATION.get().getValue()[0];
             }
 
             float newDuration = (float)((int)(player.getAttributeValue(RegistryAttributes.BENEFICIAL_EFFECT.get()) * 20.0D));
@@ -144,16 +163,17 @@ public abstract class MixLivingEntity {
         }
 
         MobEffectInstance newEffect = new MobEffectInstance(effect.getEffect(), duration, amplifier);
-        if (!this.canBeAffected(effect)) {
+        // H3-H5: Pass newEffect (with modified duration/amplifier) to canBeAffected, event, and update
+        if (!this.canBeAffected(newEffect)) {
             return false;
         } else {
             MobEffectInstance mobeffectinstance = this.activeEffects.get(effect.getEffect());
-            MinecraftForge.EVENT_BUS.post(new Added(this.this$class, mobeffectinstance, effect, player));
+            MinecraftForge.EVENT_BUS.post(new Added(this.this$class, mobeffectinstance, newEffect, player));
             if (mobeffectinstance == null) {
                 this.activeEffects.put(newEffect.getEffect(), newEffect);
                 this.onEffectAdded(newEffect, player);
                 return true;
-            } else if (mobeffectinstance.update(effect)) {
+            } else if (mobeffectinstance.update(newEffect)) {
                 this.onEffectUpdated(newEffect, true, player);
                 return true;
             } else {
@@ -172,9 +192,9 @@ public abstract class MixLivingEntity {
         LivingEntity var6 = this.this$class;
         if (var6 instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer)var6;
-            if(RegistrySkills.STEALTH_MASTERY != null){
-                double isSneaking = player.isShiftKeyDown() ? RegistrySkills.STEALTH_MASTERY.get().getValue()[0] : RegistrySkills.STEALTH_MASTERY.get().getValue()[1];
-                if (RegistrySkills.STEALTH_MASTERY.get().isEnabled(player)) {
+            if(RegistryPerks.STEALTH_MASTERY != null){
+                double isSneaking = player.isShiftKeyDown() ? RegistryPerks.STEALTH_MASTERY.get().getValue()[0] : RegistryPerks.STEALTH_MASTERY.get().getValue()[1];
+                if (RegistryPerks.STEALTH_MASTERY.get().isEnabled(player)) {
                     cir.setReturnValue(visibilityPercent * isSneaking / 100.0D);
                 }
             }

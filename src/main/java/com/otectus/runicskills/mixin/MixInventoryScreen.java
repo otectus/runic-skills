@@ -1,12 +1,12 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.client.gui.DrawTabs;
-import com.seniors.justlevelingfork.integration.L2TabsIntegration;
-import com.seniors.justlevelingfork.network.packet.common.OpenEnderChestSP;
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.client.gui.DrawTabs;
+import com.otectus.runicskills.integration.L2TabsIntegration;
+import com.otectus.runicskills.network.packet.common.OpenEnderChestSP;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -46,7 +46,7 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
 
         DrawTabs.render(matrixStack, mouseX, mouseY, 176, 166, getRecipeBookComponent().isVisible() ? 77 : 0);
 
-        if (RegistrySkills.WORMHOLE_STORAGE != null && RegistrySkills.WORMHOLE_STORAGE.get().isEnabled()) {
+        if (RegistryPerks.WORMHOLE_STORAGE != null && RegistryPerks.WORMHOLE_STORAGE.get().isEnabled()) {
             this.this$isMouseCheck = false;
             matrixStack.pose().pushPose();
             int width = (getMinecraft().getWindow().getGuiScaledWidth() - 176) / 2;
@@ -64,7 +64,7 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
                 }
             }
             RenderSystem.enableBlend();
-            matrixStack.blit(new ResourceLocation(JustLevelingFork.MOD_ID, "textures/skill/ender_chest_button.png"), buttonX, buttonY, 0.0F, checkButton, 20, 18, 20, 36);
+            matrixStack.blit(new ResourceLocation(RunicSkills.MOD_ID, "textures/skill/ender_chest_button.png"), buttonX, buttonY, 0.0F, checkButton, 20, 18, 20, 36);
             matrixStack.pose().popPose();
         }
     }

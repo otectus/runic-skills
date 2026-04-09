@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.config;
+package com.otectus.runicskills.config;
 
-import com.seniors.justlevelingfork.config.controller.LockItemControllerBuilder;
-import com.seniors.justlevelingfork.config.models.LockItem;
+import com.otectus.runicskills.config.controller.LockItemControllerBuilder;
+import com.otectus.runicskills.config.models.LockItem;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.controller.ControllerBuilder;
 import dev.isxander.yacl3.config.v2.api.ConfigField;

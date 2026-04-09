@@ -1,4 +1,4 @@
- package com.seniors.justlevelingfork.client.core;
+ package com.otectus.runicskills.client.core;
  
  public enum SortPassives {
    ByName(0, "tooltip.sort.button.by_name"),

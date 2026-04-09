@@ -1,5 +1,5 @@
 
-package com.seniors.justlevelingfork.client.core;
+package com.otectus.runicskills.client.core;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;

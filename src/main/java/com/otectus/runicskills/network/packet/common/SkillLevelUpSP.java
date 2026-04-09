@@ -1,13 +1,15 @@
-package com.seniors.justlevelingfork.network.packet.common;
+package com.otectus.runicskills.network.packet.common;
 
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.registry.RegistryAptitudes;
-import com.seniors.justlevelingfork.registry.aptitude.Aptitude;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.PacketRateLimiter;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.registry.RegistryPerks;
+import com.otectus.runicskills.registry.RegistrySkills;
+import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -15,19 +17,19 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class AptitudeLevelUpSP {
-    private final String aptitude;
+public class SkillLevelUpSP {
+    private final String skill;
 
-    public AptitudeLevelUpSP(Aptitude aptitude) {
-        this.aptitude = aptitude.getName();
+    public SkillLevelUpSP(Skill skill) {
+        this.skill = skill.getName();
     }
 
-    public AptitudeLevelUpSP(FriendlyByteBuf buffer) {
-        this.aptitude = buffer.readUtf();
+    public SkillLevelUpSP(FriendlyByteBuf buffer) {
+        this.skill = buffer.readUtf();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeUtf(this.aptitude);
+        buffer.writeUtf(this.skill);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
@@ -35,23 +37,29 @@ public class AptitudeLevelUpSP {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player != null) {
-                AptitudeCapability capability = AptitudeCapability.get(player);
-                Aptitude aptitudePlayer = RegistryAptitudes.getAptitude(this.aptitude);
-                int aptitudeLevel = capability.getAptitudeLevel(aptitudePlayer);
+                if (!PacketRateLimiter.allow(player, "skill_level_up", 2)) return;
 
-                boolean canLevelUpAptitude = (player.isCreative()
-                        || AptitudeLevelUpSP.requiredPoints(aptitudeLevel) <= player.totalExperience
-                        || AptitudeLevelUpSP.requiredExperienceLevels(aptitudeLevel) <= player.experienceLevel);
+                SkillCapability capability = SkillCapability.get(player);
+                if (capability == null) return;
 
-                if (!canLevelUpAptitude){
-                    JustLevelingFork.getLOGGER().info("Received level up packet without the required EXP needed to level up, skipping packet...");
+                Skill skillPlayer = RegistrySkills.getSkill(this.skill);
+                if (skillPlayer == null) return;
+
+                int skillLevel = capability.getSkillLevel(skillPlayer);
+
+                boolean canLevelUpSkill = (player.isCreative()
+                        || SkillLevelUpSP.requiredPoints(skillLevel) <= player.totalExperience
+                        || SkillLevelUpSP.requiredExperienceLevels(skillLevel) <= player.experienceLevel);
+
+                if (!canLevelUpSkill){
+                    RunicSkills.getLOGGER().info("Received level up packet without the required EXP needed to level up, skipping packet...");
                     return;
                 }
 
-                int requiredPoints = requiredPoints(aptitudeLevel);
+                int requiredPoints = requiredPoints(skillLevel);
 
-                capability.addAptitudeLevel(aptitudePlayer, 1);
-                SyncAptitudeCapabilityCP.send(player);
+                capability.addSkillLevel(skillPlayer, 1);
+                SyncSkillCapabilityCP.send(player);
                 if (!player.isCreative()) {
                     addPlayerXP(player, requiredPoints * -1);
                 }
@@ -92,12 +100,12 @@ public class AptitudeLevelUpSP {
         }
     }
 
-    public static int requiredPoints(int aptitudeLevel) {
-        return getExperienceForLevel(aptitudeLevel + HandlerCommonConfig.HANDLER.instance().aptitudeFirstCostLevel - 1);
+    public static int requiredPoints(int skillLevel) {
+        return getExperienceForLevel(skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1);
     }
 
-    public static int requiredExperienceLevels(int aptitudeLevel) {
-        return aptitudeLevel + HandlerCommonConfig.HANDLER.instance().aptitudeFirstCostLevel - 1;
+    public static int requiredExperienceLevels(int skillLevel) {
+        return skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1;
     }
 
     public static int getExperienceForLevel(int level) {
@@ -111,8 +119,8 @@ public class AptitudeLevelUpSP {
         return n * (2 * a0 + (n - 1) * d) / 2;
     }
 
-    public static void send(Aptitude aptitude) {
-        ServerNetworking.sendToServer(new AptitudeLevelUpSP(aptitude));
+    public static void send(Skill skill) {
+        ServerNetworking.sendToServer(new SkillLevelUpSP(skill));
     }
 }
 

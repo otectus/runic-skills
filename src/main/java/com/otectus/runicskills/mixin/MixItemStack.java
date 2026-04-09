@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -19,16 +19,17 @@ import java.util.List;
 public abstract class MixItemStack {
     @Inject(method = {"appendEnchantmentNames"}, at = {@At("HEAD")}, cancellable = true)
     private static void appendEnchantmentNames(List<Component> list, ListTag tags, CallbackInfo info) {
-        info.cancel();
+        // Q13: Only intervene when Scholar perk exists and is NOT enabled
+        if (RegistryPerks.SCHOLAR == null || RegistryPerks.SCHOLAR.get().isEnabled()) {
+            return; // Let vanilla handle it normally - compatible with other mods
+        }
 
+        // Scholar exists but is NOT enabled - hide enchantment names
+        info.cancel();
         for (int i = 0; i < tags.size(); i++) {
             CompoundTag nbt = tags.getCompound(i);
-
-            if (RegistrySkills.SCHOLAR == null || (RegistrySkills.SCHOLAR.get().isEnabled())) {
-                ForgeRegistries.ENCHANTMENTS.getDelegate(EnchantmentHelper.getEnchantmentId(nbt)).ifPresent(enchantment -> list.add(enchantment.get().getFullname(EnchantmentHelper.getEnchantmentLevel(nbt))));
-            } else {
-                ForgeRegistries.ENCHANTMENTS.getDelegate(EnchantmentHelper.getEnchantmentId(nbt)).ifPresent(enchantment -> list.add(Component.translatable("tooltip.skill.scholar.lock_item").withStyle(ChatFormatting.GRAY)));
-            }
+            ForgeRegistries.ENCHANTMENTS.getDelegate(EnchantmentHelper.getEnchantmentId(nbt)).ifPresent(
+                    enchantment -> list.add(Component.translatable("tooltip.perk.scholar.lock_item").withStyle(ChatFormatting.GRAY)));
         }
     }
 }

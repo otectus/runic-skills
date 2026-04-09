@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
+import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
 import com.vicmatskiv.pointblank.item.GunItem;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -15,8 +15,7 @@ public class MixGunItem {
     @Inject(method = "tryFire", at = @At("HEAD"), cancellable = true, remap = false)
     private void tryFire(LocalPlayer player, ItemStack itemStack, Entity targetEntity, CallbackInfoReturnable<Boolean> ci){
         if (!player.isCreative()) {
-            AptitudeCapability provider = AptitudeCapability.get(player);
-            if (!provider.canUseItemClient(itemStack)) {
+            if (!ClientCapabilityAccess.canUseItemClient(itemStack)) {
                 ci.cancel();
             }
         }

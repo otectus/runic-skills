@@ -1,27 +1,27 @@
-package com.seniors.justlevelingfork.common.command;
+package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.seniors.justlevelingfork.handler.HandlerAptitude;
+import com.otectus.runicskills.handler.HandlerSkill;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
-public class AptitudesReloadCommand {
+public class SkillsReloadCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register((Commands.literal("aptitudesreload").requires((source) -> {
+        dispatcher.register((Commands.literal("skillsreload").requires((source) -> {
             return source.hasPermission(2);
-        })).executes(AptitudesReloadCommand::execute));
+        })).executes(SkillsReloadCommand::execute));
     }
 
     private static int execute(CommandContext<CommandSourceStack> command){
-        HandlerAptitude.ForceRefresh();
+        HandlerSkill.ForceRefresh();
 
         if(command.getSource().getEntity() instanceof Player player) {
-            player.sendSystemMessage(Component.literal("Forcing refresh of aptitudes..."));
+            player.sendSystemMessage(Component.literal("Forcing refresh of skills..."));
         }
 
         return Command.SINGLE_SUCCESS;

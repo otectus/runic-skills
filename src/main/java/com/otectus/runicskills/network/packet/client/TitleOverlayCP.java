@@ -1,9 +1,9 @@
-package com.seniors.justlevelingfork.network.packet.client;
+package com.otectus.runicskills.network.packet.client;
 
-import com.seniors.justlevelingfork.client.gui.OverlayTitleGui;
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.registry.RegistryTitles;
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.client.gui.OverlayTitleGui;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.registry.RegistryTitles;
+import com.otectus.runicskills.registry.title.Title;
 
 import java.util.function.Supplier;
 

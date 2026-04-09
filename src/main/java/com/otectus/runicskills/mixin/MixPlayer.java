@@ -1,29 +1,23 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistrySkills;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import com.otectus.runicskills.registry.RegistryPerks;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin({Player.class})
-public abstract class MixPlayer extends LivingEntity {
-    @Unique
-    private final Player this$class = (Player) (Object) this;
+@Mixin(Entity.class)
+public abstract class MixPlayer {
 
-    protected MixPlayer(Level level) {
-        super(EntityType.PLAYER, level);
-    }
-
-
-    public int getMaxAirSupply() {
-        if (RegistrySkills.ATHLETICS != null && RegistrySkills.ATHLETICS.get().isEnabled(this.this$class)) {
-            return (int) (300.0D * RegistrySkills.ATHLETICS.get().getValue()[0]);
+    @Inject(method = "getMaxAirSupply", at = @At("RETURN"), cancellable = true)
+    private void runicskills$modifyMaxAir(CallbackInfoReturnable<Integer> cir) {
+        Object self = this;
+        if (self instanceof Player player
+                && RegistryPerks.ATHLETICS != null
+                && RegistryPerks.ATHLETICS.get().isEnabled(player)) {
+            cir.setReturnValue((int) (cir.getReturnValue() * RegistryPerks.ATHLETICS.get().getValue()[0]));
         }
-        return 300;
     }
 }
-
-

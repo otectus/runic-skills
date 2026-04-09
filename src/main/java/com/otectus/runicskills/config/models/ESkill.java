@@ -1,13 +1,15 @@
-package com.seniors.justlevelingfork.config.models;
+package com.otectus.runicskills.config.models;
 
 
-public enum EAptitude {
+public enum ESkill {
     Strength,
     Constitution,
     Dexterity,
-    Defense,
+    Endurance,
     Intelligence,
     Building,
+    Wisdom,
     Magic,
-    Luck
+    Fortune,
+    Tinkering
 }

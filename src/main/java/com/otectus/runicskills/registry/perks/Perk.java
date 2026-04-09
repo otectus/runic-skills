@@ -1,55 +1,83 @@
-package com.seniors.justlevelingfork.registry.skills;
+package com.otectus.runicskills.registry.perks;
 
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.client.core.Value;
-import com.seniors.justlevelingfork.client.core.ValueType;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.handler.HandlerConfigClient;
-import com.seniors.justlevelingfork.handler.HandlerResources;
-import com.seniors.justlevelingfork.registry.RegistryAptitudes;
-import com.seniors.justlevelingfork.registry.RegistryCapabilities;
-import com.seniors.justlevelingfork.registry.aptitude.Aptitude;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.client.core.Value;
+import com.otectus.runicskills.client.core.ValueType;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerResources;
+import com.otectus.runicskills.registry.RegistrySkills;
+import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
-public class Skill {
+public class Perk {
     public final ResourceLocation key;
-    public final Aptitude aptitude;
+    private final Supplier<Skill> skillSupplier;
     public final int requiredLevel;
+    public final int maxRank;
+    public final int[] rankLevelRequirements;
     public final ResourceLocation texture;
     private final Value[] configValues;
+    private final Value[][] rankedConfigValues;
+    private double[] cachedValues;
+    private double[][] cachedRankedValues;
 
-    public Skill(ResourceLocation skillKey, Aptitude aptitude, int levelRequirement, ResourceLocation skillTexture, Value... skillValues) {
-        this.key = skillKey;
-        this.aptitude = aptitude;
+    // Single-rank constructor (backward compatible)
+    public Perk(ResourceLocation perkKey, Supplier<Skill> skillSupplier, int levelRequirement, ResourceLocation perkTexture, Value... perkValues) {
+        this.key = perkKey;
+        this.skillSupplier = skillSupplier;
         this.requiredLevel = levelRequirement;
-        this.texture = skillTexture;
-        this.configValues = skillValues;
+        this.maxRank = 1;
+        this.rankLevelRequirements = new int[]{levelRequirement};
+        this.texture = perkTexture;
+        this.configValues = perkValues;
+        this.rankedConfigValues = null;
     }
 
-    // KubeJS support
-    public static Skill add(String skillName, String aptitudeName, int levelRequirement, String texture, Value... skillValues){
-        Aptitude aptitude = RegistryAptitudes.getAptitude(aptitudeName);
-        if (aptitude == null){
-            throw new IllegalArgumentException("Aptitude name doesn't exist: " + aptitudeName);
+    // Multi-rank constructor
+    public Perk(ResourceLocation perkKey, Supplier<Skill> skillSupplier, int[] rankLevelReqs, ResourceLocation perkTexture, Value[]... rankedValues) {
+        this.key = perkKey;
+        this.skillSupplier = skillSupplier;
+        this.maxRank = rankLevelReqs.length;
+        this.rankLevelRequirements = rankLevelReqs;
+        this.requiredLevel = rankLevelReqs.length > 0 ? rankLevelReqs[0] : 0;
+        this.texture = perkTexture;
+        this.configValues = rankedValues.length > 0 ? rankedValues[0] : new Value[0];
+        this.rankedConfigValues = rankedValues;
+    }
+
+    // KubeJS support - single rank
+    public static Perk add(String perkName, String skillName, int levelRequirement, String texture, Value... perkValues) {
+        Skill skill = RegistrySkills.getSkill(skillName);
+        if (skill == null) {
+            throw new IllegalArgumentException("Skill name doesn't exist: " + skillName);
         }
-
-        ResourceLocation key = new ResourceLocation(JustLevelingFork.MOD_ID, skillName);
-        return new Skill(key, aptitude, levelRequirement, HandlerResources.create(texture), skillValues);
+        ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, perkName);
+        return new Perk(key, () -> skill, levelRequirement, HandlerResources.create(texture), perkValues);
     }
 
-    public Skill get() {
+    // KubeJS support - multi rank
+    public static Perk add(String perkName, String skillName, int[] rankLevelReqs, String texture, Value[]... rankedValues) {
+        Skill skill = RegistrySkills.getSkill(skillName);
+        if (skill == null) {
+            throw new IllegalArgumentException("Skill name doesn't exist: " + skillName);
+        }
+        ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, perkName);
+        return new Perk(key, () -> skill, rankLevelReqs, HandlerResources.create(texture), rankedValues);
+    }
+
+    public Skill getSkill() {
+        return skillSupplier.get();
+    }
+
+    public Perk get() {
         return this;
     }
 
@@ -62,7 +90,7 @@ public class Skill {
     }
 
     public String getKey() {
-        return "skill." + this.key.toLanguageKey();
+        return "perk." + this.key.toLanguageKey();
     }
 
     public String getDescription() {
@@ -73,26 +101,69 @@ public class Skill {
         return this.requiredLevel;
     }
 
+    public int getMaxRank() {
+        return this.maxRank;
+    }
+
+    public int getLevelForRank(int rank) {
+        if (rank < 1 || rank > this.rankLevelRequirements.length) return Integer.MAX_VALUE;
+        return this.rankLevelRequirements[rank - 1];
+    }
+
+    public int getPlayerRank(Player player) {
+        if (player == null) return 0;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap == null) return 0;
+        return cap.getPerkRank(this);
+    }
+
+    public int getPlayerRank() {
+        SkillCapability cap = SkillCapability.getLocal();
+        if (cap == null) return 0;
+        return cap.getPerkRank(this);
+    }
+
+    // Returns values for Rank I (backward compatible)
     public double[] getValue() {
-        double[] newValue = new double[this.configValues.length];
-        for (int i = 0; i < newValue.length; i++) {
-            newValue[i] = 0.0D;
-            if (this.configValues[i] != null) {
-                Object object = (this.configValues[i]).value;
-                if (object instanceof Double) {
-                    newValue[i] = (Double) object;
-                }
-                object = (this.configValues[i]).value;
-                if (object instanceof Integer) {
-                    newValue[i] = (Integer) object;
-                }
-                object = (this.configValues[i]).value;
+        if (cachedValues == null) {
+            cachedValues = extractValues(this.configValues);
+        }
+        return cachedValues;
+    }
+
+    // Returns values for a specific rank (1-indexed)
+    public double[] getValue(int rank) {
+        if (rankedConfigValues == null || rank < 1 || rank > rankedConfigValues.length) {
+            return getValue();
+        }
+        if (cachedRankedValues == null) {
+            cachedRankedValues = new double[rankedConfigValues.length][];
+        }
+        int idx = rank - 1;
+        if (cachedRankedValues[idx] == null) {
+            cachedRankedValues[idx] = extractValues(rankedConfigValues[idx]);
+        }
+        return cachedRankedValues[idx];
+    }
+
+    // Returns values for the player's current rank
+    public double[] getActiveValue(Player player) {
+        int rank = getPlayerRank(player);
+        return rank >= 1 ? getValue(rank) : getValue();
+    }
+
+    private static double[] extractValues(Value[] values) {
+        double[] result = new double[values.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = 0.0D;
+            if (values[i] != null) {
+                Object object = values[i].value;
                 if (object instanceof Number value) {
-                    newValue[i] = value.doubleValue();
+                    result[i] = value.doubleValue();
                 }
             }
         }
-        return newValue;
+        return result;
     }
 
     public MutableComponent getMutableDescription(String description) {
@@ -119,71 +190,52 @@ public class Skill {
         return parameter + "§r§7";
     }
 
-    public List<Component> tooltip() {
-        List<Component> list = new ArrayList<>();
-        list.add(Component.translatable("tooltip.skill.title").append(Component.translatable(getKey())).withStyle(ChatFormatting.AQUA));
-        list.add(Component.translatable("tooltip.skill.description." + (canSkill() ? "on" : "off")).withStyle(canSkill() ? ChatFormatting.GREEN : ChatFormatting.RED));
-        list.add(Component.empty());
-        if (Screen.hasShiftDown()) {
-            list.add(Component.empty()
-                    .append(Component.translatable(getKey()).withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.UNDERLINE))
-                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                    .append(getMutableDescription(getDescription()).withStyle(ChatFormatting.GRAY)));
-            list.add(Component.empty());
-            list.add(Component.translatable("tooltip.skill.description.level_requirement").withStyle(ChatFormatting.DARK_PURPLE));
-            if (this.requiredLevel > 0){
-                list.add(Component.literal(" ").append(Component.translatable("tooltip.skill.description.available", Component.literal(String.valueOf(getLvl())).withStyle(ChatFormatting.GREEN))).withStyle(ChatFormatting.DARK_AQUA));
-            }
-            else{
-                list.add(Component.translatable("tooltip.skill.description.off").withStyle(ChatFormatting.RED));
-            }
-
-        } else {
-            list.add(Component.translatable("tooltip.general.description.more_information").withStyle(ChatFormatting.YELLOW));
-        }
-        if (HandlerConfigClient.showSkillModName.get()) {
-            list.add(Component.literal(Utils.getModName(getMod())).withStyle(ChatFormatting.BLUE).withStyle(ChatFormatting.ITALIC));
-        }
-        return list;
+    public boolean canPerk() {
+        if (requiredLevel <= 0) return false;
+        SkillCapability cap = SkillCapability.getLocal();
+        return cap != null && cap.isPerkActive(this);
     }
 
-    public boolean canSkill() {
-        return requiredLevel > 0 && AptitudeCapability.get().getToggleSkill(this);
-    }
-
-    public boolean canSkill(Player player) {
-        return requiredLevel > 0 && AptitudeCapability.get(player).getToggleSkill(this);
+    public boolean canPerk(Player player) {
+        if (requiredLevel <= 0) return false;
+        SkillCapability cap = SkillCapability.get(player);
+        return cap != null && cap.isPerkActive(this);
     }
 
     public boolean getToggle() {
-        return this.requiredLevel > 0 && AptitudeCapability.get().getAptitudeLevel(this.aptitude) >= this.requiredLevel;
+        return this.requiredLevel > 0 && SkillCapability.getLocal().getSkillLevel(this.getSkill()) >= this.requiredLevel;
     }
 
     public boolean getToggle(Player player) {
-        return this.requiredLevel > 0 && AptitudeCapability.get(player).getAptitudeLevel(this.aptitude) >= this.requiredLevel;
+        return this.requiredLevel > 0 && SkillCapability.get(player).getSkillLevel(this.getSkill()) >= this.requiredLevel;
     }
 
     public boolean isEnabled() {
         if (this.requiredLevel < 1) return true;
-        if(AptitudeCapability.get() == null) return false;
-
-        return (AptitudeCapability.get().getAptitudeLevel(this.aptitude) >= this.requiredLevel && AptitudeCapability.get().getToggleSkill(this));
+        SkillCapability cap = SkillCapability.getLocal();
+        if (cap == null) return false;
+        return cap.getSkillLevel(this.getSkill()) >= this.requiredLevel && cap.isPerkActive(this);
     }
 
     public boolean isEnabled(Player player) {
-        AtomicBoolean b = new AtomicBoolean(false);
-        if (player != null &&
-                !player.isDeadOrDying()) {
-            player.getCapability(RegistryCapabilities.APTITUDE).ifPresent(aptitudeCapability -> b.set(
-                    this.requiredLevel > 0 && (AptitudeCapability.get(player).getAptitudeLevel(this.aptitude) >= this.requiredLevel && AptitudeCapability.get(player).getToggleSkill(this))));
-        }
+        if (player == null || player.isDeadOrDying() || this.requiredLevel < 1) return false;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap == null) return false;
+        return cap.getSkillLevel(this.getSkill()) >= this.requiredLevel && cap.isPerkActive(this);
+    }
 
-        return b.get();
+    // Check if the player can upgrade to the next rank
+    public boolean canRankUp(Player player) {
+        if (player == null) return false;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap == null) return false;
+        int currentRank = cap.getPerkRank(this);
+        if (currentRank >= maxRank) return false;
+        int nextRank = currentRank + 1;
+        return cap.getSkillLevel(this.getSkill()) >= getLevelForRank(nextRank);
     }
 
     public ResourceLocation getTexture() {
-        return Objects.requireNonNullElse(this.texture, HandlerResources.NULL_SKILL);
+        return Objects.requireNonNullElse(this.texture, HandlerResources.NULL_PERK);
     }
 }
-
-

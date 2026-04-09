@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.config.controller;
+package com.otectus.runicskills.config.controller;
 
-import com.seniors.justlevelingfork.config.models.LockItem;
+import com.otectus.runicskills.config.models.LockItem;
 import dev.isxander.yacl3.api.utils.Dimension;
 import dev.isxander.yacl3.gui.YACLScreen;
 import dev.isxander.yacl3.gui.controllers.dropdown.AbstractDropdownControllerElement;

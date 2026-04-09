@@ -1,37 +1,31 @@
-package com.seniors.justlevelingfork.config.conditions;
+package com.otectus.runicskills.config.conditions;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.config.models.EAptitude;
-import com.seniors.justlevelingfork.config.models.TitleModel;
-import com.seniors.justlevelingfork.registry.RegistryAptitudes;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.config.models.ESkill;
+import com.otectus.runicskills.registry.RegistrySkills;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.StringUtils;
 
-public class AptitudeCondition extends ConditionImpl<Integer> {
+public class SkillCondition extends IntegerConditionImpl {
 
-    public AptitudeCondition() {
-        super("Aptitude");
+    public SkillCondition() {
+        super("Skill");
     }
 
     @Override
     public void ProcessVariable(String value, ServerPlayer serverPlayer) {
-        EAptitude aptitude = EAptitude.valueOf(StringUtils.capitalize(value));
-        int aptitudeLevel = AptitudeCapability.get(serverPlayer).getAptitudeLevel(RegistryAptitudes.getAptitude(aptitude.toString()));
+        ESkill skill;
+        try {
+            skill = ESkill.valueOf(StringUtils.capitalize(value));
+        } catch (IllegalArgumentException e) {
+            RunicSkills.getLOGGER().error(">> Unknown skill '{}' in title condition. Valid skills: {}", value, java.util.Arrays.toString(ESkill.values()));
+            setProcessedValue(0);
+            return;
+        }
+        int skillLevel = SkillCapability.get(serverPlayer).getSkillLevel(RegistrySkills.getSkill(skill.toString()));
 
-        setProcessedValue(aptitudeLevel);
+        setProcessedValue(skillLevel);
     }
 
-    @Override
-    public boolean MeetCondition(String value, TitleModel.EComparator comparator) {
-        int parsedValue = Integer.parseInt(value);
-
-        return switch (comparator) {
-            case EQUALS -> getProcessedValue().equals(parsedValue);
-            case GREATER -> getProcessedValue() > parsedValue;
-            case LESS -> getProcessedValue() < parsedValue;
-            case GREATER_OR_EQUAL -> getProcessedValue() >= parsedValue;
-            case LESS_OR_EQUAL -> getProcessedValue() <= parsedValue;
-            default -> false;
-        };
-    }
 }

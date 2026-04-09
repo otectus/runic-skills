@@ -1,9 +1,9 @@
-package com.seniors.justlevelingfork.client.gui;
+package com.otectus.runicskills.client.gui;
 
-import com.seniors.justlevelingfork.client.core.TitleQueue;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.registry.RegistryCapabilities;
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.client.core.TitleQueue;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.registry.RegistryCapabilities;
+import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,7 +29,7 @@ public class OverlayTitleGui {
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onHudRender(CustomizeGuiOverlayEvent.DebugText event) {
         GuiGraphics matrixStack = event.getGuiGraphics();
-        if (this.client.level != null && this.client.player != null && showTicks >= 0 && this.client.player.getCapability(RegistryCapabilities.APTITUDE).isPresent()) {
+        if (this.client.level != null && this.client.player != null && showTicks >= 0 && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             if (list.count() > 0) {
                 Title getTitle = list.peek();
                 if (showTicks < 20) {
@@ -55,7 +55,7 @@ public class OverlayTitleGui {
                 matrixStack.pose().popPose();
                 if (showTicks == 0) {
                     list.dequeue();
-                    showTicks = timerTicks;
+                    showTicks = (list.count() > 0) ? 40 : timerTicks;
                 }
             } else {
                 showTicks = 0;

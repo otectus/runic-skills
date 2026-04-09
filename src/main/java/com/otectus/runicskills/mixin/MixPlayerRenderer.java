@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistryTitles;
+import com.otectus.runicskills.registry.RegistryTitles;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

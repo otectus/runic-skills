@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.network.packet.client;
+package com.otectus.runicskills.network.packet.client;
 
-import com.seniors.justlevelingfork.handler.HandlerConfigClient;
-import com.seniors.justlevelingfork.network.ServerNetworking;
+import com.otectus.runicskills.handler.HandlerConfigClient;
+import com.otectus.runicskills.network.ServerNetworking;
 
 import java.util.function.Supplier;
 
@@ -18,8 +18,8 @@ public class PlayerMessagesCP {
     private final String message;
     private final int amount;
 
-    public PlayerMessagesCP(String skill, int amount) {
-        this.message = skill;
+    public PlayerMessagesCP(String perk, int amount) {
+        this.message = perk;
         this.amount = amount;
     }
 
@@ -38,9 +38,9 @@ public class PlayerMessagesCP {
         context.enqueueWork(() -> {
             LocalPlayer localPlayer = (Minecraft.getInstance()).player;
             assert localPlayer != null;
-            if (this.message.equals("overlay.skill.justlevelingfork.lucky_drop") && HandlerConfigClient.showLuckyDropSkillOverlay.get()) {
+            if (this.message.equals("overlay.perk.runicskills.lucky_drop") && HandlerConfigClient.showLuckyDropPerkOverlay.get()) {
                 localPlayer.displayClientMessage(Component.translatable(this.message, this.amount), true);
-            } else if ((this.message.equals("overlay.skill.justlevelingfork.critical_roll_1") || this.message.equals("overlay.skill.justlevelingfork.critical_roll_6")) && HandlerConfigClient.showCriticalRollSkillOverlay.get()) {
+            } else if ((this.message.equals("overlay.perk.runicskills.critical_roll_1") || this.message.equals("overlay.perk.runicskills.critical_roll_6")) && HandlerConfigClient.showCriticalRollPerkOverlay.get()) {
                 localPlayer.displayClientMessage(Component.translatable(this.message, this.amount), true);
             }
         });

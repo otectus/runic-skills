@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "justlevelingfork:item/leveling_book"
+    "layer0": "runicskills:item/leveling_book"
   }
 }

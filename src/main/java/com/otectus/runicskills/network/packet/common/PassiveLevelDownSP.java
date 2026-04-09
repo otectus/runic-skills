@@ -1,10 +1,11 @@
-package com.seniors.justlevelingfork.network.packet.common;
+package com.otectus.runicskills.network.packet.common;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.registry.RegistryPassives;
-import com.seniors.justlevelingfork.registry.passive.Passive;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.registry.RegistryAttributes;
+import com.otectus.runicskills.registry.RegistryPassives;
+import com.otectus.runicskills.registry.passive.Passive;
 
 import java.util.function.Supplier;
 
@@ -33,11 +34,16 @@ public class PassiveLevelDownSP {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
-                AptitudeCapability capability = AptitudeCapability.get(player);
+                SkillCapability capability = SkillCapability.get(player);
+                if (capability == null) return;
 
                 Passive passive = RegistryPassives.getPassive(this.passive);
+                if (passive == null) return;
+                if (capability.getPassiveLevel(passive) <= 0) return;
+
                 capability.subPassiveLevel(passive, 1);
-                SyncAptitudeCapabilityCP.send(player);
+                RegistryAttributes.modifierAttributes(player); // H8: Recalculate attributes after passive change
+                SyncSkillCapabilityCP.send(player);
             }
         });
         context.setPacketHandled(true);

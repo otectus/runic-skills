@@ -1,9 +1,9 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.seniors.justlevelingfork.mixin",
+  "package": "com.otectus.runicskills.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "justlevelingfork.refmap.json",
+  "refmap": "runicskills.refmap.json",
   "client": [
     "MixForgeGui",
     "MixPlayerRenderer",
@@ -18,7 +18,8 @@
     "MixShulkerBullet",
     "MixTargetFinder",
     "MixVillager",
-    "MixCraftingMenu"
+    "MixCraftingMenu",
+    "MixEnchantmentMenu"
   ],
   "injectors": {
     "defaultRequire": 1

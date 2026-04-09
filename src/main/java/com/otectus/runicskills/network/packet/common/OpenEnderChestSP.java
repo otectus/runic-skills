@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.network.packet.common;
+package com.otectus.runicskills.network.packet.common;
 
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.registry.RegistryPerks;
 
 import java.util.function.Supplier;
 
@@ -24,8 +24,12 @@ public class OpenEnderChestSP {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
+                // C6: Validate WORMHOLE_STORAGE perk exists and is enabled
+                if (RegistryPerks.WORMHOLE_STORAGE == null) return;
+                if (!RegistryPerks.WORMHOLE_STORAGE.get().isEnabled(player)) return;
+
                 PlayerEnderChestContainer enderChest = player.getEnderChestInventory();
-                SimpleMenuProvider enderChestContainer = new SimpleMenuProvider((id, pl, b) -> ChestMenu.threeRows(id, pl, enderChest), Component.translatable(RegistrySkills.WORMHOLE_STORAGE.get().getKey()));
+                SimpleMenuProvider enderChestContainer = new SimpleMenuProvider((id, pl, b) -> ChestMenu.threeRows(id, pl, enderChest), Component.translatable(RegistryPerks.WORMHOLE_STORAGE.get().getKey()));
                 player.openMenu(enderChestContainer);
             }
         });

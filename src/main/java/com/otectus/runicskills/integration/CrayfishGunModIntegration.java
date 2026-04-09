@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.integration;
+package com.otectus.runicskills.integration;
 
 import com.mrcrayfish.guns.event.GunFireEvent;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
+import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -19,8 +19,7 @@ public class CrayfishGunModIntegration {
 
         if (!player.isCreative()) {
             ItemStack itemStack = event.getStack();
-            AptitudeCapability provider = AptitudeCapability.get(player);
-            if (!provider.canUseItemClient(itemStack)) {
+            if (!ClientCapabilityAccess.canUseItemClient(itemStack)) {
                 event.setCanceled(true);
             }
         }

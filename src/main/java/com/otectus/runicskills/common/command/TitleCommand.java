@@ -1,12 +1,12 @@
-package com.seniors.justlevelingfork.common.command;
+package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.common.command.arguments.TitleArgument;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.registry.RegistryTitles;
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.command.arguments.TitleArgument;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.registry.RegistryTitles;
+import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -39,9 +39,9 @@ public class TitleCommand {
 
             } else {
 
-                AptitudeCapability capability = AptitudeCapability.get(player);
+                SkillCapability capability = SkillCapability.get(player);
                 capability.setUnlockTitle(title, false);
-                SyncAptitudeCapabilityCP.send(player);
+                SyncSkillCapabilityCP.send(player);
                 source.getSource().sendSuccess(() -> Component.translatable("commands.message.title.unset", player.getName().copy().withStyle(ChatFormatting.BOLD), Component.translatable(title.getKey()).withStyle(ChatFormatting.BOLD)), false);
             }
 

@@ -1,4 +1,4 @@
-package com.seniors.justlevelingfork.config;
+package com.otectus.runicskills.config;
 
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.controller.ControllerBuilder;

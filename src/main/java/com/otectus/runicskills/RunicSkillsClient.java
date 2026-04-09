@@ -1,14 +1,15 @@
-package com.seniors.justlevelingfork;
+package com.otectus.runicskills;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.seniors.justlevelingfork.client.gui.OverlayAptitudeGui;
-import com.seniors.justlevelingfork.client.gui.OverlayTitleGui;
-import com.seniors.justlevelingfork.client.gui.TabJustLeveling;
-import com.seniors.justlevelingfork.client.screen.JustLevelingScreen;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.integration.L2TabsIntegration;
-import com.seniors.justlevelingfork.registry.RegistryClientEvents;
-import com.seniors.justlevelingfork.registry.RegistryItems;
+import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
+import com.otectus.runicskills.client.gui.OverlaySkillGui;
+import com.otectus.runicskills.client.gui.OverlayTitleGui;
+import com.otectus.runicskills.client.gui.TabRunicSkills;
+import com.otectus.runicskills.client.screen.RunicSkillsScreen;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.L2TabsIntegration;
+import com.otectus.runicskills.client.event.RegistryClientEvents;
+import com.otectus.runicskills.registry.RegistryItems;
 import dev.xkmc.l2tabs.tabs.core.TabRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -24,21 +25,21 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-public class JustLevelingClient {
+public class RunicSkillsClient {
     public static Minecraft client = Minecraft.getInstance();
-    public static KeyMapping OPEN_JUSTLEVELING_SCREEN = new KeyMapping("key.justlevelingfork.open_aptitudes", InputConstants.Type.KEYSYM, 89, "key.justlevelingfork.title");
+    public static KeyMapping OPEN_RUNICSKILLS_SCREEN = new KeyMapping("key.runicskills.open_skills", InputConstants.Type.KEYSYM, 89, "key.runicskills.title");
 
-    @EventBusSubscriber(modid = JustLevelingFork.MOD_ID, value = {Dist.CLIENT})
+    @EventBusSubscriber(modid = RunicSkills.MOD_ID, value = {Dist.CLIENT})
     public static class ClientForgeEvents {
         @SubscribeEvent
         public static void checkKeyboard(InputEvent.Key event) {
-            if (JustLevelingClient.client.player != null && JustLevelingClient.client.level != null &&
-                    JustLevelingClient.OPEN_JUSTLEVELING_SCREEN.consumeClick())
-                JustLevelingClient.client.setScreen(new JustLevelingScreen());
+            if (RunicSkillsClient.client.player != null && RunicSkillsClient.client.level != null &&
+                    RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN.consumeClick())
+                RunicSkillsClient.client.setScreen(new RunicSkillsScreen());
         }
     }
 
-    @EventBusSubscriber(modid = JustLevelingFork.MOD_ID, value = {Dist.CLIENT}, bus = Mod.EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = RunicSkills.MOD_ID, value = {Dist.CLIENT}, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ClientProxy {
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
@@ -50,20 +51,21 @@ public class JustLevelingClient {
                     )
             );
 
+            ClientCapabilityAccess.register();
             MinecraftForge.EVENT_BUS.register(new RegistryClientEvents());
-            MinecraftForge.EVENT_BUS.register(new OverlayAptitudeGui());
+            MinecraftForge.EVENT_BUS.register(new OverlaySkillGui());
             MinecraftForge.EVENT_BUS.register(new OverlayTitleGui());
 
             if (L2TabsIntegration.isModLoaded()) {
                 event.enqueueWork(() -> {
-                    TabRegistry.registerTab(3500, TabJustLeveling::new, RegistryItems.LEVELING_BOOK, Component.literal("Aptitudes"));
+                    TabRegistry.registerTab(3500, TabRunicSkills::new, RegistryItems.LEVELING_BOOK, Component.literal("Skills"));
                 });
             }
         }
 
         @SubscribeEvent
         public static void registerKeys(RegisterKeyMappingsEvent event) {
-            event.register(JustLevelingClient.OPEN_JUSTLEVELING_SCREEN);
+            event.register(RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN);
         }
     }
 }

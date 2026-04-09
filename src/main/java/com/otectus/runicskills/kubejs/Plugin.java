@@ -1,8 +1,8 @@
-package com.seniors.justlevelingfork.kubejs;
+package com.otectus.runicskills.kubejs;
 
-import com.seniors.justlevelingfork.client.core.ValueType;
-import com.seniors.justlevelingfork.kubejs.events.CustomEvents;
-import com.seniors.justlevelingfork.registry.aptitude.Aptitude;
+import com.otectus.runicskills.client.core.ValueType;
+import com.otectus.runicskills.kubejs.events.CustomEvents;
+import com.otectus.runicskills.registry.skill.Skill;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.script.BindingsEvent;
 
@@ -12,7 +12,7 @@ public class Plugin extends KubeJSPlugin {
     public void registerBindings(BindingsEvent event) {
         super.registerBindings(event);
         event.add("ValueType", ValueType.class);
-        event.add("Aptitude", Aptitude.class);
+        event.add("Skill", Skill.class);
     }
 
     @Override

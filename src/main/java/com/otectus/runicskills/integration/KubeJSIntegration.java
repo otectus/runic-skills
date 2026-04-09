@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.integration;
+package com.otectus.runicskills.integration;
 
-import com.seniors.justlevelingfork.registry.aptitude.Aptitude;
+import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.ModList;
 
@@ -12,19 +12,19 @@ public class KubeJSIntegration {
         return ModList.get().isLoaded("kubejs");
     }
 
-    public boolean postLevelUpEvent(Player player, Aptitude aptitude) {
+    public boolean postLevelUpEvent(Player player, Skill skill) {
 
         // Required in case KubeJS is not present
         // In a future I should move this into a different mod
         try {
-            Class<?> eventClass = Class.forName("com.seniors.justlevelingfork.kubejs.events.LevelUpEvent");
-            Object eventInstance = eventClass.getConstructor(Player.class, Aptitude.class).newInstance(player, aptitude);
+            Class<?> eventClass = Class.forName("com.otectus.runicskills.kubejs.events.LevelUpEvent");
+            Object eventInstance = eventClass.getConstructor(Player.class, Skill.class).newInstance(player, skill);
 
-            Class<?> customEventsClass = Class.forName("com.seniors.justlevelingfork.kubejs.events.CustomEvents");
-            Object aptitudeLevelUpField = customEventsClass.getField("APTITUDE_LEVELUP").get(null);
-            Method postMethod = aptitudeLevelUpField.getClass().getMethod("post", Class.forName("dev.latvian.mods.kubejs.event.EventJS"));
+            Class<?> customEventsClass = Class.forName("com.otectus.runicskills.kubejs.events.CustomEvents");
+            Object skillLevelUpField = customEventsClass.getField("SKILL_LEVELUP").get(null);
+            Method postMethod = skillLevelUpField.getClass().getMethod("post", Class.forName("dev.latvian.mods.kubejs.event.EventJS"));
 
-            postMethod.invoke(aptitudeLevelUpField, eventInstance);
+            postMethod.invoke(skillLevelUpField, eventInstance);
 
             return (boolean) eventClass.getMethod("getCancelled").invoke(eventInstance);
 

@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.network.packet.client;
+package com.otectus.runicskills.network.packet.client;
 
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.network.ServerNetworking;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.ServerNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class DynamicConfigSyncCP {
 
-    private final int aptitudeMaxLevel;
+    private final int skillMaxLevel;
     private final int playersMaxGlobalLevel;
     private final int[] attackPassiveLevels;
     private final int[] attackKnockbackPassiveLevels;
@@ -58,14 +58,14 @@ public class DynamicConfigSyncCP {
     private final int convergenceRequiredLevel;
     private final int safePortRequiredLevel;
     private final int lifeEaterRequiredLevel;
-    private final int wornholeStorageRequiredLevel;
+    private final int wormholeStorageRequiredLevel;
     private final int criticalRollRequiredLevel;
     private final int luckyDropRequiredLevel;
     private final int limitBreakerRequiredLevel;
 
 
     public DynamicConfigSyncCP(){
-        aptitudeMaxLevel = HandlerCommonConfig.HANDLER.instance().aptitudeMaxLevel;
+        skillMaxLevel = HandlerCommonConfig.HANDLER.instance().skillMaxLevel;
         playersMaxGlobalLevel = HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel;
         attackPassiveLevels = HandlerCommonConfig.HANDLER.instance().attackPassiveLevels ;
         attackKnockbackPassiveLevels = HandlerCommonConfig.HANDLER.instance().attackKnockbackPassiveLevels;
@@ -104,14 +104,14 @@ public class DynamicConfigSyncCP {
         convergenceRequiredLevel = HandlerCommonConfig.HANDLER.instance().convergenceRequiredLevel;
         safePortRequiredLevel = HandlerCommonConfig.HANDLER.instance().safePortRequiredLevel;
         lifeEaterRequiredLevel = HandlerCommonConfig.HANDLER.instance().lifeEaterRequiredLevel;
-        wornholeStorageRequiredLevel = HandlerCommonConfig.HANDLER.instance().wornholeStorageRequiredLevel;
+        wormholeStorageRequiredLevel = HandlerCommonConfig.HANDLER.instance().wormholeStorageRequiredLevel;
         criticalRollRequiredLevel = HandlerCommonConfig.HANDLER.instance().criticalRollRequiredLevel;
         luckyDropRequiredLevel = HandlerCommonConfig.HANDLER.instance().luckyDropRequiredLevel;
         limitBreakerRequiredLevel = HandlerCommonConfig.HANDLER.instance().limitBreakerRequiredLevel;
     }
 
     public DynamicConfigSyncCP(FriendlyByteBuf buffer){
-        aptitudeMaxLevel = buffer.readInt();
+        skillMaxLevel = buffer.readInt();
         playersMaxGlobalLevel = buffer.readInt();
         String[] allLevels = buffer.readUtf().split("-");
         int[] levels;
@@ -168,14 +168,14 @@ public class DynamicConfigSyncCP {
         convergenceRequiredLevel = buffer.readInt();
         safePortRequiredLevel = buffer.readInt();
         lifeEaterRequiredLevel = buffer.readInt();
-        wornholeStorageRequiredLevel = buffer.readInt();
+        wormholeStorageRequiredLevel = buffer.readInt();
         criticalRollRequiredLevel = buffer.readInt();
         luckyDropRequiredLevel = buffer.readInt();
         limitBreakerRequiredLevel = buffer.readInt();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeInt(this.aptitudeMaxLevel);
+        buffer.writeInt(this.skillMaxLevel);
         buffer.writeInt(this.playersMaxGlobalLevel);
         String result = convertArraysToString(attackPassiveLevels, attackKnockbackPassiveLevels, maxHealthPassiveLevels, knockbackResistancePassiveLevels, movementSpeedPassiveLevels, projectileDamagePassiveLevels, armorPassiveLevels, armorToughnessPassiveLevels, attackSpeedPassiveLevels, entityReachPassiveLevels, blockReachPassiveLevels, breakSpeedPassiveLevels, beneficialEffectPassiveLevels, magicResistPassiveLevels, criticalDamagePassiveLevels, luckPassiveLevels);
         buffer.writeUtf(result);
@@ -199,7 +199,7 @@ public class DynamicConfigSyncCP {
         buffer.writeInt(convergenceRequiredLevel);
         buffer.writeInt(safePortRequiredLevel);
         buffer.writeInt(lifeEaterRequiredLevel);
-        buffer.writeInt(wornholeStorageRequiredLevel);
+        buffer.writeInt(wormholeStorageRequiredLevel);
         buffer.writeInt(criticalRollRequiredLevel);
         buffer.writeInt(luckyDropRequiredLevel);
         buffer.writeInt(limitBreakerRequiredLevel);
@@ -218,7 +218,7 @@ public class DynamicConfigSyncCP {
         context.enqueueWork(() -> {
             LocalPlayer localPlayer = (Minecraft.getInstance()).player;
             if(localPlayer != null){
-                HandlerCommonConfig.HANDLER.instance().aptitudeMaxLevel = this.aptitudeMaxLevel;
+                HandlerCommonConfig.HANDLER.instance().skillMaxLevel = this.skillMaxLevel;
                 HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel = this.playersMaxGlobalLevel;
                 HandlerCommonConfig.HANDLER.instance().attackPassiveLevels = this.attackPassiveLevels;
                 HandlerCommonConfig.HANDLER.instance().attackKnockbackPassiveLevels = this.attackKnockbackPassiveLevels;
@@ -257,12 +257,12 @@ public class DynamicConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().convergenceRequiredLevel = this.convergenceRequiredLevel;
                 HandlerCommonConfig.HANDLER.instance().safePortRequiredLevel = this.safePortRequiredLevel;
                 HandlerCommonConfig.HANDLER.instance().lifeEaterRequiredLevel = this.lifeEaterRequiredLevel;
-                HandlerCommonConfig.HANDLER.instance().wornholeStorageRequiredLevel = this.wornholeStorageRequiredLevel;
+                HandlerCommonConfig.HANDLER.instance().wormholeStorageRequiredLevel = this.wormholeStorageRequiredLevel;
                 HandlerCommonConfig.HANDLER.instance().criticalRollRequiredLevel = this.criticalRollRequiredLevel;
                 HandlerCommonConfig.HANDLER.instance().luckyDropRequiredLevel = this.luckyDropRequiredLevel;
                 HandlerCommonConfig.HANDLER.instance().limitBreakerRequiredLevel = this.limitBreakerRequiredLevel;
-
-                HandlerCommonConfig.HANDLER.save();
+                // Removed: HandlerCommonConfig.HANDLER.save() — server-synced values must not
+                // overwrite the user's local config file.
             }
         });
         context.setPacketHandled(true);

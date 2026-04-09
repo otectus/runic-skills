@@ -1,10 +1,10 @@
-package com.seniors.justlevelingfork.registry.title;
+package com.otectus.runicskills.registry.title;
 
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.handler.HandlerConfigClient;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.network.packet.client.TitleOverlayCP;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerConfigClient;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.network.packet.client.TitleOverlayCP;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -47,24 +47,24 @@ public class Title {
     }
 
     public boolean getRequirement() {
-        return AptitudeCapability.get().getLockTitle(this);
+        return SkillCapability.getLocal().getLockTitle(this);
     }
 
     public boolean getRequirement(Player player) {
-        return AptitudeCapability.get(player).getLockTitle(this);
+        return SkillCapability.get(player).getLockTitle(this);
     }
 
     public void setRequirement(ServerPlayer serverPlayer, boolean check) {
         if (!getRequirement(serverPlayer) && check) {
             TitleOverlayCP.send(serverPlayer, this);
-            AptitudeCapability.get(serverPlayer).setUnlockTitle(this, true);
-            SyncAptitudeCapabilityCP.send(serverPlayer);
+            SkillCapability.get(serverPlayer).setUnlockTitle(this, true);
+            SyncSkillCapabilityCP.send(serverPlayer);
         }
     }
 
     public List<Component> tooltip() {
         List<Component> list = new ArrayList<>();
-        list.add(Component.empty().append(Component.translatable("title.justlevelingfork.requirement_description").withStyle(ChatFormatting.GOLD)).append(Component.translatable(getDescription()).withStyle(ChatFormatting.GRAY)));
+        list.add(Component.empty().append(Component.translatable("title.runicskills.requirement_description").withStyle(ChatFormatting.GOLD)).append(Component.translatable(getDescription()).withStyle(ChatFormatting.GRAY)));
         if (HandlerConfigClient.showTitleModName.get())
             list.add(Component.literal(Utils.getModName(getMod())).withStyle(ChatFormatting.BLUE).withStyle(ChatFormatting.ITALIC));
         return list;

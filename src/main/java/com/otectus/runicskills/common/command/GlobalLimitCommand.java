@@ -1,11 +1,11 @@
-package com.seniors.justlevelingfork.common.command;
+package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.network.packet.client.DynamicConfigSyncCP;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.packet.client.DynamicConfigSyncCP;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;

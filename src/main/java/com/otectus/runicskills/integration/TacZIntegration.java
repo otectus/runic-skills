@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.integration;
+package com.otectus.runicskills.integration;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.tacz.guns.api.event.common.GunFireEvent;
 import com.tacz.guns.item.ModernKineticGunItem;
 import net.minecraft.network.chat.Component;
@@ -26,14 +26,14 @@ public class TacZIntegration {
                 ModernKineticGunItem gunItem = (ModernKineticGunItem) itemStack.getItem();
                 ResourceLocation gunResourceLocation = gunItem.getGunId(itemStack);
 
-                player.sendSystemMessage(Component.literal(String.format("[JLFork] >> Gun ID: %s", gunResourceLocation)));
+                player.sendSystemMessage(Component.literal(String.format("[Runic Skills] >> Gun ID: %s", gunResourceLocation)));
             }
 
             if (!player.isCreative()) {
                 ItemStack itemStack = event.getGunItemStack();
                 ModernKineticGunItem gunItem = (ModernKineticGunItem) itemStack.getItem();
                 ResourceLocation gunResourceLocation = gunItem.getGunId(itemStack);
-                AptitudeCapability provider = AptitudeCapability.get(player);
+                SkillCapability provider = SkillCapability.get(player);
                 if (!provider.canUseItem(player, gunResourceLocation)) {
                     event.setCanceled(true);
                 }

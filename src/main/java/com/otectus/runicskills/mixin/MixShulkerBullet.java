@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryPerks;
 import com.google.common.base.MoreObjects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -33,7 +33,7 @@ public abstract class MixShulkerBullet {
             this.this$class.doEnchantDamageEffects(livingentity, entity);
             if (entity instanceof LivingEntity livingentity1) {
                 if (livingentity1 instanceof Player player) {
-                    if (RegistrySkills.TURTLE_SHIELD == null || !RegistrySkills.TURTLE_SHIELD.get().isEnabled(player)) {
+                    if (RegistryPerks.TURTLE_SHIELD == null || !RegistryPerks.TURTLE_SHIELD.get().isEnabled(player)) {
                         player.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), MoreObjects.firstNonNull(entity1, this.this$class));
                     }
                 } else {

@@ -1,4 +1,4 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
 import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.api.client.AttackRangeExtensions;

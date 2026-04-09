@@ -1,4 +1,4 @@
-package com.seniors.justlevelingfork.common.command.arguments;
+package com.otectus.runicskills.common.command.arguments;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -14,17 +14,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class AptitudeArgument implements ArgumentType<String> {
+public class SkillArgument implements ArgumentType<String> {
 
-    private static final List<String> EXAMPLES = Arrays.asList("Strength", "Dexterity", "Intelligence", "Magic", "Constitution", "Defense", "Building", "Luck");
+    private static final List<String> EXAMPLES = Arrays.asList("Strength", "Dexterity", "Intelligence", "Magic", "Constitution", "Endurance", "Building", "Wisdom", "Fortune", "Tinkering");
     public static final DynamicCommandExceptionType ERROR_UNKNOWN_TITLE;
 
     static {
-        ERROR_UNKNOWN_TITLE = new DynamicCommandExceptionType(object -> Component.translatable("commands.argument.aptitude.not_found", object));
+        ERROR_UNKNOWN_TITLE = new DynamicCommandExceptionType(object -> Component.translatable("commands.argument.skill.not_found", object));
     }
 
-    public static AptitudeArgument getArgument() {
-        return new AptitudeArgument();
+    public static SkillArgument getArgument() {
+        return new SkillArgument();
     }
 
     @Override

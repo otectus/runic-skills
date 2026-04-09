@@ -1,17 +1,17 @@
-package com.seniors.justlevelingfork.registry;
+package com.otectus.runicskills.registry;
 
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 
 public class RegistryEffects {
-    public static class addEffect {
+    public static class AddEffect {
         public final ServerPlayer player;
         public final boolean toggle;
         public final MobEffect effect;
 
-        public addEffect(ServerPlayer player, boolean toggle, MobEffect mobEffect) {
+        public AddEffect(ServerPlayer player, boolean toggle, MobEffect mobEffect) {
             this.player = player;
             this.toggle = toggle;
             this.effect = mobEffect;

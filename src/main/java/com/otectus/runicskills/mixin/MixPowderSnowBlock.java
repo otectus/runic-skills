@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.PowderSnowBlock;
@@ -14,7 +14,7 @@ public abstract class MixPowderSnowBlock {
     @Inject(method = {"canEntityWalkOnPowderSnow"}, at = {@At("HEAD")}, cancellable = true)
     private static void canEntityWalkOnPowderSnow(Entity entity, CallbackInfoReturnable<Boolean> info) {
         if (entity instanceof Player player) {
-            if (RegistrySkills.SNOW_WALKER != null && RegistrySkills.SNOW_WALKER.get().isEnabled(player))
+            if (RegistryPerks.SNOW_WALKER != null && RegistryPerks.SNOW_WALKER.get().isEnabled(player))
                 info.setReturnValue(Boolean.TRUE);
         }
 

@@ -1,10 +1,12 @@
-package com.seniors.justlevelingfork.network.packet.common;
+package com.otectus.runicskills.network.packet.common;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.registry.RegistryTitles;
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.registry.RegistryTitles;
+import com.otectus.runicskills.registry.title.Title;
 
 import java.util.function.Supplier;
 
@@ -32,16 +34,32 @@ public class SetPlayerTitleSP {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
+            if (player == null) return;
 
-            if (player != null) {
-                AptitudeCapability capability = AptitudeCapability.get(player);
-                Title title = RegistryTitles.getTitle(this.title);
-                capability.setPlayerTitle(title);
+            SkillCapability capability = SkillCapability.get(player);
+            if (capability == null) return;
+
+            Title title = RegistryTitles.getTitle(this.title);
+            if (title == null) {
+                RunicSkills.getLOGGER().warn("SetPlayerTitleSP: unknown title '{}' from {}", this.title, player.getName().getString());
+                return;
+            }
+
+            // Verify the player has actually unlocked this title
+            if (!capability.getLockTitle(title)) {
+                RunicSkills.getLOGGER().warn("SetPlayerTitleSP: {} tried to set locked title '{}'", player.getName().getString(), this.title);
+                return;
+            }
+
+            capability.setPlayerTitle(title);
+
+            if (HandlerCommonConfig.HANDLER.instance().titlesUseCustomName) {
                 player.setCustomName(Component.translatable(title.getKey()));
                 player.refreshDisplayName();
                 player.refreshTabListName();
-                SyncAptitudeCapabilityCP.send(player);
             }
+
+            SyncSkillCapabilityCP.send(player);
         });
         context.setPacketHandled(true);
     }

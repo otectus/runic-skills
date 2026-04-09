@@ -1,10 +1,12 @@
-package com.seniors.justlevelingfork.network.packet.common;
+package com.otectus.runicskills.network.packet.common;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
-import com.seniors.justlevelingfork.network.ServerNetworking;
-import com.seniors.justlevelingfork.network.packet.client.SyncAptitudeCapabilityCP;
-import com.seniors.justlevelingfork.registry.RegistryPassives;
-import com.seniors.justlevelingfork.registry.passive.Passive;
+import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
+import com.otectus.runicskills.registry.RegistryAttributes;
+import com.otectus.runicskills.registry.RegistryPassives;
+import com.otectus.runicskills.registry.RegistryTitles;
+import com.otectus.runicskills.registry.passive.Passive;
 
 import java.util.function.Supplier;
 
@@ -33,11 +35,25 @@ public class PassiveLevelUpSP {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
-                AptitudeCapability capability = AptitudeCapability.get(player);
+                SkillCapability capability = SkillCapability.get(player);
+                if (capability == null) return;
 
                 Passive passive = RegistryPassives.getPassive(this.passive);
+                if (passive == null) return;
+
+                // H1: Validate passive isn't at max level
+                int currentLevel = capability.getPassiveLevel(passive);
+                if (currentLevel >= passive.levelsRequired.length) return;
+
+                // H1: Validate skill level meets requirement for next passive tier
+                int requiredSkillLevel = passive.levelsRequired[currentLevel];
+                int actualSkillLevel = capability.getSkillLevel(passive.getSkill());
+                if (actualSkillLevel < requiredSkillLevel) return;
+
                 capability.addPassiveLevel(passive, 1);
-                SyncAptitudeCapabilityCP.send(player);
+                RegistryAttributes.modifierAttributes(player); // H8: Recalculate attributes after passive change
+                RegistryTitles.syncTitles(player); // P5: Sync titles on passive level change
+                SyncSkillCapabilityCP.send(player);
             }
         });
         context.setPacketHandled(true);

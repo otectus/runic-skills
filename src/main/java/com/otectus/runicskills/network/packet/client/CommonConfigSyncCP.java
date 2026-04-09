@@ -1,9 +1,8 @@
-package com.seniors.justlevelingfork.network.packet.client;
+package com.otectus.runicskills.network.packet.client;
 
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.handler.HandlerConvergenceItemsConfig;
-import com.seniors.justlevelingfork.network.ServerNetworking;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.handler.HandlerConvergenceItemsConfig;
+import com.otectus.runicskills.network.ServerNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,8 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -22,7 +19,7 @@ import java.util.function.Supplier;
  */
 public class CommonConfigSyncCP {
 
-    private final int aptitudeFirstCostLevel;
+    private final int skillFirstCostLevel;
     private final boolean dropLockedItems;
     private final boolean displayTitlesAsPrefix;
 
@@ -75,8 +72,29 @@ public class CommonConfigSyncCP {
     private final float limitBreakerAmplifier;
     private final int limitBreakerProbability;
 
+    // Iron's Spells 'n Spellbooks Integration
+    private final boolean ironsEnableSchoolGating;
+    private final int ironsBaseSpellGatingLevel;
+    private final float ironsSpellLevelScaleFactor;
+    private final float ironsSpellPowerValue;
+    private final float ironsMaxManaValue;
+    private final float ironsCastTimeReductionValue;
+    private final int manaEfficiencyPercent;
+    private final int spellEchoProbability;
+    private final int arcaneShieldPercent;
+    private final boolean ironsEnableSpellDamageScaling;
+    private final float ironsSpellDamageScalePerLevel;
+    private final boolean ironsEnableCooldownReduction;
+    private final float ironsCooldownReductionPerLevel;
+    private final float ironsMaxCooldownReduction;
+    private final boolean ironsEnableSpellLevelBonus;
+    private final int ironsSpellLevelBonusThreshold;
+    private final int ironsSpellLevelBonusThreshold2;
+    private final boolean ironsEnableManaRegen;
+    private final float ironsManaRegenPerMagicLevel;
+
     public CommonConfigSyncCP() {
-        aptitudeFirstCostLevel = HandlerCommonConfig.HANDLER.instance().aptitudeFirstCostLevel;
+        skillFirstCostLevel = HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel;
         dropLockedItems = HandlerCommonConfig.HANDLER.instance().dropLockedItems;
         displayTitlesAsPrefix = HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix;
         attackDamageValue = HandlerCommonConfig.HANDLER.instance().attackDamageValue;
@@ -124,11 +142,30 @@ public class CommonConfigSyncCP {
         luckyDropProbability = HandlerCommonConfig.HANDLER.instance().luckyDropProbability;
         limitBreakerAmplifier = HandlerCommonConfig.HANDLER.instance().limitBreakerAmplifier;
         limitBreakerProbability = HandlerCommonConfig.HANDLER.instance().limitBreakerProbability;
+        ironsEnableSchoolGating = HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolGating;
+        ironsBaseSpellGatingLevel = HandlerCommonConfig.HANDLER.instance().ironsBaseSpellGatingLevel;
+        ironsSpellLevelScaleFactor = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelScaleFactor;
+        ironsSpellPowerValue = HandlerCommonConfig.HANDLER.instance().ironsSpellPowerValue;
+        ironsMaxManaValue = HandlerCommonConfig.HANDLER.instance().ironsMaxManaValue;
+        ironsCastTimeReductionValue = HandlerCommonConfig.HANDLER.instance().ironsCastTimeReductionValue;
+        manaEfficiencyPercent = HandlerCommonConfig.HANDLER.instance().manaEfficiencyPercent;
+        spellEchoProbability = HandlerCommonConfig.HANDLER.instance().spellEchoProbability;
+        arcaneShieldPercent = HandlerCommonConfig.HANDLER.instance().arcaneShieldPercent;
+        ironsEnableSpellDamageScaling = HandlerCommonConfig.HANDLER.instance().ironsEnableSpellDamageScaling;
+        ironsSpellDamageScalePerLevel = HandlerCommonConfig.HANDLER.instance().ironsSpellDamageScalePerLevel;
+        ironsEnableCooldownReduction = HandlerCommonConfig.HANDLER.instance().ironsEnableCooldownReduction;
+        ironsCooldownReductionPerLevel = HandlerCommonConfig.HANDLER.instance().ironsCooldownReductionPerLevel;
+        ironsMaxCooldownReduction = HandlerCommonConfig.HANDLER.instance().ironsMaxCooldownReduction;
+        ironsEnableSpellLevelBonus = HandlerCommonConfig.HANDLER.instance().ironsEnableSpellLevelBonus;
+        ironsSpellLevelBonusThreshold = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold;
+        ironsSpellLevelBonusThreshold2 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2;
+        ironsEnableManaRegen = HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen;
+        ironsManaRegenPerMagicLevel = HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel;
     }
 
     @SuppressWarnings("unchecked")
     public CommonConfigSyncCP(FriendlyByteBuf buffer) {
-        aptitudeFirstCostLevel = buffer.readInt();
+        skillFirstCostLevel = buffer.readInt();
         dropLockedItems = buffer.readBoolean();
         displayTitlesAsPrefix = buffer.readBoolean();
         attackDamageValue = buffer.readFloat();
@@ -167,32 +204,10 @@ public class CommonConfigSyncCP {
         obsidianSmasherModifier = buffer.readFloat();
 
         treasureHunterProbability = buffer.readInt();
-
-        List<String> tempTreasureHunterItemList = new ArrayList<>();
-        int treasureHunterItemListSize = buffer.readInt();
-        byte[] treasureListBytes = new byte[treasureHunterItemListSize];
-        buffer.readBytes(treasureListBytes);
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(treasureListBytes);
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-            tempTreasureHunterItemList = (List<String>) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            JustLevelingFork.getLOGGER().error(">> Error reading config from the server. Exception: {}", e.getMessage());
-        }
-        treasureHunterItemList = tempTreasureHunterItemList;
+        treasureHunterItemList = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
 
         convergenceProbability = buffer.readInt();
-
-        List<String> tempConvergenceItemList = new ArrayList<>();
-        int convergenceItemListSize = buffer.readInt();
-        byte[] convergenceListBytes = new byte[convergenceItemListSize];
-        buffer.readBytes(convergenceListBytes);
-        byteArrayInputStream = new ByteArrayInputStream(convergenceListBytes);
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-            tempConvergenceItemList = (List<String>) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            JustLevelingFork.getLOGGER().error(">> Error reading config from the server. Exception: {}", e.getMessage());
-        }
-        convergenceItemList = tempConvergenceItemList;
+        convergenceItemList = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
 
         lifeEaterModifier = buffer.readFloat();
         criticalRoll6Modifier = buffer.readFloat();
@@ -201,10 +216,29 @@ public class CommonConfigSyncCP {
         luckyDropProbability = buffer.readInt();
         limitBreakerAmplifier = buffer.readFloat();
         limitBreakerProbability = buffer.readInt();
+        ironsEnableSchoolGating = buffer.readBoolean();
+        ironsBaseSpellGatingLevel = buffer.readInt();
+        ironsSpellLevelScaleFactor = buffer.readFloat();
+        ironsSpellPowerValue = buffer.readFloat();
+        ironsMaxManaValue = buffer.readFloat();
+        ironsCastTimeReductionValue = buffer.readFloat();
+        manaEfficiencyPercent = buffer.readInt();
+        spellEchoProbability = buffer.readInt();
+        arcaneShieldPercent = buffer.readInt();
+        ironsEnableSpellDamageScaling = buffer.readBoolean();
+        ironsSpellDamageScalePerLevel = buffer.readFloat();
+        ironsEnableCooldownReduction = buffer.readBoolean();
+        ironsCooldownReductionPerLevel = buffer.readFloat();
+        ironsMaxCooldownReduction = buffer.readFloat();
+        ironsEnableSpellLevelBonus = buffer.readBoolean();
+        ironsSpellLevelBonusThreshold = buffer.readInt();
+        ironsSpellLevelBonusThreshold2 = buffer.readInt();
+        ironsEnableManaRegen = buffer.readBoolean();
+        ironsManaRegenPerMagicLevel = buffer.readFloat();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeInt(this.aptitudeFirstCostLevel);
+        buffer.writeInt(this.skillFirstCostLevel);
         buffer.writeBoolean(this.dropLockedItems);
         buffer.writeBoolean(this.displayTitlesAsPrefix);
         buffer.writeFloat(this.attackDamageValue);
@@ -242,28 +276,10 @@ public class CommonConfigSyncCP {
         buffer.writeFloat(this.alchemyManipulationAmplifier);
         buffer.writeFloat(this.obsidianSmasherModifier);
         buffer.writeInt(this.treasureHunterProbability);
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            objectOutputStream.writeObject(this.treasureHunterItemList);
-        } catch (IOException e) {
-            JustLevelingFork.getLOGGER().error(">> Error sending configuration to the client. Exception: {}", e.getMessage());
-        }
-        byte[] treasureHunterItemListBytes = byteArrayOutputStream.toByteArray();
-        buffer.writeInt(treasureHunterItemListBytes.length);
-        buffer.writeBytes(treasureHunterItemListBytes);
+        buffer.writeCollection(this.treasureHunterItemList, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
 
         buffer.writeInt(this.convergenceProbability);
-
-        byteArrayOutputStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            objectOutputStream.writeObject(this.convergenceItemList);
-        } catch (IOException e) {
-            JustLevelingFork.getLOGGER().error(">> Error sending configuration to the client. Exception: {}", e.getMessage());
-        }
-        byte[] convergenceItemListBytes = byteArrayOutputStream.toByteArray();
-        buffer.writeInt(convergenceItemListBytes.length);
-        buffer.writeBytes(convergenceItemListBytes);
+        buffer.writeCollection(this.convergenceItemList, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
 
         buffer.writeFloat(this.lifeEaterModifier);
         buffer.writeFloat(this.criticalRoll6Modifier);
@@ -272,6 +288,25 @@ public class CommonConfigSyncCP {
         buffer.writeInt(this.luckyDropProbability);
         buffer.writeFloat(this.limitBreakerAmplifier);
         buffer.writeInt(this.limitBreakerProbability);
+        buffer.writeBoolean(this.ironsEnableSchoolGating);
+        buffer.writeInt(this.ironsBaseSpellGatingLevel);
+        buffer.writeFloat(this.ironsSpellLevelScaleFactor);
+        buffer.writeFloat(this.ironsSpellPowerValue);
+        buffer.writeFloat(this.ironsMaxManaValue);
+        buffer.writeFloat(this.ironsCastTimeReductionValue);
+        buffer.writeInt(this.manaEfficiencyPercent);
+        buffer.writeInt(this.spellEchoProbability);
+        buffer.writeInt(this.arcaneShieldPercent);
+        buffer.writeBoolean(this.ironsEnableSpellDamageScaling);
+        buffer.writeFloat(this.ironsSpellDamageScalePerLevel);
+        buffer.writeBoolean(this.ironsEnableCooldownReduction);
+        buffer.writeFloat(this.ironsCooldownReductionPerLevel);
+        buffer.writeFloat(this.ironsMaxCooldownReduction);
+        buffer.writeBoolean(this.ironsEnableSpellLevelBonus);
+        buffer.writeInt(this.ironsSpellLevelBonusThreshold);
+        buffer.writeInt(this.ironsSpellLevelBonusThreshold2);
+        buffer.writeBoolean(this.ironsEnableManaRegen);
+        buffer.writeFloat(this.ironsManaRegenPerMagicLevel);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
@@ -279,7 +314,7 @@ public class CommonConfigSyncCP {
         context.enqueueWork(() -> {
             LocalPlayer localPlayer = (Minecraft.getInstance()).player;
             if(localPlayer != null){
-                HandlerCommonConfig.HANDLER.instance().aptitudeFirstCostLevel = this.aptitudeFirstCostLevel;
+                HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel = this.skillFirstCostLevel;
                 HandlerCommonConfig.HANDLER.instance().dropLockedItems = this.dropLockedItems;
                 HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix = displayTitlesAsPrefix;
                 HandlerCommonConfig.HANDLER.instance().attackDamageValue = this.attackDamageValue;
@@ -327,8 +362,27 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().luckyDropProbability = this.luckyDropProbability;
                 HandlerCommonConfig.HANDLER.instance().limitBreakerAmplifier = this.limitBreakerAmplifier;
                 HandlerCommonConfig.HANDLER.instance().limitBreakerProbability = this.limitBreakerProbability;
-
-                HandlerCommonConfig.HANDLER.save();
+                HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolGating = this.ironsEnableSchoolGating;
+                HandlerCommonConfig.HANDLER.instance().ironsBaseSpellGatingLevel = this.ironsBaseSpellGatingLevel;
+                HandlerCommonConfig.HANDLER.instance().ironsSpellLevelScaleFactor = this.ironsSpellLevelScaleFactor;
+                HandlerCommonConfig.HANDLER.instance().ironsSpellPowerValue = this.ironsSpellPowerValue;
+                HandlerCommonConfig.HANDLER.instance().ironsMaxManaValue = this.ironsMaxManaValue;
+                HandlerCommonConfig.HANDLER.instance().ironsCastTimeReductionValue = this.ironsCastTimeReductionValue;
+                HandlerCommonConfig.HANDLER.instance().manaEfficiencyPercent = this.manaEfficiencyPercent;
+                HandlerCommonConfig.HANDLER.instance().spellEchoProbability = this.spellEchoProbability;
+                HandlerCommonConfig.HANDLER.instance().arcaneShieldPercent = this.arcaneShieldPercent;
+                HandlerCommonConfig.HANDLER.instance().ironsEnableSpellDamageScaling = this.ironsEnableSpellDamageScaling;
+                HandlerCommonConfig.HANDLER.instance().ironsSpellDamageScalePerLevel = this.ironsSpellDamageScalePerLevel;
+                HandlerCommonConfig.HANDLER.instance().ironsEnableCooldownReduction = this.ironsEnableCooldownReduction;
+                HandlerCommonConfig.HANDLER.instance().ironsCooldownReductionPerLevel = this.ironsCooldownReductionPerLevel;
+                HandlerCommonConfig.HANDLER.instance().ironsMaxCooldownReduction = this.ironsMaxCooldownReduction;
+                HandlerCommonConfig.HANDLER.instance().ironsEnableSpellLevelBonus = this.ironsEnableSpellLevelBonus;
+                HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold = this.ironsSpellLevelBonusThreshold;
+                HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2 = this.ironsSpellLevelBonusThreshold2;
+                HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen = this.ironsEnableManaRegen;
+                HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel = this.ironsManaRegenPerMagicLevel;
+                // Removed: HandlerCommonConfig.HANDLER.save() — server-synced values must not
+                // overwrite the user's local config file.
             }
         });
         context.setPacketHandled(true);

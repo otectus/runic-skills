@@ -1,10 +1,10 @@
-package com.seniors.justlevelingfork.client.gui;
+package com.otectus.runicskills.client.gui;
 
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.client.core.Tabs;
-import com.seniors.justlevelingfork.client.core.Utils;
-import com.seniors.justlevelingfork.client.screen.JustLevelingScreen;
-import com.seniors.justlevelingfork.registry.RegistryItems;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.client.core.Tabs;
+import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.client.screen.RunicSkillsScreen;
+import com.otectus.runicskills.registry.RegistryItems;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class DrawTabs {
-    public static final ResourceLocation TEXTURE = new ResourceLocation(JustLevelingFork.MOD_ID, "textures/gui/container/tabs.png");
+    public static final ResourceLocation TEXTURE = new ResourceLocation(RunicSkills.MOD_ID, "textures/gui/container/tabs.png");
     public static final Minecraft client = Minecraft.getInstance();
     public static ArrayList<Tabs> tabList = new ArrayList<>();
     public static boolean isMouseCheck = false;
@@ -29,22 +29,43 @@ public class DrawTabs {
             isMouseCheck = false;
             tabList = new ArrayList<>();
             tabList.add(new Tabs("inventory", Utils.playerHead(), new InventoryScreen(client.player), screen instanceof InventoryScreen, Component.translatable("container.inventory")));
-            tabList.add(new Tabs("leveling", RegistryItems.LEVELING_BOOK.get().getDefaultInstance(), new JustLevelingScreen(), screen instanceof JustLevelingScreen, Component.translatable("screen.aptitude.title")));
+            tabList.add(new Tabs("leveling", RegistryItems.LEVELING_BOOK.get().getDefaultInstance(), new RunicSkillsScreen(), screen instanceof RunicSkillsScreen, Component.translatable("screen.skill.title")));
         }
         for (int i = 0; i < tabList.size(); i++) {
             Tabs type = tabList.get(i);
-            int x = (client.getWindow().getGuiScaledWidth() - textureWidth) / 2 + i * 27 + recipe;
-            int y = (client.getWindow().getGuiScaledHeight() - textureHeight) / 2 - 28;
-            renderWidget(matrixStack, type, x, y, mouseX, mouseY);
+            int x = tabX(textureWidth, i, recipe);
+            int y = tabY(textureHeight);
+            renderTabVisual(matrixStack, type, x, y);
+        }
+        for (int i = 0; i < tabList.size(); i++) {
+            Tabs type = tabList.get(i);
+            int x = tabX(textureWidth, i, recipe);
+            int y = tabY(textureHeight);
+            if (Utils.checkMouse(x, y, mouseX, mouseY, 26, 32)) {
+                Utils.drawToolTip(matrixStack, type.getComponentName(), mouseX, mouseY);
+                if (!type.isScreen()) {
+                    isMouseCheck = true;
+                    if (checkMouse) {
+                        setScreen(i);
+                        checkMouse = false;
+                    }
+                }
+            }
         }
     }
 
-    public static void renderWidget(GuiGraphics matrixStack, Tabs type, int x, int y, int mouseX, int mouseY) {
+    private static int tabX(int textureWidth, int index, int recipe) {
+        return (client.getWindow().getGuiScaledWidth() - textureWidth) / 2 + index * 27 + recipe;
+    }
+
+    private static int tabY(int textureHeight) {
+        return (client.getWindow().getGuiScaledHeight() - textureHeight) / 2 - 28;
+    }
+
+    private static void renderTabVisual(GuiGraphics matrixStack, Tabs type, int x, int y) {
         matrixStack.pose().pushPose();
         RenderSystem.enableBlend();
         matrixStack.blit(TEXTURE, x, y, type.getName().equals("inventory") ? 0 : 26, type.isScreen() ? 32 : 0, 26, 32);
-        if (Utils.checkMouse(x, y, mouseX, mouseY, 26, 32))
-            Utils.drawToolTip(matrixStack, type.getComponentName(), mouseX, mouseY);
         float scale = (type.getItemStack().getItem() instanceof net.minecraft.world.item.StandingAndWallBlockItem) ? 1.125F : 1.0F;
         float newX = (x + 13.0F - 8.0F) / scale;
         float newY = (y + 15.0F - 8.0F + (type.isScreen() ? 0.0F : 2.0F)) / scale;
@@ -53,15 +74,6 @@ public class DrawTabs {
         matrixStack.renderItem(type.getItemStack(), (int) newX, (int) newY);
         matrixStack.pose().popPose();
         matrixStack.pose().popPose();
-
-        if (Utils.checkMouse(x, y, mouseX, mouseY, 26, 32) && !type.isScreen()) {
-            Utils.drawToolTip(matrixStack, type.getComponentName(), mouseX, mouseY);
-            isMouseCheck = true;
-            if (checkMouse) {
-                setScreen(tabList.indexOf(type));
-                checkMouse = false;
-            }
-        }
     }
 
     public static void setScreen(int i) {
@@ -77,5 +89,3 @@ public class DrawTabs {
         checkMouse = false;
     }
 }
-
-

@@ -75,7 +75,11 @@ do
     ls=$( ls -ld "$app_path" )
     link=${ls#*' -> '}
     case $link in             #(
-      }
+      /*)   app_path=$link ;;                                         #(
+      *)    app_path=$APP_HOME$link ;;
+    esac
+done
+
 # Discard cd standard output in case $CDPATH is set (https://github.com/gradle/gradle/issues/25036)
 APP_HOME=$( cd "${APP_HOME:-./}" > /dev/null && pwd -P ) || exit
 

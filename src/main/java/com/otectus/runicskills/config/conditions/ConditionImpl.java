@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.config.conditions;
+package com.otectus.runicskills.config.conditions;
 
-import com.seniors.justlevelingfork.config.models.TitleModel;
+import com.otectus.runicskills.config.models.TitleModel;
 import net.minecraft.server.level.ServerPlayer;
 
 public abstract class ConditionImpl<T> {

@@ -1,4 +1,4 @@
- package com.seniors.justlevelingfork.client.core;
+ package com.otectus.runicskills.client.core;
  
  public enum ValueType {
    MODIFIER,

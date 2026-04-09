@@ -1,9 +1,9 @@
-package com.seniors.justlevelingfork.config.models;
+package com.otectus.runicskills.config.models;
 
-import com.seniors.justlevelingfork.JustLevelingFork;
-import com.seniors.justlevelingfork.config.conditions.ConditionImpl;
-import com.seniors.justlevelingfork.handler.HandlerConditions;
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.config.conditions.ConditionImpl;
+import com.otectus.runicskills.handler.HandlerConditions;
+import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.registries.DeferredRegister;
@@ -59,12 +59,12 @@ public class TitleModel {
         // If the title should be given by default then lets ignore conditions.
         if (Default) return true;
 
-        byte passedConditions = 0;
+        int passedConditions = 0;
         for (String condition : Conditions) {
             String[] split = condition.split("/");
 
             if (split.length != 4) {
-                JustLevelingFork.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (General)", TitleId);
+                RunicSkills.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (General)", TitleId);
                 continue;
             }
             EComparator comparator;
@@ -72,17 +72,22 @@ public class TitleModel {
             try {
                 comparator = EComparator.valueOf(split[2].toUpperCase());
             } catch (IllegalArgumentException e) {
-                JustLevelingFork.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (Comparator)", TitleId);
+                RunicSkills.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (Comparator)", TitleId);
                 continue;
             }
 
             Optional<ConditionImpl<?>> conditionImpl = HandlerConditions.getConditionByName(split[0]);
             if(conditionImpl.isEmpty()){
-                JustLevelingFork.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (Condition type or Comparator)", TitleId);
+                RunicSkills.getLOGGER().error(">> Error! Title {} have a wrong formatted condition. (Condition type or Comparator)", TitleId);
                 continue;
             }
 
-            conditionImpl.get().ProcessVariable(split[1], serverPlayer);
+            try {
+                conditionImpl.get().ProcessVariable(split[1], serverPlayer);
+            } catch (Exception e) {
+                RunicSkills.getLOGGER().error(">> Error! Title {} failed to process condition variable '{}': {}", TitleId, condition, e.getMessage());
+                continue;
+            }
             if(conditionImpl.get().MeetCondition(split[3], comparator)){
                 passedConditions++;
             }
@@ -97,7 +102,7 @@ public class TitleModel {
     }
 
     private Title register(String name, boolean requirement) {
-        ResourceLocation key = new ResourceLocation(JustLevelingFork.MOD_ID, name);
+        ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
         return new Title(key, requirement, this.HideRequirements);
     }
 
@@ -114,7 +119,7 @@ public class TitleModel {
 
     public enum EConditionType {
 
-        Aptitude,
+        Skill,
         Stat,
         EntityKilled,
         Special

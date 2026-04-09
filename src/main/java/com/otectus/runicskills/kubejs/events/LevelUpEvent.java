@@ -1,26 +1,26 @@
-package com.seniors.justlevelingfork.kubejs.events;
+package com.otectus.runicskills.kubejs.events;
 
-import com.seniors.justlevelingfork.registry.aptitude.Aptitude;
+import com.otectus.runicskills.registry.skill.Skill;
 import dev.latvian.mods.kubejs.event.EventJS;
 import net.minecraft.world.entity.player.Player;
 
 public class LevelUpEvent extends EventJS {
     private final Player player;
-    private final Aptitude aptitude;
+    private final Skill skill;
 
     private boolean cancelled = false;
 
-    public LevelUpEvent(Player player, Aptitude aptitude) {
+    public LevelUpEvent(Player player, Skill skill) {
         this.player = player;
-        this.aptitude = aptitude;
+        this.skill = skill;
     }
 
     public Player getPlayer() {
         return player;
     }
 
-    public Aptitude getAptitude(){
-        return aptitude;
+    public Skill getSkill(){
+        return skill;
     }
 
     public boolean getCancelled(){

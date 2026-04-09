@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.client.core;
+package com.otectus.runicskills.client.core;
 
-import com.seniors.justlevelingfork.registry.title.Title;
+import com.otectus.runicskills.registry.title.Title;
 
 import java.util.LinkedList;
 

@@ -1,42 +1,43 @@
-package com.seniors.justlevelingfork.handler;
+package com.otectus.runicskills.handler;
 
-import com.seniors.justlevelingfork.config.conditions.*;
+import com.otectus.runicskills.config.conditions.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class HandlerConditions {
 
-    private static final List<ConditionImpl<?>> Conditions = new ArrayList<>();
+    private static final Map<String, Supplier<ConditionImpl<?>>> ConditionFactories = new LinkedHashMap<>();
 
     public static void registerDefaults(){
-        registerCondition(new AptitudeCondition());
-        registerCondition(new DimensionCondition());
-        registerCondition(new EntityKilledCondition());
-        registerCondition(new EntityKilledByCondition());
-        registerCondition(new StatCondition());
-        registerCondition(new BlockMinedCondition());
-        registerCondition(new ItemCraftedCondition());
-        registerCondition(new ItemUsedCondition());
-        registerCondition(new ItemBrokenCondition());
-        registerCondition(new ItemPickedUpCondition());
-        registerCondition(new ItemDroppedCondition());
-        registerCondition(new AdvancementCondition());
+        registerCondition("Skill", SkillCondition::new);
+        registerCondition("Special", DimensionCondition::new);
+        registerCondition("EntityKilled", EntityKilledCondition::new);
+        registerCondition("EntiyKilledBy", EntityKilledByCondition::new);
+        registerCondition("Stat", StatCondition::new);
+        registerCondition("BlockMined", BlockMinedCondition::new);
+        registerCondition("ItemCrafted", ItemCraftedCondition::new);
+        registerCondition("ItemUsed", ItemUsedCondition::new);
+        registerCondition("ItemBroken", ItemBrokenCondition::new);
+        registerCondition("ItemPickedUp", ItemPickedUpCondition::new);
+        registerCondition("ItemDropped", ItemDroppedCondition::new);
+        registerCondition("Advancement", AdvancementCondition::new);
+        registerCondition("GlobalLevel", GlobalLevelCondition::new);
     }
 
-    public static void registerCondition(ConditionImpl<?> condition){
-        if(Conditions.stream().anyMatch(c -> c.getConditionName().equalsIgnoreCase(condition.getConditionName()))){
-            throw new IllegalArgumentException(String.format("Condition with name %s already exists!", condition.getConditionName()));
+    public static void registerCondition(String name, Supplier<ConditionImpl<?>> factory){
+        if(ConditionFactories.containsKey(name.toLowerCase())){
+            throw new IllegalArgumentException(String.format("Condition with name %s already exists!", name));
         }
 
-        Conditions.add(condition);
+        ConditionFactories.put(name.toLowerCase(), factory);
     }
 
     public static Optional<ConditionImpl<?>> getConditionByName(String conditionName){
-        return Conditions.stream().filter(c -> c.getConditionName().equalsIgnoreCase(conditionName)).findFirst();
+        Supplier<ConditionImpl<?>> factory = ConditionFactories.get(conditionName.toLowerCase());
+        if (factory == null) return Optional.empty();
+        return Optional.of(factory.get());
     }
-
-
-
 }

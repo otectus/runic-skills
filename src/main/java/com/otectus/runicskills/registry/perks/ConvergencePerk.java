@@ -1,16 +1,16 @@
-package com.seniors.justlevelingfork.registry.skills;
+package com.otectus.runicskills.registry.perks;
 
-import com.seniors.justlevelingfork.handler.HandlerConvergenceItemsConfig;
-import net.minecraft.resources.ResourceLocation;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.config.ConfigParser;
+import com.otectus.runicskills.handler.HandlerConvergenceItemsConfig;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConvergenceSkill {
+public class ConvergencePerk {
     public static ArrayList<ItemDrops> items = null;
 
     public static ItemStack drop(ItemStack getCrafting) {
@@ -47,17 +47,19 @@ public class ConvergenceSkill {
         items = new ArrayList<>();
 
         for (String getValue : configList) {
-            String getCraftingItem = getValue.split("#")[0];
-            String getCraftingItemNamespace = getCraftingItem.split(":")[0];
-            String getCraftingItemPath = getCraftingItem.split(":")[1];
-            Item craftingItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(getCraftingItemNamespace, getCraftingItemPath));
+            try {
+                var parts = ConfigParser.splitExact(getValue, "#", 2, "Convergence");
+                if (parts.isEmpty()) continue;
 
-            String getConvergenceItem = getValue.split("#")[1];
-            String getConvergenceItemNamespace = getConvergenceItem.split(":")[0];
-            String getConvergenceItemPath = getConvergenceItem.split(":")[1];
-            Item convergenceItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(getConvergenceItemNamespace, getConvergenceItemPath));
+                var craftingItem = ConfigParser.parseItem(parts.get()[0], "Convergence");
+                var convergenceItem = ConfigParser.parseItem(parts.get()[1], "Convergence");
 
-            items.add(new ItemDrops(craftingItem, convergenceItem));
+                if (craftingItem.isPresent() && convergenceItem.isPresent()) {
+                    items.add(new ItemDrops(craftingItem.get(), convergenceItem.get()));
+                }
+            } catch (Exception e) {
+                RunicSkills.getLOGGER().warn(">> Skipping invalid convergence entry '{}': {}", getValue, e.getMessage());
+            }
         }
         return items;
     }

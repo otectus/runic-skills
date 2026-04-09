@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.config.controller;
+package com.otectus.runicskills.config.controller;
 
-import com.seniors.justlevelingfork.config.models.LockItem;
+import com.otectus.runicskills.config.models.LockItem;
 import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.gui.controllers.dropdown.AbstractDropdownController;
 
@@ -17,6 +17,8 @@ public class LockItemController extends AbstractDropdownController<LockItem> {
 
     @Override
     public void setFromString(String value) {
-        option.requestSet(LockItem.getLockItemFromString(value, option.pendingValue()));
+        // No-op: free-text entry on the lock-item dropdown is not supported.
+        // The user selects entries from the dropdown list; typing arbitrary text
+        // leaves the current value unchanged.
     }
 }

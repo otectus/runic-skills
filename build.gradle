@@ -1,5 +1,3 @@
-import net.darkhax.curseforgegradle.TaskPublishCurseForge
-
 buildscript {
     repositories {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
@@ -16,27 +14,6 @@ plugins {
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id "com.modrinth.minotaur" version "2.+"
-    id 'net.darkhax.curseforgegradle' version '1.1.25'
-}
-
-modrinth {
-    token = System.getenv("MODRINTH_TOKEN") // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
-    projectId = "justleveling-fork" // This can be the project ID or the slug. Either will work!
-    versionNumber = "${project.mod_version}" // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType = "release" // This is the default -- can also be `beta` or `alpha`
-    uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.20.1"] // Must be an array, even with only one version
-    loaders = ["forge"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-    dependencies { // A special DSL for creating dependencies
-        // scope.type
-        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
-        // The type can either be `project` or `version`
-        required.project "curios" // Creates a new required dependency on Fabric API
-        required.project "cloth-config"
-
-        optional.version "yacl", "3.4.2+1.20.1-forge" // Creates a new optional dependency on this specific version of Sodium
-    }
 }
 
 apply plugin: 'org.spongepowered.mixin'
@@ -141,6 +118,7 @@ mixin {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    mavenCentral()
     // Cloth Config API
     maven {
         url = "https://maven.shedaniel.me/"
@@ -211,14 +189,14 @@ dependencies {
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    // KubeJS
-    implementation fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
-    implementation fg.deobf("dev.latvian.mods:rhino-forge:${rhino_version}")
+    // KubeJS (via Modrinth Maven - saps.dev no longer hosts these)
+    implementation fg.deobf("maven.modrinth:kubejs:${kubejs_version}+forge")
+    implementation fg.deobf("maven.modrinth:rhino:${rhino_version}+forge")
     implementation fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
 
-    // L2
-    compileOnly fg.deobf("dev.xkmc.l2library:l2library:2.4.28")
-    compileOnly fg.deobf("dev.xkmc.l2tabs:l2tabs:0.3.1")
+    // L2 (L2Library via Modrinth Maven, L2Tabs from local libs/)
+    compileOnly fg.deobf("maven.modrinth:l2library:2.4.28")
+    compileOnly fg.deobf("dev.xkmc.l2tabs:l2tabs:0.3.3")
 
     // ClothConfig implementation (Required by BetterCombat)
     implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.118")
@@ -236,9 +214,7 @@ dependencies {
     runtimeOnly(implementation fg.deobf("dev.isxander:yet-another-config-lib:${yacl_version}"))
     compileOnly(fg.deobf("dev.isxander:yet-another-config-lib:${yacl_version}"))
 
-    // Tetra compatibility
-    compileOnly fg.deobf("curse.maven:tetra-289712:${tetra_version}")
-    compileOnly fg.deobf("curse.maven:tetra-351914:${mutil_version}")
+    // Tetra compatibility — removed
 
     // PointBlank compatibility
     compileOnly fg.deobf("curse.maven:vics-point-blank-961053:5541544")
@@ -253,8 +229,16 @@ dependencies {
     // Scorched Guns 2 compatibility
     compileOnly fg.deobf("curse.maven:scorched-guns-802940:5630448")
 
+    // Apotheosis / Apothic Attributes compatibility
+    compileOnly fg.deobf("curse.maven:placebo-283644:6274231")
+    compileOnly fg.deobf("curse.maven:apothic-attributes-898963:5634071")
+    compileOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
+
     // Iron's Spells 'n Spellbooks compatibility
     compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:5539243")
+
+    // Ars Nouveau compatibility
+    compileOnly fg.deobf("curse.maven:ars-nouveau-401955:6688854")
     runtimeOnly fg.deobf("curse.maven:caelus-308989:5281700")
 
     // Gecko Lib compatibility
@@ -263,6 +247,14 @@ dependencies {
     // QuiltMC Parsers
     implementation("org.quiltmc.parsers:json:0.2.1")
     implementation("org.quiltmc.parsers:gson:0.2.1")
+
+    // JUnit 5 for unit tests (Track 5a regression coverage)
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -306,25 +298,71 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-tasks.register('publishCurseForge', TaskPublishCurseForge) {
+// Sided-import enforcement: forbids `import net.minecraft.client.*` and other client-only
+// packages outside of the directories explicitly designated as client-only. The Forge unified
+// jar puts client classes on the classpath of every source set, so this lint task is the only
+// way to make sided separation a build-time invariant.
+tasks.register('checkSidedImports') {
+    group = 'verification'
+    description = 'Fails the build if non-client code imports net.minecraft.client.* or similar'
 
-    // This token is used to authenticate with CurseForge. It should be handled
-    // with the same level of care and security as your actual password. You
-    // should never share your token with an untrusted source or publish it
-    // publicly to GitHub or embed it within a project. The best practice is to
-    // store this token in an environment variable or a build secret.
-    apiToken = System.getenv("CURSEFORGE_TOKEN")
+    // Directories whose contents are allowed to import client classes.
+    def clientAllowlist = [
+            'src/main/java/com/otectus/runicskills/client',
+            'src/main/java/com/otectus/runicskills/mixin/client',
+            // Clientbound packet handlers — invoked exclusively on the client via
+            // DistExecutor / NetworkEvent.Context. Sided cleanup of these is tracked
+            // under Track 2 of the review remediation.
+            'src/main/java/com/otectus/runicskills/network/packet/client',
+    ].collect { file(it).canonicalPath }
+    // Top-level files that are explicitly client-side entrypoints.
+    def clientFiles = [
+            file('src/main/java/com/otectus/runicskills/RunicSkillsClient.java').canonicalPath,
+    ]
 
-    // Tells CurseForgeGradle to publish the output of the jar task. This will
-    // return a UploadArtifact object that can be used to further configure the
-    // file.
-    def mainFile = upload('1073400', jar)
-    mainFile.releaseType = "release"
-    mainFile.displayName = "JLFork-${project.mod_version} ${project.minecraft_version}"
-    mainFile.changelog = ""
-    mainFile.addModLoader("Forge")
-    mainFile.addGameVersion("${project.minecraft_version}")
-    mainFile.addRequirement("cloth-config")
-    mainFile.addRequirement("curios")
-    mainFile.addRequirement("yacl")
+    // Mixins declared in the `client` array of runicskills.mixins.json are only loaded
+    // by Mixin on the client distribution, even though they currently live in the flat
+    // mixin/ package alongside common mixins. Pull the list from the manifest so the
+    // allowlist stays in sync with reality.
+    def mixinJson = file('src/main/resources/runicskills.mixins.json')
+    def mixinPkgDir = file('src/main/java/com/otectus/runicskills/mixin')
+    if (mixinJson.exists()) {
+        def parsed = new groovy.json.JsonSlurper().parseText(mixinJson.text)
+        (parsed.client ?: []).each { name ->
+            // Strip any sub-package prefix; mixin entries are just simple class names here.
+            def simple = (name as String).tokenize('.').last()
+            clientFiles << new File(mixinPkgDir, "${simple}.java").canonicalPath
+        }
+    }
+
+    def forbidden = [
+            ~/^\s*import\s+net\.minecraft\.client\..*/,
+            ~/^\s*import\s+com\.mojang\.blaze3d\..*/,
+    ]
+
+    // Configuration-time inputs so the task is up-to-date aware.
+    def javaRoot = file('src/main/java/com/otectus/runicskills')
+    inputs.dir javaRoot
+    inputs.file mixinJson
+
+    doLast {
+        def violations = []
+        javaRoot.eachFileRecurse { f ->
+            if (!f.isFile() || !f.name.endsWith('.java')) return
+            def path = f.canonicalPath
+            if (clientFiles.contains(path)) return
+            if (clientAllowlist.any { path == it || path.startsWith(it + File.separator) }) return
+            f.eachLine { line, n ->
+                if (forbidden.any { line ==~ it }) {
+                    violations << "${f.path}:${n}: ${line.trim()}"
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Sided-import violations (move file under client/ or remove the import):\n  " +
+                            violations.join('\n  '))
+        }
+    }
 }
+tasks.named('check').configure { dependsOn 'checkSidedImports' }

@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.handler;
+package com.otectus.runicskills.handler;
 
-import com.seniors.justlevelingfork.registry.skills.ConvergenceSkill;
-import com.seniors.justlevelingfork.registry.skills.TreasureHunterSkill;
+import com.otectus.runicskills.registry.perks.ConvergencePerk;
+import com.otectus.runicskills.registry.perks.TreasureHunterPerk;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.http.annotation.Obsolete;
 
@@ -13,9 +13,9 @@ public class HandlerConfigCommon {
 
     public static final ForgeConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.IntValue aptitudeMaxLevel;
+    public static final ForgeConfigSpec.IntValue skillMaxLevel;
 
-    public static final ForgeConfigSpec.IntValue aptitudeFirstCostLevel;
+    public static final ForgeConfigSpec.IntValue skillFirstCostLevel;
 
     public static final ForgeConfigSpec.BooleanValue showPotionsHud;
 
@@ -72,8 +72,8 @@ public class HandlerConfigCommon {
     public static final ForgeConfigSpec.IntValue luckyDropProbability;
     public static final ForgeConfigSpec.DoubleValue limitBreakerAmplifier;
     public static final ForgeConfigSpec.IntValue limitBreakerProbability;
-    public static int defaultAptitudeMaxLevel = 32;
-    public static int defaultAptitudeFirstCostLevel = 5;
+    public static int defaultSkillMaxLevel = 32;
+    public static int defaultSkillFirstCostLevel = 5;
 
     public static boolean defaultShowPotionsHud = true;
 
@@ -126,14 +126,14 @@ public class HandlerConfigCommon {
     static {
 
         CONFIG.comment("THIS CONFIGURATION ISN'T USED ANYMORE, ANY CHANGE HERE WILL HAVE NO IMPACT!");
-        CONFIG.comment("USE justleveling-fork.common.json5 FOR COMMON CONFIG");
-        CONFIG.comment("USE justleveling-fork.lockItems.json5 FOR LOCK ITEMS");
+        CONFIG.comment("USE runicskills.common.json5 FOR COMMON CONFIG");
+        CONFIG.comment("USE runicskills.lockItems.json5 FOR LOCK ITEMS");
 
         CONFIG.push("general");
-        aptitudeMaxLevel = CONFIG.comment("Aptitudes Max Level [default: " + defaultAptitudeMaxLevel + "]").defineInRange("aptitudeMaxLevel", defaultAptitudeMaxLevel, 2, 1000);
-        aptitudeFirstCostLevel = CONFIG.comment("First aptitudes level cost: [default: " + defaultAptitudeFirstCostLevel + "]").defineInRange("aptitudeFirstCostLevel", defaultAptitudeFirstCostLevel, 1, 1000);
-        showPotionsHud = CONFIG.comment("Show potions overlay over skills [default: " + defaultShowPotionsHud + "]").define("showPotionsHud", defaultShowPotionsHud);
-        lockItemList = CONFIG.comment("Lock item list: (see the wiki if you wanna know how to add a unlock item)").defineList("lockItemList", HandlerAptitude.defaultLockItemList, list -> list instanceof String);
+        skillMaxLevel = CONFIG.comment("Skills Max Level [default: " + defaultSkillMaxLevel + "]").defineInRange("skillMaxLevel", defaultSkillMaxLevel, 2, 1000);
+        skillFirstCostLevel = CONFIG.comment("First skills level cost: [default: " + defaultSkillFirstCostLevel + "]").defineInRange("skillFirstCostLevel", defaultSkillFirstCostLevel, 1, 1000);
+        showPotionsHud = CONFIG.comment("Show potions overlay over perks [default: " + defaultShowPotionsHud + "]").define("showPotionsHud", defaultShowPotionsHud);
+        lockItemList = CONFIG.comment("Lock item list: (see the wiki if you wanna know how to add a unlock item)").defineList("lockItemList", HandlerSkill.defaultLockItemList, list -> list instanceof String);
         logErrors = CONFIG.comment("If true, when populating the items a extra check will be made, if a item have a incorrect format it will log the line and continue loading without crashing. Only set to true while adding items.").define("logErrors", true);
         closeCraftingMenuOnFail = CONFIG.comment("If true, when trying to craft a non unlocked item, it will close the crafting the menu.").define("closeCraftingMenu", true);
         CONFIG.pop();
@@ -157,36 +157,36 @@ public class HandlerConfigCommon {
         luckValue = CONFIG.comment("Luck passive value at max level [default: " + defaultLuckValue + "]").defineInRange("luckValue", defaultLuckValue, 0.0D, 10000.0D);
         CONFIG.pop();
 
-        CONFIG.push("skills");
-        oneHandedAmplifier = CONFIG.comment("One Handed skill damage amplifier increase [default: " + defaultOneHandedAmplifier + "]").defineInRange("oneHandedAmplifier", defaultOneHandedAmplifier, 0.0D, 10000.0D);
-        fightingSpiritBoost = CONFIG.comment("Fighting Spirit skill strength potion effect boost [default: " + defaultFightingSpiritBoost + "]").defineInRange("fightingSpiritBoost", defaultFightingSpiritBoost, 1, 255);
-        fightingSpiritDuration = CONFIG.comment("Fighting Spirit skill strength potion effect duration [default: " + defaultFightingSpiritDuration + "]").defineInRange("fightingSpiritDuration", defaultFightingSpiritDuration, 1, 3600);
-        berserkerPercent = CONFIG.comment("Berserker skill health percent [default: " + defaultBerserkerPercent + "]").defineInRange("berserkerPercent", defaultBerserkerPercent, 0, 100);
-        athleticsModifier = CONFIG.comment("Athletics skill air modifier multiply [default: " + defaultAthleticsModifier + "]").defineInRange("athleticsModifier", defaultAthleticsModifier, 0.0D, 500.0D);
-        lionHeartPercent = CONFIG.comment("Lion Heart skill negative potion effect percent [default: " + defaultLionHeartPercent + "]").defineInRange("lionHeartPercent", defaultLionHeartPercent, 0, 100);
-        quickRepositionBoost = CONFIG.comment("Quick Reposition skill speed potion effect boost [default: " + defaultQuickRepositionBoost + "]").defineInRange("quickRepositionBoost", defaultQuickRepositionBoost, 1, 255);
-        quickRepositionDuration = CONFIG.comment("Quick Reposition skill speed potion effect duration [default: " + defaultQuickRepositionDuration + "]").defineInRange("quickRepositionDuration", defaultQuickRepositionDuration, 1, 3600);
-        stealthMasteryUnSneakPercent = CONFIG.comment("Stealth Mastery skill enemy vision percent [default: " + defaultStealthMasteryUnSneakPercent + "]").defineInRange("stealthMasteryUnSneakPercent", defaultStealthMasteryUnSneakPercent, 0, 100);
-        stealthMasterySneakPercent = CONFIG.comment("Stealth Mastery skill enemy vision percent when player is sneaking [default: " + defaultStealthMasterySneakPercent + "]").defineInRange("stealthMasterySneakPercent", defaultStealthMasterySneakPercent, 0, 100);
-        stealthMasteryModifier = CONFIG.comment("Stealth Mastery skill arrow damage modifier multiply [default: " + defaultStealthMasteryModifier + "]").defineInRange("stealthMasteryModifier", defaultStealthMasteryModifier, 0.0D, 100.0D);
-        counterAttackDuration = CONFIG.comment("Counter Attack skill duration to return the attack [default: " + defaultCounterAttackDuration + "]").defineInRange("counterAttackDuration", defaultCounterAttackDuration, 0, 3600);
-        counterAttackPercent = CONFIG.comment("Counter Attack skill damage returned percent [default: " + defaultCounterAttackPercent + "]").defineInRange("counterAttackPercent", defaultCounterAttackPercent, 0, 500);
+        CONFIG.push("perks");
+        oneHandedAmplifier = CONFIG.comment("One Handed perk damage amplifier increase [default: " + defaultOneHandedAmplifier + "]").defineInRange("oneHandedAmplifier", defaultOneHandedAmplifier, 0.0D, 10000.0D);
+        fightingSpiritBoost = CONFIG.comment("Fighting Spirit perk strength potion effect boost [default: " + defaultFightingSpiritBoost + "]").defineInRange("fightingSpiritBoost", defaultFightingSpiritBoost, 1, 255);
+        fightingSpiritDuration = CONFIG.comment("Fighting Spirit perk strength potion effect duration [default: " + defaultFightingSpiritDuration + "]").defineInRange("fightingSpiritDuration", defaultFightingSpiritDuration, 1, 3600);
+        berserkerPercent = CONFIG.comment("Berserker perk health percent [default: " + defaultBerserkerPercent + "]").defineInRange("berserkerPercent", defaultBerserkerPercent, 0, 100);
+        athleticsModifier = CONFIG.comment("Athletics perk air modifier multiply [default: " + defaultAthleticsModifier + "]").defineInRange("athleticsModifier", defaultAthleticsModifier, 0.0D, 500.0D);
+        lionHeartPercent = CONFIG.comment("Lion Heart perk negative potion effect percent [default: " + defaultLionHeartPercent + "]").defineInRange("lionHeartPercent", defaultLionHeartPercent, 0, 100);
+        quickRepositionBoost = CONFIG.comment("Quick Reposition perk speed potion effect boost [default: " + defaultQuickRepositionBoost + "]").defineInRange("quickRepositionBoost", defaultQuickRepositionBoost, 1, 255);
+        quickRepositionDuration = CONFIG.comment("Quick Reposition perk speed potion effect duration [default: " + defaultQuickRepositionDuration + "]").defineInRange("quickRepositionDuration", defaultQuickRepositionDuration, 1, 3600);
+        stealthMasteryUnSneakPercent = CONFIG.comment("Stealth Mastery perk enemy vision percent [default: " + defaultStealthMasteryUnSneakPercent + "]").defineInRange("stealthMasteryUnSneakPercent", defaultStealthMasteryUnSneakPercent, 0, 100);
+        stealthMasterySneakPercent = CONFIG.comment("Stealth Mastery perk enemy vision percent when player is sneaking [default: " + defaultStealthMasterySneakPercent + "]").defineInRange("stealthMasterySneakPercent", defaultStealthMasterySneakPercent, 0, 100);
+        stealthMasteryModifier = CONFIG.comment("Stealth Mastery perk arrow damage modifier multiply [default: " + defaultStealthMasteryModifier + "]").defineInRange("stealthMasteryModifier", defaultStealthMasteryModifier, 0.0D, 100.0D);
+        counterAttackDuration = CONFIG.comment("Counter Attack perk duration to return the attack [default: " + defaultCounterAttackDuration + "]").defineInRange("counterAttackDuration", defaultCounterAttackDuration, 0, 3600);
+        counterAttackPercent = CONFIG.comment("Counter Attack perk damage returned percent [default: " + defaultCounterAttackPercent + "]").defineInRange("counterAttackPercent", defaultCounterAttackPercent, 0, 500);
         diamondSkinBoost = CONFIG.comment("Diamond Skin defence potion effect boost [default: " + defaultDiamondSkinBoost + "]").defineInRange("diamondSkinBoost", defaultDiamondSkinBoost, 1, 255);
-        diamondSkinSneakAmplifier = CONFIG.comment("Diamond skill defense amplifier increase when player is sneaking [default: " + defaultDiamondSkinSneakAmplifier + "]").defineInRange("diamondSkinSneakAmplifier", defaultDiamondSkinSneakAmplifier, 0.0D, 10000.0D);
-        hagglerPercent = CONFIG.comment("Haggler skill villager trades cost percent reduced [default: " + defaultHagglerPercent + "]").defineInRange("hagglerPercent", defaultHagglerPercent, 0, 100);
-        alchemyManipulationAmplifier = CONFIG.comment("Expert Alchemist skill potion amplifier increase [default: " + defaultAlchemyManipulationAmplifier + "]").defineInRange("alchemyManipulationAmplifier", defaultAlchemyManipulationAmplifier, 0.0D, 10000.0D);
-        obsidianSmasherModifier = CONFIG.comment("Obsidian Smasher skill obsidian breaking speed modifier multiply [default: " + defaultObsidianSmasherModifier + "]").defineInRange("obsidianSmasherModifier", defaultObsidianSmasherModifier, 0.0D, 100.0D);
-        treasureHunterProbability = CONFIG.comment("Treasure Hunter skill probability chance to get a treasure in dirt, example: 1/500 it means that 1 out of every 500 (0,2%) dirt blocks you can get a treasure. [default: " + defaultTreasureHunterProbability + "]").defineInRange("treasureHunterProbability", defaultTreasureHunterProbability, 1, 10000);
-        treasureHunterItemList = CONFIG.comment("Treasure Hunter skill treasures item list: (see the wiki if you wanna know how to add a treasure item)").defineList("treasureHunterItemList", TreasureHunterSkill.defaultItemList, list -> list instanceof String);
-        convergenceProbability = CONFIG.comment("Convergence skill probability chance to obtain part of the spent material, example: 1/8 it means that 1 out of every 8 (12,5%) crafted items you can obtain a part of the spent material. [default: " + defaultConvergenceProbability + "]").defineInRange("convergenceProbability", defaultConvergenceProbability, 1, 10000);
-        convergenceItemList = CONFIG.comment("Convergence skill convergence item list: (see the wiki if you wanna know how to add a convergence item)").defineList("convergenceItemList", ConvergenceSkill.defaultItemList, list -> list instanceof String);
-        lifeEaterAmplifier = CONFIG.comment("Life Eater skill life steal amplifier increase [default: " + defaultLifeEaterAmplifier + "]").defineInRange("lifeEaterModifier", defaultLifeEaterAmplifier, 0.0D, 10000.0D);
-        criticalRoll6Modifier = CONFIG.comment("Critical Roll skill critic modifier multiply when you roll a 6 [default: " + defaultCriticalRoll6Modifier + "]").defineInRange("criticalRoll6Modifier", defaultCriticalRoll6Modifier, 0.0D, 100.0D);
-        criticalRoll1Probability = CONFIG.comment("Critical Roll skill critic probability reduce when you roll a 1, example: 1/3 it means that 1 out of every 3 (33%) the critic damage will be reduced. [default: " + defaultCriticalRoll1Probability + "]").defineInRange("criticalRoll1Probability", defaultCriticalRoll1Probability, 1, 10000);
-        luckyDropModifier = CONFIG.comment("Lucky Drop skill mob drops modifier multiply [default: " + defaultLuckyDropModifier + "]").defineInRange("luckyDropModifier", defaultLuckyDropModifier, 0.0D, 10000.0D);
-        luckyDropProbability = CONFIG.comment("Lucky Drop skill mobs drops probability, example: 1/5 it means that 1 out of every 5 (20%) the mob drops will be multiplied. [default: " + defaultLuckyDropProbability + "]").defineInRange("luckyDropProbability", defaultLuckyDropProbability, 1, 10000);
-        limitBreakerAmplifier = CONFIG.comment("Limit Breaker skill deal damage amplifier [default: " + defaultLimitBreakerAmplifier + "]").defineInRange("limitBreakerAmplifier", defaultLimitBreakerAmplifier, 0.0D, 10000.0D);
-        limitBreakerProbability = CONFIG.comment("Limit Breaker skill deal damage probability, example: 1/100 it means that 1 in 100 (1%) to deal damage amplified. [default: " + defaultLimitBreakerProbability + "]").defineInRange("limitBreakerProbability", defaultLimitBreakerProbability, 1, 10000);
+        diamondSkinSneakAmplifier = CONFIG.comment("Diamond perk defense amplifier increase when player is sneaking [default: " + defaultDiamondSkinSneakAmplifier + "]").defineInRange("diamondSkinSneakAmplifier", defaultDiamondSkinSneakAmplifier, 0.0D, 10000.0D);
+        hagglerPercent = CONFIG.comment("Haggler perk villager trades cost percent reduced [default: " + defaultHagglerPercent + "]").defineInRange("hagglerPercent", defaultHagglerPercent, 0, 100);
+        alchemyManipulationAmplifier = CONFIG.comment("Expert Alchemist perk potion amplifier increase [default: " + defaultAlchemyManipulationAmplifier + "]").defineInRange("alchemyManipulationAmplifier", defaultAlchemyManipulationAmplifier, 0.0D, 10000.0D);
+        obsidianSmasherModifier = CONFIG.comment("Obsidian Smasher perk obsidian breaking speed modifier multiply [default: " + defaultObsidianSmasherModifier + "]").defineInRange("obsidianSmasherModifier", defaultObsidianSmasherModifier, 0.0D, 100.0D);
+        treasureHunterProbability = CONFIG.comment("Treasure Hunter perk probability chance to get a treasure in dirt, example: 1/500 it means that 1 out of every 500 (0,2%) dirt blocks you can get a treasure. [default: " + defaultTreasureHunterProbability + "]").defineInRange("treasureHunterProbability", defaultTreasureHunterProbability, 1, 10000);
+        treasureHunterItemList = CONFIG.comment("Treasure Hunter perk treasures item list: (see the wiki if you wanna know how to add a treasure item)").defineList("treasureHunterItemList", TreasureHunterPerk.defaultItemList, list -> list instanceof String);
+        convergenceProbability = CONFIG.comment("Convergence perk probability chance to obtain part of the spent material, example: 1/8 it means that 1 out of every 8 (12,5%) crafted items you can obtain a part of the spent material. [default: " + defaultConvergenceProbability + "]").defineInRange("convergenceProbability", defaultConvergenceProbability, 1, 10000);
+        convergenceItemList = CONFIG.comment("Convergence perk convergence item list: (see the wiki if you wanna know how to add a convergence item)").defineList("convergenceItemList", ConvergencePerk.defaultItemList, list -> list instanceof String);
+        lifeEaterAmplifier = CONFIG.comment("Life Eater perk life steal amplifier increase [default: " + defaultLifeEaterAmplifier + "]").defineInRange("lifeEaterModifier", defaultLifeEaterAmplifier, 0.0D, 10000.0D);
+        criticalRoll6Modifier = CONFIG.comment("Critical Roll perk critic modifier multiply when you roll a 6 [default: " + defaultCriticalRoll6Modifier + "]").defineInRange("criticalRoll6Modifier", defaultCriticalRoll6Modifier, 0.0D, 100.0D);
+        criticalRoll1Probability = CONFIG.comment("Critical Roll perk critic probability reduce when you roll a 1, example: 1/3 it means that 1 out of every 3 (33%) the critic damage will be reduced. [default: " + defaultCriticalRoll1Probability + "]").defineInRange("criticalRoll1Probability", defaultCriticalRoll1Probability, 1, 10000);
+        luckyDropModifier = CONFIG.comment("Lucky Drop perk mob drops modifier multiply [default: " + defaultLuckyDropModifier + "]").defineInRange("luckyDropModifier", defaultLuckyDropModifier, 0.0D, 10000.0D);
+        luckyDropProbability = CONFIG.comment("Lucky Drop perk mobs drops probability, example: 1/5 it means that 1 out of every 5 (20%) the mob drops will be multiplied. [default: " + defaultLuckyDropProbability + "]").defineInRange("luckyDropProbability", defaultLuckyDropProbability, 1, 10000);
+        limitBreakerAmplifier = CONFIG.comment("Limit Breaker perk deal damage amplifier [default: " + defaultLimitBreakerAmplifier + "]").defineInRange("limitBreakerAmplifier", defaultLimitBreakerAmplifier, 0.0D, 10000.0D);
+        limitBreakerProbability = CONFIG.comment("Limit Breaker perk deal damage probability, example: 1/100 it means that 1 in 100 (1%) to deal damage amplified. [default: " + defaultLimitBreakerProbability + "]").defineInRange("limitBreakerProbability", defaultLimitBreakerProbability, 1, 10000);
         CONFIG.pop();
 
         SPEC = CONFIG.build();

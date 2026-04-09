@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.trading.MerchantOffer;
@@ -10,20 +10,30 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin({Villager.class})
-public abstract class MixVillager {
-    @Unique
-    private final Villager this$class = (Villager) (Object) this;
+import java.util.IdentityHashMap;
 
-    @Inject(method = {"updateSpecialPrices"}, at = {@At("TAIL")})
-    public void updateSpecialPrices(Player player, CallbackInfo info) {
-        if (player != null && RegistrySkills.HAGGLER != null && RegistrySkills.HAGGLER.get().isEnabled(player))
-            for (MerchantOffer merchantoffer : this.this$class.getOffers()) {
-                double d0 = RegistrySkills.HAGGLER.get().getValue()[0] / 100.0D;
-                int j = (int) Math.floor(d0 * merchantoffer.getBaseCostA().getCount());
-                merchantoffer.addToSpecialPriceDiff(-Math.max(j, 1));
-            }
+@Mixin(Villager.class)
+public abstract class MixVillager {
+
+    /** Tracks the per-offer discount delta we applied so we can undo it before recomputing. */
+    @Unique
+    private final IdentityHashMap<MerchantOffer, Integer> runicskills$hagglerDeltas = new IdentityHashMap<>();
+
+    @Inject(method = "updateSpecialPrices", at = @At("HEAD"))
+    private void runicskills$resetHagglerDiscount(Player player, CallbackInfo info) {
+        runicskills$hagglerDeltas.forEach((offer, delta) -> offer.addToSpecialPriceDiff(-delta));
+        runicskills$hagglerDeltas.clear();
+    }
+
+    @Inject(method = "updateSpecialPrices", at = @At("TAIL"))
+    private void runicskills$applyHagglerDiscount(Player player, CallbackInfo info) {
+        if (player == null || RegistryPerks.HAGGLER == null || !RegistryPerks.HAGGLER.get().isEnabled(player)) return;
+        Villager self = (Villager) (Object) this;
+        double pct = RegistryPerks.HAGGLER.get().getValue()[0] / 100.0D;
+        for (MerchantOffer offer : self.getOffers()) {
+            int discount = Math.max((int) Math.floor(pct * offer.getBaseCostA().getCount()), 1);
+            offer.addToSpecialPriceDiff(-discount);
+            runicskills$hagglerDeltas.put(offer, -discount);
+        }
     }
 }
-
-

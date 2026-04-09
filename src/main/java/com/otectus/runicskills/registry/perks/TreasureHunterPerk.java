@@ -1,23 +1,28 @@
-package com.seniors.justlevelingfork.registry.skills;
+package com.otectus.runicskills.registry.perks;
 
-import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.seniors.justlevelingfork.handler.HandlerCommonConfig;
-import com.seniors.justlevelingfork.registry.RegistrySkills;
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.config.ConfigParser;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TreasureHunterSkill {
+public class TreasureHunterPerk {
+    private static ArrayList<List<BlockDrops>> cachedItems = null;
+
+    public static void invalidateCache() {
+        cachedItems = null;
+    }
+
     public static ItemStack drop() {
-        int randomizer = (int) Math.floor(Math.random() * RegistrySkills.TREASURE_HUNTER.get().getValue()[0]);
+        int randomizer = (int) Math.floor(Math.random() * RegistryPerks.TREASURE_HUNTER.get().getValue()[0]);
         ItemStack stack = null;
         for (int i = 0; i < getItems().size(); i++) {
             List<BlockDrops> drops = getItems().get(i);
@@ -36,69 +41,78 @@ public class TreasureHunterSkill {
     }
 
     public static ArrayList<List<BlockDrops>> getItems() {
+        if (cachedItems != null) return cachedItems;
+
         ArrayList<List<BlockDrops>> dropList = new ArrayList<>();
         List<? extends String> configList = HandlerCommonConfig.HANDLER.instance().treasureHunterItemList;
 
         for (String getValue : configList) {
-            List<BlockDrops> getItems = new ArrayList<>();
-            if (getValue.contains("List[") && getValue.charAt(getValue.length() - 1) == ']') {
-                String newValue = getValue.split("List\\[")[1].substring(0, getValue.split("List\\[")[1].length() - 1);
-                int itemsSize = 1;
-                for (int i = 0; i < newValue.length(); ) {
-                    if (newValue.charAt(i) == ';') itemsSize++;
-                    i++;
-                }
-
-                Item[] arrayOfItem = new Item[itemsSize];
-                for (int j = 0; j < itemsSize; j++) {
-                    CompoundTag compoundTag = new CompoundTag();
-                    String resource = newValue.split(";")[j];
-                    String str1 = String.valueOf(resource.charAt(resource.length() - 1));
-                    boolean bool = (resource.contains("{") && str1.equals("}"));
-                    String str2 = bool ? resource.split("\\{")[0] : resource;
-
-                    if (bool) {
-                        String nbt = "{" + resource.split("\\{", 2)[1];
-                        try {
-                            compoundTag = TagParser.parseTag(nbt);
-                        } catch (CommandSyntaxException e) {
-                            throw new JsonSyntaxException("Invalid NBT Entry: " + e);
-                        }
+            try {
+                List<BlockDrops> getItems = new ArrayList<>();
+                if (getValue.contains("List[") && getValue.charAt(getValue.length() - 1) == ']') {
+                    String newValue = getValue.split("List\\[")[1].substring(0, getValue.split("List\\[")[1].length() - 1);
+                    int itemsSize = 1;
+                    for (int i = 0; i < newValue.length(); ) {
+                        if (newValue.charAt(i) == ';') itemsSize++;
+                        i++;
                     }
 
-                    String str3 = str2.split(":")[0];
-                    String str4 = str2.split(":")[1];
-                    arrayOfItem[j] = ForgeRegistries.ITEMS.getValue(new ResourceLocation(str3, str4));
+                    Item[] arrayOfItem = new Item[itemsSize];
+                    for (int j = 0; j < itemsSize; j++) {
+                        CompoundTag compoundTag = new CompoundTag();
+                        String resource = newValue.split(";")[j];
+                        String str1 = String.valueOf(resource.charAt(resource.length() - 1));
+                        boolean bool = (resource.contains("{") && str1.equals("}"));
+                        String str2 = bool ? resource.split("\\{")[0] : resource;
 
-                    getItems.add(new BlockDrops(arrayOfItem, compoundTag));
+                        if (bool) {
+                            String nbt = "{" + resource.split("\\{", 2)[1];
+                            try {
+                                compoundTag = TagParser.parseTag(nbt);
+                            } catch (CommandSyntaxException e) {
+                                RunicSkills.getLOGGER().warn(">> Skipping treasure hunter entry with invalid NBT '{}': {}", getValue, e.getMessage());
+                                continue;
+                            }
+                        }
+
+                        var parsedItem = ConfigParser.parseItem(str2, "TreasureHunter");
+                        if (parsedItem.isEmpty()) continue;
+                        arrayOfItem[j] = parsedItem.get();
+
+                        getItems.add(new BlockDrops(arrayOfItem, compoundTag));
+                    }
+                    dropList.add(getItems);
+                    continue;
                 }
+                CompoundTag compound = new CompoundTag();
+                String lastChar = String.valueOf(getValue.charAt(getValue.length() - 1));
+                boolean containsNBT = (getValue.contains("{") && lastChar.equals("}"));
+                String newResource = containsNBT ? getValue.split("\\{")[0] : getValue;
+
+                if (containsNBT) {
+                    String nbt = "{" + getValue.split("\\{", 2)[1];
+                    try {
+                        compound = TagParser.parseTag(nbt);
+                    } catch (CommandSyntaxException e) {
+                        RunicSkills.getLOGGER().warn(">> Skipping treasure hunter entry with invalid NBT '{}': {}", getValue, e.getMessage());
+                        continue;
+                    }
+                }
+
+                var parsedItem = ConfigParser.parseItem(newResource, "TreasureHunter");
+                if (parsedItem.isEmpty()) continue;
+                Item[] getStack = new Item[1];
+                getStack[0] = parsedItem.get();
+
+                getItems.add(new BlockDrops(getStack, compound));
                 dropList.add(getItems);
-                continue;
+            } catch (Exception e) {
+                RunicSkills.getLOGGER().warn(">> Skipping invalid treasure hunter entry '{}': {}", getValue, e.getMessage());
             }
-            CompoundTag compound = new CompoundTag();
-            String lastChar = String.valueOf(getValue.charAt(getValue.length() - 1));
-            boolean containsNBT = (getValue.contains("{") && lastChar.equals("}"));
-            String newResource = containsNBT ? getValue.split("\\{")[0] : getValue;
-
-            if (containsNBT) {
-                String nbt = "{" + getValue.split("\\{", 2)[1];
-                try {
-                    compound = TagParser.parseTag(nbt);
-                } catch (CommandSyntaxException e) {
-                    throw new JsonSyntaxException("Invalid NBT Entry: " + e);
-                }
-            }
-
-            String namespace = newResource.split(":")[0];
-            String path = newResource.split(":")[1];
-            Item[] getStack = new Item[1];
-            getStack[0] = ForgeRegistries.ITEMS.getValue(new ResourceLocation(namespace, path));
-
-            getItems.add(new BlockDrops(getStack, compound));
-            dropList.add(getItems);
         }
 
 
+        cachedItems = dropList;
         return dropList;
     }
 

@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.mixin;
+package com.otectus.runicskills.mixin;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
+import com.otectus.runicskills.common.capability.SkillCapability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,7 +22,7 @@ public abstract class MixCraftingMenu {
             ItemStack itemStack = resultContainer.getItem(0);
 
             if (!serverPlayer.isCreative()) {
-                AptitudeCapability provider = AptitudeCapability.get(player);
+                SkillCapability provider = SkillCapability.get(player);
 
                 if (provider != null && !provider.canUseItem(serverPlayer, itemStack)){
                     resultContainer.setItem(0, ItemStack.EMPTY);

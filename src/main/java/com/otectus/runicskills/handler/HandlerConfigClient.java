@@ -1,7 +1,7 @@
-package com.seniors.justlevelingfork.handler;
+package com.otectus.runicskills.handler;
 
-import com.seniors.justlevelingfork.client.core.SortPassives;
-import com.seniors.justlevelingfork.client.core.SortSkills;
+import com.otectus.runicskills.client.core.SortPassives;
+import com.otectus.runicskills.client.core.SortPerks;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class HandlerConfigClient {
@@ -9,27 +9,27 @@ public class HandlerConfigClient {
 
     public static final ForgeConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue showCriticalRollSkillOverlay;
-    public static final ForgeConfigSpec.BooleanValue showLuckyDropSkillOverlay;
-    public static final ForgeConfigSpec.BooleanValue showSkillModName;
+    public static final ForgeConfigSpec.BooleanValue showCriticalRollPerkOverlay;
+    public static final ForgeConfigSpec.BooleanValue showLuckyDropPerkOverlay;
+    public static final ForgeConfigSpec.BooleanValue showPerkModName;
     public static final ForgeConfigSpec.BooleanValue showTitleModName;
     public static final ForgeConfigSpec.EnumValue<SortPassives> sortPassive;
-    public static final ForgeConfigSpec.EnumValue<SortSkills> sortSkill;
-    public static boolean defaultShowCriticalRollSkillOverlay = true;
-    public static boolean defaultShowLuckDropSkillOverlay = true;
-    public static boolean defaultShowSkillModName = false;
+    public static final ForgeConfigSpec.EnumValue<SortPerks> sortPerk;
+    public static boolean defaultShowCriticalRollPerkOverlay = true;
+    public static boolean defaultShowLuckDropPerkOverlay = true;
+    public static boolean defaultShowPerkModName = false;
     public static boolean defaultShowTitleModName = false;
     public static SortPassives defaultSortPassive = SortPassives.ByName;
-    public static SortSkills defaultSortSkill = SortSkills.ByLevel;
+    public static SortPerks defaultSortPerk = SortPerks.ByLevel;
 
     static {
         CONFIG.push("general");
-        showCriticalRollSkillOverlay = CONFIG.define("showCriticalRollSkillOverlay", defaultShowCriticalRollSkillOverlay);
-        showLuckyDropSkillOverlay = CONFIG.define("showLuckyDropSkillOverlay", defaultShowLuckDropSkillOverlay);
-        showSkillModName = CONFIG.define("showSkillModName", defaultShowSkillModName);
+        showCriticalRollPerkOverlay = CONFIG.define("showCriticalRollPerkOverlay", defaultShowCriticalRollPerkOverlay);
+        showLuckyDropPerkOverlay = CONFIG.define("showLuckyDropPerkOverlay", defaultShowLuckDropPerkOverlay);
+        showPerkModName = CONFIG.define("showPerkModName", defaultShowPerkModName);
         showTitleModName = CONFIG.define("showTitleModName", defaultShowTitleModName);
         sortPassive = CONFIG.defineEnum("sortPassive", defaultSortPassive);
-        sortSkill = CONFIG.defineEnum("sortSkill", defaultSortSkill);
+        sortPerk = CONFIG.defineEnum("sortPerk", defaultSortPerk);
         CONFIG.pop();
         SPEC = CONFIG.build();
     }

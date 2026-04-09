@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.handler;
+package com.otectus.runicskills.handler;
 
-import com.seniors.justlevelingfork.common.capability.AptitudeCapability;
+import com.otectus.runicskills.common.capability.SkillCapability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -26,11 +26,11 @@ public class HandlerCurios {
             if (!player.isCreative()) {
                 ItemStack item = event.getStack();
 
-                AptitudeCapability aptitudeCapability = AptitudeCapability.get(player);
-                if (aptitudeCapability == null) return;
+                SkillCapability skillCapability = SkillCapability.get(player);
+                if (skillCapability == null) return;
 
                 try {
-                    if (!aptitudeCapability.canUseItem(player, item)) {
+                    if (!skillCapability.canUseItem(player, item)) {
                         event.setResult(Event.Result.DENY);
                     }
                 }
@@ -52,15 +52,15 @@ public class HandlerCurios {
         if (event.getNewGameMode() == GameType.SURVIVAL){
             Player player = event.getEntity();
 
-            AptitudeCapability aptitudeCapability = AptitudeCapability.get(player);
-            if (aptitudeCapability == null) return;
+            SkillCapability skillCapability = SkillCapability.get(player);
+            if (skillCapability == null) return;
             CuriosApi.getCuriosInventory(player).ifPresent(curiosInventory -> {
                 curiosInventory.getCurios().forEach((id, slotInventory) -> {
                     IDynamicStackHandler stackHandler =  slotInventory.getStacks();
                     for(int i = 0; i < stackHandler.getSlots(); i++){
                         ItemStack itemStack = stackHandler.getStackInSlot(i);
 
-                        if (!aptitudeCapability.canUseItem(player, itemStack)) {
+                        if (!skillCapability.canUseItem(player, itemStack)) {
                             player.drop(itemStack, false);
                             itemStack.setCount(0);
                             stackHandler.setStackInSlot(i, ItemStack.EMPTY);

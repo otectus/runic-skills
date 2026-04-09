@@ -1,4 +1,4 @@
-package com.seniors.justlevelingfork.integration;
+package com.otectus.runicskills.integration;
 
 import net.minecraftforge.fml.ModList;
 

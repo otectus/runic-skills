@@ -1,6 +1,6 @@
-package com.seniors.justlevelingfork.common.command.arguments;
+package com.otectus.runicskills.common.command.arguments;
 
-import com.seniors.justlevelingfork.registry.RegistryTitles;
+import com.otectus.runicskills.registry.RegistryTitles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
