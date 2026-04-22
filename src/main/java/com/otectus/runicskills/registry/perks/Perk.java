@@ -218,7 +218,12 @@ public class Perk {
     }
 
     public boolean isEnabled(Player player) {
-        if (player == null || player.isDeadOrDying() || this.requiredLevel < 1) return false;
+        if (player == null || this.requiredLevel < 1) return false;
+        // Entity.<init> → getMaxAirSupply → MixPlayer → Perk.isEnabled can fire before
+        // defineSynchedData registers DATA_HEALTH_ID. Calling isDeadOrDying() in that
+        // window NPEs inside SynchedEntityData.get. Skip the dying check until the
+        // entity's synched-data is populated.
+        if (!player.getEntityData().isEmpty() && player.isDeadOrDying()) return false;
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return false;
         return cap.getSkillLevel(this.getSkill()) >= this.requiredLevel && cap.isPerkActive(this);
