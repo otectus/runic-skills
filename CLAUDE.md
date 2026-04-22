@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Mod ID**: `runicskills`
 - **Package**: `com.otectus.runicskills`
-- **Version**: 0.9.2
+- **Version**: 0.9.3
 - **MC**: 1.20.1 | **Forge**: 47.3.0 | **Java**: 17
 - **Mappings**: Parchment 2023.09.03-1.20.1
 
@@ -29,8 +29,9 @@ src/main/resources/
 - **KubeJS** (2001.6.5) — scripting integration (optional)
 - **Ars Nouveau** — magic system integration (optional)
 - **Apothic Attributes / Apotheosis** — attribute system integration (optional)
+- **Irons Spellbooks** — spell system integration (optional)
+- **L2Tabs / Legendary Tabs** — inventory tab integrations (optional, compile-time only; drop jars into `libs/`)
 - **MixinExtras** (0.4.0) — enhanced mixin features
-- **Tetra** — tool system integration (optional)
 
 ## Terminology
 - **Aptitudes** = the skill categories (what players see as "Skills")
@@ -48,6 +49,5 @@ This naming is internal — the player-facing UI uses "Skills" and "Perks"
 Client: ForgeGui, PlayerRenderer, InventoryScreen, GunItem
 Common: ItemStack, LivingEntity, Player, PowderSnowBlock, ShulkerBullet, TargetFinder, Villager, CraftingMenu, EnchantmentMenu
 
-## Review Documents
-- `RUNIC_SKILLS_FULL_REVIEW.md` — comprehensive code review
-- `RUNIC_SKILLS_REVIEW.md` — summary review
+## Release History
+See `CHANGELOG.md` for per-release notes (security fixes, bug fixes, new integrations).

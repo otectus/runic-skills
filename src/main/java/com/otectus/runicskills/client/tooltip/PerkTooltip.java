@@ -38,10 +38,12 @@ public final class PerkTooltip {
 
             if (perk.getMaxRank() > 1) {
                 list.add(Component.empty());
-                list.add(Component.literal("Rank: " + (currentRank > 0 ? Utils.intToRoman(currentRank) : "-") + "/" + Utils.intToRoman(perk.getMaxRank())).withStyle(ChatFormatting.LIGHT_PURPLE));
+                String currentRoman = currentRank > 0 ? Utils.intToRoman(currentRank) : "-";
+                String maxRoman = Utils.intToRoman(perk.getMaxRank());
+                list.add(Component.translatable("tooltip.perk.rank", currentRoman, maxRoman).withStyle(ChatFormatting.LIGHT_PURPLE));
                 if (currentRank < perk.getMaxRank()) {
                     int nextLevel = perk.getLevelForRank(currentRank + 1);
-                    list.add(Component.literal(" Next rank at level " + nextLevel).withStyle(ChatFormatting.GRAY));
+                    list.add(Component.translatable("tooltip.perk.next_rank", nextLevel).withStyle(ChatFormatting.GRAY));
                 }
             }
         } else {

@@ -30,12 +30,16 @@ public class RegistryClientEvents {
             ResourceLocation location = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem()));
             List<Skills> list = HandlerSkill.getValue(location.toString());
             if (list != null) {
+                // Capability may not be synced yet when a tooltip renders pre-join; treat
+                // as "requirement not met" and colour red rather than NPE the tooltip.
+                SkillCapability localCap = SkillCapability.getLocal();
                 tooltips.add(Component.empty());
                 tooltips.add(Component.translatable("tooltip.skill.item_requirement").withStyle(ChatFormatting.DARK_PURPLE));
                 for (Skills skills : list) {
                     Skill skill = skills.getSkill();
                     if (skill != null) {
-                        ChatFormatting colour = (SkillCapability.getLocal().getSkillLevel(skill) >= skills.getSkillLvl()) ? ChatFormatting.GREEN : ChatFormatting.RED;
+                        int level = localCap == null ? 0 : localCap.getSkillLevel(skill);
+                        ChatFormatting colour = (level >= skills.getSkillLvl()) ? ChatFormatting.GREEN : ChatFormatting.RED;
                         tooltips.add(Component.translatable("tooltip.skill.item_requirements", Component.translatable(skill.getKey()), Component.literal(String.valueOf(skills.getSkillLvl())).withStyle(colour)));
                     }
                 }

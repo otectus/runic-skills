@@ -30,7 +30,7 @@ public class OverlaySkillGui {
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onHudRender(CustomizeGuiOverlayEvent.DebugText event) {
         GuiGraphics matrixStack = event.getGuiGraphics();
-        if (this.client.level != null && this.client.player != null && showTicks > 0 && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
+        if (this.client.level != null && this.client.player != null && showTicks > 0 && skills != null && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             matrixStack.pose().pushPose();
             int xOff = this.client.getWindow().getGuiScaledWidth() / 2;
             int yOff = this.client.getWindow().getGuiScaledHeight() / 4;
@@ -73,9 +73,15 @@ public class OverlaySkillGui {
     }
 
     public static void showWarning(String skill) {
-        skills = HandlerSkill.getValue(skill);
-        int requirementCount = (skills != null) ? skills.size() : 0;
-        showTicks = Math.min(60 + 15 * requirementCount, 150);
+        List<Skills> requirements = HandlerSkill.getValue(skill);
+        if (requirements == null || requirements.isEmpty()) {
+            // No requirements registered for this item; nothing to render.
+            skills = null;
+            showTicks = 0;
+            return;
+        }
+        skills = requirements;
+        showTicks = Math.min(60 + 15 * requirements.size(), 150);
     }
 }
 

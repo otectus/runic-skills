@@ -76,14 +76,10 @@ public abstract class MixTargetFinder {
         double result = attackRange;
 
         for (AttackRangeExtensions.Modifier modifier : modifiers) {
-            switch (modifier.operation()) {
-                case ADD:
-                    result += modifier.value();
-                case MULTIPLY:
-                    result *= modifier.value();
-            }
-
-
+            result = switch (modifier.operation()) {
+                case ADD -> result + modifier.value();
+                case MULTIPLY -> result * modifier.value();
+            };
         }
         return result;
     }

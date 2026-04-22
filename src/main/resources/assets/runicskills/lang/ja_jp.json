@@ -178,6 +178,9 @@
  "tooltip.perk.description.level_requirement" : "必要レベル：",
  "tooltip.perk.description.available" : "レベル %s で利用可能。",
  "tooltip.perk.scholar.lock_item" : "これを読むにはもっと知力が必要です",
+ "tooltip.perk.rank" : "ランク：%s/%s",
+ "tooltip.perk.next_rank" : "次のランクはレベル %s で取得",
+ "tooltip.edit_title" : "称号を編集",
 
  "passive.runicskills.attack_damage" : "攻撃力",
  "passive.runicskills.attack_knockback" : "攻撃ノックバック",

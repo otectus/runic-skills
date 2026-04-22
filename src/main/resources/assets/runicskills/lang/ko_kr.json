@@ -178,6 +178,9 @@
  "tooltip.perk.description.level_requirement" : "필요 레벨:",
  "tooltip.perk.description.available" : "레벨 %s에서 사용 가능.",
  "tooltip.perk.scholar.lock_item" : "이것을 읽으려면 더 높은 지능이 필요합니다",
+ "tooltip.perk.rank" : "등급: %s/%s",
+ "tooltip.perk.next_rank" : "다음 등급은 레벨 %s에서",
+ "tooltip.edit_title" : "칭호 편집",
 
  "passive.runicskills.attack_damage" : "공격력",
  "passive.runicskills.attack_knockback" : "공격 넉백",

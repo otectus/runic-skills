@@ -2,12 +2,14 @@ package com.otectus.runicskills;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
+import com.otectus.runicskills.client.gui.LegendaryTabRunicSkills;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
 import com.otectus.runicskills.client.gui.TabRunicSkills;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.L2TabsIntegration;
+import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.client.event.RegistryClientEvents;
 import com.otectus.runicskills.registry.RegistryItems;
 import dev.xkmc.l2tabs.tabs.core.TabRegistry;
@@ -60,6 +62,17 @@ public class RunicSkillsClient {
                 event.enqueueWork(() -> {
                     TabRegistry.registerTab(3500, TabRunicSkills::new, RegistryItems.LEVELING_BOOK, Component.literal("Skills"));
                 });
+            }
+
+            if (LegendaryTabsIntegration.isModLoaded()) {
+                // Register on the main thread during client setup so Legendary Tabs' own
+                // @EventBusSubscriber FMLClientSetupEvent handler has already populated its
+                // tab registry (Forge dispatches mod events in alphabetical mod-id order,
+                // and "legendarytabs" precedes "runicskills"). TabsMenu.register is thread
+                // -safe but we still enqueueWork to match Legendary Tabs' own pattern.
+                event.enqueueWork(() ->
+                        sfiomn.legendarytabs.api.tabs_menu.TabsMenu.register(new LegendaryTabRunicSkills())
+                );
             }
         }
 

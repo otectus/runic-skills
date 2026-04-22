@@ -178,6 +178,9 @@
  "tooltip.perk.description.level_requirement" : "Stufenvoraussetzung:",
  "tooltip.perk.description.available" : "Verfügbar ab Stufe %s.",
  "tooltip.perk.scholar.lock_item" : "Du brauchst mehr Intelligenz, um dies zu lesen",
+ "tooltip.perk.rank" : "Rang: %s/%s",
+ "tooltip.perk.next_rank" : "Nächster Rang auf Stufe %s",
+ "tooltip.edit_title" : "Titel bearbeiten",
 
  "passive.runicskills.attack_damage" : "Angriffsschaden",
  "passive.runicskills.attack_knockback" : "Angriffsrückstoß",

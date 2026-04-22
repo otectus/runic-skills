@@ -178,6 +178,9 @@
  "tooltip.perk.description.level_requirement" : "Niveau requis :",
  "tooltip.perk.description.available" : "Disponible au niveau %s.",
  "tooltip.perk.scholar.lock_item" : "Vous avez besoin de plus d'intelligence pour lire ceci",
+ "tooltip.perk.rank" : "Rang : %s/%s",
+ "tooltip.perk.next_rank" : "Prochain rang au niveau %s",
+ "tooltip.edit_title" : "Modifier le titre",
 
  "passive.runicskills.attack_damage" : "Dégâts d'attaque",
  "passive.runicskills.attack_knockback" : "Recul d'attaque",

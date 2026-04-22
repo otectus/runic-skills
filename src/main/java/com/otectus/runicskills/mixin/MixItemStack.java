@@ -17,14 +17,20 @@ import java.util.List;
 
 @Mixin({ItemStack.class})
 public abstract class MixItemStack {
+    /**
+     * Hides enchantment names when the Scholar perk is globally disabled. Note that
+     * {@code appendEnchantmentNames} is a static method with no player context, so the
+     * check is against the perk's config-level {@code isEnabled()} flag, not the viewing
+     * player's unlocked state. Per-player enchantment hiding would require refactoring
+     * this into a client-side {@link net.minecraftforge.event.entity.player.ItemTooltipEvent}
+     * handler where {@code Minecraft.getInstance().player} is available.
+     */
     @Inject(method = {"appendEnchantmentNames"}, at = {@At("HEAD")}, cancellable = true)
     private static void appendEnchantmentNames(List<Component> list, ListTag tags, CallbackInfo info) {
-        // Q13: Only intervene when Scholar perk exists and is NOT enabled
         if (RegistryPerks.SCHOLAR == null || RegistryPerks.SCHOLAR.get().isEnabled()) {
-            return; // Let vanilla handle it normally - compatible with other mods
+            return;
         }
 
-        // Scholar exists but is NOT enabled - hide enchantment names
         info.cancel();
         for (int i = 0; i < tags.size(); i++) {
             CompoundTag nbt = tags.getCompound(i);

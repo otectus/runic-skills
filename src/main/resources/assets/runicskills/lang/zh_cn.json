@@ -178,6 +178,9 @@
  "tooltip.perk.description.level_requirement" : "等级需求：",
  "tooltip.perk.description.available" : "在 %s 级可用。",
  "tooltip.perk.scholar.lock_item" : "你需要更高的智力才能阅读此物",
+ "tooltip.perk.rank" : "等级：%s/%s",
+ "tooltip.perk.next_rank" : "下一等级需要等级 %s",
+ "tooltip.edit_title" : "编辑称号",
 
  "passive.runicskills.attack_damage" : "攻击伤害",
  "passive.runicskills.attack_knockback" : "攻击击退",

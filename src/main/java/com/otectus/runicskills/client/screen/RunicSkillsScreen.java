@@ -225,7 +225,7 @@ public class RunicSkillsScreen extends Screen {
                     Component.translatable(skill.getKey() + ".abbreviation").withStyle(ChatFormatting.BOLD),
                     textX,
                     abbreviationY,
-                    new Color(240, 240, 240).getRGB(),
+                    Utils.SKILL_ABBR_COLOR,
                     false);
             guiGraphics.drawString(client.font,
                     Component.translatable("screen.skill.experience", Utils.numberFormat(skillLevel),
@@ -303,8 +303,9 @@ public class RunicSkillsScreen extends Screen {
                 int titleIndex = i + this.scrollDropDown;
                 Title title = filteredTitles.get(titleIndex);
                 boolean hovered = rowBounds.contains(mouseX, mouseY) && !this.scrollingDropDown;
-                boolean selectedTitle = title == RegistryTitles.getTitle(SkillCapability.getLocal().getPlayerTitle());
-                int textColor = selectedTitle ? 0x55FF55 : 0xFFAA00;
+                SkillCapability localCap = SkillCapability.getLocal();
+                boolean selectedTitle = localCap != null && title == RegistryTitles.getTitle(localCap.getPlayerTitle());
+                int textColor = selectedTitle ? Utils.TITLE_SELECTED_COLOR : Utils.TITLE_UNSELECTED_COLOR;
 
                 if (hovered) {
                     guiGraphics.fill(rowBounds.x(), rowBounds.y(), rowBounds.x() + TITLE_LIST_WIDTH, rowBounds.y() + TITLE_ROW_HEIGHT, 0xFF505050);
@@ -326,7 +327,8 @@ public class RunicSkillsScreen extends Screen {
     }
 
     private void drawTitleButton(GuiGraphics guiGraphics, int panelX, int panelY, int mouseX, int mouseY) {
-        Title currentTitle = RegistryTitles.getTitle(SkillCapability.getLocal().getPlayerTitle());
+        SkillCapability localCap = SkillCapability.getLocal();
+        Title currentTitle = localCap == null ? null : RegistryTitles.getTitle(localCap.getPlayerTitle());
         String titleText = currentTitle == null ? "" : Component.translatable(currentTitle.getKey()).getString();
         String displayTitle = ellipsize(titleText, 98);
         int innerWidth = client.font.width(displayTitle) + 15;
@@ -341,7 +343,7 @@ public class RunicSkillsScreen extends Screen {
         guiGraphics.blit(HandlerResources.PERK_PAGE[PAGE_OVERVIEW], leftCapX + innerWidth - 8, buttonY + 3, 8, 218, 8, 8);
 
         if (hovered) {
-            Utils.drawToolTip(guiGraphics, Component.literal("Edit Title"), mouseX, mouseY);
+            Utils.drawToolTip(guiGraphics, Component.translatable("tooltip.edit_title"), mouseX, mouseY);
         }
     }
 
@@ -604,6 +606,9 @@ public class RunicSkillsScreen extends Screen {
         }
 
         SkillCapability capability = SkillCapability.getLocal();
+        if (capability == null) {
+            return null;
+        }
         List<Passive> passives = new ArrayList<>(skill.getPassives(skill));
         List<Perk> perks = new ArrayList<>(skill.getPerks(skill));
 
@@ -814,7 +819,8 @@ public class RunicSkillsScreen extends Screen {
         int panelX = panelLeft();
         int panelY = panelTop();
 
-        Title currentTitle = RegistryTitles.getTitle(SkillCapability.getLocal().getPlayerTitle());
+        SkillCapability localCap = SkillCapability.getLocal();
+        Title currentTitle = localCap == null ? null : RegistryTitles.getTitle(localCap.getPlayerTitle());
         String titleText = currentTitle == null ? "" : Component.translatable(currentTitle.getKey()).getString();
         String displayTitle = ellipsize(titleText, 98);
         int innerWidth = client.font.width(displayTitle) + 15;

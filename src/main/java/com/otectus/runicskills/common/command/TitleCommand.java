@@ -40,6 +40,7 @@ public class TitleCommand {
             } else {
 
                 SkillCapability capability = SkillCapability.get(player);
+                if (capability == null) return 0;
                 capability.setUnlockTitle(title, false);
                 SyncSkillCapabilityCP.send(player);
                 source.getSource().sendSuccess(() -> Component.translatable("commands.message.title.unset", player.getName().copy().withStyle(ChatFormatting.BOLD), Component.translatable(title.getKey()).withStyle(ChatFormatting.BOLD)), false);

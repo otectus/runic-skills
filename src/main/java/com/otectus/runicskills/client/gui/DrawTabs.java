@@ -64,16 +64,22 @@ public class DrawTabs {
 
     private static void renderTabVisual(GuiGraphics matrixStack, Tabs type, int x, int y) {
         matrixStack.pose().pushPose();
-        RenderSystem.enableBlend();
-        matrixStack.blit(TEXTURE, x, y, type.getName().equals("inventory") ? 0 : 26, type.isScreen() ? 32 : 0, 26, 32);
-        float scale = (type.getItemStack().getItem() instanceof net.minecraft.world.item.StandingAndWallBlockItem) ? 1.125F : 1.0F;
-        float newX = (x + 13.0F - 8.0F) / scale;
-        float newY = (y + 15.0F - 8.0F + (type.isScreen() ? 0.0F : 2.0F)) / scale;
-        matrixStack.pose().pushPose();
-        matrixStack.pose().scale(scale, scale, 1.0F);
-        matrixStack.renderItem(type.getItemStack(), (int) newX, (int) newY);
-        matrixStack.pose().popPose();
-        matrixStack.pose().popPose();
+        try {
+            RenderSystem.enableBlend();
+            matrixStack.blit(TEXTURE, x, y, type.getName().equals("inventory") ? 0 : 26, type.isScreen() ? 32 : 0, 26, 32);
+            float scale = (type.getItemStack().getItem() instanceof net.minecraft.world.item.StandingAndWallBlockItem) ? 1.125F : 1.0F;
+            float newX = (x + 13.0F - 8.0F) / scale;
+            float newY = (y + 15.0F - 8.0F + (type.isScreen() ? 0.0F : 2.0F)) / scale;
+            matrixStack.pose().pushPose();
+            try {
+                matrixStack.pose().scale(scale, scale, 1.0F);
+                matrixStack.renderItem(type.getItemStack(), (int) newX, (int) newY);
+            } finally {
+                matrixStack.pose().popPose();
+            }
+        } finally {
+            matrixStack.pose().popPose();
+        }
     }
 
     public static void setScreen(int i) {

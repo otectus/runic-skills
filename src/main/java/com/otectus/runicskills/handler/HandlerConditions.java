@@ -15,6 +15,8 @@ public class HandlerConditions {
         registerCondition("Skill", SkillCondition::new);
         registerCondition("Special", DimensionCondition::new);
         registerCondition("EntityKilled", EntityKilledCondition::new);
+        registerCondition("EntityKilledBy", EntityKilledByCondition::new);
+        // Deprecated typoed alias kept for backward compatibility with existing title configs.
         registerCondition("EntiyKilledBy", EntityKilledByCondition::new);
         registerCondition("Stat", StatCondition::new);
         registerCondition("BlockMined", BlockMinedCondition::new);

@@ -12,11 +12,11 @@ public class TitleQueue {
     }
 
     public void dequeue() {
-        this.list.removeFirst();
+        if (!this.list.isEmpty()) this.list.removeFirst();
     }
 
     public Title peek() {
-        return this.list.getFirst().get();
+        return this.list.isEmpty() ? null : this.list.getFirst();
     }
 
     public int count() {

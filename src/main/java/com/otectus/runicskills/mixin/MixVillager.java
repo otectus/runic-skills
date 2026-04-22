@@ -21,8 +21,15 @@ public abstract class MixVillager {
 
     @Inject(method = "updateSpecialPrices", at = @At("HEAD"))
     private void runicskills$resetHagglerDiscount(Player player, CallbackInfo info) {
-        runicskills$hagglerDeltas.forEach((offer, delta) -> offer.addToSpecialPriceDiff(-delta));
-        runicskills$hagglerDeltas.clear();
+        Villager self = (Villager) (Object) this;
+        // Only undo deltas on offers that still exist on this villager; a trade or tier-up
+        // may have removed an offer the map still references, and applying -delta to a
+        // dead offer would silently reanimate its price diff on the next reopen.
+        runicskills$hagglerDeltas.entrySet().removeIf(entry -> {
+            if (!self.getOffers().contains(entry.getKey())) return true;
+            entry.getKey().addToSpecialPriceDiff(-entry.getValue());
+            return true;
+        });
     }
 
     @Inject(method = "updateSpecialPrices", at = @At("TAIL"))

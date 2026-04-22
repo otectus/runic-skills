@@ -16,7 +16,9 @@ public class MixGunItem {
     private void tryFire(LocalPlayer player, ItemStack itemStack, Entity targetEntity, CallbackInfoReturnable<Boolean> ci){
         if (!player.isCreative()) {
             if (!ClientCapabilityAccess.canUseItemClient(itemStack)) {
-                ci.cancel();
+                // Vanilla tryFire returns false on failed fire; CallbackInfoReturnable requires
+                // an explicit return value when cancellable, otherwise mixin throws.
+                ci.setReturnValue(false);
             }
         }
     }

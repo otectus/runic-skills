@@ -23,7 +23,12 @@ public class SkillCondition extends IntegerConditionImpl {
             setProcessedValue(0);
             return;
         }
-        int skillLevel = SkillCapability.get(serverPlayer).getSkillLevel(RegistrySkills.getSkill(skill.toString()));
+        SkillCapability capability = SkillCapability.get(serverPlayer);
+        if (capability == null) {
+            setProcessedValue(0);
+            return;
+        }
+        int skillLevel = capability.getSkillLevel(RegistrySkills.getSkill(skill.toString()));
 
         setProcessedValue(skillLevel);
     }
