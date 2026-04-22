@@ -98,7 +98,7 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 ---
 
-## What's new in 0.9.3
+## What's new in 0.9.5
 
 - **Native Legendary Tabs integration.** Skills now participates in Legendary Tabs' own strip instead of being drawn on top of it. Priority is configurable.
 - **Major audit and remediation pass.** Two crash bugs (Better Combat attack-range modifiers; PointBlank skill-gated gun fire), multiple NPE paths in pre-sync tooltip/overlay rendering, matrix-stack leak in the tab renderer, and several config and capability guardrails fixed. See the full [CHANGELOG](https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md).

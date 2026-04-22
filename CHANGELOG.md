@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.9.3] - 2026-04-21
+## [0.9.5] - 2026-04-22
 
 ### Added
 - Legendary Tabs (Sfiomn) integration. When `legendarytabs` is present, Runic Skills registers a native `TabsMenu` tab (`LegendaryTabRunicSkills`) during `FMLClientSetupEvent` so the Skills tab participates in Legendary Tabs' own UI instead of being drawn twice.
