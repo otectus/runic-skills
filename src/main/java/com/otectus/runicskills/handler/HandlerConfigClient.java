@@ -22,7 +22,7 @@ public class HandlerConfigClient {
     public static boolean defaultShowTitleModName = false;
     public static SortPassives defaultSortPassive = SortPassives.ByName;
     public static SortPerks defaultSortPerk = SortPerks.ByLevel;
-    public static int defaultLegendaryTabsPriority = 500;
+    public static int defaultLegendaryTabsPriority = 80;
 
     static {
         CONFIG.push("general");
@@ -32,7 +32,7 @@ public class HandlerConfigClient {
         showTitleModName = CONFIG.define("showTitleModName", defaultShowTitleModName);
         sortPassive = CONFIG.defineEnum("sortPassive", defaultSortPassive);
         sortPerk = CONFIG.defineEnum("sortPerk", defaultSortPerk);
-        legendaryTabsPriority = CONFIG.comment("Priority of the Skills tab within Legendary Tabs' strip. Lower = earlier. Built-in tabs typically sit in the 100-1000 range.")
+        legendaryTabsPriority = CONFIG.comment("Priority of the Skills tab within Legendary Tabs' strip. Lower = earlier. Built-in tabs use small integers (InventoryTab=10, FtbQuestsTab=70) and the strip paginates, so keep this small for the Skills tab to appear on page 1.")
                 .defineInRange("legendaryTabsPriority", defaultLegendaryTabsPriority, 0, 10_000);
         CONFIG.pop();
         SPEC = CONFIG.build();

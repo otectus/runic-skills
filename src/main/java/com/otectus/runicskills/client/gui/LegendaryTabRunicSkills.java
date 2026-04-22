@@ -26,9 +26,13 @@ import sfiomn.legendarytabs.api.tabs_menu.TabsMenu;
  */
 public class LegendaryTabRunicSkills extends TabBase {
 
-    // Matches the vanilla inventory panel dimensions used by most other Legendary Tabs.
+    // Vanilla InventoryScreen panel is 176×166 (the standard). Runic Skills' own screen uses
+    // the same width but a taller 194-pixel panel (PANEL_HEIGHT in RunicSkillsScreen).
+    // Passing the wrong height to TabsMenu#addTabToScreen makes Legendary Tabs compute the
+    // wrong topScreenPos and draw its strip *inside* the panel instead of above it.
     private static final int VANILLA_GUI_WIDTH = 176;
     private static final int VANILLA_GUI_HEIGHT = 166;
+    private static final int RUNIC_SKILLS_GUI_HEIGHT = 194;
 
     @Override
     public void openTargetScreen(Player player) {
@@ -71,12 +75,14 @@ public class LegendaryTabRunicSkills extends TabBase {
                 HandlerConfigClient.legendaryTabsPriority.get()
         );
         // …and on our own Skills screen, so Legendary Tabs' strip remains visible while
-        // Skills is open and the user can jump straight back to any other tab.
+        // Skills is open and the user can jump straight back to any other tab. The Skills
+        // panel is taller than vanilla inventory (194 vs 166), so use the correct height
+        // here — otherwise the strip lands inside the panel and is hidden by the background.
         TabsMenu.addTabToScreen(
                 this,
                 RunicSkillsScreen.class,
                 player -> VANILLA_GUI_WIDTH,
-                player -> VANILLA_GUI_HEIGHT,
+                player -> RUNIC_SKILLS_GUI_HEIGHT,
                 HandlerConfigClient.legendaryTabsPriority.get()
         );
     }

@@ -12,6 +12,8 @@ import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerConfigClient;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.integration.KubeJSIntegration;
+import com.otectus.runicskills.integration.L2TabsIntegration;
+import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.network.packet.common.PassiveLevelDownSP;
 import com.otectus.runicskills.network.packet.common.PassiveLevelUpSP;
 import com.otectus.runicskills.network.packet.common.SetPlayerTitleSP;
@@ -181,7 +183,12 @@ public class RunicSkillsScreen extends Screen {
             }
         }
 
-        DrawTabs.render(guiGraphics, mouseX, mouseY, PANEL_WIDTH, PANEL_HEIGHT, 0);
+        // Suppress our legacy tab strip whenever an external tab system is active —
+        // those mods register our Skills tab themselves and render it in their own strip,
+        // so drawing DrawTabs on top produces the duplicate-tabs-above-panel artefact.
+        if (!L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
+            DrawTabs.render(guiGraphics, mouseX, mouseY, PANEL_WIDTH, PANEL_HEIGHT, 0);
+        }
         guiGraphics.pose().popPose();
     }
 
@@ -716,7 +723,7 @@ public class RunicSkillsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+        if (button == 0 && !L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
             DrawTabs.mouseClicked(button);
         }
 
@@ -806,7 +813,9 @@ public class RunicSkillsScreen extends Screen {
         if (this.searchTitle != null) {
             this.searchTitle.setValue("");
         }
-        DrawTabs.onClose();
+        if (!L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
+            DrawTabs.onClose();
+        }
         super.onClose();
     }
 
