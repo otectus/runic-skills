@@ -14,10 +14,13 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -52,6 +55,7 @@ public class IronsSpellbooksIntegration {
             if (RegistryPerks.BLOOD_ATTUNEMENT != null) schoolPerkMap.put("blood", RegistryPerks.BLOOD_ATTUNEMENT);
             if (RegistryPerks.ENDER_ATTUNEMENT != null) schoolPerkMap.put("ender", RegistryPerks.ENDER_ATTUNEMENT);
             if (RegistryPerks.EVOCATION_ATTUNEMENT != null) schoolPerkMap.put("evocation", RegistryPerks.EVOCATION_ATTUNEMENT);
+            if (RegistryPerks.ELDRITCH_ATTUNEMENT != null) schoolPerkMap.put("eldritch", RegistryPerks.ELDRITCH_ATTUNEMENT);
         }
         return schoolPerkMap;
     }
@@ -379,6 +383,27 @@ public class IronsSpellbooksIntegration {
     private static final UUID MANA_SURGE_SP_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-5e6b4f9a3c8d");
     private static final UUID MANA_SURGE_MR_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-6e6b4f9a3c8d");
 
+    // Phase 1b: per-school mancer/warded modifier UUIDs. Two per school, nine
+    // schools = 18 stable UUIDs. Do NOT reorder — stored in player attribute NBT.
+    private static final UUID FIRE_MANCER_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c01");
+    private static final UUID FIRE_WARDED_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c02");
+    private static final UUID ICE_MANCER_UUID        = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c03");
+    private static final UUID ICE_WARDED_UUID        = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c04");
+    private static final UUID LIGHTNING_MANCER_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c05");
+    private static final UUID LIGHTNING_WARDED_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c06");
+    private static final UUID HOLY_MANCER_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c07");
+    private static final UUID HOLY_WARDED_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c08");
+    private static final UUID ENDER_MANCER_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c09");
+    private static final UUID ENDER_WARDED_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0a");
+    private static final UUID BLOOD_MANCER_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0b");
+    private static final UUID BLOOD_WARDED_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0c");
+    private static final UUID EVOCATION_MANCER_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0d");
+    private static final UUID EVOCATION_WARDED_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0e");
+    private static final UUID NATURE_MANCER_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0f");
+    private static final UUID NATURE_WARDED_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c10");
+    private static final UUID ELDRITCH_MANCER_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c11");
+    private static final UUID ELDRITCH_WARDED_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c12");
+
     // Per-player transient state.
     private static final Map<UUID, Integer> spellweaverCount = new HashMap<>();
     private static final Map<UUID, Long> spellweaverLastCast = new HashMap<>();
@@ -465,6 +490,58 @@ public class IronsSpellbooksIntegration {
         reconcileModifier(player, AttributeRegistry.MANA_REGEN, MANA_SURGE_MR_UUID,
                 "runicskills:mana_surge_mr", manaSurgeActive, surgeMrValue,
                 AttributeModifier.Operation.ADDITION);
+
+        // Phase 1b: per-school mancer (+X_SPELL_POWER) and warded (+X_MAGIC_RESIST)
+        // attribute reconciliation. Percent values live in 0..1 units, so "+20%"
+        // = ADDITION of 0.20 on an attribute defaulting to 0.
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+
+        reconcileMancer(player, RegistryPerks.FIRE_MANCER, AttributeRegistry.FIRE_SPELL_POWER, FIRE_MANCER_UUID,
+                "runicskills:fire_mancer", c.fireMancerPercent);
+        reconcileMancer(player, RegistryPerks.FIRE_WARDED, AttributeRegistry.FIRE_MAGIC_RESIST, FIRE_WARDED_UUID,
+                "runicskills:fire_warded", c.fireWardedPercent);
+        reconcileMancer(player, RegistryPerks.ICE_MANCER, AttributeRegistry.ICE_SPELL_POWER, ICE_MANCER_UUID,
+                "runicskills:ice_mancer", c.iceMancerPercent);
+        reconcileMancer(player, RegistryPerks.ICE_WARDED, AttributeRegistry.ICE_MAGIC_RESIST, ICE_WARDED_UUID,
+                "runicskills:ice_warded", c.iceWardedPercent);
+        reconcileMancer(player, RegistryPerks.LIGHTNING_MANCER, AttributeRegistry.LIGHTNING_SPELL_POWER, LIGHTNING_MANCER_UUID,
+                "runicskills:lightning_mancer", c.lightningMancerPercent);
+        reconcileMancer(player, RegistryPerks.LIGHTNING_WARDED, AttributeRegistry.LIGHTNING_MAGIC_RESIST, LIGHTNING_WARDED_UUID,
+                "runicskills:lightning_warded", c.lightningWardedPercent);
+        reconcileMancer(player, RegistryPerks.HOLY_MANCER, AttributeRegistry.HOLY_SPELL_POWER, HOLY_MANCER_UUID,
+                "runicskills:holy_mancer", c.holyMancerPercent);
+        reconcileMancer(player, RegistryPerks.HOLY_WARDED, AttributeRegistry.HOLY_MAGIC_RESIST, HOLY_WARDED_UUID,
+                "runicskills:holy_warded", c.holyWardedPercent);
+        reconcileMancer(player, RegistryPerks.ENDER_MANCER, AttributeRegistry.ENDER_SPELL_POWER, ENDER_MANCER_UUID,
+                "runicskills:ender_mancer", c.enderMancerPercent);
+        reconcileMancer(player, RegistryPerks.ENDER_WARDED, AttributeRegistry.ENDER_MAGIC_RESIST, ENDER_WARDED_UUID,
+                "runicskills:ender_warded", c.enderWardedPercent);
+        reconcileMancer(player, RegistryPerks.BLOOD_MANCER, AttributeRegistry.BLOOD_SPELL_POWER, BLOOD_MANCER_UUID,
+                "runicskills:blood_mancer", c.bloodMancerPercent);
+        reconcileMancer(player, RegistryPerks.BLOOD_WARDED, AttributeRegistry.BLOOD_MAGIC_RESIST, BLOOD_WARDED_UUID,
+                "runicskills:blood_warded", c.bloodWardedPercent);
+        reconcileMancer(player, RegistryPerks.EVOCATION_MANCER, AttributeRegistry.EVOCATION_SPELL_POWER, EVOCATION_MANCER_UUID,
+                "runicskills:evocation_mancer", c.evocationMancerPercent);
+        reconcileMancer(player, RegistryPerks.EVOCATION_WARDED, AttributeRegistry.EVOCATION_MAGIC_RESIST, EVOCATION_WARDED_UUID,
+                "runicskills:evocation_warded", c.evocationWardedPercent);
+        reconcileMancer(player, RegistryPerks.NATURE_MANCER, AttributeRegistry.NATURE_SPELL_POWER, NATURE_MANCER_UUID,
+                "runicskills:nature_mancer", c.natureMancerPercent);
+        reconcileMancer(player, RegistryPerks.NATURE_WARDED, AttributeRegistry.NATURE_MAGIC_RESIST, NATURE_WARDED_UUID,
+                "runicskills:nature_warded", c.natureWardedPercent);
+        reconcileMancer(player, RegistryPerks.ELDRITCH_MANCER, AttributeRegistry.ELDRITCH_SPELL_POWER, ELDRITCH_MANCER_UUID,
+                "runicskills:eldritch_mancer", c.eldritchMancerPercent);
+        reconcileMancer(player, RegistryPerks.ELDRITCH_WARDED, AttributeRegistry.ELDRITCH_MAGIC_RESIST, ELDRITCH_WARDED_UUID,
+                "runicskills:eldritch_warded", c.eldritchWardedPercent);
+    }
+
+    /** Shared wrapper around reconcileModifier for null-safe school mancer/warded perks. */
+    private static void reconcileMancer(Player player,
+                                        net.minecraftforge.registries.RegistryObject<com.otectus.runicskills.registry.perks.Perk> perk,
+                                        RegistryObject<Attribute> attr,
+                                        UUID uuid, String name, int configPercent) {
+        boolean enabled = perk != null && perk.get().isEnabled(player);
+        double value = enabled ? configPercent / 100.0 : 0;
+        reconcileModifier(player, attr, uuid, name, enabled, value, AttributeModifier.Operation.ADDITION);
     }
 
     /** Arcane Recovery — restore mana on kill, scaled by victim max HP. */
@@ -503,6 +580,86 @@ public class IronsSpellbooksIntegration {
             // ISS cancels the cast off the damage-applied path, not here. Cancelling the
             // LivingAttackEvent means the damage never lands, which also preserves the cast.
             event.setCanceled(true);
+        }
+    }
+
+    /**
+     * Phase 1b catalyst handler for SELF-BUFF schools (Lightning, Holy, Ender,
+     * Evocation, Nature, Eldritch). On each cast of a matching school, roll the
+     * perk's probability; on success apply the signature effect to the caster.
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onSpellCastBuffCatalyst(SpellOnCastEvent event) {
+        Player caster = event.getEntity();
+        if (caster == null || caster.isCreative()) return;
+        SchoolType school = event.getSchoolType();
+        if (school == null) return;
+        String schoolName = school.getId().getPath();
+
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+        switch (schoolName) {
+            case "lightning" -> tryCatalyst(caster, RegistryPerks.LIGHTNING_CATALYST,
+                    MobEffectRegistry.CHARGED.get(), c.lightningCatalystProbability, c.lightningCatalystDuration * 20);
+            case "holy" -> tryCatalyst(caster, RegistryPerks.HOLY_CATALYST,
+                    MobEffectRegistry.FORTIFY.get(), c.holyCatalystProbability, c.holyCatalystDuration * 20);
+            case "ender" -> tryCatalyst(caster, RegistryPerks.ENDER_CATALYST,
+                    MobEffectRegistry.PLANAR_SIGHT.get(), c.enderCatalystProbability, c.enderCatalystDuration * 20);
+            case "evocation" -> tryCatalyst(caster, RegistryPerks.EVOCATION_CATALYST,
+                    MobEffectRegistry.ECHOING_STRIKES.get(), c.evocationCatalystProbability, c.evocationCatalystDuration * 20);
+            case "nature" -> tryCatalyst(caster, RegistryPerks.NATURE_CATALYST,
+                    MobEffectRegistry.OAKSKIN.get(), c.natureCatalystProbability, c.natureCatalystDuration * 20);
+            case "eldritch" -> tryCatalyst(caster, RegistryPerks.ELDRITCH_CATALYST,
+                    MobEffectRegistry.ABYSSAL_SHROUD.get(), c.eldritchCatalystProbability, c.eldritchCatalystDuration);
+            default -> { /* no-op for offensive-school casts */ }
+        }
+    }
+
+    /**
+     * Phase 1b catalyst handler for DEBUFF schools (Fire, Ice, Blood). On each
+     * damage-dealing spell tick of a matching school, roll the probability and
+     * apply the signature effect to the victim.
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onSpellDamageDebuffCatalyst(SpellDamageEvent event) {
+        Entity casterEntity = event.getSpellDamageSource().getEntity();
+        if (!(casterEntity instanceof Player caster) || caster.isCreative()) return;
+        LivingEntity victim = event.getEntity();
+        if (victim == null) return;
+        SpellDamageSource spellDs = event.getSpellDamageSource();
+        if (spellDs == null || spellDs.spell() == null) return;
+        SchoolType school = spellDs.spell().getSchoolType();
+        if (school == null) return;
+        String schoolName = school.getId().getPath();
+
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+        switch (schoolName) {
+            case "fire" -> tryCatalystOn(caster, victim, RegistryPerks.FIRE_CATALYST,
+                    MobEffectRegistry.IMMOLATE.get(), c.fireCatalystProbability, c.fireCatalystDuration * 20);
+            case "ice" -> tryCatalystOn(caster, victim, RegistryPerks.ICE_CATALYST,
+                    MobEffectRegistry.CHILLED.get(), c.iceCatalystProbability, c.iceCatalystDuration * 20);
+            case "blood" -> tryCatalystOn(caster, victim, RegistryPerks.BLOOD_CATALYST,
+                    MobEffectRegistry.REND.get(), c.bloodCatalystProbability, c.bloodCatalystDuration * 20);
+            default -> { /* other schools buff via SpellOnCastEvent branch */ }
+        }
+    }
+
+    private static void tryCatalyst(Player caster,
+                                    net.minecraftforge.registries.RegistryObject<com.otectus.runicskills.registry.perks.Perk> perk,
+                                    MobEffect effect, int probability, int durationTicks) {
+        if (perk == null || !perk.get().isEnabled(caster)) return;
+        if (effect == null || probability <= 0) return;
+        if (caster.getRandom().nextInt(probability) == 0) {
+            caster.addEffect(new MobEffectInstance(effect, durationTicks, 0, true, true));
+        }
+    }
+
+    private static void tryCatalystOn(Player caster, LivingEntity victim,
+                                      net.minecraftforge.registries.RegistryObject<com.otectus.runicskills.registry.perks.Perk> perk,
+                                      MobEffect effect, int probability, int durationTicks) {
+        if (perk == null || !perk.get().isEnabled(caster)) return;
+        if (effect == null || probability <= 0) return;
+        if (caster.getRandom().nextInt(probability) == 0) {
+            victim.addEffect(new MobEffectInstance(effect, durationTicks, 0, true, true), caster);
         }
     }
 

@@ -427,24 +427,60 @@ public class HandlerResources {
     public static final ResourceLocation CRIMSON_BOND_PERK = create("textures/skill/magic/crimson_bond.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1a generic mana/casting perks ──
-    // Textures pulled from ISS's own item sheet. Unresolved paths fall back to the
-    // vanilla missing-texture sprite, which is harmless (perk still functions).
+    // Textures pulled from ISS's own item sheet (verified present in 3.15.x). If
+    // a path doesn't resolve at runtime the sprite falls back to missing-texture,
+    // which is harmless — the perk still functions.
     public static final ResourceLocation ISS_WELLSPRING_PERK        = ironsItem("upgrade_orb_mana");
-    public static final ResourceLocation ISS_QUICKENING_PERK        = ironsItem("upgrade_orb_cast_time");
-    public static final ResourceLocation ISS_RESERVOIR_PERK         = ironsItem("upgrade_orb_mana_regen");
+    public static final ResourceLocation ISS_QUICKENING_PERK        = ironsItem("cast_time_ring");
+    public static final ResourceLocation ISS_RESERVOIR_PERK         = ironsItem("mana_ring");
     public static final ResourceLocation ISS_TEMPO_PERK             = ironsItem("upgrade_orb_cooldown");
     public static final ResourceLocation ISS_ARCANE_RECOVERY_PERK   = ironsItem("blood_vial");
-    public static final ResourceLocation ISS_FOCUS_PERK             = ironsItem("antique_amulet");
-    public static final ResourceLocation ISS_MANA_BULWARK_PERK      = ironsItem("mana_potion");
-    public static final ResourceLocation ISS_ARCANE_REPRIEVE_PERK   = ironsItem("greater_mana_potion");
+    public static final ResourceLocation ISS_FOCUS_PERK             = ironsItem("concentration_amulet");
+    public static final ResourceLocation ISS_MANA_BULWARK_PERK      = ironsItem("enchanted_ward_amulet");
+    public static final ResourceLocation ISS_ARCANE_REPRIEVE_PERK   = ironsItem("greater_healing_potion");
     public static final ResourceLocation ISS_MANA_SURGE_PERK        = ironsItem("cinder_essence");
     public static final ResourceLocation ISS_SPELLWEAVER_PERK       = ironsItem("blank_rune");
-    public static final ResourceLocation ISS_RESONANT_CASTING_PERK  = ironsItem("apprentice_spellbook");
-    public static final ResourceLocation ISS_IMBUED_FOCUS_PERK      = ironsItem("affinity_ring");
-    public static final ResourceLocation ISS_QUICKCAST_PERK         = ironsItem("scroll_of_haste");
-    public static final ResourceLocation ISS_LONG_CHANNEL_PERK      = ironsItem("ancient_codex");
-    public static final ResourceLocation ISS_CONTINUOUS_FLOW_PERK   = ironsItem("arcane_debris");
-    public static final ResourceLocation ISS_CHARGE_MASTERY_PERK    = ironsItem("arcane_essence");
+    public static final ResourceLocation ISS_RESONANT_CASTING_PERK  = ironsItem("chronicle");
+    public static final ResourceLocation ISS_IMBUED_FOCUS_PERK      = ironsItem("arcane_rune");
+    public static final ResourceLocation ISS_QUICKCAST_PERK         = ironsItem("scroll");
+    public static final ResourceLocation ISS_LONG_CHANNEL_PERK      = ironsItem("chronicle_old");
+    public static final ResourceLocation ISS_CONTINUOUS_FLOW_PERK   = ironsItem("arcane_essence");
+    public static final ResourceLocation ISS_CHARGE_MASTERY_PERK    = ironsItem("upgrade_orb_swirl");
+
+    // ── Iron's Spells 'n Spellbooks — Phase 1b school specialist triplets ──
+    // Per-school X-mancer (power) / X-Warded (resist) / X-Catalyst (signature effect).
+    // Textures: upgrade_orb_<school> for mancer, <school>_rune for warded,
+    // scroll_<school> for catalyst — all confirmed present in 3.15.x. Eldritch
+    // school has no upgrade_orb_eldritch, so it uses eldritch_manuscript /
+    // netherward_tincture / scroll_eldritch instead.
+    public static final ResourceLocation ISS_FIRE_MANCER_PERK       = ironsItem("upgrade_orb_fire");
+    public static final ResourceLocation ISS_FIRE_WARDED_PERK       = ironsItem("fire_rune");
+    public static final ResourceLocation ISS_FIRE_CATALYST_PERK     = ironsItem("scroll_fire");
+    public static final ResourceLocation ISS_ICE_MANCER_PERK        = ironsItem("upgrade_orb_ice");
+    public static final ResourceLocation ISS_ICE_WARDED_PERK        = ironsItem("ice_rune");
+    public static final ResourceLocation ISS_ICE_CATALYST_PERK      = ironsItem("scroll_ice");
+    public static final ResourceLocation ISS_LIGHTNING_MANCER_PERK  = ironsItem("upgrade_orb_lightning");
+    public static final ResourceLocation ISS_LIGHTNING_WARDED_PERK  = ironsItem("lightning_rune");
+    public static final ResourceLocation ISS_LIGHTNING_CATALYST_PERK= ironsItem("scroll_lightning");
+    public static final ResourceLocation ISS_HOLY_MANCER_PERK       = ironsItem("upgrade_orb_holy");
+    public static final ResourceLocation ISS_HOLY_WARDED_PERK       = ironsItem("holy_rune");
+    public static final ResourceLocation ISS_HOLY_CATALYST_PERK     = ironsItem("scroll_holy");
+    public static final ResourceLocation ISS_ENDER_MANCER_PERK      = ironsItem("upgrade_orb_ender");
+    public static final ResourceLocation ISS_ENDER_WARDED_PERK      = ironsItem("ender_rune");
+    public static final ResourceLocation ISS_ENDER_CATALYST_PERK    = ironsItem("scroll_ender");
+    public static final ResourceLocation ISS_BLOOD_MANCER_PERK      = ironsItem("upgrade_orb_blood");
+    public static final ResourceLocation ISS_BLOOD_WARDED_PERK      = ironsItem("blood_rune");
+    public static final ResourceLocation ISS_BLOOD_CATALYST_PERK    = ironsItem("scroll_blood");
+    public static final ResourceLocation ISS_EVOCATION_MANCER_PERK  = ironsItem("upgrade_orb_evocation");
+    public static final ResourceLocation ISS_EVOCATION_WARDED_PERK  = ironsItem("evocation_rune");
+    public static final ResourceLocation ISS_EVOCATION_CATALYST_PERK= ironsItem("scroll_evocation");
+    public static final ResourceLocation ISS_NATURE_MANCER_PERK     = ironsItem("upgrade_orb_nature");
+    public static final ResourceLocation ISS_NATURE_WARDED_PERK     = ironsItem("nature_rune");
+    public static final ResourceLocation ISS_NATURE_CATALYST_PERK   = ironsItem("scroll_nature");
+    public static final ResourceLocation ISS_ELDRITCH_MANCER_PERK   = ironsItem("eldritch_manuscript");
+    public static final ResourceLocation ISS_ELDRITCH_WARDED_PERK   = ironsItem("netherward_tincture");
+    public static final ResourceLocation ISS_ELDRITCH_CATALYST_PERK = ironsItem("scroll_eldritch");
+    public static final ResourceLocation ISS_ELDRITCH_ATTUNEMENT_PERK = ironsItem("affinity_ring_eldritch");
 
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");

@@ -3671,6 +3671,223 @@ public class HandlerCommonConfig {
     @IntField(min = -1, max = 1000)
     public int chargeMasteryRequiredLevel = 32;
 
+    // ── Iron's Spells 'n Spellbooks — Phase 1b: school specialist triplets ──
+    // For each of 9 schools: X-mancer (power), X-Warded (resist), X-Catalyst
+    // (signature-effect proc on cast). Plus Eldritch Attunement to round out
+    // the 8 existing attunement gates.
+
+    @SerialEntry(comment = "Required Magic level for Eldritch Attunement (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int eldritchAttunementRequiredLevel = 16;
+
+    // Fire
+    @SerialEntry(comment = "Required Magic level for Pyromancer (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int fireMancerRequiredLevel = 10;
+    @SerialEntry(comment = "Pyromancer perk: fire spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int fireMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Fire Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int fireWardedRequiredLevel = 10;
+    @SerialEntry(comment = "Fire Warded perk: fire resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int fireWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Fire Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int fireCatalystRequiredLevel = 14;
+    @SerialEntry(comment = "Fire Catalyst perk: 1-in-N probability to apply Immolate on hit")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int fireCatalystProbability = 7;
+    @SerialEntry(comment = "Fire Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int fireCatalystDuration = 2;
+
+    // Ice
+    @SerialEntry(comment = "Required Magic level for Cryomancer (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int iceMancerRequiredLevel = 10;
+    @SerialEntry(comment = "Cryomancer perk: ice spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int iceMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Ice Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int iceWardedRequiredLevel = 10;
+    @SerialEntry(comment = "Ice Warded perk: ice resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int iceWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Ice Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int iceCatalystRequiredLevel = 14;
+    @SerialEntry(comment = "Ice Catalyst perk: 1-in-N probability to apply Chilled on hit")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int iceCatalystProbability = 7;
+    @SerialEntry(comment = "Ice Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int iceCatalystDuration = 2;
+
+    // Lightning
+    @SerialEntry(comment = "Required Magic level for Stormwrought (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int lightningMancerRequiredLevel = 12;
+    @SerialEntry(comment = "Stormwrought perk: lightning spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int lightningMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Lightning Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int lightningWardedRequiredLevel = 12;
+    @SerialEntry(comment = "Lightning Warded perk: lightning resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int lightningWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Lightning Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int lightningCatalystRequiredLevel = 16;
+    @SerialEntry(comment = "Lightning Catalyst perk: 1-in-N probability to self-apply Charged on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int lightningCatalystProbability = 7;
+    @SerialEntry(comment = "Lightning Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int lightningCatalystDuration = 3;
+
+    // Holy
+    @SerialEntry(comment = "Required Magic level for Holy Specialist (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int holyMancerRequiredLevel = 14;
+    @SerialEntry(comment = "Holy Specialist perk: holy spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int holyMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Holy Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int holyWardedRequiredLevel = 14;
+    @SerialEntry(comment = "Holy Warded perk: holy resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int holyWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Holy Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int holyCatalystRequiredLevel = 18;
+    @SerialEntry(comment = "Holy Catalyst perk: 1-in-N probability to self-apply Fortify on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int holyCatalystProbability = 7;
+    @SerialEntry(comment = "Holy Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int holyCatalystDuration = 3;
+
+    // Ender
+    @SerialEntry(comment = "Required Magic level for Ender Specialist (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int enderMancerRequiredLevel = 14;
+    @SerialEntry(comment = "Ender Specialist perk: ender spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int enderMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Ender Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int enderWardedRequiredLevel = 14;
+    @SerialEntry(comment = "Ender Warded perk: ender resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int enderWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Ender Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int enderCatalystRequiredLevel = 18;
+    @SerialEntry(comment = "Ender Catalyst perk: 1-in-N probability to self-apply Planar Sight on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int enderCatalystProbability = 7;
+    @SerialEntry(comment = "Ender Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int enderCatalystDuration = 3;
+
+    // Blood
+    @SerialEntry(comment = "Required Magic level for Hemomancer (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int bloodMancerRequiredLevel = 16;
+    @SerialEntry(comment = "Hemomancer perk: blood spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int bloodMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Blood Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int bloodWardedRequiredLevel = 16;
+    @SerialEntry(comment = "Blood Warded perk: blood resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int bloodWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Blood Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int bloodCatalystRequiredLevel = 20;
+    @SerialEntry(comment = "Blood Catalyst perk: 1-in-N probability to apply Rend on hit")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int bloodCatalystProbability = 7;
+    @SerialEntry(comment = "Blood Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int bloodCatalystDuration = 2;
+
+    // Evocation
+    @SerialEntry(comment = "Required Magic level for Evoker Specialist (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int evocationMancerRequiredLevel = 12;
+    @SerialEntry(comment = "Evoker Specialist perk: evocation spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int evocationMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Evocation Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int evocationWardedRequiredLevel = 12;
+    @SerialEntry(comment = "Evocation Warded perk: evocation resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int evocationWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Evocation Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int evocationCatalystRequiredLevel = 16;
+    @SerialEntry(comment = "Evocation Catalyst perk: 1-in-N probability to self-apply Echoing Strikes on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int evocationCatalystProbability = 7;
+    @SerialEntry(comment = "Evocation Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int evocationCatalystDuration = 10;
+
+    // Nature
+    @SerialEntry(comment = "Required Magic level for Druid (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int natureMancerRequiredLevel = 10;
+    @SerialEntry(comment = "Druid perk: nature spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int natureMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Nature Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int natureWardedRequiredLevel = 10;
+    @SerialEntry(comment = "Nature Warded perk: nature resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int natureWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Nature Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int natureCatalystRequiredLevel = 14;
+    @SerialEntry(comment = "Nature Catalyst perk: 1-in-N probability to self-apply Oakskin on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int natureCatalystProbability = 7;
+    @SerialEntry(comment = "Nature Catalyst perk: signature effect duration in seconds")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 60)
+    public int natureCatalystDuration = 2;
+
+    // Eldritch
+    @SerialEntry(comment = "Required Magic level for Eldritch Scholar (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int eldritchMancerRequiredLevel = 20;
+    @SerialEntry(comment = "Eldritch Scholar perk: eldritch spell power bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int eldritchMancerPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Eldritch Warded (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int eldritchWardedRequiredLevel = 20;
+    @SerialEntry(comment = "Eldritch Warded perk: eldritch resistance percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int eldritchWardedPercent = 20;
+    @SerialEntry(comment = "Required Magic level for Eldritch Catalyst (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int eldritchCatalystRequiredLevel = 24;
+    @SerialEntry(comment = "Eldritch Catalyst perk: 1-in-N probability to self-apply Abyssal Shroud on cast")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int eldritchCatalystProbability = 10;
+    @SerialEntry(comment = "Eldritch Catalyst perk: signature effect duration in ticks (0.5s = 10 ticks)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 200)
+    public int eldritchCatalystDuration = 10;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

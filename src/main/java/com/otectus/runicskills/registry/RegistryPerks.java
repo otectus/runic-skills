@@ -588,6 +588,205 @@ public class RegistryPerks {
                     HandlerResources.ISS_CHARGE_MASTERY_PERK
             ));
 
+    // ── Iron's Spells — Phase 1b: school specialist triplets + Eldritch attunement ──
+    public static final RegistryObject<Perk> ELDRITCH_ATTUNEMENT =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchAttunementRequiredLevel < 0
+            ? null : PERKS.register("eldritch_attunement", () -> register(
+                    "eldritch_attunement",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().eldritchAttunementRequiredLevel,
+                    HandlerResources.ISS_ELDRITCH_ATTUNEMENT_PERK
+            ));
+
+    // Fire
+    public static final RegistryObject<Perk> FIRE_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireMancerRequiredLevel < 0
+            ? null : PERKS.register("fire_mancer", () -> register("fire_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().fireMancerRequiredLevel,
+                    HandlerResources.ISS_FIRE_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireMancerPercent)));
+    public static final RegistryObject<Perk> FIRE_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireWardedRequiredLevel < 0
+            ? null : PERKS.register("fire_warded", () -> register("fire_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().fireWardedRequiredLevel,
+                    HandlerResources.ISS_FIRE_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireWardedPercent)));
+    public static final RegistryObject<Perk> FIRE_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireCatalystRequiredLevel < 0
+            ? null : PERKS.register("fire_catalyst", () -> register("fire_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().fireCatalystRequiredLevel,
+                    HandlerResources.ISS_FIRE_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().fireCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().fireCatalystDuration)));
+
+    // Ice
+    public static final RegistryObject<Perk> ICE_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceMancerRequiredLevel < 0
+            ? null : PERKS.register("ice_mancer", () -> register("ice_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().iceMancerRequiredLevel,
+                    HandlerResources.ISS_ICE_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().iceMancerPercent)));
+    public static final RegistryObject<Perk> ICE_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceWardedRequiredLevel < 0
+            ? null : PERKS.register("ice_warded", () -> register("ice_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().iceWardedRequiredLevel,
+                    HandlerResources.ISS_ICE_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().iceWardedPercent)));
+    public static final RegistryObject<Perk> ICE_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceCatalystRequiredLevel < 0
+            ? null : PERKS.register("ice_catalyst", () -> register("ice_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().iceCatalystRequiredLevel,
+                    HandlerResources.ISS_ICE_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().iceCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().iceCatalystDuration)));
+
+    // Lightning
+    public static final RegistryObject<Perk> LIGHTNING_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningMancerRequiredLevel < 0
+            ? null : PERKS.register("lightning_mancer", () -> register("lightning_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().lightningMancerRequiredLevel,
+                    HandlerResources.ISS_LIGHTNING_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lightningMancerPercent)));
+    public static final RegistryObject<Perk> LIGHTNING_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningWardedRequiredLevel < 0
+            ? null : PERKS.register("lightning_warded", () -> register("lightning_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().lightningWardedRequiredLevel,
+                    HandlerResources.ISS_LIGHTNING_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lightningWardedPercent)));
+    public static final RegistryObject<Perk> LIGHTNING_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningCatalystRequiredLevel < 0
+            ? null : PERKS.register("lightning_catalyst", () -> register("lightning_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().lightningCatalystRequiredLevel,
+                    HandlerResources.ISS_LIGHTNING_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().lightningCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().lightningCatalystDuration)));
+
+    // Holy
+    public static final RegistryObject<Perk> HOLY_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyMancerRequiredLevel < 0
+            ? null : PERKS.register("holy_mancer", () -> register("holy_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().holyMancerRequiredLevel,
+                    HandlerResources.ISS_HOLY_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().holyMancerPercent)));
+    public static final RegistryObject<Perk> HOLY_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyWardedRequiredLevel < 0
+            ? null : PERKS.register("holy_warded", () -> register("holy_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().holyWardedRequiredLevel,
+                    HandlerResources.ISS_HOLY_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().holyWardedPercent)));
+    public static final RegistryObject<Perk> HOLY_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyCatalystRequiredLevel < 0
+            ? null : PERKS.register("holy_catalyst", () -> register("holy_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().holyCatalystRequiredLevel,
+                    HandlerResources.ISS_HOLY_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().holyCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().holyCatalystDuration)));
+
+    // Ender
+    public static final RegistryObject<Perk> ENDER_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderMancerRequiredLevel < 0
+            ? null : PERKS.register("ender_mancer", () -> register("ender_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().enderMancerRequiredLevel,
+                    HandlerResources.ISS_ENDER_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enderMancerPercent)));
+    public static final RegistryObject<Perk> ENDER_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderWardedRequiredLevel < 0
+            ? null : PERKS.register("ender_warded", () -> register("ender_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().enderWardedRequiredLevel,
+                    HandlerResources.ISS_ENDER_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enderWardedPercent)));
+    public static final RegistryObject<Perk> ENDER_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderCatalystRequiredLevel < 0
+            ? null : PERKS.register("ender_catalyst", () -> register("ender_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().enderCatalystRequiredLevel,
+                    HandlerResources.ISS_ENDER_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().enderCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().enderCatalystDuration)));
+
+    // Blood
+    public static final RegistryObject<Perk> BLOOD_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodMancerRequiredLevel < 0
+            ? null : PERKS.register("blood_mancer", () -> register("blood_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().bloodMancerRequiredLevel,
+                    HandlerResources.ISS_BLOOD_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodMancerPercent)));
+    public static final RegistryObject<Perk> BLOOD_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodWardedRequiredLevel < 0
+            ? null : PERKS.register("blood_warded", () -> register("blood_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().bloodWardedRequiredLevel,
+                    HandlerResources.ISS_BLOOD_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodWardedPercent)));
+    public static final RegistryObject<Perk> BLOOD_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodCatalystRequiredLevel < 0
+            ? null : PERKS.register("blood_catalyst", () -> register("blood_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().bloodCatalystRequiredLevel,
+                    HandlerResources.ISS_BLOOD_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().bloodCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().bloodCatalystDuration)));
+
+    // Evocation
+    public static final RegistryObject<Perk> EVOCATION_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationMancerRequiredLevel < 0
+            ? null : PERKS.register("evocation_mancer", () -> register("evocation_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().evocationMancerRequiredLevel,
+                    HandlerResources.ISS_EVOCATION_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evocationMancerPercent)));
+    public static final RegistryObject<Perk> EVOCATION_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationWardedRequiredLevel < 0
+            ? null : PERKS.register("evocation_warded", () -> register("evocation_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().evocationWardedRequiredLevel,
+                    HandlerResources.ISS_EVOCATION_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evocationWardedPercent)));
+    public static final RegistryObject<Perk> EVOCATION_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationCatalystRequiredLevel < 0
+            ? null : PERKS.register("evocation_catalyst", () -> register("evocation_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().evocationCatalystRequiredLevel,
+                    HandlerResources.ISS_EVOCATION_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().evocationCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().evocationCatalystDuration)));
+
+    // Nature
+    public static final RegistryObject<Perk> NATURE_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureMancerRequiredLevel < 0
+            ? null : PERKS.register("nature_mancer", () -> register("nature_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().natureMancerRequiredLevel,
+                    HandlerResources.ISS_NATURE_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureMancerPercent)));
+    public static final RegistryObject<Perk> NATURE_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureWardedRequiredLevel < 0
+            ? null : PERKS.register("nature_warded", () -> register("nature_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().natureWardedRequiredLevel,
+                    HandlerResources.ISS_NATURE_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureWardedPercent)));
+    public static final RegistryObject<Perk> NATURE_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureCatalystRequiredLevel < 0
+            ? null : PERKS.register("nature_catalyst", () -> register("nature_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().natureCatalystRequiredLevel,
+                    HandlerResources.ISS_NATURE_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().natureCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().natureCatalystDuration)));
+
+    // Eldritch
+    public static final RegistryObject<Perk> ELDRITCH_MANCER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchMancerRequiredLevel < 0
+            ? null : PERKS.register("eldritch_mancer", () -> register("eldritch_mancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().eldritchMancerRequiredLevel,
+                    HandlerResources.ISS_ELDRITCH_MANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eldritchMancerPercent)));
+    public static final RegistryObject<Perk> ELDRITCH_WARDED =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchWardedRequiredLevel < 0
+            ? null : PERKS.register("eldritch_warded", () -> register("eldritch_warded", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().eldritchWardedRequiredLevel,
+                    HandlerResources.ISS_ELDRITCH_WARDED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eldritchWardedPercent)));
+    public static final RegistryObject<Perk> ELDRITCH_CATALYST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchCatalystRequiredLevel < 0
+            ? null : PERKS.register("eldritch_catalyst", () -> register("eldritch_catalyst", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().eldritchCatalystRequiredLevel,
+                    HandlerResources.ISS_ELDRITCH_CATALYST_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().eldritchCatalystProbability),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().eldritchCatalystDuration)));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0
