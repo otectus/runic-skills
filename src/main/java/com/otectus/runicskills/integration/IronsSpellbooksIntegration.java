@@ -725,6 +725,74 @@ public class IronsSpellbooksIntegration {
         }
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    // ── Phase 3: Triple Threat + Affix Focus ──
+    // ════════════════════════════════════════════════════════════════════════
+
+    // Stable UUIDs for the three Triple Threat modifiers.
+    private static final UUID TT_MAX_MANA_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c01");
+    private static final UUID TT_MANA_REGEN_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c02");
+    private static final UUID TT_SPELL_POWER_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c03");
+
+    /**
+     * Triple Threat — when all three of Iron's, Ars, and Apotheosis are loaded
+     * AND the perk is enabled, grant +N% max_mana, mana_regen, and spell_power.
+     * The tick handler reconciles the three modifiers; they zero out when any
+     * mod is absent or the perk is disabled.
+     */
+    @SubscribeEvent
+    public void onPlayerTickPhase3(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        Player player = event.player;
+        if (player.level().isClientSide) return;
+        if ((player.tickCount % 10) != 0) return;
+
+        boolean allLoaded = ModList.get().isLoaded("irons_spellbooks")
+                && ModList.get().isLoaded("ars_nouveau")
+                && ModList.get().isLoaded("apotheosis");
+        boolean tripleThreat = allLoaded
+                && RegistryPerks.TRIPLE_THREAT != null
+                && RegistryPerks.TRIPLE_THREAT.get().isEnabled(player);
+        double ttValue = tripleThreat
+                ? HandlerCommonConfig.HANDLER.instance().xTripleThreatPercent / 100.0 : 0;
+
+        reconcileModifier(player, AttributeRegistry.MAX_MANA, TT_MAX_MANA_UUID,
+                "runicskills:triple_threat_mana", tripleThreat, ttValue * 100.0,
+                AttributeModifier.Operation.ADDITION);
+        reconcileModifier(player, AttributeRegistry.MANA_REGEN, TT_MANA_REGEN_UUID,
+                "runicskills:triple_threat_regen", tripleThreat, ttValue,
+                AttributeModifier.Operation.ADDITION);
+        reconcileModifier(player, AttributeRegistry.SPELL_POWER, TT_SPELL_POWER_UUID,
+                "runicskills:triple_threat_sp", tripleThreat, ttValue,
+                AttributeModifier.Operation.ADDITION);
+    }
+
+    /**
+     * Affix Focus — count equipped Rare+ Apotheosis-affix items; if the count
+     * meets the threshold, grant +N effective spell levels to any ISS cast.
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onModifySpellLevelAffixFocus(ModifySpellLevelEvent event) {
+        if (RegistryPerks.AFFIX_FOCUS == null) return;
+        if (!ModList.get().isLoaded("apotheosis")) return;
+        if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
+        if (!RegistryPerks.AFFIX_FOCUS.get().isEnabled(player)) return;
+
+        int required = HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredItems;
+        int count = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            net.minecraft.world.item.ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty()) continue;
+            if (!dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.hasAffixes(stack)) continue;
+            var rarity = dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.getRarity(stack);
+            if (rarity.isBound() && rarity.get().ordinal() >= 2) count++;
+        }
+        if (count >= required) {
+            int bonus = HandlerCommonConfig.HANDLER.instance().xAffixFocusBonusLevels;
+            if (bonus > 0) event.addLevels(bonus);
+        }
+    }
+
     /** Quickcast — cooldown reduction applied only to INSTANT-type spells. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onSpellCooldownQuickcast(SpellCooldownAddedEvent.Pre event) {

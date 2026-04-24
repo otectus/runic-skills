@@ -4094,6 +4094,80 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
     public int arsArcaneWeaverPercent = 10;
 
+    // ── Phase 3: Cross-mod synergy perks ──
+
+    // Schoolbridges — shared config. A single "strength" knob lets the
+    // integrator scale how much of the ISS per-school spell_power attribute
+    // bleeds over into Ars spell damage of the mapped school.
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Fire (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeFireRequiredLevel = 16;
+    @SerialEntry(comment = "Schoolbridge: Fire perk: percent of ISS fire_spell_power bled into Ars Fire damage")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeFirePercent = 50;
+
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Ice → Water (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeWaterRequiredLevel = 16;
+    @SerialEntry(comment = "Schoolbridge: Ice → Water perk: percent of ISS ice_spell_power bled into Ars Water damage")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeWaterPercent = 50;
+
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Air → Lightning (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeAirRequiredLevel = 16;
+    @SerialEntry(comment = "Schoolbridge: Air → Lightning perk: percent of ISS lightning_spell_power bled into Ars Air damage")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeAirPercent = 50;
+
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Earth → Nature (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeEarthRequiredLevel = 16;
+    @SerialEntry(comment = "Schoolbridge: Earth → Nature perk: percent of ISS nature_spell_power bled into Ars Earth damage")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeEarthPercent = 50;
+
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Abjuration → Holy (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeAbjRequiredLevel = 18;
+    @SerialEntry(comment = "Schoolbridge: Abjuration → Holy perk: percent of ISS holy_spell_power bled into Ars Abjuration effects")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeAbjPercent = 50;
+
+    @SerialEntry(comment = "Required Magic level for Schoolbridge: Manipulation → Ender (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xSchoolbridgeManipRequiredLevel = 18;
+    @SerialEntry(comment = "Schoolbridge: Manipulation → Ender perk: percent of ISS ender_spell_power bled into Ars Manipulation effects")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 200)
+    public int xSchoolbridgeManipPercent = 50;
+
+    // Unified Arcana — refund ISS mana on Ars cast success.
+    @SerialEntry(comment = "Required Magic level for Unified Arcana (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xUnifiedArcanaRequiredLevel = 20;
+    @SerialEntry(comment = "Unified Arcana perk: percent of Ars cast cost refunded to the caster's ISS mana pool on success")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 100)
+    public int xUnifiedArcanaPercent = 15;
+
+    // Triple Threat — flat mana/regen/SP bonus while all three mods are loaded.
+    @SerialEntry(comment = "Required Magic level for Triple Threat (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xTripleThreatRequiredLevel = 24;
+    @SerialEntry(comment = "Triple Threat perk: per-mod percent bonus to max_mana / mana_regen / spell_power")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 100)
+    public int xTripleThreatPercent = 5;
+
+    // Affix Focus — +N effective ISS spell level when N rare+ Apothic items equipped.
+    @SerialEntry(comment = "Required Magic level for Affix Focus (-1 to disable)")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = -1, max = 1000)
+    public int xAffixFocusRequiredLevel = 22;
+    @SerialEntry(comment = "Affix Focus perk: required count of Rare+ Apotheosis items to trigger the bonus")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 6)
+    public int xAffixFocusRequiredItems = 4;
+    @SerialEntry(comment = "Affix Focus perk: bonus spell levels granted when threshold is met")
+    @AutoGen(category = "common", group = "cross_mod") @IntField(min = 1, max = 5)
+    public int xAffixFocusBonusLevels = 1;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

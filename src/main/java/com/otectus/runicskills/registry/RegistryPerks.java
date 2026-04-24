@@ -1005,6 +1005,92 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverPercent)
             ));
 
+    // ── Phase 3: Cross-mod synergy perks ──
+    // Each Schoolbridge needs both ISS (attribute source) and Ars (spell hook).
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_FIRE =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeFireRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_fire", () -> register(
+                    "schoolbridge_fire", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeFireRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_FIRE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeFirePercent)
+            ));
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_WATER =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeWaterRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_water", () -> register(
+                    "schoolbridge_water", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeWaterRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_WATER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeWaterPercent)
+            ));
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_AIR =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAirRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_air", () -> register(
+                    "schoolbridge_air", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAirRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_AIR_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAirPercent)
+            ));
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_EARTH =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeEarthRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_earth", () -> register(
+                    "schoolbridge_earth", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeEarthRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_EARTH_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeEarthPercent)
+            ));
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_ABJ =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAbjRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_abjuration", () -> register(
+                    "schoolbridge_abjuration", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAbjRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_ABJ_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAbjPercent)
+            ));
+    public static final RegistryObject<Perk> SCHOOLBRIDGE_MANIP =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeManipRequiredLevel < 0
+            ? null : PERKS.register("schoolbridge_manipulation", () -> register(
+                    "schoolbridge_manipulation", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xSchoolbridgeManipRequiredLevel,
+                    HandlerResources.X_SCHOOLBRIDGE_MANIP_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xSchoolbridgeManipPercent)
+            ));
+    public static final RegistryObject<Perk> UNIFIED_ARCANA =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaRequiredLevel < 0
+            ? null : PERKS.register("unified_arcana", () -> register(
+                    "unified_arcana", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaRequiredLevel,
+                    HandlerResources.X_UNIFIED_ARCANA_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaPercent)
+            ));
+    public static final RegistryObject<Perk> TRIPLE_THREAT =
+            !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
+                    || !ApotheosisIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xTripleThreatRequiredLevel < 0
+            ? null : PERKS.register("triple_threat", () -> register(
+                    "triple_threat", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xTripleThreatRequiredLevel,
+                    HandlerResources.X_TRIPLE_THREAT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().xTripleThreatPercent)
+            ));
+    public static final RegistryObject<Perk> AFFIX_FOCUS =
+            !IronsSpellbooksIntegration.isModLoaded() || !ApotheosisIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredLevel < 0
+            ? null : PERKS.register("affix_focus", () -> register(
+                    "affix_focus", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredLevel,
+                    HandlerResources.X_AFFIX_FOCUS_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredItems),
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().xAffixFocusBonusLevels)
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0

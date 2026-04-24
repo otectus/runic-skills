@@ -141,6 +141,86 @@ public class ArsNouveauIntegration {
         return current * (1.0f + percent / 100.0f);
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    // ── Phase 3: Schoolbridges + Unified Arcana ──
+    // ════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Schoolbridges — read the caster's ISS per-school spell_power attribute
+     * and bleed a configurable fraction of it into the matching Ars school's
+     * damage multiplier. Gated on ISS being loaded; if it isn't, the perks
+     * are null-registered upstream so this branch never fires.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onSpellDamageSchoolbridge(SpellDamageEvent.Pre event) {
+        if (!IronsSpellbooksIntegration.isModLoaded()) return;
+        if (!(event.caster instanceof Player caster) || caster.isCreative()) return;
+        if (event.context == null || event.context.getSpell() == null) return;
+        Spell spell = event.context.getSpell();
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_FIRE, SpellSchools.ELEMENTAL_FIRE,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.FIRE_SPELL_POWER.get(),
+                c.xSchoolbridgeFirePercent);
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_WATER, SpellSchools.ELEMENTAL_WATER,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.ICE_SPELL_POWER.get(),
+                c.xSchoolbridgeWaterPercent);
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_AIR, SpellSchools.ELEMENTAL_AIR,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.LIGHTNING_SPELL_POWER.get(),
+                c.xSchoolbridgeAirPercent);
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_EARTH, SpellSchools.ELEMENTAL_EARTH,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.NATURE_SPELL_POWER.get(),
+                c.xSchoolbridgeEarthPercent);
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_ABJ, SpellSchools.ABJURATION,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.HOLY_SPELL_POWER.get(),
+                c.xSchoolbridgeAbjPercent);
+        event.damage = applyBridge(caster, spell, event.damage,
+                RegistryPerks.SCHOOLBRIDGE_MANIP, SpellSchools.MANIPULATION,
+                io.redspace.ironsspellbooks.api.registry.AttributeRegistry.ENDER_SPELL_POWER.get(),
+                c.xSchoolbridgeManipPercent);
+    }
+
+    private static float applyBridge(Player caster, Spell spell, float current,
+                                     net.minecraftforge.registries.RegistryObject<com.otectus.runicskills.registry.perks.Perk> perk,
+                                     com.hollingsworth.arsnouveau.api.spell.SpellSchool school,
+                                     net.minecraft.world.entity.ai.attributes.Attribute issAttr,
+                                     int percent) {
+        if (perk == null || !perk.get().isEnabled(caster)) return current;
+        if (!spellContainsSchool(spell, school)) return current;
+        var inst = caster.getAttribute(issAttr);
+        if (inst == null) return current;
+        // ISS *_spell_power attributes are unit percentages (0.20 = +20%).
+        float issValue = (float) inst.getValue();
+        float bleed = issValue * (percent / 100.0f);
+        return current * (1.0f + bleed);
+    }
+
+    /**
+     * Unified Arcana — on a successful Ars cast, refund a percent of the
+     * Source cost to the caster's ISS mana pool. Effectively lets a
+     * high-level player top-up ISS mana via Ars casts.
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public void onSpellResolveUnifiedArcana(SpellResolveEvent.Post event) {
+        if (!IronsSpellbooksIntegration.isModLoaded()) return;
+        if (!(event.shooter instanceof Player caster) || caster.isCreative()) return;
+        if (RegistryPerks.UNIFIED_ARCANA == null
+                || !RegistryPerks.UNIFIED_ARCANA.get().isEnabled(caster)) return;
+
+        int cost = event.spell != null ? event.spell.getCost() : 0;
+        if (cost <= 0) return;
+        float refund = cost * (HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaPercent / 100.0f);
+        if (refund <= 0) return;
+        io.redspace.ironsspellbooks.api.magic.MagicData magic =
+                io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(caster);
+        if (magic != null) magic.addMana(refund);
+    }
+
     // ── Mana Cost Reduction: Arcane Efficiency Perk ──
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

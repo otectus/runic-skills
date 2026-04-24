@@ -518,6 +518,19 @@ public class HandlerResources {
     public static final ResourceLocation ARS_ABJURER_PERK             = arsItem("abjuration_essence");
     public static final ResourceLocation ARS_ARCANE_WEAVER_PERK       = arsItem("manipulation_essence");
 
+    // ── Phase 3: Cross-mod synergy perks ──
+    // Schoolbridges reuse ISS's per-school upgrade orbs so the tree displays a
+    // thematic link back to the ISS school they scale with.
+    public static final ResourceLocation X_SCHOOLBRIDGE_FIRE_PERK     = ironsItem("upgrade_orb_fire");
+    public static final ResourceLocation X_SCHOOLBRIDGE_WATER_PERK    = ironsItem("upgrade_orb_ice");
+    public static final ResourceLocation X_SCHOOLBRIDGE_AIR_PERK      = ironsItem("upgrade_orb_lightning");
+    public static final ResourceLocation X_SCHOOLBRIDGE_EARTH_PERK    = ironsItem("upgrade_orb_nature");
+    public static final ResourceLocation X_SCHOOLBRIDGE_ABJ_PERK      = ironsItem("upgrade_orb_holy");
+    public static final ResourceLocation X_SCHOOLBRIDGE_MANIP_PERK    = ironsItem("upgrade_orb_ender");
+    public static final ResourceLocation X_UNIFIED_ARCANA_PERK        = arsItem("mundane_belt");
+    public static final ResourceLocation X_TRIPLE_THREAT_PERK         = apothItem("star_cube");
+    public static final ResourceLocation X_AFFIX_FOCUS_PERK           = apothItem("mythic_material");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");
@@ -674,10 +687,6 @@ public class HandlerResources {
     private static ResourceLocation apothItem(String name) {
         // Apotheosis uses `textures/items/` (plural) rather than the vanilla `textures/item/`.
         return new ResourceLocation("apotheosis", "textures/items/" + name + ".png");
-    }
-
-    private static ResourceLocation attribItem(String name) {
-        return new ResourceLocation("attributeslib", "textures/item/" + name + ".png");
     }
 
     public static ResourceLocation create(String path) {
