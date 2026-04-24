@@ -3888,6 +3888,27 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 200)
     public int eldritchCatalystDuration = 10;
 
+    // ── Iron's Spells 'n Spellbooks — Phase 1c: summon/utility perks ──
+
+    // Lord of the Dead — boosts summon damage and summon max health.
+    @SerialEntry(comment = "Required Magic level for Lord of the Dead (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int lordOfTheDeadRequiredLevel = 18;
+    @SerialEntry(comment = "Lord of the Dead perk: summon damage bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int lordOfTheDeadDamagePercent = 20;
+    @SerialEntry(comment = "Lord of the Dead perk: summon max HP bonus percent")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 500)
+    public int lordOfTheDeadHealthPercent = 20;
+
+    // Life Leech Bound — summons' damage returns mana to the summoner.
+    @SerialEntry(comment = "Required Magic level for Life Leech Bound (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = -1, max = 1000)
+    public int lifeLeechBoundRequiredLevel = 22;
+    @SerialEntry(comment = "Life Leech Bound perk: percent of summon damage returned to summoner as mana")
+    @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
+    public int lifeLeechBoundPercent = 5;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

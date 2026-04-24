@@ -482,6 +482,10 @@ public class HandlerResources {
     public static final ResourceLocation ISS_ELDRITCH_CATALYST_PERK = ironsItem("scroll_eldritch");
     public static final ResourceLocation ISS_ELDRITCH_ATTUNEMENT_PERK = ironsItem("affinity_ring_eldritch");
 
+    // ── Iron's Spells 'n Spellbooks — Phase 1c summon/utility perks ──
+    public static final ResourceLocation ISS_LORD_OF_THE_DEAD_PERK  = ironsItem("necronomicon_spell_book");
+    public static final ResourceLocation ISS_LIFE_LEECH_BOUND_PERK  = ironsItem("blood_rune");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");

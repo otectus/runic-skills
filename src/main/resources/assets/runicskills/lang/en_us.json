@@ -529,6 +529,11 @@
  "perk.runicskills.eldritch_catalyst" : "Eldritch Catalyst",
  "perk.runicskills.eldritch_catalyst.description" : "Each incantation veils you in unreality. %s chance to gain Abyssal Shroud for %s ticks when you cast.",
 
+ "perk.runicskills.lord_of_the_dead" : "Lord of the Dead",
+ "perk.runicskills.lord_of_the_dead.description" : "Your summons hit harder and hold longer. Summon damage +%s and summon max health +%s.",
+ "perk.runicskills.life_leech_bound" : "Life Leech Bound",
+ "perk.runicskills.life_leech_bound.description" : "Your minions pay tribute in mana. %s of damage your summons deal returns to you as mana.",
+
  "overlay.runicskills.school_locked" : "You have not attuned to the %s school. Select it in School Selection to cast these spells.",
 
  "school.runicskills.fire" : "Fire",

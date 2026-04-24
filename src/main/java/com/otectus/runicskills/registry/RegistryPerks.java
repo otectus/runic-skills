@@ -787,6 +787,28 @@ public class RegistryPerks {
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().eldritchCatalystProbability),
                     new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().eldritchCatalystDuration)));
 
+    // ── Iron's Spells — Phase 1c: summon/utility perks ──
+    public static final RegistryObject<Perk> LORD_OF_THE_DEAD =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lordOfTheDeadRequiredLevel < 0
+            ? null : PERKS.register("lord_of_the_dead", () -> register(
+                    "lord_of_the_dead",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().lordOfTheDeadRequiredLevel,
+                    HandlerResources.ISS_LORD_OF_THE_DEAD_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lordOfTheDeadDamagePercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lordOfTheDeadHealthPercent)
+            ));
+
+    public static final RegistryObject<Perk> LIFE_LEECH_BOUND =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lifeLeechBoundRequiredLevel < 0
+            ? null : PERKS.register("life_leech_bound", () -> register(
+                    "life_leech_bound",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().lifeLeechBoundRequiredLevel,
+                    HandlerResources.ISS_LIFE_LEECH_BOUND_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lifeLeechBoundPercent)
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0

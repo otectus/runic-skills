@@ -14,6 +14,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -404,6 +406,9 @@ public class IronsSpellbooksIntegration {
     private static final UUID ELDRITCH_MANCER_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c11");
     private static final UUID ELDRITCH_WARDED_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c12");
 
+    // Phase 1c
+    private static final UUID LORD_OF_THE_DEAD_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-b00c4f9a3c01");
+
     // Per-player transient state.
     private static final Map<UUID, Integer> spellweaverCount = new HashMap<>();
     private static final Map<UUID, Long> spellweaverLastCast = new HashMap<>();
@@ -532,6 +537,63 @@ public class IronsSpellbooksIntegration {
                 "runicskills:eldritch_mancer", c.eldritchMancerPercent);
         reconcileMancer(player, RegistryPerks.ELDRITCH_WARDED, AttributeRegistry.ELDRITCH_MAGIC_RESIST, ELDRITCH_WARDED_UUID,
                 "runicskills:eldritch_warded", c.eldritchWardedPercent);
+
+        // Phase 1c: Lord of the Dead — summon_damage bonus on the caster side.
+        boolean lotd = RegistryPerks.LORD_OF_THE_DEAD != null
+                && RegistryPerks.LORD_OF_THE_DEAD.get().isEnabled(player);
+        double lotdValue = lotd ? c.lordOfTheDeadDamagePercent / 100.0 : 0;
+        reconcileModifier(player, AttributeRegistry.SUMMON_DAMAGE, LORD_OF_THE_DEAD_UUID,
+                "runicskills:lord_of_the_dead", lotd, lotdValue,
+                AttributeModifier.Operation.ADDITION);
+    }
+
+    /**
+     * Lord of the Dead — summon HP bonus. When an ISS summon joins the world,
+     * if its summoner has the perk enabled, scale its max health. This runs
+     * once per spawn rather than on-tick, matching the "on create" semantics
+     * the attribute-modifier approach requires.
+     */
+    @SubscribeEvent
+    public void onSummonJoinLevel(EntityJoinLevelEvent event) {
+        if (RegistryPerks.LORD_OF_THE_DEAD == null) return;
+        if (event.getLevel().isClientSide) return;
+        if (!(event.getEntity() instanceof IMagicSummon summon)) return;
+        if (!(event.getEntity() instanceof LivingEntity livingSummon)) return;
+        if (!(summon.getSummoner() instanceof Player summoner)) return;
+        if (summoner.isCreative()) return;
+        if (!RegistryPerks.LORD_OF_THE_DEAD.get().isEnabled(summoner)) return;
+
+        AttributeInstance maxHp = livingSummon.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        if (maxHp == null) return;
+        double bonus = HandlerCommonConfig.HANDLER.instance().lordOfTheDeadHealthPercent / 100.0;
+        // MULTIPLY_BASE: final = base * (1 + sum(bonus)). Use a stable UUID so
+        // re-spawning the same summon (e.g. via /reload) won't stack.
+        if (maxHp.getModifier(LORD_OF_THE_DEAD_UUID) == null) {
+            maxHp.addPermanentModifier(new AttributeModifier(LORD_OF_THE_DEAD_UUID,
+                    "runicskills:lord_of_the_dead_hp", bonus,
+                    AttributeModifier.Operation.MULTIPLY_BASE));
+            livingSummon.setHealth(livingSummon.getMaxHealth());
+        }
+    }
+
+    /**
+     * Life Leech Bound — when a player-summoned IMagicSummon damages something,
+     * return a percent of that damage as mana to the summoner.
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public void onSummonHurt(LivingHurtEvent event) {
+        if (RegistryPerks.LIFE_LEECH_BOUND == null) return;
+        Entity attacker = event.getSource().getEntity();
+        if (!(attacker instanceof IMagicSummon summon)) return;
+        if (!(summon.getSummoner() instanceof Player summoner)) return;
+        if (summoner.isCreative()) return;
+        if (!RegistryPerks.LIFE_LEECH_BOUND.get().isEnabled(summoner)) return;
+
+        double pct = HandlerCommonConfig.HANDLER.instance().lifeLeechBoundPercent / 100.0;
+        float mana = (float) (event.getAmount() * pct);
+        if (mana <= 0) return;
+        MagicData magic = MagicData.getPlayerMagicData(summoner);
+        if (magic != null) magic.addMana(mana);
     }
 
     /** Shared wrapper around reconcileModifier for null-safe school mancer/warded perks. */
