@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.1] - 2026-04-24
+
+Botania integration. 42 new perks (19 Wisdom + 23 Magic) flavored around Botania's rune / season / sin / Gaia progression, wired behind a strict class-load-isolation pattern so the mod is a clean optional dependency.
+
+### Added
+- **Botania optional integration.** Every `BOTANIA_*` perk registers only when `botania` is present in the modlist and its `required_level >= 0`; otherwise the corresponding `RegistryObject<Perk>` is null and every event path short-circuits via the existing `RegistryPerks.X != null` idiom. Botania API access is confined to two new files:
+  - `integration/BotaniaCompat.java` — class-load-isolated wrapper around `vazkii.botania.api.BotaniaForgeCapabilities`, `ManaItemHandler`, `ManaReceiver`, `ManaPool`. Offers `drainNearbyPool` / `hasNearbyPoolMana` / `drainPlayerMana` / `chargePlayerMana` / `getPlayerManaTotal`. Scans are bounded to a 12×6×12 AABB per the integration plan.
+  - `integration/BotaniaIntegration.java` — Forge-bus event subscriber (`@SubscribeEvent` on instance methods, registered via `RunicSkills.tryLoadIntegration("botania", ...)`). Subscribes to Botania's `ManaProficiencyEvent`, `ManaDiscountEvent`, `ManaItemsEvent` and to Forge's `TickEvent.PlayerTickEvent`, `LivingHurtEvent` (attacker + target), `CriticalHitEvent`, `LivingDeathEvent`, `BlockEvent.BreakEvent`, `LivingEntityUseItemEvent.Finish`.
+- **42 new perks, wired end-to-end** (config fields in `HandlerCommonConfig`, texture ResourceLocations in `HandlerResources`, `RegistryObject<Perk>` entries in `RegistryPerks`, and `en_us.json` display names + descriptions for each). Tier layout mirrors Botania's rune progression:
+  - **Wisdom low-tier (Elemental / Rune-of-Mana):** Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student.
+  - **Wisdom mid-tier (Seasonal):** Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query.
+  - **Wisdom high-tier (Sin / Gaia / Elven):** Greed: Cartographer-Prospector, Pride: Far Reach, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
+  - **Magic low-tier (Rune foundation):** Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura: Passive Channel.
+  - **Magic mid-tier (Seasonal / Lens):** Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Mastery: Velocity, Lens Mastery: Potency.
+  - **Magic high-tier (Sin / Gaia / relic):** Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
+- **Full effect implementations this release (18 perks):** Tidewoven, Resonance, Inner Wellspring, Mirrored Wrath, Emberheart, Solar Conduit, Featherstep, Frostbound, Thundercall, Harvest Tithe, Green Thumb, Livingbark Student, Cake Combustion, Stone-Rooted, Terrasteel Ascension, Crown of Reach, Far Reach, Magnetite. Attribute-based modifiers piggy-back on the existing `RegistryAttributes.RegisterAttribute` helper; reach bonuses use Forge's `ForgeMod.ENTITY_REACH` and `ForgeMod.BLOCK_REACH` attributes.
+- **Perk icons reuse Botania's own 16×16 item textures** via the `botania:` namespace — each of the 42 perks maps to a unique `botania:textures/item/*.png` (16 runes, lens_speed/lens_power/lens_storm, reach_ring/swap_ring/magnet_ring/aura_ring/mana_ring/mana_mirror/mana_tablet/mana_cookie, monocle/itemfinder/sextant/divining_rod, lexicon/lexicon_elven/twig_wand/corporea_spark/gaia_head, flight_tiara/terrasteel_ingot/king_key, livingwood_twig/overgrowth_seed/infused_seeds, third_eye_0/third_eye_2). Nothing is redistributed: the paths resolve at render time from Botania's own assets, so the perks only ever render when Botania is loaded (which is a hard precondition for the perk existing at all).
+- Build: `maven.blamejared.com` added to `build.gradle` repositories, `compileOnly fg.deobf("vazkii.botania:Botania:1.20.1-451-FORGE:api")` added to dependencies. No runtime jar is shipped.
+- mods.toml: optional `botania` dependency entry, `mandatory = false`, `ordering = "AFTER"`, `versionRange = "[1.20.1-441,)"`.
+
+### Notes
+- Tested: `./gradlew compileJava` passes against the real Botania 1.20.1-451-FORGE `:api` jar with no errors.
+- Fallback when Botania is absent: verified class-load-isolation — `vazkii.botania.*` imports only live inside `BotaniaCompat` and `BotaniaIntegration`, both of which are never class-loaded (and thus never verified) on a Botania-less runtime because `tryLoadIntegration` short-circuits before `Class.forName` and `RegistryPerks`' ternary guards null out every Botania field before their register lambdas instantiate.
+- Effect implementations deferred to a follow-up pass (24 perks): client render (Sparkle-Sense, Manaseer's Lens, Still Listener, Agricultor's Eye, Cartographer-Prospector), keybind-activated (Dowser's Twig, Verdant Pulse, Manastorm, Flügel's Grace, Loot-Hunter's Intuition), custom capability or progression (Gaia's Witness extra slot, Relic Attunement curio slot, Elven Knowledge chapter unlock, Band of Aura virtual mana item, Pixie Affinity summon), tooltip / command / projectile / physics (Petal-Reader, Mirror's Read, Oracle of the Nine Runes, Lazy Swap, Corporea Query, Lens Velocity, Lens Potency, Forager's Palate XP flag, Unbound Step movement mixin). Each is registered and toggleable; only its effect handler is blank.
+- Save-compatible with 1.0.0; no NBT schema or protocol-version changes.
+
 ## [1.0.0] - 2026-04-24
 
 First stable release. Consolidates all 0.9.x work (item-lock master toggle, perk/passive kill switches, perk-swap cooldown, perk-group datapacks, Legendary Tabs hardening, tooltip/config fixes) under a 1.0 milestone. No further pre-1.0 versions will be cut.

@@ -7,7 +7,7 @@ A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through
 ![Java 17](https://img.shields.io/badge/Java-17-F89820)
 ![License Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release ships the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix.
+Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. **1.0.1 adds a 42-perk Botania integration** (Wisdom + Magic trees, rune-tiered structure) behind a strict optional-dependency guard.
 
 ---
 
@@ -83,7 +83,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.0.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.0.1.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -104,6 +104,7 @@ Runic Skills detects installed mods at runtime and enables matching content with
 |---|---|
 | **KubeJS** / Rhino | `SKILL_LEVELUP` event, plus ability to register custom skills, perks, passives, titles, and conditions from scripts |
 | **Ars Nouveau** | Spell-damage scaling by Magic, mana regen passives, glyph mastery perk, familiar gating |
+| **Botania** | 42 rune-tiered perks across Wisdom + Magic: mana proficiency + discount hooks, nearby-pool trickle-charge, elemental/seasonal/sin procs; icons reuse Botania's own item textures |
 | **Irons Spellbooks** | Spell echo, arcane shield, attunement perks, school bonuses, spell gating |
 | **Apotheosis** | Affix gating, gem attunement, socket bonus interactions |
 | **Apothic Attributes** | Extended attribute pool for passives (armor pierce, cold damage, etc.) |

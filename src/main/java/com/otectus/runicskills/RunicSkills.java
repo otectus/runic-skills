@@ -73,6 +73,7 @@ public class RunicSkills {
         tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
         tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
         tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
+        tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation.
         if (SpartanIntegration.isAnyLoaded())

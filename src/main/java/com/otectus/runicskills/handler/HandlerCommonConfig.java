@@ -3964,4 +3964,431 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "farmers_delight")
     @IntField(min = -1)
     public int masterChefRequiredLevel = 16;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  Botania Integration — Runic Skills perks flavored around Botania's rune /
+    //  season / sin progression. Every perk has a required-level field (set to -1
+    //  to disable) plus, where applicable, a tuning value for its effect.
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── WISDOM tree — Low tier (Elemental / Rune-of-Mana entry perks) ──
+    @SerialEntry(comment = "Wisdom level required for Petal-Reader perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaPetalReaderRequiredLevel = 8;
+
+    @SerialEntry(comment = "Wisdom level required for Rune of Mana: Resonance perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaResonanceRequiredLevel = 10;
+
+    @SerialEntry(comment = "Rune of Mana: Resonance — bonus max-mana percent on carried Tablets/Bands")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaResonancePercent = 10;
+
+    @SerialEntry(comment = "Wisdom level required for Sparkle-Sense perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaSparkleSenseRequiredLevel = 10;
+
+    @SerialEntry(comment = "Sparkle-Sense highlight radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 32)
+    public int botaniaSparkleSenseRadius = 12;
+
+    @SerialEntry(comment = "Wisdom level required for Dowser's Twig perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaDowsersTwigRequiredLevel = 12;
+
+    @SerialEntry(comment = "Dowser's Twig reveal duration (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 30)
+    public int botaniaDowsersTwigSeconds = 3;
+
+    @SerialEntry(comment = "Dowser's Twig cooldown (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 300)
+    public int botaniaDowsersTwigCooldownSeconds = 30;
+
+    @SerialEntry(comment = "Wisdom level required for Green Thumb perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaGreenThumbRequiredLevel = 8;
+
+    @SerialEntry(comment = "Green Thumb extra-drop chance denominator (1-in-N)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaGreenThumbOneInN = 8;
+
+    @SerialEntry(comment = "Wisdom level required for Livingbark Student perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaLivingbarkStudentRequiredLevel = 8;
+
+    @SerialEntry(comment = "Livingbark Student bonus-sapling chance percent")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaLivingbarkStudentPercent = 5;
+
+    // ── WISDOM tree — Mid tier (Seasonal / specialization perks) ──
+    @SerialEntry(comment = "Wisdom level required for Spring: Agricultor's Eye perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaAgricultorsEyeRequiredLevel = 18;
+
+    @SerialEntry(comment = "Wisdom level required for Summer: Forager's Palate perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaForagersPalateRequiredLevel = 18;
+
+    @SerialEntry(comment = "Summer: Forager's Palate XP gain bonus percent (while buff active)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 200)
+    public int botaniaForagersPalatePercent = 20;
+
+    @SerialEntry(comment = "Summer: Forager's Palate buff duration (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 600)
+    public int botaniaForagersPalateSeconds = 30;
+
+    @SerialEntry(comment = "Wisdom level required for Autumn: Loot-Hunter's Intuition perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaLootHuntersIntuitionRequiredLevel = 20;
+
+    @SerialEntry(comment = "Autumn: Loot-Hunter's Intuition scan radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 8, max = 128)
+    public int botaniaLootHuntersIntuitionRadius = 64;
+
+    @SerialEntry(comment = "Autumn: Loot-Hunter's Intuition outline duration (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 30)
+    public int botaniaLootHuntersIntuitionSeconds = 3;
+
+    @SerialEntry(comment = "Wisdom level required for Winter: Still Listener perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaStillListenerRequiredLevel = 20;
+
+    @SerialEntry(comment = "Winter: Still Listener hostile-detection radius while sneaking (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 4, max = 48)
+    public int botaniaStillListenerRadius = 16;
+
+    @SerialEntry(comment = "Wisdom level required for Manaseer's Lens perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaManaseersLensRequiredLevel = 22;
+
+    @SerialEntry(comment = "Manaseer's Lens through-wall burst-visibility radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 4, max = 48)
+    public int botaniaManaseersLensRadius = 24;
+
+    @SerialEntry(comment = "Wisdom level required for Corporea Query perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaCorporeaQueryRequiredLevel = 24;
+
+    @SerialEntry(comment = "Corporea Query scan radius (blocks) for /know command")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 4, max = 64)
+    public int botaniaCorporeaQueryRadius = 16;
+
+    // ── WISDOM tree — High tier (Sin / Gaia / Elven capstone perks) ──
+    @SerialEntry(comment = "Wisdom level required for Greed: Cartographer-Prospector perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaCartographerRequiredLevel = 28;
+
+    @SerialEntry(comment = "Greed: Cartographer-Prospector overlay duration (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 60)
+    public int botaniaCartographerSeconds = 6;
+
+    @SerialEntry(comment = "Wisdom level required for Pride: Far Reach perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaFarReachRequiredLevel = 28;
+
+    @SerialEntry(comment = "Pride: Far Reach bonus interaction range (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.5f, max = 8.0f)
+    public float botaniaFarReachBonusBlocks = 2.0f;
+
+    @SerialEntry(comment = "Wisdom level required for Sloth: Lazy Swap perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaLazySwapRequiredLevel = 28;
+
+    @SerialEntry(comment = "Wisdom level required for Envy: Mirror's Read perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaMirrorsReadRequiredLevel = 30;
+
+    @SerialEntry(comment = "Envy: Mirror's Read player-gear reveal radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 4, max = 32)
+    public int botaniaMirrorsReadRadius = 16;
+
+    @SerialEntry(comment = "Wisdom level required for Elven Knowledge perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaElvenKnowledgeRequiredLevel = 34;
+
+    @SerialEntry(comment = "Wisdom level required for Gaia's Witness perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaGaiasWitnessRequiredLevel = 38;
+
+    @SerialEntry(comment = "Wisdom level required for Oracle of the Nine Runes perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaOracleNineRunesRequiredLevel = 40;
+
+    // ── MAGIC tree — Low tier (Elemental / Rune-of-Mana foundation) ──
+    @SerialEntry(comment = "Magic level required for Inner Wellspring perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaInnerWellspringRequiredLevel = 10;
+
+    @SerialEntry(comment = "Inner Wellspring mana siphoned from nearby Pool per half-second throttle tick")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 1000)
+    public int botaniaInnerWellspringManaPerTick = 40;
+
+    @SerialEntry(comment = "Magic level required for Rune of Water: Tidewoven perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaTidewovenRequiredLevel = 10;
+
+    @SerialEntry(comment = "Rune of Water: Tidewoven mana discount while wet/in-rain (additive; 0.10 = 10%)")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 1.0f)
+    public float botaniaTidewovenDiscount = 0.10f;
+
+    @SerialEntry(comment = "Magic level required for Rune of Fire: Emberheart perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaEmberheartRequiredLevel = 10;
+
+    @SerialEntry(comment = "Rune of Fire: Emberheart flat fire damage on attacks")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 20.0f)
+    public float botaniaEmberheartFireDamage = 1.0f;
+
+    @SerialEntry(comment = "Magic level required for Rune of Earth: Stone-Rooted perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaStoneRootedRequiredLevel = 10;
+
+    @SerialEntry(comment = "Rune of Earth: Stone-Rooted armor bonus on stone-family blocks")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 10.0f)
+    public float botaniaStoneRootedArmor = 1.0f;
+
+    @SerialEntry(comment = "Magic level required for Rune of Air: Featherstep perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaFeatherstepRequiredLevel = 10;
+
+    @SerialEntry(comment = "Rune of Air: Featherstep fall-damage multiplier (0.5 = halved damage)")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 1.0f)
+    public float botaniaFeatherstepMultiplier = 0.5f;
+
+    @SerialEntry(comment = "Magic level required for Band of Aura: Passive Channel perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaBandOfAuraRequiredLevel = 14;
+
+    @SerialEntry(comment = "Band of Aura: Passive Channel mana added per half-second tick to inventory items")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 200)
+    public int botaniaBandOfAuraManaPerTick = 10;
+
+    // ── MAGIC tree — Mid tier (Seasonal / spell-flavor branches) ──
+    @SerialEntry(comment = "Magic level required for Spring: Verdant Pulse perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaVerdantPulseRequiredLevel = 18;
+
+    @SerialEntry(comment = "Spring: Verdant Pulse bone-meal radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 16)
+    public int botaniaVerdantPulseRadius = 2;
+
+    @SerialEntry(comment = "Spring: Verdant Pulse cooldown (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 600)
+    public int botaniaVerdantPulseCooldownSeconds = 30;
+
+    @SerialEntry(comment = "Magic level required for Summer: Solar Conduit perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaSolarConduitRequiredLevel = 18;
+
+    @SerialEntry(comment = "Summer: Solar Conduit daytime ability-damage bonus percent")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaSolarConduitPercent = 10;
+
+    @SerialEntry(comment = "Magic level required for Autumn: Harvest Tithe perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaHarvestTitheRequiredLevel = 20;
+
+    @SerialEntry(comment = "Autumn: Harvest Tithe gem/nugget drop chance on kill (percent)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaHarvestTithePercent = 3;
+
+    @SerialEntry(comment = "Magic level required for Winter: Frostbound perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaFrostboundRequiredLevel = 20;
+
+    @SerialEntry(comment = "Winter: Frostbound cold retaliation damage on melee attackers")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 20.0f)
+    public float botaniaFrostboundDamage = 1.0f;
+
+    @SerialEntry(comment = "Winter: Frostbound slow duration on melee attackers (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 30)
+    public int botaniaFrostboundSlowSeconds = 2;
+
+    @SerialEntry(comment = "Magic level required for Lens Mastery: Velocity perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaLensVelocityRequiredLevel = 22;
+
+    @SerialEntry(comment = "Lens Mastery: Velocity projectile/spell speed bonus percent")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 200)
+    public int botaniaLensVelocityPercent = 25;
+
+    @SerialEntry(comment = "Magic level required for Lens Mastery: Potency perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaLensPotencyRequiredLevel = 22;
+
+    @SerialEntry(comment = "Lens Mastery: Potency damage multiplier on next ability per cooldown")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 1.0f, max = 10.0f)
+    public float botaniaLensPotencyMultiplier = 2.0f;
+
+    @SerialEntry(comment = "Lens Mastery: Potency cooldown (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 300)
+    public int botaniaLensPotencyCooldownSeconds = 15;
+
+    // ── MAGIC tree — High tier (Sin / Gaia / relic capstones) ──
+    @SerialEntry(comment = "Magic level required for Lust: Pixie Affinity perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaPixieAffinityRequiredLevel = 28;
+
+    @SerialEntry(comment = "Lust: Pixie Affinity proc chance on damage taken (percent)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaPixieAffinityPercent = 5;
+
+    @SerialEntry(comment = "Magic level required for Gluttony: Cake Combustion perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaCakeCombustionRequiredLevel = 28;
+
+    @SerialEntry(comment = "Gluttony: Cake Combustion regen duration after eating (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 300)
+    public int botaniaCakeCombustionSeconds = 30;
+
+    @SerialEntry(comment = "Magic level required for Greed: Magnetite perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaMagnetiteRequiredLevel = 30;
+
+    @SerialEntry(comment = "Greed: Magnetite item-magnet radius (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 32)
+    public int botaniaMagnetiteRadius = 6;
+
+    @SerialEntry(comment = "Magic level required for Sloth: Unbound Step perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaUnboundStepRequiredLevel = 30;
+
+    @SerialEntry(comment = "Magic level required for Envy: Mirrored Wrath perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaMirroredWrathRequiredLevel = 32;
+
+    @SerialEntry(comment = "Envy: Mirrored Wrath reflected-damage percent")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaMirroredWrathPercent = 20;
+
+    @SerialEntry(comment = "Magic level required for Pride: Crown of Reach perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaCrownOfReachRequiredLevel = 32;
+
+    @SerialEntry(comment = "Pride: Crown of Reach attack/interaction range bonus (blocks)")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.5f, max = 10.0f)
+    public float botaniaCrownOfReachBonusBlocks = 3.0f;
+
+    @SerialEntry(comment = "Magic level required for Wrath: Thundercall perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaThundercallRequiredLevel = 34;
+
+    @SerialEntry(comment = "Wrath: Thundercall chain-lightning proc chance on crit (percent)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 100)
+    public int botaniaThundercallPercent = 5;
+
+    @SerialEntry(comment = "Magic level required for Gaia's Gift: Relic Attunement perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaRelicAttunementRequiredLevel = 40;
+
+    @SerialEntry(comment = "Magic level required for Terrasteel Ascension perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaTerrasteelAscensionRequiredLevel = 40;
+
+    @SerialEntry(comment = "Terrasteel Ascension bonus max HP")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.0f, max = 20.0f)
+    public float botaniaTerrasteelAscensionMaxHp = 4.0f;
+
+    @SerialEntry(comment = "Magic level required for Flügel's Grace perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaFlugelsGraceRequiredLevel = 36;
+
+    @SerialEntry(comment = "Flügel's Grace mid-air jump count (set to 3 for triple jump)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 1, max = 8)
+    public int botaniaFlugelsGraceJumps = 3;
+
+    @SerialEntry(comment = "Magic level required for Manastorm perk (-1 to disable)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = -1)
+    public int botaniaManastormRequiredLevel = 40;
+
+    @SerialEntry(comment = "Manastorm cooldown (seconds)")
+    @AutoGen(category = "common", group = "botania")
+    @IntField(min = 30, max = 3600)
+    public int botaniaManastormCooldownSeconds = 300;
+
+    @SerialEntry(comment = "Manastorm damage multiplier from pool-fed detonation")
+    @AutoGen(category = "common", group = "botania")
+    @FloatField(min = 0.1f, max = 10.0f)
+    public float botaniaManastormDamageMultiplier = 2.0f;
 }

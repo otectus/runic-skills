@@ -3667,6 +3667,435 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterArtificerPercent)
             ));
 
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Botania Integration — Perks (all conditionally null when Botania absent)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    // ── WISDOM tree — Low tier (Elemental / Rune-of-Mana entries) ──
+    public static final RegistryObject<Perk> BOTANIA_PETAL_READER =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaPetalReaderRequiredLevel < 0
+            ? null : PERKS.register("botania_petal_reader", () -> register(
+                    "botania_petal_reader",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaPetalReaderRequiredLevel,
+                    HandlerResources.BOTANIA_PETAL_READER_PERK
+            ));
+
+    public static final RegistryObject<Perk> RUNE_OF_MANA_RESONANCE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaResonanceRequiredLevel < 0
+            ? null : PERKS.register("botania_rune_of_mana_resonance", () -> register(
+                    "botania_rune_of_mana_resonance",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaResonanceRequiredLevel,
+                    HandlerResources.BOTANIA_RESONANCE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaResonancePercent)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_SPARKLE_SENSE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRequiredLevel < 0
+            ? null : PERKS.register("botania_sparkle_sense", () -> register(
+                    "botania_sparkle_sense",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRequiredLevel,
+                    HandlerResources.BOTANIA_SPARKLE_SENSE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRadius)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_DOWSERS_TWIG =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigRequiredLevel < 0
+            ? null : PERKS.register("botania_dowsers_twig", () -> register(
+                    "botania_dowsers_twig",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigRequiredLevel,
+                    HandlerResources.BOTANIA_DOWSERS_TWIG_PERK,
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigSeconds),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigCooldownSeconds)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_GREEN_THUMB =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbRequiredLevel < 0
+            ? null : PERKS.register("botania_green_thumb", () -> register(
+                    "botania_green_thumb",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbRequiredLevel,
+                    HandlerResources.BOTANIA_GREEN_THUMB_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbOneInN)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_LIVINGBARK_STUDENT =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentRequiredLevel < 0
+            ? null : PERKS.register("botania_livingbark_student", () -> register(
+                    "botania_livingbark_student",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentRequiredLevel,
+                    HandlerResources.BOTANIA_LIVINGBARK_STUDENT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentPercent)
+            ));
+
+    // ── WISDOM tree — Mid tier (Seasonal specializations) ──
+    public static final RegistryObject<Perk> BOTANIA_AGRICULTORS_EYE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaAgricultorsEyeRequiredLevel < 0
+            ? null : PERKS.register("botania_agricultors_eye", () -> register(
+                    "botania_agricultors_eye",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaAgricultorsEyeRequiredLevel,
+                    HandlerResources.BOTANIA_AGRICULTORS_EYE_PERK
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_FORAGERS_PALATE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateRequiredLevel < 0
+            ? null : PERKS.register("botania_foragers_palate", () -> register(
+                    "botania_foragers_palate",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateRequiredLevel,
+                    HandlerResources.BOTANIA_FORAGERS_PALATE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaForagersPalatePercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateSeconds)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_LOOT_HUNTERS_INTUITION =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRequiredLevel < 0
+            ? null : PERKS.register("botania_loot_hunters_intuition", () -> register(
+                    "botania_loot_hunters_intuition",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRequiredLevel,
+                    HandlerResources.BOTANIA_LOOT_HUNTERS_INTUITION_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRadius),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionSeconds)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_STILL_LISTENER =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRequiredLevel < 0
+            ? null : PERKS.register("botania_still_listener", () -> register(
+                    "botania_still_listener",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRequiredLevel,
+                    HandlerResources.BOTANIA_STILL_LISTENER_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRadius)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_MANASEERS_LENS =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRequiredLevel < 0
+            ? null : PERKS.register("botania_manaseers_lens", () -> register(
+                    "botania_manaseers_lens",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRequiredLevel,
+                    HandlerResources.BOTANIA_MANASEERS_LENS_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRadius)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_CORPOREA_QUERY =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRequiredLevel < 0
+            ? null : PERKS.register("botania_corporea_query", () -> register(
+                    "botania_corporea_query",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRequiredLevel,
+                    HandlerResources.BOTANIA_CORPOREA_QUERY_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRadius)
+            ));
+
+    // ── WISDOM tree — High tier (Sin / Gaia / Elven capstones) ──
+    public static final RegistryObject<Perk> BOTANIA_CARTOGRAPHER =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCartographerRequiredLevel < 0
+            ? null : PERKS.register("botania_cartographer", () -> register(
+                    "botania_cartographer",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaCartographerRequiredLevel,
+                    HandlerResources.BOTANIA_CARTOGRAPHER_PERK,
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaCartographerSeconds)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_FAR_REACH =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFarReachRequiredLevel < 0
+            ? null : PERKS.register("botania_far_reach", () -> register(
+                    "botania_far_reach",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaFarReachRequiredLevel,
+                    HandlerResources.BOTANIA_FAR_REACH_PERK,
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFarReachBonusBlocks)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_LAZY_SWAP =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLazySwapRequiredLevel < 0
+            ? null : PERKS.register("botania_lazy_swap", () -> register(
+                    "botania_lazy_swap",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaLazySwapRequiredLevel,
+                    HandlerResources.BOTANIA_LAZY_SWAP_PERK
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_MIRRORS_READ =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRequiredLevel < 0
+            ? null : PERKS.register("botania_mirrors_read", () -> register(
+                    "botania_mirrors_read",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRequiredLevel,
+                    HandlerResources.BOTANIA_MIRRORS_READ_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRadius)
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_ELVEN_KNOWLEDGE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaElvenKnowledgeRequiredLevel < 0
+            ? null : PERKS.register("botania_elven_knowledge", () -> register(
+                    "botania_elven_knowledge",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaElvenKnowledgeRequiredLevel,
+                    HandlerResources.BOTANIA_ELVEN_KNOWLEDGE_PERK
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_GAIAS_WITNESS =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaGaiasWitnessRequiredLevel < 0
+            ? null : PERKS.register("botania_gaias_witness", () -> register(
+                    "botania_gaias_witness",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaGaiasWitnessRequiredLevel,
+                    HandlerResources.BOTANIA_GAIAS_WITNESS_PERK
+            ));
+
+    public static final RegistryObject<Perk> BOTANIA_ORACLE_NINE_RUNES =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaOracleNineRunesRequiredLevel < 0
+            ? null : PERKS.register("botania_oracle_nine_runes", () -> register(
+                    "botania_oracle_nine_runes",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().botaniaOracleNineRunesRequiredLevel,
+                    HandlerResources.BOTANIA_ORACLE_NINE_RUNES_PERK
+            ));
+
+    // ── MAGIC tree — Low tier (Elemental / Rune foundation) ──
+    public static final RegistryObject<Perk> INNER_WELLSPRING =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringRequiredLevel < 0
+            ? null : PERKS.register("botania_inner_wellspring", () -> register(
+                    "botania_inner_wellspring",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringRequiredLevel,
+                    HandlerResources.BOTANIA_INNER_WELLSPRING_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringManaPerTick)
+            ));
+
+    public static final RegistryObject<Perk> RUNE_OF_WATER_TIDEWOVEN =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaTidewovenRequiredLevel < 0
+            ? null : PERKS.register("botania_tidewoven", () -> register(
+                    "botania_tidewoven",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaTidewovenRequiredLevel,
+                    HandlerResources.BOTANIA_TIDEWOVEN_PERK,
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaTidewovenDiscount)
+            ));
+
+    public static final RegistryObject<Perk> RUNE_OF_FIRE_EMBERHEART =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaEmberheartRequiredLevel < 0
+            ? null : PERKS.register("botania_emberheart", () -> register(
+                    "botania_emberheart",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaEmberheartRequiredLevel,
+                    HandlerResources.BOTANIA_EMBERHEART_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaEmberheartFireDamage)
+            ));
+
+    public static final RegistryObject<Perk> RUNE_OF_EARTH_STONE_ROOTED =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedRequiredLevel < 0
+            ? null : PERKS.register("botania_stone_rooted", () -> register(
+                    "botania_stone_rooted",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedRequiredLevel,
+                    HandlerResources.BOTANIA_STONE_ROOTED_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedArmor)
+            ));
+
+    public static final RegistryObject<Perk> RUNE_OF_AIR_FEATHERSTEP =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepRequiredLevel < 0
+            ? null : PERKS.register("botania_featherstep", () -> register(
+                    "botania_featherstep",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepRequiredLevel,
+                    HandlerResources.BOTANIA_FEATHERSTEP_PERK,
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepMultiplier)
+            ));
+
+    public static final RegistryObject<Perk> BAND_OF_AURA =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraRequiredLevel < 0
+            ? null : PERKS.register("botania_band_of_aura", () -> register(
+                    "botania_band_of_aura",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraRequiredLevel,
+                    HandlerResources.BOTANIA_BAND_OF_AURA_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraManaPerTick)
+            ));
+
+    // ── MAGIC tree — Mid tier (Seasonal / Lens specializations) ──
+    public static final RegistryObject<Perk> VERDANT_PULSE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRequiredLevel < 0
+            ? null : PERKS.register("botania_verdant_pulse", () -> register(
+                    "botania_verdant_pulse",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRequiredLevel,
+                    HandlerResources.BOTANIA_VERDANT_PULSE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRadius),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseCooldownSeconds)
+            ));
+
+    public static final RegistryObject<Perk> SOLAR_CONDUIT =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitRequiredLevel < 0
+            ? null : PERKS.register("botania_solar_conduit", () -> register(
+                    "botania_solar_conduit",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitRequiredLevel,
+                    HandlerResources.BOTANIA_SOLAR_CONDUIT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitPercent)
+            ));
+
+    public static final RegistryObject<Perk> HARVEST_TITHE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaHarvestTitheRequiredLevel < 0
+            ? null : PERKS.register("botania_harvest_tithe", () -> register(
+                    "botania_harvest_tithe",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaHarvestTitheRequiredLevel,
+                    HandlerResources.BOTANIA_HARVEST_TITHE_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaHarvestTithePercent)
+            ));
+
+    public static final RegistryObject<Perk> FROSTBOUND =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFrostboundRequiredLevel < 0
+            ? null : PERKS.register("botania_frostbound", () -> register(
+                    "botania_frostbound",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaFrostboundRequiredLevel,
+                    HandlerResources.BOTANIA_FROSTBOUND_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFrostboundDamage),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaFrostboundSlowSeconds)
+            ));
+
+    public static final RegistryObject<Perk> LENS_VELOCITY =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityRequiredLevel < 0
+            ? null : PERKS.register("botania_lens_velocity", () -> register(
+                    "botania_lens_velocity",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityRequiredLevel,
+                    HandlerResources.BOTANIA_LENS_VELOCITY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityPercent)
+            ));
+
+    public static final RegistryObject<Perk> LENS_POTENCY =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyRequiredLevel < 0
+            ? null : PERKS.register("botania_lens_potency", () -> register(
+                    "botania_lens_potency",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyRequiredLevel,
+                    HandlerResources.BOTANIA_LENS_POTENCY_PERK,
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyMultiplier),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyCooldownSeconds)
+            ));
+
+    // ── MAGIC tree — High tier (Sin / Gaia / relic capstones) ──
+    public static final RegistryObject<Perk> PIXIE_AFFINITY =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityRequiredLevel < 0
+            ? null : PERKS.register("botania_pixie_affinity", () -> register(
+                    "botania_pixie_affinity",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityRequiredLevel,
+                    HandlerResources.BOTANIA_PIXIE_AFFINITY_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityPercent)
+            ));
+
+    public static final RegistryObject<Perk> CAKE_COMBUSTION =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionRequiredLevel < 0
+            ? null : PERKS.register("botania_cake_combustion", () -> register(
+                    "botania_cake_combustion",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionRequiredLevel,
+                    HandlerResources.BOTANIA_CAKE_COMBUSTION_PERK,
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionSeconds)
+            ));
+
+    public static final RegistryObject<Perk> MAGNETITE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRequiredLevel < 0
+            ? null : PERKS.register("botania_magnetite", () -> register(
+                    "botania_magnetite",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRequiredLevel,
+                    HandlerResources.BOTANIA_MAGNETITE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRadius)
+            ));
+
+    public static final RegistryObject<Perk> UNBOUND_STEP =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaUnboundStepRequiredLevel < 0
+            ? null : PERKS.register("botania_unbound_step", () -> register(
+                    "botania_unbound_step",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaUnboundStepRequiredLevel,
+                    HandlerResources.BOTANIA_UNBOUND_STEP_PERK
+            ));
+
+    public static final RegistryObject<Perk> ENVY_MIRRORED_WRATH =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathRequiredLevel < 0
+            ? null : PERKS.register("botania_mirrored_wrath", () -> register(
+                    "botania_mirrored_wrath",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathRequiredLevel,
+                    HandlerResources.BOTANIA_MIRRORED_WRATH_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathPercent)
+            ));
+
+    public static final RegistryObject<Perk> CROWN_OF_REACH =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachRequiredLevel < 0
+            ? null : PERKS.register("botania_crown_of_reach", () -> register(
+                    "botania_crown_of_reach",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachRequiredLevel,
+                    HandlerResources.BOTANIA_CROWN_OF_REACH_PERK,
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachBonusBlocks)
+            ));
+
+    public static final RegistryObject<Perk> THUNDERCALL =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaThundercallRequiredLevel < 0
+            ? null : PERKS.register("botania_thundercall", () -> register(
+                    "botania_thundercall",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaThundercallRequiredLevel,
+                    HandlerResources.BOTANIA_THUNDERCALL_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaThundercallPercent)
+            ));
+
+    public static final RegistryObject<Perk> RELIC_ATTUNEMENT =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaRelicAttunementRequiredLevel < 0
+            ? null : PERKS.register("botania_relic_attunement", () -> register(
+                    "botania_relic_attunement",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaRelicAttunementRequiredLevel,
+                    HandlerResources.BOTANIA_RELIC_ATTUNEMENT_PERK
+            ));
+
+    public static final RegistryObject<Perk> TERRASTEEL_ASCENSION =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionRequiredLevel < 0
+            ? null : PERKS.register("botania_terrasteel_ascension", () -> register(
+                    "botania_terrasteel_ascension",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionRequiredLevel,
+                    HandlerResources.BOTANIA_TERRASTEEL_ASCENSION_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionMaxHp)
+            ));
+
+    public static final RegistryObject<Perk> FLUGELS_GRACE =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceRequiredLevel < 0
+            ? null : PERKS.register("botania_flugels_grace", () -> register(
+                    "botania_flugels_grace",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceRequiredLevel,
+                    HandlerResources.BOTANIA_FLUGELS_GRACE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceJumps)
+            ));
+
+    public static final RegistryObject<Perk> MANASTORM =
+            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaManastormRequiredLevel < 0
+            ? null : PERKS.register("botania_manastorm", () -> register(
+                    "botania_manastorm",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().botaniaManastormRequiredLevel,
+                    HandlerResources.BOTANIA_MANASTORM_PERK,
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaManastormCooldownSeconds),
+                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaManastormDamageMultiplier)
+            ));
+
     private static Perk register(String name, Supplier<Skill> skillSupplier, int requiredLvl, ResourceLocation texture, Value... configValues) {
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
         return new Perk(key, skillSupplier, requiredLvl, texture, configValues);

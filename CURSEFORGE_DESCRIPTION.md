@@ -36,6 +36,7 @@ Most "RPG skills" mods make you grind against a separate track. Runic Skills pig
 Runic Skills is built to feel like part of your modpack rather than an island. Optional integrations light up automatically when their mods are installed:
 
 - **Ars Nouveau** — Magic scales spell damage, mana-regen passives, glyph mastery perk.
+- **Botania** — 42 rune-tiered perks spanning Wisdom and Magic. Elemental/Seasonal/Sin/Gaia tiers echo Botania's own rune progression; perks pay in and siphon from your carried Mana Tablets/Bands and nearby Mana Pools. Icons reuse Botania's own 16×16 item textures directly (no redistribution). Auto-detects Botania, zero crash risk when absent.
 - **Irons Spellbooks** — Spell echo, arcane shield, attunement perks, school bonuses, spell gating by Magic level.
 - **Apotheosis & Apothic Attributes** — Affix, gem, and socket awareness. Broader attribute pool for passives.
 - **KubeJS** — Script your own skills, perks, passives, titles, and conditions. A `SKILL_LEVELUP` event is exposed.
@@ -97,6 +98,15 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 - `/titles <player> <title> set true|false` — grant or revoke a title.
 
 ---
+
+## What's new in 1.0.1
+
+- **Botania integration — 42 new perks.** A full perk tree across Wisdom and Magic, structured around Botania's own rune progression (Elemental / Seasonal / Sin / Gaia). Lights up automatically when Botania is in your modpack; stays silent otherwise. No hard dependency, no crash when Botania is missing.
+- **Wisdom tree (19 perks).** Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student, Agricultor's Eye, Forager's Palate, Loot-Hunter's Intuition, Still Listener, Manaseer's Lens, Corporea Query, Cartographer-Prospector, Far Reach, Lazy Swap, Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
+- **Magic tree (23 perks).** Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura, Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Velocity, Lens Potency, Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
+- **Hard-integration details.** Hooks Botania's `ManaProficiencyEvent`, `ManaDiscountEvent`, and Mana Pool capabilities via `BotaniaForgeCapabilities.MANA_RECEIVER` / `ManaItemHandler`. Inner Wellspring trickle-charges your inventory mana items from nearby Mana Pools; Rune of Water: Tidewoven adds an additive mana-cost discount while wet; Rune of Mana: Resonance promotes tool mana-proficiency; everything else leans on vanilla combat/tick/block-break events.
+- **Icons match Botania.** Every perk uses a unique Botania item texture as its icon — the 16 runes for their namesake perks, `lens_speed`/`lens_power`/`lens_storm` for the lens perks, `reach_ring` for Far Reach, `magnet_ring` for Magnetite, `aura_ring` for Band of Aura, `flight_tiara` for Flügel's Grace, `terrasteel_ingot` for Terrasteel Ascension, `king_key` for Relic Attunement, `monocle`/`itemfinder`/`sextant`/`divining_rod`/`mana_mirror` for the perception perks, and so on. No textures are bundled; the mod points at Botania's own assets.
+- **Save-compatible with 1.0.0.** No NBT or protocol changes. Drop the new jar in and keep playing.
 
 ## What's new in 1.0.0
 

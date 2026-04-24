@@ -510,6 +510,63 @@ public class HandlerResources {
     public static final ResourceLocation WAYSTONE_TINKER_PERK = create("textures/skill/tinkering/waystone_tinker.png");
     public static final ResourceLocation MASTER_ARTIFICER_PERK = create("textures/skill/tinkering/master_artificer.png");
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Botania Integration — perk icons reuse Botania's own 16×16 item textures
+    //  via the botania: namespace. These paths only resolve at runtime when
+    //  Botania is loaded; every BOTANIA_* perk is null-guarded in RegistryPerks,
+    //  so a missing texture cannot be requested without Botania present.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── WISDOM perks ──
+    public static final ResourceLocation BOTANIA_PETAL_READER_PERK             = botaniaItem("lexicon");
+    public static final ResourceLocation BOTANIA_RESONANCE_PERK                = botaniaItem("rune_mana");
+    public static final ResourceLocation BOTANIA_SPARKLE_SENSE_PERK            = botaniaItem("third_eye_0");
+    public static final ResourceLocation BOTANIA_DOWSERS_TWIG_PERK             = botaniaItem("divining_rod");
+    public static final ResourceLocation BOTANIA_GREEN_THUMB_PERK              = botaniaItem("overgrowth_seed");
+    public static final ResourceLocation BOTANIA_LIVINGBARK_STUDENT_PERK       = botaniaItem("livingwood_twig");
+    public static final ResourceLocation BOTANIA_AGRICULTORS_EYE_PERK          = botaniaItem("infused_seeds");
+    public static final ResourceLocation BOTANIA_FORAGERS_PALATE_PERK          = botaniaItem("mana_cookie");
+    public static final ResourceLocation BOTANIA_LOOT_HUNTERS_INTUITION_PERK   = botaniaItem("itemfinder");
+    public static final ResourceLocation BOTANIA_STILL_LISTENER_PERK           = botaniaItem("third_eye_2");
+    public static final ResourceLocation BOTANIA_MANASEERS_LENS_PERK           = botaniaItem("monocle");
+    public static final ResourceLocation BOTANIA_CORPOREA_QUERY_PERK           = botaniaItem("corporea_spark");
+    public static final ResourceLocation BOTANIA_CARTOGRAPHER_PERK             = botaniaItem("sextant");
+    public static final ResourceLocation BOTANIA_FAR_REACH_PERK                = botaniaItem("reach_ring");
+    public static final ResourceLocation BOTANIA_LAZY_SWAP_PERK                = botaniaItem("swap_ring");
+    public static final ResourceLocation BOTANIA_MIRRORS_READ_PERK             = botaniaItem("mana_mirror");
+    public static final ResourceLocation BOTANIA_ELVEN_KNOWLEDGE_PERK          = botaniaItem("lexicon_elven");
+    public static final ResourceLocation BOTANIA_GAIAS_WITNESS_PERK            = botaniaItem("gaia_head");
+    public static final ResourceLocation BOTANIA_ORACLE_NINE_RUNES_PERK        = botaniaItem("twig_wand");
+
+    // ── MAGIC perks ──
+    public static final ResourceLocation BOTANIA_INNER_WELLSPRING_PERK         = botaniaItem("mana_tablet");
+    public static final ResourceLocation BOTANIA_TIDEWOVEN_PERK                = botaniaItem("rune_water");
+    public static final ResourceLocation BOTANIA_EMBERHEART_PERK               = botaniaItem("rune_fire");
+    public static final ResourceLocation BOTANIA_STONE_ROOTED_PERK             = botaniaItem("rune_earth");
+    public static final ResourceLocation BOTANIA_FEATHERSTEP_PERK              = botaniaItem("rune_air");
+    public static final ResourceLocation BOTANIA_BAND_OF_AURA_PERK             = botaniaItem("aura_ring");
+    public static final ResourceLocation BOTANIA_VERDANT_PULSE_PERK            = botaniaItem("rune_spring");
+    public static final ResourceLocation BOTANIA_SOLAR_CONDUIT_PERK            = botaniaItem("rune_summer");
+    public static final ResourceLocation BOTANIA_HARVEST_TITHE_PERK            = botaniaItem("rune_autumn");
+    public static final ResourceLocation BOTANIA_FROSTBOUND_PERK               = botaniaItem("rune_winter");
+    public static final ResourceLocation BOTANIA_LENS_VELOCITY_PERK            = botaniaItem("lens_speed");
+    public static final ResourceLocation BOTANIA_LENS_POTENCY_PERK             = botaniaItem("lens_power");
+    public static final ResourceLocation BOTANIA_PIXIE_AFFINITY_PERK           = botaniaItem("rune_lust");
+    public static final ResourceLocation BOTANIA_CAKE_COMBUSTION_PERK          = botaniaItem("rune_gluttony");
+    public static final ResourceLocation BOTANIA_MAGNETITE_PERK                = botaniaItem("magnet_ring");
+    public static final ResourceLocation BOTANIA_UNBOUND_STEP_PERK             = botaniaItem("rune_sloth");
+    public static final ResourceLocation BOTANIA_MIRRORED_WRATH_PERK           = botaniaItem("rune_envy");
+    public static final ResourceLocation BOTANIA_CROWN_OF_REACH_PERK           = botaniaItem("rune_pride");
+    public static final ResourceLocation BOTANIA_THUNDERCALL_PERK              = botaniaItem("rune_wrath");
+    public static final ResourceLocation BOTANIA_RELIC_ATTUNEMENT_PERK         = botaniaItem("king_key");
+    public static final ResourceLocation BOTANIA_TERRASTEEL_ASCENSION_PERK     = botaniaItem("terrasteel_ingot");
+    public static final ResourceLocation BOTANIA_FLUGELS_GRACE_PERK            = botaniaItem("flight_tiara");
+    public static final ResourceLocation BOTANIA_MANASTORM_PERK                = botaniaItem("lens_storm");
+
+    private static ResourceLocation botaniaItem(String name) {
+        return new ResourceLocation("botania", "textures/item/" + name + ".png");
+    }
+
     public static ResourceLocation create(String path) {
         return new ResourceLocation(RunicSkills.MOD_ID, path);
     }

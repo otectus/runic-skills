@@ -97,3 +97,9 @@ description='''${mod_description}'''
     versionRange = "[7.0.0,)"
     ordering = "AFTER"
     side = "BOTH"
+[[dependencies."${mod_id}"]]
+    modId = "botania"
+    mandatory = false
+    versionRange = "[1.20.1-441,)"
+    ordering = "AFTER"
+    side = "BOTH"
