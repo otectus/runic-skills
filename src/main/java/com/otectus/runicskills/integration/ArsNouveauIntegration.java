@@ -111,6 +111,34 @@ public class ArsNouveauIntegration {
             float bonus = HandlerCommonConfig.HANDLER.instance().arsFormTouchPercent / 100.0f;
             event.damage = event.damage * (1.0f + bonus);
         }
+
+        // ── Phase 2c: per-school damage bonuses ──
+        if (event.caster instanceof Player schoolCaster && !schoolCaster.isCreative()
+                && event.context != null && event.context.getSpell() != null) {
+            Spell spell = event.context.getSpell();
+            HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_HEDGEWITCH, SpellSchools.ELEMENTAL_WATER, c.arsHedgewitchDamagePercent);
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_EMBERFORGED, SpellSchools.ELEMENTAL_FIRE, c.arsEmberforgedDamagePercent);
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_STORMCALLER, SpellSchools.ELEMENTAL_AIR, c.arsStormcallerDamagePercent);
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_GEOMANCER, SpellSchools.ELEMENTAL_EARTH, c.arsGeomancerDamagePercent);
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_ABJURER, SpellSchools.ABJURATION, c.arsAbjurerPercent);
+            event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
+                    RegistryPerks.ARS_ARCANE_WEAVER, SpellSchools.MANIPULATION, c.arsArcaneWeaverPercent);
+        }
+    }
+
+    private static float applySchoolDamage(Player caster, Spell spell, float current,
+                                           net.minecraftforge.registries.RegistryObject<com.otectus.runicskills.registry.perks.Perk> perk,
+                                           com.hollingsworth.arsnouveau.api.spell.SpellSchool school,
+                                           int percent) {
+        if (perk == null || !perk.get().isEnabled(caster)) return current;
+        if (!spellContainsSchool(spell, school)) return current;
+        return current * (1.0f + percent / 100.0f);
     }
 
     // ── Mana Cost Reduction: Arcane Efficiency Perk ──
@@ -156,6 +184,20 @@ public class ArsNouveauIntegration {
                 && RegistryPerks.ARS_WILD_MANIPULATION.get().isEnabled(player)
                 && spellContainsSchool(spell, SpellSchools.MANIPULATION)) {
             int reduced = (int) (event.currentCost * (1.0 - c.arsWildManipulationPercent / 100.0));
+            event.currentCost = Math.max(reduced, 1);
+        }
+
+        // ── Phase 2c: per-school cost reductions (Hedgewitch, Conjurer) ──
+        if (RegistryPerks.ARS_HEDGEWITCH != null
+                && RegistryPerks.ARS_HEDGEWITCH.get().isEnabled(player)
+                && spellContainsSchool(spell, SpellSchools.ELEMENTAL_WATER)) {
+            int reduced = (int) (event.currentCost * (1.0 - c.arsHedgewitchCostPercent / 100.0));
+            event.currentCost = Math.max(reduced, 1);
+        }
+        if (RegistryPerks.ARS_CONJURER != null
+                && RegistryPerks.ARS_CONJURER.get().isEnabled(player)
+                && spellContainsSchool(spell, SpellSchools.CONJURATION)) {
+            int reduced = (int) (event.currentCost * (1.0 - c.arsConjurerPercent / 100.0));
             event.currentCost = Math.max(reduced, 1);
         }
     }

@@ -946,6 +946,65 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsWildManipulationPercent)
             ));
 
+    // ── Ars Nouveau — Phase 2c: per-school perks ──
+    public static final RegistryObject<Perk> ARS_HEDGEWITCH =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsHedgewitchRequiredLevel < 0
+            ? null : PERKS.register("ars_hedgewitch", () -> register(
+                    "ars_hedgewitch", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsHedgewitchRequiredLevel,
+                    HandlerResources.ARS_HEDGEWITCH_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsHedgewitchCostPercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsHedgewitchDamagePercent)
+            ));
+    public static final RegistryObject<Perk> ARS_EMBERFORGED =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsEmberforgedRequiredLevel < 0
+            ? null : PERKS.register("ars_emberforged", () -> register(
+                    "ars_emberforged", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsEmberforgedRequiredLevel,
+                    HandlerResources.ARS_EMBERFORGED_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsEmberforgedDamagePercent)
+            ));
+    public static final RegistryObject<Perk> ARS_STORMCALLER =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsStormcallerRequiredLevel < 0
+            ? null : PERKS.register("ars_stormcaller", () -> register(
+                    "ars_stormcaller", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsStormcallerRequiredLevel,
+                    HandlerResources.ARS_STORMCALLER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsStormcallerDamagePercent)
+            ));
+    public static final RegistryObject<Perk> ARS_GEOMANCER =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsGeomancerRequiredLevel < 0
+            ? null : PERKS.register("ars_geomancer", () -> register(
+                    "ars_geomancer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsGeomancerRequiredLevel,
+                    HandlerResources.ARS_GEOMANCER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsGeomancerDamagePercent)
+            ));
+    public static final RegistryObject<Perk> ARS_CONJURER =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsConjurerRequiredLevel < 0
+            ? null : PERKS.register("ars_conjurer", () -> register(
+                    "ars_conjurer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsConjurerRequiredLevel,
+                    HandlerResources.ARS_CONJURER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsConjurerPercent)
+            ));
+    public static final RegistryObject<Perk> ARS_ABJURER =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsAbjurerRequiredLevel < 0
+            ? null : PERKS.register("ars_abjurer", () -> register(
+                    "ars_abjurer", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsAbjurerRequiredLevel,
+                    HandlerResources.ARS_ABJURER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsAbjurerPercent)
+            ));
+    public static final RegistryObject<Perk> ARS_ARCANE_WEAVER =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverRequiredLevel < 0
+            ? null : PERKS.register("ars_arcane_weaver", () -> register(
+                    "ars_arcane_weaver", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverRequiredLevel,
+                    HandlerResources.ARS_ARCANE_WEAVER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverPercent)
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0

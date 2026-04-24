@@ -568,6 +568,21 @@
  "perk.runicskills.ars_wild_manipulation" : "Wild Manipulation",
  "perk.runicskills.ars_wild_manipulation.description" : "Manipulation glyphs answer your pull. Manipulation-school glyph spells cost %s less mana.",
 
+ "perk.runicskills.ars_hedgewitch" : "Hedgewitch: Water",
+ "perk.runicskills.ars_hedgewitch.description" : "Tides run through your casting. Water-school glyphs cost %s less and deal %s more damage.",
+ "perk.runicskills.ars_emberforged" : "Emberforged: Fire",
+ "perk.runicskills.ars_emberforged.description" : "Flame shapes to your will. Fire-school glyphs deal %s more damage.",
+ "perk.runicskills.ars_stormcaller" : "Stormcaller: Air",
+ "perk.runicskills.ars_stormcaller.description" : "The wind speaks your name. Air-school glyphs deal %s more damage.",
+ "perk.runicskills.ars_geomancer" : "Geomancer: Earth",
+ "perk.runicskills.ars_geomancer.description" : "The ground moves for you. Earth-school glyphs deal %s more damage.",
+ "perk.runicskills.ars_conjurer" : "Conjurer",
+ "perk.runicskills.ars_conjurer.description" : "Your summons come at reduced toll. Conjuration-school glyphs cost %s less mana.",
+ "perk.runicskills.ars_abjurer" : "Abjurer",
+ "perk.runicskills.ars_abjurer.description" : "Protection and healing both answer louder. Abjuration-school glyphs are %s stronger.",
+ "perk.runicskills.ars_arcane_weaver" : "Arcane Weaver",
+ "perk.runicskills.ars_arcane_weaver.description" : "Manipulation bends further under your weave. Manipulation-school glyphs deal %s more damage.",
+
  "overlay.runicskills.school_locked" : "You have not attuned to the %s school. Select it in School Selection to cast these spells.",
 
  "school.runicskills.fire" : "Fire",

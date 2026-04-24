@@ -509,6 +509,15 @@ public class HandlerResources {
     public static final ResourceLocation ARS_FORM_SELF_PERK           = arsItem("self");
     public static final ResourceLocation ARS_WILD_MANIPULATION_PERK   = arsItem("manipulation_essence");
 
+    // ── Ars Nouveau — Phase 2c per-school perks ──
+    public static final ResourceLocation ARS_HEDGEWITCH_PERK          = arsItem("water_essence");
+    public static final ResourceLocation ARS_EMBERFORGED_PERK         = arsItem("fire_essence");
+    public static final ResourceLocation ARS_STORMCALLER_PERK         = arsItem("air_essence");
+    public static final ResourceLocation ARS_GEOMANCER_PERK           = arsItem("earth_essence");
+    public static final ResourceLocation ARS_CONJURER_PERK            = arsItem("conjuration_essence");
+    public static final ResourceLocation ARS_ABJURER_PERK             = arsItem("abjuration_essence");
+    public static final ResourceLocation ARS_ARCANE_WEAVER_PERK       = arsItem("manipulation_essence");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");

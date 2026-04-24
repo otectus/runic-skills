@@ -4040,6 +4040,60 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
     public int arsWildManipulationPercent = 20;
 
+    // ── Ars Nouveau — Phase 2c: per-school perks ──
+
+    @SerialEntry(comment = "Required Magic level for Hedgewitch (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsHedgewitchRequiredLevel = 10;
+    @SerialEntry(comment = "Hedgewitch perk: Water-school mana cost reduction percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
+    public int arsHedgewitchCostPercent = 15;
+    @SerialEntry(comment = "Hedgewitch perk: Water-school damage bonus percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsHedgewitchDamagePercent = 10;
+
+    @SerialEntry(comment = "Required Magic level for Emberforged (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsEmberforgedRequiredLevel = 10;
+    @SerialEntry(comment = "Emberforged perk: Fire-school damage bonus percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsEmberforgedDamagePercent = 15;
+
+    @SerialEntry(comment = "Required Magic level for Stormcaller (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsStormcallerRequiredLevel = 10;
+    @SerialEntry(comment = "Stormcaller perk: Air-school damage bonus percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsStormcallerDamagePercent = 15;
+
+    @SerialEntry(comment = "Required Magic level for Geomancer (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsGeomancerRequiredLevel = 10;
+    @SerialEntry(comment = "Geomancer perk: Earth-school damage bonus percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsGeomancerDamagePercent = 15;
+
+    @SerialEntry(comment = "Required Magic level for Conjurer (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsConjurerRequiredLevel = 12;
+    @SerialEntry(comment = "Conjurer perk: Conjuration-school mana cost reduction percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
+    public int arsConjurerPercent = 10;
+
+    @SerialEntry(comment = "Required Magic level for Abjurer (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsAbjurerRequiredLevel = 12;
+    @SerialEntry(comment = "Abjurer perk: Abjuration-school damage / effect magnitude percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsAbjurerPercent = 20;
+
+    @SerialEntry(comment = "Required Magic level for Arcane Weaver (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsArcaneWeaverRequiredLevel = 14;
+    @SerialEntry(comment = "Arcane Weaver perk: Manipulation-school damage bonus percent")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsArcaneWeaverPercent = 10;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")
