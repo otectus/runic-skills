@@ -3483,6 +3483,194 @@ public class HandlerCommonConfig {
     @IntField(min = -1, max = 1000)
     public int evocationAttunementRequiredLevel = 6;
 
+    // ── Iron's Spells 'n Spellbooks — Phase 1a: generic mana & casting perks ──
+    // Every *RequiredLevel defaults >= 1 (enabled). Set to -1 to null-register and
+    // remove the perk from the tree entirely.
+
+    // Wellspring — flat max-mana bonus via permanent attribute modifier.
+    @SerialEntry(comment = "Required Magic level for Wellspring (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int wellspringRequiredLevel = 6;
+    @SerialEntry(comment = "Wellspring perk: bonus max mana granted")
+    @AutoGen(category = "common", group = "irons_spells")
+    @FloatField(min = 0.0f, max = 1000.0f)
+    public float wellspringManaBonus = 50.0f;
+
+    // Quickening — flat cast_time_reduction bonus.
+    @SerialEntry(comment = "Required Magic level for Quickening (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int quickeningRequiredLevel = 10;
+    @SerialEntry(comment = "Quickening perk: cast-time reduction percent")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 75)
+    public int quickeningPercent = 10;
+
+    // Reservoir — flat mana_regen bonus.
+    @SerialEntry(comment = "Required Magic level for Reservoir (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int reservoirRequiredLevel = 8;
+    @SerialEntry(comment = "Reservoir perk: mana regeneration percent bonus")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 500)
+    public int reservoirPercent = 20;
+
+    // Tempo — flat cooldown_reduction bonus.
+    @SerialEntry(comment = "Required Magic level for Tempo (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int tempoRequiredLevel = 10;
+    @SerialEntry(comment = "Tempo perk: cooldown reduction percent")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 75)
+    public int tempoPercent = 10;
+
+    // Arcane Recovery — mana on kill, % of victim max HP.
+    @SerialEntry(comment = "Required Magic level for Arcane Recovery (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int arcaneRecoveryRequiredLevel = 12;
+    @SerialEntry(comment = "Arcane Recovery perk: mana restored on kill as percent of victim max HP")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 100)
+    public int arcaneRecoveryPercent = 4;
+    @SerialEntry(comment = "Arcane Recovery perk: max mana restored per kill (cap)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 1000)
+    public int arcaneRecoveryCap = 50;
+
+    // Focus — PROBABILITY (1-in-X) to resist cast interrupt on damage.
+    @SerialEntry(comment = "Required Magic level for Focus (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int focusRequiredLevel = 14;
+    @SerialEntry(comment = "Focus perk: 1-in-X probability to avoid cast interruption when damaged")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 100)
+    public int focusProbability = 4;
+
+    // Mana Bulwark — redirect % incoming damage to mana at 2:1.
+    @SerialEntry(comment = "Required Magic level for Mana Bulwark (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int manaBulwarkRequiredLevel = 16;
+    @SerialEntry(comment = "Mana Bulwark perk: percent of incoming damage redirected to mana")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 75)
+    public int manaBulwarkPercent = 20;
+    @SerialEntry(comment = "Mana Bulwark perk: mana-to-HP conversion ratio (N mana absorbs 1 HP)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 20)
+    public int manaBulwarkManaPerDamage = 2;
+
+    // Arcane Reprieve — at 0 mana, restore % max mana with cooldown.
+    @SerialEntry(comment = "Required Magic level for Arcane Reprieve (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int arcaneReprieveRequiredLevel = 26;
+    @SerialEntry(comment = "Arcane Reprieve perk: percent of max mana restored when hitting 0 mana")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 100)
+    public int arcaneReprievePercent = 40;
+    @SerialEntry(comment = "Arcane Reprieve perk: cooldown in seconds")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 600)
+    public int arcaneReprieveCooldown = 120;
+
+    // Mana Surge — below HP threshold, +spell_power and +mana_regen.
+    @SerialEntry(comment = "Required Magic level for Mana Surge (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int manaSurgeRequiredLevel = 22;
+    @SerialEntry(comment = "Mana Surge perk: HP threshold percent at which the surge activates")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 100)
+    public int manaSurgeHpThreshold = 25;
+    @SerialEntry(comment = "Mana Surge perk: spell power bonus percent while active")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 500)
+    public int manaSurgeSpellPowerPercent = 20;
+    @SerialEntry(comment = "Mana Surge perk: mana regen bonus percent while active")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 500)
+    public int manaSurgeRegenPercent = 30;
+
+    // Spellweaver — every Nth cast within a window is free.
+    @SerialEntry(comment = "Required Magic level for Spellweaver (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int spellweaverRequiredLevel = 20;
+    @SerialEntry(comment = "Spellweaver perk: every Nth cast within the combo window is free")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 2, max = 20)
+    public int spellweaverComboCount = 5;
+    @SerialEntry(comment = "Spellweaver perk: combo window in seconds (resets if no cast within the window)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 60)
+    public int spellweaverComboWindow = 10;
+
+    // Resonant Casting — while above % mana, +spell damage.
+    @SerialEntry(comment = "Required Magic level for Resonant Casting (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int resonantCastingRequiredLevel = 14;
+    @SerialEntry(comment = "Resonant Casting perk: required mana percent to activate the bonus")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 100)
+    public int resonantCastingManaThreshold = 95;
+    @SerialEntry(comment = "Resonant Casting perk: spell damage bonus percent while above threshold")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 500)
+    public int resonantCastingPercent = 10;
+
+    // Imbued Focus — +N spell levels on all casts.
+    @SerialEntry(comment = "Required Magic level for Imbued Focus (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int imbuedFocusRequiredLevel = 18;
+    @SerialEntry(comment = "Imbued Focus perk: bonus spell levels added to every cast")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 10)
+    public int imbuedFocusLevels = 1;
+
+    // Quickcast — cooldown reduction applied only to instant-cast spells.
+    @SerialEntry(comment = "Required Magic level for Quickcast (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int quickcastRequiredLevel = 12;
+    @SerialEntry(comment = "Quickcast perk: cooldown reduction percent applied to INSTANT-type spells only")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 90)
+    public int quickcastPercent = 15;
+
+    // Long Channel — damage bonus only on LONG-cast spells.
+    @SerialEntry(comment = "Required Magic level for Long Channel (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int longChannelRequiredLevel = 12;
+    @SerialEntry(comment = "Long Channel perk: damage bonus percent applied to LONG-cast spells only")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 500)
+    public int longChannelPercent = 15;
+
+    // Continuous Flow — per-tick mana savings on CONTINUOUS casts.
+    @SerialEntry(comment = "Required Magic level for Continuous Flow (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int continuousFlowRequiredLevel = 14;
+    @SerialEntry(comment = "Continuous Flow perk: mana-cost reduction percent on CONTINUOUS-type spells")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 90)
+    public int continuousFlowPercent = 20;
+
+    // Charge Mastery — CHARGE spells always fire at full power.
+    @SerialEntry(comment = "Required Magic level for Charge Mastery (-1 to disable)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = -1, max = 1000)
+    public int chargeMasteryRequiredLevel = 32;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

@@ -242,8 +242,9 @@ dependencies {
     compileOnly fg.deobf("curse.maven:apothic-attributes-898963:5634071")
     compileOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
 
-    // Iron's Spells 'n Spellbooks compatibility
-    compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:5539243")
+    // Iron's Spells 'n Spellbooks compatibility. Bumped from 5539243 (pre-3.15)
+    // to 7402504 (3.15.x) so Phase-1a perks can subscribe to SpellCooldownAddedEvent.
+    compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:7402504")
 
     // Ars Nouveau compatibility
     compileOnly fg.deobf("curse.maven:ars-nouveau-401955:6688854")

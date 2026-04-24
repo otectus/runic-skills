@@ -426,6 +426,26 @@ public class HandlerResources {
     public static final ResourceLocation ARCANE_REFORGING_PERK = create("textures/skill/magic/arcane_reforging.png");
     public static final ResourceLocation CRIMSON_BOND_PERK = create("textures/skill/magic/crimson_bond.png");
 
+    // ── Iron's Spells 'n Spellbooks — Phase 1a generic mana/casting perks ──
+    // Textures pulled from ISS's own item sheet. Unresolved paths fall back to the
+    // vanilla missing-texture sprite, which is harmless (perk still functions).
+    public static final ResourceLocation ISS_WELLSPRING_PERK        = ironsItem("upgrade_orb_mana");
+    public static final ResourceLocation ISS_QUICKENING_PERK        = ironsItem("upgrade_orb_cast_time");
+    public static final ResourceLocation ISS_RESERVOIR_PERK         = ironsItem("upgrade_orb_mana_regen");
+    public static final ResourceLocation ISS_TEMPO_PERK             = ironsItem("upgrade_orb_cooldown");
+    public static final ResourceLocation ISS_ARCANE_RECOVERY_PERK   = ironsItem("blood_vial");
+    public static final ResourceLocation ISS_FOCUS_PERK             = ironsItem("antique_amulet");
+    public static final ResourceLocation ISS_MANA_BULWARK_PERK      = ironsItem("mana_potion");
+    public static final ResourceLocation ISS_ARCANE_REPRIEVE_PERK   = ironsItem("greater_mana_potion");
+    public static final ResourceLocation ISS_MANA_SURGE_PERK        = ironsItem("cinder_essence");
+    public static final ResourceLocation ISS_SPELLWEAVER_PERK       = ironsItem("blank_rune");
+    public static final ResourceLocation ISS_RESONANT_CASTING_PERK  = ironsItem("apprentice_spellbook");
+    public static final ResourceLocation ISS_IMBUED_FOCUS_PERK      = ironsItem("affinity_ring");
+    public static final ResourceLocation ISS_QUICKCAST_PERK         = ironsItem("scroll_of_haste");
+    public static final ResourceLocation ISS_LONG_CHANNEL_PERK      = ironsItem("ancient_codex");
+    public static final ResourceLocation ISS_CONTINUOUS_FLOW_PERK   = ironsItem("arcane_debris");
+    public static final ResourceLocation ISS_CHARGE_MASTERY_PERK    = ironsItem("arcane_essence");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");
@@ -565,6 +585,26 @@ public class HandlerResources {
 
     private static ResourceLocation botaniaItem(String name) {
         return new ResourceLocation("botania", "textures/item/" + name + ".png");
+    }
+
+    // Foreign-mod item-texture helpers. These point the perk-icon renderer at the
+    // source mod's own item sprites, so perk art matches the theme without us
+    // needing to ship our own PNGs. If the source mod isn't installed the perk is
+    // null-registered (see RegistryPerks), so the unresolved path never renders.
+    private static ResourceLocation ironsItem(String name) {
+        return new ResourceLocation("irons_spellbooks", "textures/item/" + name + ".png");
+    }
+
+    private static ResourceLocation arsItem(String name) {
+        return new ResourceLocation("ars_nouveau", "textures/item/" + name + ".png");
+    }
+
+    private static ResourceLocation apothItem(String name) {
+        return new ResourceLocation("apotheosis", "textures/item/" + name + ".png");
+    }
+
+    private static ResourceLocation attribItem(String name) {
+        return new ResourceLocation("attributeslib", "textures/item/" + name + ".png");
     }
 
     public static ResourceLocation create(String path) {

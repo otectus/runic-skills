@@ -421,6 +421,173 @@ public class RegistryPerks {
                     HandlerResources.EVOCATION_ATTUNEMENT_PERK
             ));
 
+    // ── Iron's Spells — Phase 1a: generic mana & casting perks ──
+    public static final RegistryObject<Perk> WELLSPRING =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().wellspringRequiredLevel < 0
+            ? null : PERKS.register("wellspring", () -> register(
+                    "wellspring",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().wellspringRequiredLevel,
+                    HandlerResources.ISS_WELLSPRING_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().wellspringManaBonus)
+            ));
+
+    public static final RegistryObject<Perk> QUICKENING =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().quickeningRequiredLevel < 0
+            ? null : PERKS.register("quickening", () -> register(
+                    "quickening",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().quickeningRequiredLevel,
+                    HandlerResources.ISS_QUICKENING_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().quickeningPercent)
+            ));
+
+    public static final RegistryObject<Perk> RESERVOIR =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().reservoirRequiredLevel < 0
+            ? null : PERKS.register("reservoir", () -> register(
+                    "reservoir",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().reservoirRequiredLevel,
+                    HandlerResources.ISS_RESERVOIR_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().reservoirPercent)
+            ));
+
+    public static final RegistryObject<Perk> TEMPO =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().tempoRequiredLevel < 0
+            ? null : PERKS.register("tempo", () -> register(
+                    "tempo",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().tempoRequiredLevel,
+                    HandlerResources.ISS_TEMPO_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tempoPercent)
+            ));
+
+    public static final RegistryObject<Perk> ARCANE_RECOVERY =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneRecoveryRequiredLevel < 0
+            ? null : PERKS.register("arcane_recovery", () -> register(
+                    "arcane_recovery",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arcaneRecoveryRequiredLevel,
+                    HandlerResources.ISS_ARCANE_RECOVERY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arcaneRecoveryPercent),
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().arcaneRecoveryCap)
+            ));
+
+    public static final RegistryObject<Perk> FOCUS =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().focusRequiredLevel < 0
+            ? null : PERKS.register("focus", () -> register(
+                    "focus",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().focusRequiredLevel,
+                    HandlerResources.ISS_FOCUS_PERK,
+                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().focusProbability)
+            ));
+
+    public static final RegistryObject<Perk> MANA_BULWARK =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaBulwarkRequiredLevel < 0
+            ? null : PERKS.register("mana_bulwark", () -> register(
+                    "mana_bulwark",
+                    RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().manaBulwarkRequiredLevel,
+                    HandlerResources.ISS_MANA_BULWARK_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaBulwarkPercent),
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().manaBulwarkManaPerDamage)
+            ));
+
+    public static final RegistryObject<Perk> ARCANE_REPRIEVE =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneReprieveRequiredLevel < 0
+            ? null : PERKS.register("arcane_reprieve", () -> register(
+                    "arcane_reprieve",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arcaneReprieveRequiredLevel,
+                    HandlerResources.ISS_ARCANE_REPRIEVE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arcaneReprievePercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().arcaneReprieveCooldown)
+            ));
+
+    public static final RegistryObject<Perk> MANA_SURGE =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaSurgeRequiredLevel < 0
+            ? null : PERKS.register("mana_surge", () -> register(
+                    "mana_surge",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().manaSurgeRequiredLevel,
+                    HandlerResources.ISS_MANA_SURGE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaSurgeHpThreshold),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaSurgeSpellPowerPercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaSurgeRegenPercent)
+            ));
+
+    public static final RegistryObject<Perk> SPELLWEAVER =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellweaverRequiredLevel < 0
+            ? null : PERKS.register("spellweaver", () -> register(
+                    "spellweaver",
+                    RegistrySkills.INTELLIGENCE,
+                    HandlerCommonConfig.HANDLER.instance().spellweaverRequiredLevel,
+                    HandlerResources.ISS_SPELLWEAVER_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().spellweaverComboCount),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().spellweaverComboWindow)
+            ));
+
+    public static final RegistryObject<Perk> RESONANT_CASTING =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().resonantCastingRequiredLevel < 0
+            ? null : PERKS.register("resonant_casting", () -> register(
+                    "resonant_casting",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().resonantCastingRequiredLevel,
+                    HandlerResources.ISS_RESONANT_CASTING_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().resonantCastingManaThreshold),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().resonantCastingPercent)
+            ));
+
+    public static final RegistryObject<Perk> IMBUED_FOCUS =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().imbuedFocusRequiredLevel < 0
+            ? null : PERKS.register("imbued_focus", () -> register(
+                    "imbued_focus",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().imbuedFocusRequiredLevel,
+                    HandlerResources.ISS_IMBUED_FOCUS_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().imbuedFocusLevels)
+            ));
+
+    public static final RegistryObject<Perk> QUICKCAST =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().quickcastRequiredLevel < 0
+            ? null : PERKS.register("quickcast", () -> register(
+                    "quickcast",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().quickcastRequiredLevel,
+                    HandlerResources.ISS_QUICKCAST_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().quickcastPercent)
+            ));
+
+    public static final RegistryObject<Perk> LONG_CHANNEL =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().longChannelRequiredLevel < 0
+            ? null : PERKS.register("long_channel", () -> register(
+                    "long_channel",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().longChannelRequiredLevel,
+                    HandlerResources.ISS_LONG_CHANNEL_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().longChannelPercent)
+            ));
+
+    public static final RegistryObject<Perk> CONTINUOUS_FLOW =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().continuousFlowRequiredLevel < 0
+            ? null : PERKS.register("continuous_flow", () -> register(
+                    "continuous_flow",
+                    RegistrySkills.INTELLIGENCE,
+                    HandlerCommonConfig.HANDLER.instance().continuousFlowRequiredLevel,
+                    HandlerResources.ISS_CONTINUOUS_FLOW_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().continuousFlowPercent)
+            ));
+
+    public static final RegistryObject<Perk> CHARGE_MASTERY =
+            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().chargeMasteryRequiredLevel < 0
+            ? null : PERKS.register("charge_mastery", () -> register(
+                    "charge_mastery",
+                    RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().chargeMasteryRequiredLevel,
+                    HandlerResources.ISS_CHARGE_MASTERY_PERK
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0
