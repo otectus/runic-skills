@@ -559,6 +559,15 @@
  "perk.runicskills.heart_of_the_healer" : "Heart of the Healer",
  "perk.runicskills.heart_of_the_healer.description" : "Mend yourself faster than the world can cut you. +%s healing received and +%s overheal.",
 
+ "perk.runicskills.ars_form_projectile" : "Form Focus: Projectile",
+ "perk.runicskills.ars_form_projectile.description" : "The arrow of will costs you less. Projectile-form glyph spells cost %s less mana.",
+ "perk.runicskills.ars_form_touch" : "Form Focus: Touch",
+ "perk.runicskills.ars_form_touch.description" : "At arm's reach you strike truest. Touch-form glyph spells deal %s more damage.",
+ "perk.runicskills.ars_form_self" : "Form Focus: Self",
+ "perk.runicskills.ars_form_self.description" : "Inward-cast spells flow easily. Self-form glyph spells cost %s less mana.",
+ "perk.runicskills.ars_wild_manipulation" : "Wild Manipulation",
+ "perk.runicskills.ars_wild_manipulation.description" : "Manipulation glyphs answer your pull. Manipulation-school glyph spells cost %s less mana.",
+
  "overlay.runicskills.school_locked" : "You have not attuned to the %s school. Select it in School Selection to cast these spells.",
 
  "school.runicskills.fire" : "Fire",

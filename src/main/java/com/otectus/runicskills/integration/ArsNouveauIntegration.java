@@ -6,6 +6,13 @@ import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
 import com.hollingsworth.arsnouveau.api.event.*;
+import com.hollingsworth.arsnouveau.api.spell.AbstractCastMethod;
+import com.hollingsworth.arsnouveau.api.spell.AbstractSpellPart;
+import com.hollingsworth.arsnouveau.api.spell.Spell;
+import com.hollingsworth.arsnouveau.api.spell.SpellSchools;
+import com.hollingsworth.arsnouveau.common.spell.method.MethodProjectile;
+import com.hollingsworth.arsnouveau.common.spell.method.MethodSelf;
+import com.hollingsworth.arsnouveau.common.spell.method.MethodTouch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -93,6 +100,17 @@ public class ArsNouveauIntegration {
                 event.damage = event.damage * (1.0f - percent / 100.0f);
             }
         }
+
+        // ── Phase 2b: Form Focus: Touch — damage bonus for touch-form spells ──
+        if (event.caster instanceof Player caster2 && !caster2.isCreative()
+                && RegistryPerks.ARS_FORM_TOUCH != null
+                && RegistryPerks.ARS_FORM_TOUCH.get().isEnabled(caster2)
+                && event.context != null
+                && event.context.getSpell() != null
+                && event.context.getSpell().getCastMethod() == MethodTouch.INSTANCE) {
+            float bonus = HandlerCommonConfig.HANDLER.instance().arsFormTouchPercent / 100.0f;
+            event.damage = event.damage * (1.0f + bonus);
+        }
     }
 
     // ── Mana Cost Reduction: Arcane Efficiency Perk ──
@@ -107,6 +125,49 @@ public class ArsNouveauIntegration {
             int reducedCost = (int) (event.currentCost * (1.0 - percent / 100.0));
             event.currentCost = Math.max(reducedCost, 0);
         }
+
+        // ── Phase 2b: Form Focus: Projectile / Self + Wild Manipulation ──
+        Spell spell = event.context.getSpell();
+        if (spell == null) return;
+        AbstractCastMethod form = spell.getCastMethod();
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+
+        // Form Focus: Projectile — cost reduction for projectile-form spells
+        if (form == MethodProjectile.INSTANCE
+                && RegistryPerks.ARS_FORM_PROJECTILE != null
+                && RegistryPerks.ARS_FORM_PROJECTILE.get().isEnabled(player)) {
+            int reduced = (int) (event.currentCost * (1.0 - c.arsFormProjectilePercent / 100.0));
+            event.currentCost = Math.max(reduced, 1);
+        }
+
+        // Form Focus: Self — cost reduction for self-form spells
+        if (form == MethodSelf.INSTANCE
+                && RegistryPerks.ARS_FORM_SELF != null
+                && RegistryPerks.ARS_FORM_SELF.get().isEnabled(player)) {
+            int reduced = (int) (event.currentCost * (1.0 - c.arsFormSelfPercent / 100.0));
+            event.currentCost = Math.max(reduced, 1);
+        }
+
+        // Wild Manipulation — cost reduction for any spell containing a
+        // Manipulation-school glyph. Floors at 1 so Archmage + Discount stacks
+        // can't drive total cost below the single-point minimum (per design
+        // doc guidance).
+        if (RegistryPerks.ARS_WILD_MANIPULATION != null
+                && RegistryPerks.ARS_WILD_MANIPULATION.get().isEnabled(player)
+                && spellContainsSchool(spell, SpellSchools.MANIPULATION)) {
+            int reduced = (int) (event.currentCost * (1.0 - c.arsWildManipulationPercent / 100.0));
+            event.currentCost = Math.max(reduced, 1);
+        }
+    }
+
+    private static boolean spellContainsSchool(Spell spell,
+                                               com.hollingsworth.arsnouveau.api.spell.SpellSchool school) {
+        if (spell == null || spell.recipe == null) return false;
+        for (AbstractSpellPart part : spell.recipe) {
+            if (part == null || part.spellSchools == null) continue;
+            if (part.spellSchools.contains(school)) return true;
+        }
+        return false;
     }
 
     // ── Mana Regeneration Bonus ──

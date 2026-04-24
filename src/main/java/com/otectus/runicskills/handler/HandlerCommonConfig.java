@@ -4010,6 +4010,36 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
     public int heartHealerOverhealPercent = 5;
 
+    // ── Ars Nouveau — Phase 2b: form/utility perks ──
+
+    @SerialEntry(comment = "Required Magic level for Form Focus: Projectile (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsFormProjectileRequiredLevel = 12;
+    @SerialEntry(comment = "Form Focus: Projectile perk: mana cost reduction percent for projectile-form spells")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
+    public int arsFormProjectilePercent = 10;
+
+    @SerialEntry(comment = "Required Magic level for Form Focus: Touch (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsFormTouchRequiredLevel = 12;
+    @SerialEntry(comment = "Form Focus: Touch perk: damage bonus percent for touch-form spells")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 500)
+    public int arsFormTouchPercent = 15;
+
+    @SerialEntry(comment = "Required Magic level for Form Focus: Self (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsFormSelfRequiredLevel = 12;
+    @SerialEntry(comment = "Form Focus: Self perk: mana cost reduction percent for self-form spells")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
+    public int arsFormSelfPercent = 15;
+
+    @SerialEntry(comment = "Required Magic level for Wild Manipulation (-1 to disable)")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = -1, max = 1000)
+    public int arsWildManipulationRequiredLevel = 16;
+    @SerialEntry(comment = "Wild Manipulation perk: mana cost reduction percent for Manipulation-school glyphs")
+    @AutoGen(category = "common", group = "ars_nouveau") @IntField(min = 1, max = 90)
+    public int arsWildManipulationPercent = 20;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

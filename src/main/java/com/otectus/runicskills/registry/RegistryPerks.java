@@ -912,6 +912,40 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().heartHealerOverhealPercent)
             ));
 
+    // ── Ars Nouveau — Phase 2b: form/utility perks ──
+    public static final RegistryObject<Perk> ARS_FORM_PROJECTILE =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormProjectileRequiredLevel < 0
+            ? null : PERKS.register("ars_form_projectile", () -> register(
+                    "ars_form_projectile", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsFormProjectileRequiredLevel,
+                    HandlerResources.ARS_FORM_PROJECTILE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormProjectilePercent)
+            ));
+    public static final RegistryObject<Perk> ARS_FORM_TOUCH =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormTouchRequiredLevel < 0
+            ? null : PERKS.register("ars_form_touch", () -> register(
+                    "ars_form_touch", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsFormTouchRequiredLevel,
+                    HandlerResources.ARS_FORM_TOUCH_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormTouchPercent)
+            ));
+    public static final RegistryObject<Perk> ARS_FORM_SELF =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormSelfRequiredLevel < 0
+            ? null : PERKS.register("ars_form_self", () -> register(
+                    "ars_form_self", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsFormSelfRequiredLevel,
+                    HandlerResources.ARS_FORM_SELF_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormSelfPercent)
+            ));
+    public static final RegistryObject<Perk> ARS_WILD_MANIPULATION =
+            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsWildManipulationRequiredLevel < 0
+            ? null : PERKS.register("ars_wild_manipulation", () -> register(
+                    "ars_wild_manipulation", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().arsWildManipulationRequiredLevel,
+                    HandlerResources.ARS_WILD_MANIPULATION_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsWildManipulationPercent)
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0

@@ -503,6 +503,12 @@ public class HandlerResources {
     public static final ResourceLocation APOTH_GHOSTBOUND_PERK        = apothItem("prismatic_web");
     public static final ResourceLocation APOTH_HEART_HEALER_PERK      = apothItem("potion_charm");
 
+    // ── Ars Nouveau — Phase 2b form/utility perks ──
+    public static final ResourceLocation ARS_FORM_PROJECTILE_PERK     = arsItem("projectile");
+    public static final ResourceLocation ARS_FORM_TOUCH_PERK          = arsItem("touch");
+    public static final ResourceLocation ARS_FORM_SELF_PERK           = arsItem("self");
+    public static final ResourceLocation ARS_WILD_MANIPULATION_PERK   = arsItem("manipulation_essence");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");
