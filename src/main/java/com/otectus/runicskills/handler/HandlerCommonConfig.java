@@ -3909,6 +3909,107 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "irons_spells") @IntField(min = 1, max = 100)
     public int lifeLeechBoundPercent = 5;
 
+    // ── Apothic Attributes / Apotheosis — Phase 2a: combat perks ──
+
+    @SerialEntry(comment = "Required Fortune level for Socket Virtuoso (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int socketVirtuosoRequiredLevel = 18;
+    @SerialEntry(comment = "Socket Virtuoso perk: extra effective socket count on equipped items")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 5)
+    public int socketVirtuosoBonus = 1;
+
+    @SerialEntry(comment = "Required Fortune level for Affix Affinity (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int affixAffinityRequiredLevel = 16;
+    @SerialEntry(comment = "Affix Affinity perk: damage bonus percent per rare+ equipped affix item")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 20)
+    public int affixAffinityDamagePercent = 2;
+    @SerialEntry(comment = "Affix Affinity perk: damage reduction percent per rare+ equipped affix item")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 20)
+    public int affixAffinityReductionPercent = 2;
+
+    @SerialEntry(comment = "Required Dexterity level for Apothic Critical Mastery (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int apothCriticalMasteryRequiredLevel = 14;
+    @SerialEntry(comment = "Apothic Critical Mastery perk: bonus crit chance percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int apothCriticalMasteryChancePercent = 5;
+    @SerialEntry(comment = "Apothic Critical Mastery perk: bonus crit damage percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 500)
+    public int apothCriticalMasteryDamagePercent = 10;
+
+    @SerialEntry(comment = "Required Strength level for Vampiric Fangs (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int vampiricFangsRequiredLevel = 16;
+    @SerialEntry(comment = "Vampiric Fangs perk: life steal percent of physical damage")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int vampiricFangsPercent = 5;
+
+    @SerialEntry(comment = "Required Strength level for Reaper's Edge (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int reapersEdgeRequiredLevel = 22;
+    @SerialEntry(comment = "Reaper's Edge perk: bonus % current HP damage per hit (capped at 15)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 15)
+    public int reapersEdgePercent = 3;
+
+    @SerialEntry(comment = "Required Dexterity level for Evasive (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int evasiveRequiredLevel = 14;
+    @SerialEntry(comment = "Evasive perk: bonus dodge chance percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int evasivePercent = 5;
+
+    @SerialEntry(comment = "Required Dexterity level for Arrow Mastery (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int arrowMasteryRequiredLevel = 14;
+    @SerialEntry(comment = "Arrow Mastery perk: bonus arrow damage multiplier percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 500)
+    public int arrowMasteryDamagePercent = 15;
+    @SerialEntry(comment = "Arrow Mastery perk: bonus arrow velocity multiplier percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 300)
+    public int arrowMasteryVelocityPercent = 10;
+
+    @SerialEntry(comment = "Required Building level for Earthbreaker (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int earthbreakerRequiredLevel = 12;
+    @SerialEntry(comment = "Earthbreaker perk: bonus mining speed multiplier percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 500)
+    public int earthbreakerPercent = 20;
+
+    @SerialEntry(comment = "Required Intelligence level for Scholar (Apothic) (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int apothScholarRequiredLevel = 12;
+    @SerialEntry(comment = "Scholar (Apothic) perk: bonus experience gained percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 500)
+    public int apothScholarPercent = 15;
+
+    @SerialEntry(comment = "Required Strength level for Spectral Ward (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int spectralWardRequiredLevel = 18;
+    @SerialEntry(comment = "Spectral Ward perk: flat protection pierce bonus")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 34)
+    public int spectralWardPierce = 2;
+    @SerialEntry(comment = "Spectral Ward perk: protection shred percent (0..1 as integer percent)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int spectralWardShredPercent = 5;
+
+    @SerialEntry(comment = "Required Constitution level for Ghostbound (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int ghostboundRequiredLevel = 12;
+    @SerialEntry(comment = "Ghostbound perk: bonus ghost health")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int ghostboundBonus = 4;
+
+    @SerialEntry(comment = "Required Constitution level for Heart of the Healer (-1 to disable)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int heartHealerRequiredLevel = 14;
+    @SerialEntry(comment = "Heart of the Healer perk: bonus healing received percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 500)
+    public int heartHealerReceivedPercent = 20;
+    @SerialEntry(comment = "Heart of the Healer perk: overheal-to-absorption percent")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 100)
+    public int heartHealerOverhealPercent = 5;
+
     // Ars Nouveau Integration - Spell Gating
     @SerialEntry(comment = "Enable spell gating by Magic skill level based on spell complexity (number of glyphs)")
     @AutoGen(category = "common", group = "ars_nouveau")

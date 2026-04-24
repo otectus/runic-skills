@@ -486,6 +486,23 @@ public class HandlerResources {
     public static final ResourceLocation ISS_LORD_OF_THE_DEAD_PERK  = ironsItem("necronomicon_spell_book");
     public static final ResourceLocation ISS_LIFE_LEECH_BOUND_PERK  = ironsItem("blood_rune");
 
+    // ── Apothic Attributes — Phase 2a combat perks ──
+    // Icons pulled from Apotheosis's items sheet (the library itself has no
+    // item textures). Fallback is missing-texture at runtime if Apotheosis
+    // isn't installed, which is safe because the perks are null-registered.
+    public static final ResourceLocation APOTH_SOCKET_VIRTUOSO_PERK   = apothItem("gem_fused_slate");
+    public static final ResourceLocation APOTH_AFFIX_AFFINITY_PERK    = apothItem("mythic_material");
+    public static final ResourceLocation APOTH_CRITICAL_MASTERY_PERK  = apothItem("broadhead_arrow");
+    public static final ResourceLocation APOTH_VAMPIRIC_FANGS_PERK    = apothItem("warden_tendril");
+    public static final ResourceLocation APOTH_REAPERS_EDGE_PERK      = apothItem("hammer");
+    public static final ResourceLocation APOTH_EVASIVE_PERK           = apothItem("infused_breath");
+    public static final ResourceLocation APOTH_ARROW_MASTERY_PERK     = apothItem("explosive_arrow");
+    public static final ResourceLocation APOTH_EARTHBREAKER_PERK      = apothItem("iron_mining_arrow");
+    public static final ResourceLocation APOTH_SCHOLAR_PERK           = apothItem("book");
+    public static final ResourceLocation APOTH_SPECTRAL_WARD_PERK     = apothItem("obsidian_arrow");
+    public static final ResourceLocation APOTH_GHOSTBOUND_PERK        = apothItem("prismatic_web");
+    public static final ResourceLocation APOTH_HEART_HEALER_PERK      = apothItem("potion_charm");
+
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");
@@ -640,7 +657,8 @@ public class HandlerResources {
     }
 
     private static ResourceLocation apothItem(String name) {
-        return new ResourceLocation("apotheosis", "textures/item/" + name + ".png");
+        // Apotheosis uses `textures/items/` (plural) rather than the vanilla `textures/item/`.
+        return new ResourceLocation("apotheosis", "textures/items/" + name + ".png");
     }
 
     private static ResourceLocation attribItem(String name) {

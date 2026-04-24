@@ -809,6 +809,109 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lifeLeechBoundPercent)
             ));
 
+    // ── Apothic Attributes / Apotheosis — Phase 2a: combat perks ──
+    public static final RegistryObject<Perk> SOCKET_VIRTUOSO =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().socketVirtuosoRequiredLevel < 0
+            ? null : PERKS.register("socket_virtuoso", () -> register(
+                    "socket_virtuoso", RegistrySkills.FORTUNE,
+                    HandlerCommonConfig.HANDLER.instance().socketVirtuosoRequiredLevel,
+                    HandlerResources.APOTH_SOCKET_VIRTUOSO_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().socketVirtuosoBonus)
+            ));
+    public static final RegistryObject<Perk> AFFIX_AFFINITY =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().affixAffinityRequiredLevel < 0
+            ? null : PERKS.register("affix_affinity", () -> register(
+                    "affix_affinity", RegistrySkills.FORTUNE,
+                    HandlerCommonConfig.HANDLER.instance().affixAffinityRequiredLevel,
+                    HandlerResources.APOTH_AFFIX_AFFINITY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().affixAffinityDamagePercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().affixAffinityReductionPercent)
+            ));
+    public static final RegistryObject<Perk> APOTHIC_CRITICAL_MASTERY =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryRequiredLevel < 0
+            ? null : PERKS.register("apothic_critical_mastery", () -> register(
+                    "apothic_critical_mastery", RegistrySkills.DEXTERITY,
+                    HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryRequiredLevel,
+                    HandlerResources.APOTH_CRITICAL_MASTERY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryChancePercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryDamagePercent)
+            ));
+    public static final RegistryObject<Perk> VAMPIRIC_FANGS =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().vampiricFangsRequiredLevel < 0
+            ? null : PERKS.register("vampiric_fangs", () -> register(
+                    "vampiric_fangs", RegistrySkills.STRENGTH,
+                    HandlerCommonConfig.HANDLER.instance().vampiricFangsRequiredLevel,
+                    HandlerResources.APOTH_VAMPIRIC_FANGS_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().vampiricFangsPercent)
+            ));
+    public static final RegistryObject<Perk> REAPERS_EDGE =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().reapersEdgeRequiredLevel < 0
+            ? null : PERKS.register("reapers_edge", () -> register(
+                    "reapers_edge", RegistrySkills.STRENGTH,
+                    HandlerCommonConfig.HANDLER.instance().reapersEdgeRequiredLevel,
+                    HandlerResources.APOTH_REAPERS_EDGE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().reapersEdgePercent)
+            ));
+    public static final RegistryObject<Perk> EVASIVE =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evasiveRequiredLevel < 0
+            ? null : PERKS.register("evasive", () -> register(
+                    "evasive", RegistrySkills.DEXTERITY,
+                    HandlerCommonConfig.HANDLER.instance().evasiveRequiredLevel,
+                    HandlerResources.APOTH_EVASIVE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evasivePercent)
+            ));
+    public static final RegistryObject<Perk> ARROW_MASTERY =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arrowMasteryRequiredLevel < 0
+            ? null : PERKS.register("arrow_mastery", () -> register(
+                    "arrow_mastery", RegistrySkills.DEXTERITY,
+                    HandlerCommonConfig.HANDLER.instance().arrowMasteryRequiredLevel,
+                    HandlerResources.APOTH_ARROW_MASTERY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arrowMasteryDamagePercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arrowMasteryVelocityPercent)
+            ));
+    public static final RegistryObject<Perk> EARTHBREAKER =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().earthbreakerRequiredLevel < 0
+            ? null : PERKS.register("earthbreaker", () -> register(
+                    "earthbreaker", RegistrySkills.BUILDING,
+                    HandlerCommonConfig.HANDLER.instance().earthbreakerRequiredLevel,
+                    HandlerResources.APOTH_EARTHBREAKER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().earthbreakerPercent)
+            ));
+    public static final RegistryObject<Perk> APOTHIC_SCHOLAR =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothScholarRequiredLevel < 0
+            ? null : PERKS.register("apothic_scholar", () -> register(
+                    "apothic_scholar", RegistrySkills.INTELLIGENCE,
+                    HandlerCommonConfig.HANDLER.instance().apothScholarRequiredLevel,
+                    HandlerResources.APOTH_SCHOLAR_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apothScholarPercent)
+            ));
+    public static final RegistryObject<Perk> SPECTRAL_WARD =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spectralWardRequiredLevel < 0
+            ? null : PERKS.register("spectral_ward", () -> register(
+                    "spectral_ward", RegistrySkills.STRENGTH,
+                    HandlerCommonConfig.HANDLER.instance().spectralWardRequiredLevel,
+                    HandlerResources.APOTH_SPECTRAL_WARD_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().spectralWardPierce),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spectralWardShredPercent)
+            ));
+    public static final RegistryObject<Perk> GHOSTBOUND =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ghostboundRequiredLevel < 0
+            ? null : PERKS.register("ghostbound", () -> register(
+                    "ghostbound", RegistrySkills.CONSTITUTION,
+                    HandlerCommonConfig.HANDLER.instance().ghostboundRequiredLevel,
+                    HandlerResources.APOTH_GHOSTBOUND_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().ghostboundBonus)
+            ));
+    public static final RegistryObject<Perk> HEART_OF_THE_HEALER =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().heartHealerRequiredLevel < 0
+            ? null : PERKS.register("heart_of_the_healer", () -> register(
+                    "heart_of_the_healer", RegistrySkills.CONSTITUTION,
+                    HandlerCommonConfig.HANDLER.instance().heartHealerRequiredLevel,
+                    HandlerResources.APOTH_HEART_HEALER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().heartHealerReceivedPercent),
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().heartHealerOverhealPercent)
+            ));
+
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0
