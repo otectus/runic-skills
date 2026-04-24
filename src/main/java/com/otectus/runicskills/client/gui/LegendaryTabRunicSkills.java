@@ -3,14 +3,13 @@ package com.otectus.runicskills.client.gui;
 import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.handler.HandlerConfigClient;
-import com.otectus.runicskills.registry.RegistryItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import sfiomn.legendarytabs.api.tabs_menu.TabBase;
 import sfiomn.legendarytabs.api.tabs_menu.TabsMenu;
 
@@ -20,9 +19,13 @@ import sfiomn.legendarytabs.api.tabs_menu.TabsMenu;
  * own tab strip — drawn, positioned, highlighted, paginated, and "current" tracked by
  * Legendary Tabs itself, exactly like the built-in tabs for FTB Quests, Backpacked, etc.
  * <p>
- * Tab icon is the Runic Skills leveling book item rendered as an {@link ItemStack}; this
- * matches the icon players already associate with the Skills screen and avoids needing a
- * separate texture atlas entry in Legendary Tabs' sprite sheet.
+ * To stay pixel-identical to neighbouring tabs in the strip, this tab reuses the same
+ * {@code legendarytabs:textures/gui/tab_menu_buttons.png} atlas the built-in tabs blit
+ * from. The sword tile lives at {@code (u=27, v=92)} — a plain silver sword on the
+ * standard 26×22 frame; no built-in tab class claims this slot, so reusing it avoids
+ * any visual collision with an existing integration. Using the shared atlas means our
+ * frame shape, shading, and hover-state transition are byte-for-byte identical to every
+ * other tab — there is no custom texture to maintain in the Runic Skills resources.
  */
 public class LegendaryTabRunicSkills extends TabBase {
 
@@ -33,6 +36,20 @@ public class LegendaryTabRunicSkills extends TabBase {
     private static final int VANILLA_GUI_WIDTH = 176;
     private static final int VANILLA_GUI_HEIGHT = 166;
     private static final int RUNIC_SKILLS_GUI_HEIGHT = 194;
+
+    // Legendary Tabs' shared atlas (256×256). Layout convention across all its built-in tab
+    // classes: the normal variant sits at (TAB_ICON_TEX_X, TAB_ICON_TEX_Y); the hover variant
+    // is at (TAB_ICON_TEX_X + 54, TAB_ICON_TEX_Y). The TabButton passes hover=true both on
+    // mouse-over *and* when the tab is the currently-used one (via TabButton.isDisabled), so
+    // the same +54 U shift serves as both hover and "selected" appearance — exactly as every
+    // other built-in tab handles it.
+    private static final ResourceLocation TAB_ICONS =
+            new ResourceLocation("legendarytabs", "textures/gui/tab_menu_buttons.png");
+    private static final int TAB_W = 26;
+    private static final int TAB_H = 22;
+    private static final int TAB_ICON_TEX_X = 27;   // Plain silver sword — unused by any built-in tab.
+    private static final int TAB_ICON_TEX_Y = 92;
+    private static final int HOVER_U_SHIFT  = 54;
 
     @Override
     public void openTargetScreen(Player player) {
@@ -47,11 +64,8 @@ public class LegendaryTabRunicSkills extends TabBase {
 
     @Override
     public void render(GuiGraphics gfx, int x, int y, boolean hover) {
-        // Legendary Tabs invokes this with the icon-origin coordinates inside the tab button
-        // (the button background/frame is drawn by Legendary Tabs itself). Draw our 16x16
-        // leveling-book icon at that origin.
-        ItemStack icon = RegistryItems.LEVELING_BOOK.get().getDefaultInstance();
-        gfx.renderItem(icon, x, y);
+        int u = TAB_ICON_TEX_X + (hover ? HOVER_U_SHIFT : 0);
+        gfx.blit(TAB_ICONS, x, y, u, TAB_ICON_TEX_Y, TAB_W, TAB_H);
     }
 
     @Override

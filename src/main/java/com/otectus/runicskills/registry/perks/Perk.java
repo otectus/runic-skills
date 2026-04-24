@@ -212,6 +212,7 @@ public class Perk {
 
     public boolean isEnabled() {
         if (this.requiredLevel < 1) return true;
+        if (com.otectus.runicskills.registry.RegistryPerks.isDisabled(this)) return false;
         SkillCapability cap = SkillCapability.getLocal();
         if (cap == null) return false;
         return cap.getSkillLevel(this.getSkill()) >= this.requiredLevel && cap.isPerkActive(this);
@@ -224,6 +225,7 @@ public class Perk {
         // has registered DATA_HEALTH_ID. isRemoved() only checks the nullable removalReason
         // field and is always safe.
         if (player == null || this.requiredLevel < 1 || player.isRemoved()) return false;
+        if (com.otectus.runicskills.registry.RegistryPerks.isDisabled(this)) return false;
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return false;
         return cap.getSkillLevel(this.getSkill()) >= this.requiredLevel && cap.isPerkActive(this);

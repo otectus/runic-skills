@@ -101,11 +101,15 @@ public class SkillLevelUpSP {
     }
 
     public static int requiredPoints(int skillLevel) {
-        return getExperienceForLevel(skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1);
+        int base = getExperienceForLevel(skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1);
+        float mult = HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier;
+        return Math.max(0, Math.round(base * mult));
     }
 
     public static int requiredExperienceLevels(int skillLevel) {
-        return skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1;
+        int base = skillLevel + HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel - 1;
+        float mult = HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier;
+        return Math.max(0, Math.round(base * mult));
     }
 
     public static int getExperienceForLevel(int level) {

@@ -22,7 +22,10 @@ public class HandlerConfigClient {
     public static boolean defaultShowTitleModName = false;
     public static SortPassives defaultSortPassive = SortPassives.ByName;
     public static SortPerks defaultSortPerk = SortPerks.ByLevel;
-    public static int defaultLegendaryTabsPriority = 80;
+    // 15 places the Skills tab strictly between InventoryTab (priority 10) and the next group
+    // of known tabs (Backpacked/TravelersBackpack at 20), so Skills always renders as the
+    // second tab in the strip regardless of which other mods are installed.
+    public static int defaultLegendaryTabsPriority = 15;
 
     static {
         CONFIG.push("general");
@@ -32,7 +35,7 @@ public class HandlerConfigClient {
         showTitleModName = CONFIG.define("showTitleModName", defaultShowTitleModName);
         sortPassive = CONFIG.defineEnum("sortPassive", defaultSortPassive);
         sortPerk = CONFIG.defineEnum("sortPerk", defaultSortPerk);
-        legendaryTabsPriority = CONFIG.comment("Priority of the Skills tab within Legendary Tabs' strip. Lower = earlier. Built-in tabs use small integers (InventoryTab=10, FtbQuestsTab=70) and the strip paginates, so keep this small for the Skills tab to appear on page 1.")
+        legendaryTabsPriority = CONFIG.comment("Priority of the Skills tab within Legendary Tabs' strip. Lower = earlier. Built-in tabs use small integers (Inventory=10, Backpacked/TravelersBackpack=20, Reskillable=30, Pufferfish/PST=40, BodyDamage=50, Diet=60, FtbQuests=70, Maps=75, FtbTeams=80). Default 15 places Skills immediately after Inventory.")
                 .defineInRange("legendaryTabsPriority", defaultLegendaryTabsPriority, 0, 10_000);
         CONFIG.pop();
         SPEC = CONFIG.build();

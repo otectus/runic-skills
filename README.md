@@ -7,7 +7,7 @@ A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through
 ![Java 17](https://img.shields.io/badge/Java-17-F89820)
 ![License Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1.
+Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release ships the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix.
 
 ---
 
@@ -83,7 +83,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-0.9.5.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.0.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -91,7 +91,7 @@ No client-side-only nor server-side-only variants; one jar on both sides.
 
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side.
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=2`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=4`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
@@ -200,7 +200,7 @@ The event object exposes `player` and `skill` and respects cancellation — canc
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=2`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=4`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills-common.json5` on the client is read for display defaults only.
 - **Title name custom display** — titles apply a display-name prefix via `setCustomName`. Set `titlesUseCustomName=false` in the common config to disable if you run a chat/nickname mod that collides.
 

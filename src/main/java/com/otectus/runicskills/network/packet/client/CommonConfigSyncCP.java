@@ -20,6 +20,12 @@ import java.util.function.Supplier;
 public class CommonConfigSyncCP {
 
     private final int skillFirstCostLevel;
+    private final int maxActivePerks;
+    private final List<String> disabledPerks;
+    private final List<String> disabledPassives;
+    private final int perkSwapCooldownTicks;
+    private final float skillLevelUpCostMultiplier;
+    private final boolean enableItemLocks;
     private final boolean dropLockedItems;
     private final boolean displayTitlesAsPrefix;
 
@@ -95,6 +101,12 @@ public class CommonConfigSyncCP {
 
     public CommonConfigSyncCP() {
         skillFirstCostLevel = HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel;
+        maxActivePerks = HandlerCommonConfig.HANDLER.instance().maxActivePerks;
+        disabledPerks = HandlerCommonConfig.HANDLER.instance().disabledPerks;
+        disabledPassives = HandlerCommonConfig.HANDLER.instance().disabledPassives;
+        perkSwapCooldownTicks = HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
+        skillLevelUpCostMultiplier = HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier;
+        enableItemLocks = HandlerCommonConfig.HANDLER.instance().enableItemLocks;
         dropLockedItems = HandlerCommonConfig.HANDLER.instance().dropLockedItems;
         displayTitlesAsPrefix = HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix;
         attackDamageValue = HandlerCommonConfig.HANDLER.instance().attackDamageValue;
@@ -166,6 +178,12 @@ public class CommonConfigSyncCP {
     @SuppressWarnings("unchecked")
     public CommonConfigSyncCP(FriendlyByteBuf buffer) {
         skillFirstCostLevel = buffer.readInt();
+        maxActivePerks = buffer.readInt();
+        disabledPerks = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
+        disabledPassives = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
+        perkSwapCooldownTicks = buffer.readInt();
+        skillLevelUpCostMultiplier = buffer.readFloat();
+        enableItemLocks = buffer.readBoolean();
         dropLockedItems = buffer.readBoolean();
         displayTitlesAsPrefix = buffer.readBoolean();
         attackDamageValue = buffer.readFloat();
@@ -239,6 +257,12 @@ public class CommonConfigSyncCP {
 
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeInt(this.skillFirstCostLevel);
+        buffer.writeInt(this.maxActivePerks);
+        buffer.writeCollection(this.disabledPerks, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
+        buffer.writeCollection(this.disabledPassives, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
+        buffer.writeInt(this.perkSwapCooldownTicks);
+        buffer.writeFloat(this.skillLevelUpCostMultiplier);
+        buffer.writeBoolean(this.enableItemLocks);
         buffer.writeBoolean(this.dropLockedItems);
         buffer.writeBoolean(this.displayTitlesAsPrefix);
         buffer.writeFloat(this.attackDamageValue);
@@ -315,6 +339,12 @@ public class CommonConfigSyncCP {
             LocalPlayer localPlayer = (Minecraft.getInstance()).player;
             if(localPlayer != null){
                 HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel = this.skillFirstCostLevel;
+                HandlerCommonConfig.HANDLER.instance().maxActivePerks = this.maxActivePerks;
+                HandlerCommonConfig.HANDLER.instance().disabledPerks = this.disabledPerks;
+                HandlerCommonConfig.HANDLER.instance().disabledPassives = this.disabledPassives;
+                HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks = this.perkSwapCooldownTicks;
+                HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier = this.skillLevelUpCostMultiplier;
+                HandlerCommonConfig.HANDLER.instance().enableItemLocks = this.enableItemLocks;
                 HandlerCommonConfig.HANDLER.instance().dropLockedItems = this.dropLockedItems;
                 HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix = displayTitlesAsPrefix;
                 HandlerCommonConfig.HANDLER.instance().attackDamageValue = this.attackDamageValue;

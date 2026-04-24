@@ -3715,6 +3715,35 @@ public class RegistryPerks {
         return count;
     }
 
+    public static int countEnabledPerks(com.otectus.runicskills.common.capability.SkillCapability capability) {
+        int count = 0;
+        for (Integer rank : capability.perkRank.values()) {
+            if (rank != null && rank >= 1) count++;
+        }
+        return count;
+    }
+
+    // Disabled-via-config support. Accepts either a bare registry path ("berserker") or a
+    // full id ("runicskills:berserker"); matches both against the disabledPerks list.
+    public static boolean isDisabled(String perkName) {
+        if (perkName == null) return false;
+        List<String> list = HandlerCommonConfig.HANDLER.instance().disabledPerks;
+        if (list == null || list.isEmpty()) return false;
+        String fullId = perkName.contains(":") ? perkName : (RunicSkills.MOD_ID + ":" + perkName);
+        String path = perkName.contains(":") ? perkName.substring(perkName.indexOf(':') + 1) : perkName;
+        for (String entry : list) {
+            if (entry == null || entry.isEmpty()) continue;
+            if (entry.equals(path) || entry.equals(fullId)) return true;
+        }
+        return false;
+    }
+
+    public static boolean isDisabled(Perk perk) {
+        if (perk == null) return false;
+        if (isDisabled(perk.getName())) return true;
+        return isDisabled(perk.getMod() + ":" + perk.getName());
+    }
+
     public static List<Perk> getSchoolAttunementPerks() {
         List<Perk> perks = new ArrayList<>();
         for (String name : SCHOOL_PERK_NAMES) {

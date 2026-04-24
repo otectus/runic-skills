@@ -3,6 +3,7 @@ package com.otectus.runicskills.client.capability;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.model.Skills;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.registry.RegistryCapabilities;
 import net.minecraft.client.Minecraft;
@@ -39,6 +40,7 @@ public final class ClientCapabilityAccess {
      * Shows the skill-lock overlay when the player lacks the required level.
      */
     public static boolean canUseItemClient(ItemStack item) {
+        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
         SkillCapability cap = localCapability();
         if (cap == null) return true;
         ResourceLocation key = ForgeRegistries.ITEMS.getKey(item.getItem());

@@ -63,6 +63,13 @@ public class RunicSkillsScreen extends Screen {
     private static final int OVERVIEW_SLOT_COLUMNS = 2;
     private static final int OVERVIEW_SLOT_WIDTH = 66;
     private static final int OVERVIEW_SLOT_HEIGHT = 26;
+    // Hover texture is a 74x26 halo — 4px of green glow on each horizontal side of the
+    // underlying 66x26 button. Must be passed to blit at its real size so UV normalization
+    // is correct; shifting x by -4 centers the halo over the button.
+    private static final int OVERVIEW_HOVER_TEX_WIDTH = 74;
+    private static final int OVERVIEW_HOVER_TEX_HEIGHT = 26;
+    private static final int OVERVIEW_HOVER_X_OFFSET = (OVERVIEW_HOVER_TEX_WIDTH - OVERVIEW_SLOT_WIDTH) / 2;
+    private static final int OVERVIEW_HOVER_Y_OFFSET = (OVERVIEW_HOVER_TEX_HEIGHT - OVERVIEW_SLOT_HEIGHT) / 2;
     private static final int OVERVIEW_LEFT_SLOT_X = 16;
     private static final int OVERVIEW_RIGHT_SLOT_X = 93;
     private static final int OVERVIEW_FIRST_SLOT_Y = 50;
@@ -209,6 +216,10 @@ public class RunicSkillsScreen extends Screen {
         guiGraphics.blit(HandlerResources.PERK_PAGE[0], panelX + XP_BAR_X, panelY + XP_BAR_Y, 0, 166, progress, 5);
 
         List<Skill> skills = getSortedSkills();
+        // Defer the hovered-skill tooltip until after all cells are drawn. Rendering it
+        // inline inside the loop causes subsequent cells (e.g. the neighbour to the right
+        // of STR) to overpaint the tooltip.
+        Skill hoveredSkill = null;
         for (int i = 0; i < skills.size(); i++) {
             Skill skill = skills.get(i);
             Area slotBounds = overviewSlotBounds(panelX, panelY, i);
@@ -221,9 +232,13 @@ public class RunicSkillsScreen extends Screen {
             boolean hovered = slotBounds.contains(mouseX, mouseY);
 
             if (hovered) {
-                guiGraphics.blit(HandlerResources.SKILL_CARD_HOVER, slotBounds.x(), slotBounds.y(), 0, 0,
-                        OVERVIEW_SLOT_WIDTH, OVERVIEW_SLOT_HEIGHT, OVERVIEW_SLOT_WIDTH, OVERVIEW_SLOT_HEIGHT);
-                Utils.drawToolTip(guiGraphics, Component.translatable(skill.getKey()), mouseX, mouseY);
+                guiGraphics.blit(HandlerResources.SKILL_CARD_HOVER,
+                        slotBounds.x() - OVERVIEW_HOVER_X_OFFSET,
+                        slotBounds.y() - OVERVIEW_HOVER_Y_OFFSET,
+                        0, 0,
+                        OVERVIEW_HOVER_TEX_WIDTH, OVERVIEW_HOVER_TEX_HEIGHT,
+                        OVERVIEW_HOVER_TEX_WIDTH, OVERVIEW_HOVER_TEX_HEIGHT);
+                hoveredSkill = skill;
             }
 
             guiGraphics.blit(skill.getLockedTexture(), iconBounds.x(), iconBounds.y(), 0.0F, 0.0F,
@@ -241,6 +256,10 @@ public class RunicSkillsScreen extends Screen {
                     levelY,
                     Color.WHITE.getRGB(),
                     false);
+        }
+
+        if (hoveredSkill != null) {
+            Utils.drawToolTip(guiGraphics, Component.translatable(hoveredSkill.getKey()), mouseX, mouseY);
         }
     }
 

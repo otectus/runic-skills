@@ -128,6 +128,27 @@ public class RegistryPassives {
         }
         return cachedByName.get(passiveName);
     }
+
+    // Disabled-via-config support. Accepts either a bare registry path ("attack_damage") or
+    // a full id ("runicskills:attack_damage"); matches both against the disabledPassives list.
+    public static boolean isDisabled(String passiveName) {
+        if (passiveName == null) return false;
+        List<String> list = HandlerCommonConfig.HANDLER.instance().disabledPassives;
+        if (list == null || list.isEmpty()) return false;
+        String fullId = passiveName.contains(":") ? passiveName : (RunicSkills.MOD_ID + ":" + passiveName);
+        String path = passiveName.contains(":") ? passiveName.substring(passiveName.indexOf(':') + 1) : passiveName;
+        for (String entry : list) {
+            if (entry == null || entry.isEmpty()) continue;
+            if (entry.equals(path) || entry.equals(fullId)) return true;
+        }
+        return false;
+    }
+
+    public static boolean isDisabled(Passive passive) {
+        if (passive == null) return false;
+        if (isDisabled(passive.getName())) return true;
+        return isDisabled(passive.getMod() + ":" + passive.getName());
+    }
 }
 
 

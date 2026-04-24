@@ -30,6 +30,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     public static final String COOLDOWN_COUNTER_ATTACK = "counter_attack";
     public static final String COOLDOWN_COUNTER_ATTACK_TIMER = "counter_attack_timer";
     public static final String COOLDOWN_LIMIT_BREAKER = "limit_breaker";
+    public static final String COOLDOWN_PERK_SWAP = "perk_swap";
 
     /**
      * Set by the client during FMLClientSetupEvent to supply the local player's capability.
@@ -228,6 +229,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     private boolean canUse(Player player, ResourceLocation resource) {
+        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
         List<Skills> skill = HandlerSkill.getValue(resource.toString());
         if (skill != null) {
             for (Skills skills : skill) {
@@ -242,6 +244,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     private boolean canUse(Player player, String restrictionID) {
+        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
         List<Skills> skill = HandlerSkill.getValue(restrictionID);
         if (skill != null) {
             for (Skills skills : skill) {

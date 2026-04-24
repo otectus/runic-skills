@@ -88,4 +88,9 @@ public class ConfigSyncCP {
         List<LockItem> items = new ArrayList<>(HandlerLockItemsConfig.HANDLER.instance().lockItemList);
         ServerNetworking.sendToPlayer(new ConfigSyncCP(items), (ServerPlayer) player);
     }
+
+    public static void sendToAllPlayers() {
+        List<LockItem> items = new ArrayList<>(HandlerLockItemsConfig.HANDLER.instance().lockItemList);
+        ServerNetworking.sendToAllClients(new ConfigSyncCP(items));
+    }
 }

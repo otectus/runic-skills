@@ -41,6 +41,9 @@ public class PassiveLevelUpSP {
                 Passive passive = RegistryPassives.getPassive(this.passive);
                 if (passive == null) return;
 
+                // Reject level-up of disabled-via-config passives
+                if (RegistryPassives.isDisabled(passive)) return;
+
                 // H1: Validate passive isn't at max level
                 int currentLevel = capability.getPassiveLevel(passive);
                 if (currentLevel >= passive.levelsRequired.length) return;

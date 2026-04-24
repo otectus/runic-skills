@@ -8,6 +8,7 @@ import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.packet.client.*;
 import com.otectus.runicskills.registry.*;
+import com.otectus.runicskills.registry.perks.PerkGroupsReloadListener;
 import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -55,6 +57,7 @@ public class PlayerLifecycleHandler {
                 ConfigSyncCP.sendToPlayer(serverPlayer);
                 CommonConfigSyncCP.sendToPlayer(serverPlayer);
                 DynamicConfigSyncCP.sendToPlayer(serverPlayer);
+                PerkGroupsSyncCP.sendToPlayer(serverPlayer);
             }
         }
     }
@@ -98,6 +101,11 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
         event.register(SkillCapability.class);
+    }
+
+    @SubscribeEvent
+    public static void onAddReloadListeners(AddReloadListenerEvent event) {
+        event.addListener(new PerkGroupsReloadListener());
     }
 
     @SubscribeEvent

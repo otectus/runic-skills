@@ -9,6 +9,7 @@ import com.otectus.runicskills.common.command.arguments.SkillArgument;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerLockItemsConfig;
 import com.otectus.runicskills.handler.HandlerSkill;
+import com.otectus.runicskills.network.packet.client.ConfigSyncCP;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -63,6 +64,7 @@ public class RegisterItem {
 
                     HandlerLockItemsConfig.HANDLER.save();
                     HandlerSkill.ForceRefresh(); // F6: Refresh cache immediately
+                    ConfigSyncCP.sendToAllPlayers();
                     return Command.SINGLE_SUCCESS;
                 }
 
@@ -72,6 +74,8 @@ public class RegisterItem {
 
                 HandlerLockItemsConfig.HANDLER.instance().lockItemList.set(index, lockItem);
                 HandlerLockItemsConfig.HANDLER.save();
+                HandlerSkill.ForceRefresh();
+                ConfigSyncCP.sendToAllPlayers();
 
                 player.sendSystemMessage(Component.literal("Item already in lockItemList, adding extra skill..."));
                 return Command.SINGLE_SUCCESS;
@@ -84,6 +88,7 @@ public class RegisterItem {
             HandlerLockItemsConfig.HANDLER.instance().lockItemList.add(lockItem);
             HandlerLockItemsConfig.HANDLER.save();
             HandlerSkill.ForceRefresh(); // F6: Refresh cache immediately
+            ConfigSyncCP.sendToAllPlayers();
 
             player.sendSystemMessage(Component.literal("Item added into lockItemList..."));
         }

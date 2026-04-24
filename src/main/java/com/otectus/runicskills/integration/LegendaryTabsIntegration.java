@@ -12,6 +12,10 @@ import net.minecraftforge.fml.ModList;
  * paginated by Legendary Tabs itself) exactly like the built-in tabs for FTB Quests,
  * Backpacked, etc. To avoid a double-render, {@link com.otectus.runicskills.mixin.MixInventoryScreen}
  * checks {@link #isModLoaded()} and skips its own tab draw when Legendary Tabs is present.
+ * <p>
+ * This class is dedicated-server-safe (no client imports). Client-side extensions —
+ * including the inventory-tabs-to-Skills-screen propagation — live in
+ * {@link com.otectus.runicskills.client.integration.LegendaryTabsClientIntegration}.
  */
 public class LegendaryTabsIntegration {
 

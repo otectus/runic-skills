@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Mod ID**: `runicskills`
 - **Package**: `com.otectus.runicskills`
-- **Version**: 0.9.5
+- **Version**: 1.0.0
 - **MC**: 1.20.1 | **Forge**: 47.3.0 | **Java**: 17
 - **Mappings**: Parchment 2023.09.03-1.20.1
 
@@ -30,7 +30,7 @@ src/main/resources/
 - **Ars Nouveau** — magic system integration (optional)
 - **Apothic Attributes / Apotheosis** — attribute system integration (optional)
 - **Irons Spellbooks** — spell system integration (optional)
-- **L2Tabs / Legendary Tabs** — inventory tab integrations (optional, compile-time only; drop jars into `libs/`)
+- **L2Tabs / Legendary Tabs** — inventory tab integrations (optional, compile-time only; drop jars into `libs/`). `libs/l2tabs-0.3.3.jar` ships as a minimal API stub so the build works when the real L2Tabs jar isn't locally available — replace it with the real 0.3.3 jar to compile against the full L2Tabs surface.
 - **MixinExtras** (0.4.0) — enhanced mixin features
 
 ## Terminology

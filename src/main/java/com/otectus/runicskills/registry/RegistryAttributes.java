@@ -75,7 +75,8 @@ public class RegistryAttributes {
     public static void modifierAttributes(ServerPlayer serverPlayer) {
         serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(skillCapability -> {
             for (Passive passive : RegistryPassives.getCachedValues()) {
-                (new RegisterAttribute(serverPlayer, passive.attribute, passive.getValue() / passive.levelsRequired.length * passive.getLevel(serverPlayer), UUID.fromString(passive.attributeUuid))).amplifyAttribute(true);
+                boolean enabled = !RegistryPassives.isDisabled(passive);
+                (new RegisterAttribute(serverPlayer, passive.attribute, passive.getValue() / passive.levelsRequired.length * passive.getLevel(serverPlayer), UUID.fromString(passive.attributeUuid))).amplifyAttribute(enabled);
             }
         });
     }

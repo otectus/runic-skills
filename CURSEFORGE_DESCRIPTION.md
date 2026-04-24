@@ -98,6 +98,28 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 ---
 
+## What's new in 1.0.0
+
+- **First stable release.** Consolidates the full 0.9.x line into a single 1.0 milestone; no further pre-1.0 versions will be cut.
+- **Tooltip matches enforcement.** Disabling the item-lock master toggle (`enableItemLocks = false`) now also hides the "Requirements:" block from item tooltips. Previously the text remained, so players who unlocked items via config still saw stale "Requires Level X" warnings and thought the lock was still active.
+- **Server owners and pack makers get five new knobs** for balancing the perk/passive system. Defaults are behavior-preserving, so updating from 0.9.7 changes nothing until you opt in.
+- **Global active-perk cap** (`maxActivePerks`). Answers the top-requested "how many perks can I have active at once" question. `0` = unlimited. Iron's Spells school attunements count against this cap in addition to their own `ironsMaxSchoolSelections` limit.
+- **Per-perk and per-passive kill switches** (`disabledPerks`, `disabledPassives`). Lists of registry names that can't be enabled or leveled up; effects are fully suppressed but save data is preserved, so re-enabling restores state. No more "delete the whole integration" to nerf one perk.
+- **Perk-swap cooldown** (`perkSwapCooldownTicks`). Stops rapid-fire swapping between perks between fights. Cooldown persists through logout.
+- **Skill level-up cost multiplier** (`skillLevelUpCostMultiplier`). Tune vanilla XP cost up or down. `1.0` = vanilla, `2.0` = twice as expensive, `0.5` = half price.
+- **Data-driven perk groups via datapack.** Drop a JSON into `data/<pack>/perk_groups/` with `{ "max_active": N, "perks": [...] }` to enforce mutual-exclusion or custom caps on any subset of perks. Plays nicely alongside the hardcoded Iron's Spells school limit — both systems run independently.
+- **Server-authoritative everywhere.** Every new check rejects with a `SyncSkillCapabilityCP` resync so clients can't desync from server rules. `/skillsreload` propagates config *and* datapack changes without requiring anyone to relog.
+- **Protocol version bumped to `4`.** Clients and servers must update together — old clients connected to new servers (and vice versa) will get a clean connection refusal rather than a silent wire-format bug.
+- **Fixed: mod now loads cleanly without Legendary Tabs.** An inline lambda in the client-setup path caused the JVM verifier to eager-resolve `sfiomn.*` classes at mod construction, so the mod crashed with `NoClassDefFoundError: TabBase` whenever Legendary Tabs wasn't installed — ignoring the runtime `isModLoaded()` guard. Isolated the optional-mod references into a dedicated wrapper method so classes only load when Legendary Tabs is actually present. Runic Skills is now a clean optional dependency again.
+- **Fixed: skill-selection hover highlight is now aligned with the button.** The 74×26 green halo was being squashed into the 66-pixel button rect due to an incorrect `textureWidth` argument; it's now blitted at its true dimensions, centred around the button with a 4px outer glow.
+- **Fixed: skill-selection tooltip is no longer overpainted by adjacent cells.** Deferred the tooltip render until after the grid loop so no later cell can draw on top of it.
+
+## What's new in 0.9.6
+
+- **Skills tab blends seamlessly into the Legendary Tabs strip.** It now blits its sword icon directly from Legendary Tabs' own atlas, so the frame shape, shading, hover state, and "currently selected" treatment are byte-for-byte identical to every neighbouring tab.
+- **Skills always appears right after the Inventory tab.** Default priority lowered to `15`, slotting Skills between Inventory (priority 10) and every other known integration (20+).
+- **Tab strip stays stable as you move between inventory screens.** Opening Skills no longer collapses the strip to a lone icon — every tab on the vanilla inventory now appears on the Skills page in the same order and X position. Conversely, opening a companion screen (Medkit, Curios, Backpack, etc.) no longer hides the Skills tab.
+
 ## What's new in 0.9.5
 
 - **Native Legendary Tabs integration.** Skills now participates in Legendary Tabs' own strip instead of being drawn on top of it. Priority is configurable.

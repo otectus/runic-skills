@@ -2,6 +2,7 @@ package com.otectus.runicskills.client.event;
 
 import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.ChatFormatting;
@@ -29,7 +30,7 @@ public class RegistryClientEvents {
 
             ResourceLocation location = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem()));
             List<Skills> list = HandlerSkill.getValue(location.toString());
-            if (list != null) {
+            if (list != null && HandlerCommonConfig.HANDLER.instance().enableItemLocks) {
                 // Capability may not be synced yet when a tooltip renders pre-join; treat
                 // as "requirement not met" and colour red rather than NPE the tooltip.
                 SkillCapability localCap = SkillCapability.getLocal();

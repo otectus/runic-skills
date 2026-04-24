@@ -47,12 +47,40 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "general")
     @IntField(min = 1, max = 1000)
     public int skillFirstCostLevel = 5;
+
+    @SerialEntry(comment = "Maximum number of perks a player can have enabled at once. 0 = unlimited (default). Server-authoritative; clients attempting to exceed the cap are rejected. Iron's Spells school attunements are counted against this cap in addition to their own ironsMaxSchoolSelections limit.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 0, max = 256)
+    public int maxActivePerks = 0;
+
+    @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"fire_attunement\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> disabledPerks = Arrays.asList();
+
+    @SerialEntry(comment = "Passive registry names to disable. Disabled passives cannot be leveled up; existing level is retained in save data but the attribute modifier is removed (runs on player login/respawn and /skillsreload). Use the registry path only, e.g. \"attack_damage\", or a full id like \"runicskills:max_health\".")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> disabledPassives = Arrays.asList();
+
+    @SerialEntry(comment = "Per-player cooldown (in ticks, 20 = 1 second) between enabling perks. 0 = no cooldown (default). Applies only when going from disabled to enabled (not rank-ups, not disabling). Rejects server-side; clients attempting to enable during the cooldown are resynced.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 0, max = 72000)
+    public int perkSwapCooldownTicks = 0;
+
+    @SerialEntry(comment = "Multiplier applied to the vanilla XP cost of leveling up a skill. 1.0 = vanilla cost (default). 2.0 = twice as expensive. 0.5 = half price. Scales both the total XP-points cost and the experience-level threshold check, so it's a genuine difficulty knob rather than a loophole.")
+    @AutoGen(category = "common", group = "general")
+    @FloatField(min = 0.1f, max = 10.0f)
+    public float skillLevelUpCostMultiplier = 1.0f;
     @SerialEntry(comment = "Show potions overlay over perks")
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean showPotionsHud = true;
 
-    @SerialEntry(comment = "If true, locked items will be automatically dropped from player hands")
+    @SerialEntry(comment = "Master toggle for the item-lock feature. If false, every entry in runicskills.lockItems.json5 (and every integration-generated lock) is ignored — players can use any item regardless of skill level. Per-integration enable*LockItems toggles still apply when this is true.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableItemLocks = true;
+
+    @SerialEntry(comment = "If true, locked items will be automatically dropped from player hands. Has no effect when enableItemLocks is false.")
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean dropLockedItems = false;

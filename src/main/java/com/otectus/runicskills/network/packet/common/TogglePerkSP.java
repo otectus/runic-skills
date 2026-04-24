@@ -6,6 +6,8 @@ import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
+import com.otectus.runicskills.registry.perks.PerkGroup;
+import com.otectus.runicskills.registry.perks.PerkGroupManager;
 
 import java.util.function.Supplier;
 
@@ -52,9 +54,16 @@ public class TogglePerkSP {
                 Perk perk = RegistryPerks.getPerk(this.perk);
                 if (perk == null) return;
 
-                // Disabling (rank 0) is always allowed
+                // Disabling (rank 0) is always allowed — including for perks disabled via config,
+                // so players can clear a stuck rank and get their SP state consistent with the current rules.
                 if (this.targetRank <= 0) {
                     capability.setPerkRank(perk, 0);
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
+
+                // Reject enable / rank-up of disabled-via-config perks
+                if (RegistryPerks.isDisabled(perk)) {
                     SyncSkillCapabilityCP.send(player);
                     return;
                 }
@@ -82,7 +91,41 @@ public class TogglePerkSP {
                     }
                 }
 
+                // Global active-perk cap: only when enabling (going from 0 to 1+). 0 = unlimited.
+                if (currentRank == 0) {
+                    int globalCap = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().maxActivePerks;
+                    if (globalCap > 0 && RegistryPerks.countEnabledPerks(capability) >= globalCap) {
+                        SyncSkillCapabilityCP.send(player);
+                        return;
+                    }
+                }
+
+                // Data-driven perk groups (mutual-exclusion / custom caps): only when enabling (0 -> 1+).
+                if (currentRank == 0) {
+                    PerkGroup blocking = PerkGroupManager.firstBlockingGroup(capability, this.perk);
+                    if (blocking != null) {
+                        SyncSkillCapabilityCP.send(player);
+                        return;
+                    }
+                }
+
+                // Perk-swap cooldown: only when enabling (0 -> 1+). Rank-ups and disables bypass.
+                if (currentRank == 0) {
+                    int cdTicks = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
+                    if (cdTicks > 0 && capability.getCooldown(SkillCapability.COOLDOWN_PERK_SWAP) > 0) {
+                        SyncSkillCapabilityCP.send(player);
+                        return;
+                    }
+                }
+
                 capability.setPerkRank(perk, this.targetRank);
+
+                // Start the swap cooldown only when a perk was just enabled from rank 0.
+                if (currentRank == 0 && this.targetRank >= 1) {
+                    int cdTicks = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
+                    if (cdTicks > 0) capability.setCooldown(SkillCapability.COOLDOWN_PERK_SWAP, cdTicks);
+                }
+
                 SyncSkillCapabilityCP.send(player);
             }
         });

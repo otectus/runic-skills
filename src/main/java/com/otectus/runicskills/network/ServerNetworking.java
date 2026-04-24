@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class ServerNetworking {
     private static int packetId = 0;
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "4";
     public static SimpleChannel instance;
 
     public static void init() {
@@ -28,6 +28,7 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, PlayerMessagesCP.class, PlayerMessagesCP::toBytes, PlayerMessagesCP::new, PlayerMessagesCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, SkillOverlayCP.class, SkillOverlayCP::toBytes, SkillOverlayCP::new, SkillOverlayCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, TitleOverlayCP.class, TitleOverlayCP::toBytes, TitleOverlayCP::new, TitleOverlayCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, PerkGroupsSyncCP.class, PerkGroupsSyncCP::toBytes, PerkGroupsSyncCP::new, PerkGroupsSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 
         instance.registerMessage(packetId++, SkillLevelUpSP.class, SkillLevelUpSP::toBytes, SkillLevelUpSP::new, SkillLevelUpSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         instance.registerMessage(packetId++, PassiveLevelUpSP.class, PassiveLevelUpSP::toBytes, PassiveLevelUpSP::new, PassiveLevelUpSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
