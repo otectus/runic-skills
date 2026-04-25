@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.0.2] - 2026-04-24
+
+Magic-tree cross-mod expansion. 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and cross-mod synergies (9), covering every A1–A5 catalog in `MAGIC-RUNIC-SKILLS.md` plus the §B synergy tier. All perks register null-safely when their required mods are absent, matching the Botania-integration pattern from 1.0.1.
+
+### Added — Iron's Spells 'n Spellbooks (46 perks)
+
+**Phase 1a — generic mana & casting (16 perks):** Wellspring, Quickening, Reservoir, Tempo, Arcane Recovery, Focus, Mana Bulwark, Arcane Reprieve, Mana Surge, Spellweaver, Resonant Casting, Imbued Focus, Quickcast, Long Channel, Continuous Flow, Charge Mastery. Five are reconciled as permanent `irons_spellbooks:*` attribute modifiers on a 10-tick throttle (Wellspring on `max_mana`, Quickening on `cast_time_reduction`, Reservoir on `mana_regen`, Tempo on `cooldown_reduction`, Mana Surge transient on `spell_power`/`mana_regen` while HP ≤ threshold). The remainder hook ISS events: `LivingDeathEvent` (Arcane Recovery), `LivingAttackEvent` on `CastType.LONG` (Focus), `LivingHurtEvent` (Mana Bulwark redirects damage→mana at 2:1), `ChangeManaEvent` (Arcane Reprieve auto-refill with 120s cooldown, Continuous Flow per-tick drain reduction on `CastType.CONTINUOUS`), `SpellOnCastEvent` (Spellweaver every-Nth-cast free, 10s combo window), `SpellDamageEvent` (Resonant Casting above-95%-mana damage bonus, Long Channel `CastType.LONG` bonus), `ModifySpellLevelEvent` (Imbued Focus +1 level), and `SpellCooldownAddedEvent.Pre` (Quickcast `CastType.INSTANT`-filtered cooldown reduction). Charge Mastery registers but is a UI-only no-op — `CastType.CHARGE` does not exist in ISS 3.x (only `NONE/INSTANT/LONG/CONTINUOUS`); retained for future API evolution.
+
+**Phase 1b — school specialist triplets (28 perks):** for each of nine ISS schools (Fire, Ice, Lightning, Holy, Ender, Blood, Evocation, Nature, Eldritch) a three-perk triad plus the previously-missing Eldritch Attunement gate. X-mancer grants `+%` to the school's `irons_spellbooks:<school>_spell_power` (Magic tree). X-Warded grants `+%` to `irons_spellbooks:<school>_magic_resist` (Endurance tree). X-Catalyst is a 1-in-N-chance on-cast signature-effect proc — lightning/holy/ender/evocation/nature/eldritch apply `CHARGED`/`FORTIFY`/`PLANAR_SIGHT`/`ECHOING_STRIKES`/`OAKSKIN`/`ABYSSAL_SHROUD` to the caster via `SpellOnCastEvent`; fire/ice/blood apply `IMMOLATE`/`CHILLED`/`REND` to the victim via `SpellDamageEvent`.
+
+**Phase 1c — summon/utility (2 perks):** Lord of the Dead (caster gains `+%` `summon_damage`, and newly-spawned `IMagicSummon` entities owned by the player get `+%` `MULTIPLY_BASE` on `MAX_HEALTH` via `EntityJoinLevelEvent`). Life Leech Bound (when a player-owned `IMagicSummon` damages a target, `%` of damage returns to the summoner as mana via `MagicData.addMana` on `LivingHurtEvent`).
+
+### Added — Apotheosis & Apothic Attributes (12 perks)
+
+Socket Virtuoso (adds `+N` effective sockets to equipped items via `GetItemSocketsEvent` alongside the legacy Fortune-threshold bonus). Affix Affinity (counts Rare-or-better equipped affix items via `AffixHelper.getRarity()`, multiplies vanilla `ATTACK_DAMAGE` by per-item percent, and cuts incoming damage by a capped `1 - count × reduction` on `LivingHurtEvent`). Ten stat-stick perks reconciled on a 10-tick throttle against `ALObjects.Attributes.*`: Apothic Critical Mastery (`CRIT_CHANCE` + `CRIT_DAMAGE`), Vampiric Fangs (`LIFE_STEAL`), Reaper's Edge (`CURRENT_HP_DAMAGE`), Evasive (`DODGE_CHANCE`), Arrow Mastery (`ARROW_DAMAGE` + `ARROW_VELOCITY`, multiplicative), Earthbreaker (`MINING_SPEED`, multiplicative), Apothic Scholar (`EXPERIENCE_GAINED`, multiplicative), Spectral Ward (`PROT_PIERCE` flat + `PROT_SHRED` percent), Ghostbound (`GHOST_HEALTH`), Heart of the Healer (`HEALING_RECEIVED` + `OVERHEAL`). Two rename clashes resolved against the existing Fortune-tree `CRITICAL_MASTERY` and Intelligence-tree `SCHOLAR` by prefixing `apothic_`.
+
+### Added — Ars Nouveau (11 perks)
+
+**Phase 2b — form & utility (4 perks):** Form Focus filters by `Spell.getCastMethod()` identity on the `MethodProjectile`/`MethodTouch`/`MethodSelf` singletons — Projectile and Self reduce mana cost via `SpellCostCalcEvent`, Touch boosts outgoing damage via `SpellDamageEvent.Pre`. Wild Manipulation reduces cost for any spell whose `recipe` contains a `SpellSchools.MANIPULATION`-tagged glyph (via a shared `spellContainsSchool` helper).
+
+**Phase 2c — per-school (7 perks):** Hedgewitch: Water (ELEMENTAL_WATER cost + damage), Emberforged: Fire (ELEMENTAL_FIRE damage), Stormcaller: Air (ELEMENTAL_AIR damage), Geomancer: Earth (ELEMENTAL_EARTH damage), Conjurer (CONJURATION cost), Abjurer (ABJURATION damage/magnitude), Arcane Weaver (MANIPULATION damage, complementing Wild Manipulation's cost side). All reuse the Phase-2b school-membership check; all cost reductions floor at 1 Source. The doc's Necromant variant is dropped — Ars Nouveau 4.12.x `SpellSchools` has no NECROMANCY enum (only Abjuration/Conjuration/Manipulation and the four elementals).
+
+### Added — Cross-mod synergy (9 perks)
+
+Six Schoolbridges (require ISS + Ars): each reads the caster's ISS `<school>_spell_power` attribute and bleeds a configurable fraction into outgoing Ars damage of the matched school — Fire→ELEMENTAL_FIRE, Ice→ELEMENTAL_WATER, Lightning→ELEMENTAL_AIR, Nature→ELEMENTAL_EARTH, Holy→ABJURATION, Ender→MANIPULATION. Unified Arcana (ISS + Ars): refunds a percent of Ars cast cost to the caster's ISS mana pool via `SpellResolveEvent.Post` + `MagicData.addMana`. Triple Threat (ISS + Ars + Apoth): tick-reconciled `+%` modifiers on `max_mana`/`mana_regen`/`spell_power`, only active when all three mods are loaded. Affix Focus (ISS + Apoth): on `ModifySpellLevelEvent`, grants `+N` effective spell levels when the player has `N` or more Rare-or-better Apothic affix items equipped. Every cross-mod perk is null-registered at startup when any required mod is missing — the perks disappear from the tree entirely rather than rendering as inert icons.
+
+### Changed
+- **ISS compile dep bumped** from curse-maven file id `5539243` → `7402504` (pre-3.15 → 3.15.x). The older artifact predates `SpellCooldownAddedEvent` which Phase-1a Quickcast needs. No runtime behaviour change for older ISS versions — if the event doesn't fire, the perk simply never procs.
+- **Phase 1a texture-path audit.** Corrected ten `HandlerResources` entries to match the real ISS item sheet: `upgrade_orb_cast_time`→`cast_time_ring`, `upgrade_orb_mana_regen`→`mana_ring`, `antique_amulet`→`concentration_amulet`, `mana_potion`→`enchanted_ward_amulet`, `greater_mana_potion`→`greater_healing_potion`, `apprentice_spellbook`→`chronicle`, `affinity_ring`→`arcane_rune`, `scroll_of_haste`→`scroll`, `ancient_codex`→`chronicle_old`, `arcane_debris`→`arcane_essence`. Perks were functional before but rendered as missing-texture pink/black boxes.
+- **`apothItem()` helper path fix.** Apotheosis uses `textures/items/` (plural) not the vanilla `textures/item/`. Every new Apotheosis perk icon now resolves correctly against Apotheosis's actual texture layout.
+- **Two design-doc rename clashes resolved:** doc's "Mana Shield" → `MANA_BULWARK` (doc's "Arcane Barrier" was already in use as an Endurance-tree perk), doc's "Second Wind" → `ARCANE_REPRIEVE` (Constitution tree already has `SECOND_WIND`).
+- **`VERSION` file synced** to `1.0.2` — it was left at `1.0.0` through the 1.0.1 release.
+
+### Removed
+- `attribItem()` helper from `HandlerResources`. `attributeslib` has no `textures/item/*.png` assets — the helper was dead code across all six earlier phases of this release.
+
+### Skipped (design-doc flagged risky)
+Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Each is documented in the phase's original commit message with the reason.
+
+### Notes
+- Save-compatible with 1.0.1; no NBT or protocol-version changes. All 78 new perks default to behaviour-preserving `required_level ≥ 1` values; admins who want a subset can set `required_level = -1` per-perk to null-register it (matching the existing idiom).
+- Tested: `./gradlew check` (compile + sided-imports) passes after every phase. Runtime gameplay behaviour was not smoke-tested in an interactive client; recommend verifying at a minimum: Mana Bulwark damage→mana redirect, Arcane Reprieve's 120s cooldown, Affix Affinity's damage-reduction cap, and any Schoolbridge with both ISS and Ars loaded.
+
 ## [1.0.1] - 2026-04-24
 
 Botania integration. 42 new perks (19 Wisdom + 23 Magic) flavored around Botania's rune / season / sin / Gaia progression, wired behind a strict class-load-isolation pattern so the mod is a clean optional dependency.

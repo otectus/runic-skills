@@ -7,7 +7,7 @@ A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through
 ![Java 17](https://img.shields.io/badge/Java-17-F89820)
 ![License Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. **1.0.1 adds a 42-perk Botania integration** (Wisdom + Magic trees, rune-tiered structure) behind a strict optional-dependency guard.
+Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. 1.0.1 added a 42-perk Botania integration (Wisdom + Magic trees) behind a strict optional-dependency guard. **1.0.2 is the magic-tree cross-mod expansion** — 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and 9 cross-mod synergies that activate only when multiple source mods are installed together.
 
 ---
 
@@ -83,7 +83,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.0.1.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.0.2.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -103,11 +103,12 @@ Runic Skills detects installed mods at runtime and enables matching content with
 | Integration | Effect when present |
 |---|---|
 | **KubeJS** / Rhino | `SKILL_LEVELUP` event, plus ability to register custom skills, perks, passives, titles, and conditions from scripts |
-| **Ars Nouveau** | Spell-damage scaling by Magic, mana regen passives, glyph mastery perk, familiar gating |
+| **Ars Nouveau** | 11 form/school perks (Form Focus: Projectile/Touch/Self, Wild Manipulation, per-school Hedgewitch/Emberforged/Stormcaller/Geomancer/Conjurer/Abjurer/Arcane Weaver) on top of the existing spell-damage scaling, mana regen passives, glyph mastery, and familiar gating |
 | **Botania** | 42 rune-tiered perks across Wisdom + Magic: mana proficiency + discount hooks, nearby-pool trickle-charge, elemental/seasonal/sin procs; icons reuse Botania's own item textures |
-| **Irons Spellbooks** | Spell echo, arcane shield, attunement perks, school bonuses, spell gating |
-| **Apotheosis** | Affix gating, gem attunement, socket bonus interactions |
-| **Apothic Attributes** | Extended attribute pool for passives (armor pierce, cold damage, etc.) |
+| **Irons Spellbooks** | 46 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch), summon perks (Lord of the Dead, Life Leech Bound), plus the existing Spell Echo, Arcane Shield, and school-attunement gating |
+| **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count) |
+| **Apothic Attributes** | Extended attribute pool for passives plus 10 combat perks (Apothic Critical Mastery, Vampiric Fangs, Reaper's Edge, Evasive, Arrow Mastery, Earthbreaker, Apothic Scholar, Spectral Ward, Ghostbound, Heart of the Healer) |
+| **Cross-mod synergy** | 6 Schoolbridges (Iron's school spell-power bleeds into matching Ars school damage), Unified Arcana (Ars casts refund ISS mana), Triple Threat (+% mana/regen/spell-power when Iron's + Ars + Apotheosis all loaded), Affix Focus (+ISS spell levels when 4+ Rare Apoth items equipped) |
 | **Blood Magic** | Lock items for sigils, sentient gear, orbs |
 | **Farmers Delight** | Lock items on knives and cooking gear |
 | **Ice and Fire** | Dragon-slayer perk + dragon-item lock list |
