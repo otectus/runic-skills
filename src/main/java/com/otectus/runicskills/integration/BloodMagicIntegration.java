@@ -96,7 +96,7 @@ public class BloodMagicIntegration {
         generateLivingArmor(items, multiplier);
         generateTartaricGems(items, multiplier);
 
-        RunicSkills.getLOGGER().info("Blood Magic Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Blood Magic Integration: Generated {} lock items", items.size());
         return items;
     }
 

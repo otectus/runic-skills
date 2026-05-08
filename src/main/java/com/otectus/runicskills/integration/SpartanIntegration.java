@@ -198,7 +198,7 @@ public class SpartanIntegration {
             generateWeaponItems(items, FIRE, Source.FIRE, multiplier);
         }
 
-        RunicSkills.getLOGGER().info("Spartan Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Spartan Integration: Generated {} lock items", items.size());
         return items;
     }
 

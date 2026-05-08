@@ -71,7 +71,7 @@ public class JewelcraftIntegration {
         addIfExists(items, "jewelry_box", multiplier,
                 new SkillReq("fortune", 16), new SkillReq("intelligence", 12));
 
-        RunicSkills.getLOGGER().info("Jewelcraft Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Jewelcraft Integration: Generated {} lock items", items.size());
         return items;
     }
 

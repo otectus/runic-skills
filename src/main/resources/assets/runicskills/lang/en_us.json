@@ -461,7 +461,7 @@
  "perk.runicskills.continuous_flow" : "Continuous Flow",
  "perk.runicskills.continuous_flow.description" : "Sustain the arcane stream with less strain. Continuous-cast spells drain %s less mana per tick.",
  "perk.runicskills.charge_mastery" : "Charge Mastery",
- "perk.runicskills.charge_mastery.description" : "Master the charge. Charge spells always release at full power regardless of actual charge time.",
+ "perk.runicskills.charge_mastery.description" : "Master the charge. Iron's Spells held-cast (Long) spells deal %s more damage, modelling a fully-released charge regardless of how briefly held.",
 
  "perk.runicskills.eldritch_attunement" : "Eldritch Attunement",
  "perk.runicskills.eldritch_attunement.description" : "Attune to the Eldritch school, allowing you to cast Eldritch spells.",

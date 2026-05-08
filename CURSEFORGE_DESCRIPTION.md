@@ -99,6 +99,19 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 ---
 
+## What's new in 1.1.0
+
+- **Dedicated server now genuinely runs without YACL.** Pre-1.1.0 the README claimed YACL was not required server-side, but the mod's static initializer eager-loaded YACL classes during construction; servers without YACL crashed with `NoClassDefFoundError`. The config layer has been refactored: a new server-safe `ConfigHolder<T>` replaces YACL's `ConfigClassHandler` for all four handler classes, persistence runs through plain Gson (with a JSON5-comment stripper for backward compatibility), and the YACL UI moves behind a client-only builder reached via reflection. `mods.toml` flips YACL to `mandatory=false`. Existing `runicskills.common.json5` files load cleanly — field names unchanged.
+- **L2Tabs no-mod boot crash fixed.** Same JVM-verifier eager-resolution shape as the 1.0.0 Legendary Tabs fix; this one was missed at the time. ClientProxy used to inline a lambda referencing `TabRegistry.registerTab(...)`, which the verifier eager-loaded `BaseTab` for and crashed when L2Tabs was absent. Extracted to a `L2TabsClientIntegration::registerTab` method reference so the lambda body no longer holds the dangerous types.
+- **`/globallimit` works in-game again.** The command had a backwards guard that rejected every player invocation as "client-side", leaving only the dedicated-server console / rcon path working. Reported on CurseForge.
+- **Scholar perk no longer hides every enchantment in the world when disabled.** Adding `"scholar"` to `disabledPerks` (the natural way to "turn off" the perk) used to flip a global enchantment-name-hiding mixin, replacing every enchantment label on every item with a "Requires Scholar" placeholder. Decoupled: the new `enableScholarEnchantmentHiding` config (default off) is the only knob that controls hiding; the Scholar perk is now solely about its XP/enchanting bonus. Reported on CurseForge.
+- **`disabledPerks` and `disabledPassives` now appear in the in-game config UI.** Both fields existed in the JSON5 file but were missing the `@AutoGen` annotation, so the YACL screen never rendered them. Reported on CurseForge ("how do you disable certain perks?").
+- **Charge Mastery has a real effect.** Previously inert (the 1.0.2 changelog admitted ISS 3.x has no `CastType.CHARGE`). Now boosts `CastType.LONG` spell damage by `chargeMasteryPercent` (default `+25%`), modelling "released at full power regardless of how briefly held". Stacks multiplicatively with Long Channel.
+- **24 deferred Botania perks default-disabled.** The 1.0.1 changelog admitted that 24 Botania perks were registered with blank handlers pending future implementation. Until those handlers ship, every affected perk's `*RequiredLevel` defaults to `-1`, eliding them from the tree by default. Pack authors who want them visible (e.g. for a future patch) can set the level back. The list is in `CHANGELOG.md`.
+- **Per-integration "Generated N lock items" log lines** demoted from INFO to DEBUG. CurseForge user reported "ice and fire disabled repeating forever"; this likely was the closest source on busy reload cycles.
+- **Network protocol bumped 4 → 5.** Old clients hitting a 1.1.0 server (and vice versa) get a clean connection refusal rather than silent state corruption.
+- **Save-compatible with 1.0.2.** No NBT changes. Existing JSON5 config files load cleanly.
+
 ## What's new in 1.0.2
 
 - **78 new magic-tree perks across four integrations.** Every perk null-registers when its source mod is missing, so the tree silently collapses to whatever you actually have installed — no crash, no orphan icons.

@@ -72,7 +72,7 @@ public class IceAndFireIntegration {
         generateHippogryphItems(items, multiplier);
         generateMiscItems(items, multiplier);
 
-        RunicSkills.getLOGGER().info("Ice and Fire Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Ice and Fire Integration: Generated {} lock items", items.size());
         return items;
     }
 

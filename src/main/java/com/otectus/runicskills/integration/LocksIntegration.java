@@ -55,7 +55,7 @@ public class LocksIntegration {
         generateMechanisms(items, multiplier);
         generateKeyItems(items, multiplier);
 
-        RunicSkills.getLOGGER().info("Locks Reforged Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Locks Reforged Integration: Generated {} lock items", items.size());
         return items;
     }
 

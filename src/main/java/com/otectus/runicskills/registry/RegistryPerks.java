@@ -585,7 +585,8 @@ public class RegistryPerks {
                     "charge_mastery",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().chargeMasteryRequiredLevel,
-                    HandlerResources.ISS_CHARGE_MASTERY_PERK
+                    HandlerResources.ISS_CHARGE_MASTERY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().chargeMasteryPercent)
             ));
 
     // ── Iron's Spells — Phase 1b: school specialist triplets + Eldritch attunement ──

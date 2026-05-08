@@ -27,6 +27,7 @@ public class CommonConfigSyncCP {
     private final float skillLevelUpCostMultiplier;
     private final boolean enableItemLocks;
     private final boolean dropLockedItems;
+    private final boolean enableScholarEnchantmentHiding;
     private final boolean displayTitlesAsPrefix;
 
     // Passive
@@ -108,6 +109,7 @@ public class CommonConfigSyncCP {
         skillLevelUpCostMultiplier = HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier;
         enableItemLocks = HandlerCommonConfig.HANDLER.instance().enableItemLocks;
         dropLockedItems = HandlerCommonConfig.HANDLER.instance().dropLockedItems;
+        enableScholarEnchantmentHiding = HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding;
         displayTitlesAsPrefix = HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix;
         attackDamageValue = HandlerCommonConfig.HANDLER.instance().attackDamageValue;
         attackKnockbackValue = HandlerCommonConfig.HANDLER.instance().attackKnockbackValue;
@@ -185,6 +187,7 @@ public class CommonConfigSyncCP {
         skillLevelUpCostMultiplier = buffer.readFloat();
         enableItemLocks = buffer.readBoolean();
         dropLockedItems = buffer.readBoolean();
+        enableScholarEnchantmentHiding = buffer.readBoolean();
         displayTitlesAsPrefix = buffer.readBoolean();
         attackDamageValue = buffer.readFloat();
         attackKnockbackValue = buffer.readFloat();
@@ -264,6 +267,7 @@ public class CommonConfigSyncCP {
         buffer.writeFloat(this.skillLevelUpCostMultiplier);
         buffer.writeBoolean(this.enableItemLocks);
         buffer.writeBoolean(this.dropLockedItems);
+        buffer.writeBoolean(this.enableScholarEnchantmentHiding);
         buffer.writeBoolean(this.displayTitlesAsPrefix);
         buffer.writeFloat(this.attackDamageValue);
         buffer.writeFloat(this.attackKnockbackValue);
@@ -346,6 +350,7 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier = this.skillLevelUpCostMultiplier;
                 HandlerCommonConfig.HANDLER.instance().enableItemLocks = this.enableItemLocks;
                 HandlerCommonConfig.HANDLER.instance().dropLockedItems = this.dropLockedItems;
+                HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding = this.enableScholarEnchantmentHiding;
                 HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix = displayTitlesAsPrefix;
                 HandlerCommonConfig.HANDLER.instance().attackDamageValue = this.attackDamageValue;
                 HandlerCommonConfig.HANDLER.instance().attackKnockbackValue = this.attackKnockbackValue;

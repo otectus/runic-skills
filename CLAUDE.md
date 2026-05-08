@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Mod ID**: `runicskills`
 - **Package**: `com.otectus.runicskills`
-- **Version**: 1.0.0
+- **Version**: 1.1.0
 - **MC**: 1.20.1 | **Forge**: 47.3.0 | **Java**: 17
 - **Mappings**: Parchment 2023.09.03-1.20.1
 
@@ -25,7 +25,7 @@ src/main/resources/
 ```
 
 ## Key Dependencies
-- **YACL** (3.5.0) — config UI (client-side mandatory)
+- **YACL** (3.5.0) — config UI (optional, client-only). Server-safe code paths use plain Gson (`com.otectus.runicskills.config.storage.ConfigHolder`); the YACL UI lives in `client/config/`. The `:checkSidedImports` lint forbids YACL executable-class imports outside `client/config/`.
 - **KubeJS** (2001.6.5) — scripting integration (optional)
 - **Ars Nouveau** — magic system integration (optional)
 - **Apothic Attributes / Apotheosis** — attribute system integration (optional)
@@ -40,10 +40,11 @@ This naming is internal — the player-facing UI uses "Skills" and "Perks"
 
 ## Conventions
 - Registration: DeferredRegister on MOD bus
-- Config: YACL (yet_another_config_lib_v3), client-side
+- Config: server-safe `ConfigHolder<T>` POJO + JSON5 storage; YACL UI is a client-only adapter (`client/config/YaclConfigUiBuilder`) reached via reflection from `ConfigHolder.generateGui()`
 - Mixins: declared in `runicskills.mixins.json`, uses MixinExtras
 - Events: FORGE bus for gameplay, MOD bus for registration
 - Access Transformers: none (disabled in build.gradle)
+- Optional-mod integrations: load via `RunicSkills.tryLoadIntegration("modid", "FQCN")` so the integration class never enters the main constant pool. Client-side optional integrations (Legendary Tabs, L2Tabs, YACL UI) use a method-reference indirection from `ClientProxy` to avoid JVM-verifier eager-resolution.
 
 ## Mixin Targets
 Client: ForgeGui, PlayerRenderer, InventoryScreen, GunItem

@@ -1,26 +1,23 @@
 package com.otectus.runicskills.handler;
 
-import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.config.LockItemListGroup;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.ListGroup;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
 public class HandlerLockItemsConfig {
 
-    public static ConfigClassHandler<HandlerLockItemsConfig> HANDLER = ConfigClassHandler.createBuilder(HandlerLockItemsConfig.class)
-            .id(new ResourceLocation(RunicSkills.MOD_ID, "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(Configuration.getAbsoluteDirectory().resolve("runicskills.lockItems.json5"))
-                    .setJson5(true)
-                    .build())
-            .build();
+    // Server-safe: ConfigHolder replaces the previous YACL ConfigClassHandler. See
+    // HandlerCommonConfig for the full explanation; the YACL annotations on the field
+    // below remain inert at class load time.
+    public static final ConfigHolder<HandlerLockItemsConfig> HANDLER = new ConfigHolder<>(
+            HandlerLockItemsConfig.class,
+            Configuration.getAbsoluteDirectory().resolve("runicskills.lockItems.json5"),
+            HandlerLockItemsConfig::new);
 
     @SerialEntry(comment = "Lock item list")
     @ListGroup(controllerFactory = LockItemListGroup.class, valueFactory = LockItemListGroup.class, addEntriesToBottom = true)

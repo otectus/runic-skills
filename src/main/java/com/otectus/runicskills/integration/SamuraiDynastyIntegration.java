@@ -104,7 +104,7 @@ public class SamuraiDynastyIntegration {
         generateSpecialArmor(items, multiplier);
         generateMiscItems(items, multiplier);
 
-        RunicSkills.getLOGGER().info("Samurai Dynasty Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("Samurai Dynasty Integration: Generated {} lock items", items.size());
         return items;
     }
 

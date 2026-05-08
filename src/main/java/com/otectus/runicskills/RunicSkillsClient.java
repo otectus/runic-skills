@@ -2,20 +2,17 @@ package com.otectus.runicskills;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
+import com.otectus.runicskills.client.config.YaclConfigUiBuilder;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
-import com.otectus.runicskills.client.gui.TabRunicSkills;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
-import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.client.integration.L2TabsClientIntegration;
 import com.otectus.runicskills.client.integration.LegendaryTabsClientIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.client.event.RegistryClientEvents;
-import com.otectus.runicskills.registry.RegistryItems;
-import dev.xkmc.l2tabs.tabs.core.TabRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.InputEvent;
@@ -46,12 +43,15 @@ public class RunicSkillsClient {
     public static class ClientProxy {
         @SubscribeEvent
         public static void clientSetup(FMLClientSetupEvent event) {
+            // Route the in-game config screen through YaclConfigUiBuilder. The method
+            // reference keeps YACL types out of ClientProxy's constant pool (same isolation
+            // pattern as L2Tabs / Legendary Tabs above): if YACL is absent, ClientProxy
+            // still verifies cleanly because YACL classes only resolve when buildScreen
+            // is actually invoked. YaclConfigUiBuilder.buildScreen catches the
+            // NoClassDefFoundError in that case and falls back to the parent screen.
             ModLoadingContext.get().registerExtensionPoint(
                     ConfigScreenHandler.ConfigScreenFactory.class,
-                    () -> new ConfigScreenHandler.ConfigScreenFactory(
-                            (client, parent) ->
-                                    HandlerCommonConfig.HANDLER.generateGui().generateScreen(parent)
-                    )
+                    () -> new ConfigScreenHandler.ConfigScreenFactory(YaclConfigUiBuilder::buildScreen)
             );
 
             ClientCapabilityAccess.register();
@@ -60,9 +60,16 @@ public class RunicSkillsClient {
             MinecraftForge.EVENT_BUS.register(new OverlayTitleGui());
 
             if (L2TabsIntegration.isModLoaded()) {
-                event.enqueueWork(() -> {
-                    TabRegistry.registerTab(3500, TabRunicSkills::new, RegistryItems.LEVELING_BOOK, Component.literal("Skills"));
-                });
+                // Use a method reference to L2TabsClientIntegration#registerTab rather than an
+                // inline lambda. Same JVM-verifier eager-resolution risk as the Legendary Tabs
+                // path below: an inline lambda body containing `TabRegistry.registerTab(...)`
+                // compiles to a synthetic method ON ClientProxy whose bytecode references
+                // dev.xkmc.l2tabs.* types. Forge loads ClientProxy via Class.forName(..., true,
+                // loader) at mod construction; the verifier eager-loads BaseTab via
+                // TabRunicSkills' superclass check and throws NoClassDefFoundError when L2Tabs
+                // is absent. The method reference puts only L2TabsClientIntegration's name in
+                // ClientProxy's constant pool — no l2tabs types in ClientProxy's bytecode.
+                event.enqueueWork(L2TabsClientIntegration::registerTab);
             }
 
             if (LegendaryTabsIntegration.isModLoaded()) {

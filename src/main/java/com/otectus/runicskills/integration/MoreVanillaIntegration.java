@@ -69,7 +69,7 @@ public class MoreVanillaIntegration {
             generateArmor(items, multiplier);
         }
 
-        RunicSkills.getLOGGER().info("More Vanilla Integration: Generated {} lock items", items.size());
+        RunicSkills.getLOGGER().debug("More Vanilla Integration: Generated {} lock items", items.size());
         return items;
     }
 

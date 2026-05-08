@@ -1,5 +1,133 @@
 # Changelog
 
+## [1.1.0] - 2026-05-08
+
+Comment-triage release plus the long-standing dedicated-server YACL fix. Three CurseForge
+user reports were addressed; one P0 dedicated-server crash that the README has documented
+as fixed since 1.0.1 was actually fixed; one P0 client class-load regression on L2Tabs
+(same shape as the 1.0.0 Legendary Tabs fix) was caught and resolved.
+
+### Fixed
+- **Dedicated server crashed on boot when YACL was absent.** `mods.toml` had YACL declared
+  `mandatory=true, side="CLIENT"` so the FML manifest check passed, but `RunicSkills.<init>`
+  unconditionally called `Configuration.Init()` which triggered the static initializer of
+  every `Handler*Config` class, each of which built a `ConfigClassHandler` from
+  `dev.isxander.yacl3.config.v2.api.*`. With YACL declared `runtimeOnly` and absent from
+  the server's `mods/` folder, the JVM threw `NoClassDefFoundError:
+  dev/isxander/yacl3/config/v2/api/ConfigClassHandler` mid-construction. README has been
+  advertising "YACL is **not** required server-side" since 1.0.1 — the code now matches.
+  Fixed by introducing `com.otectus.runicskills.config.storage.ConfigHolder<T>`, a
+  server-safe wrapper that mirrors the previous `ConfigClassHandler` API surface
+  (`.instance()`, `.load()`, `.save()`, `.generateGui()`) without referencing any YACL
+  type in its bytecode. Persistence uses plain Gson against the existing
+  `runicskills.*.json5` files, with a JSON5-comment-stripper for backward compat with
+  YACL-written files. The YACL UI moves to a new `client/config/YaclConfigUiBuilder` that
+  is only loaded when the user clicks "Configure" on the client, and is itself reached
+  via reflection from `ConfigHolder` (no YACL types in `ConfigHolder`'s constant pool).
+  `mods.toml` flips to `mandatory=false` since YACL is now genuinely optional.
+- **Client crashed at mod construction when L2Tabs was absent.** Identical shape to the
+  1.0.0 Legendary Tabs crash: `RunicSkillsClient$ClientProxy` is a `@EventBusSubscriber`
+  class loaded by Forge via `Class.forName(..., true, loader)` at mod construction. The
+  `clientSetup` method contained an inline lambda
+  `() -> TabRegistry.registerTab(3500, TabRunicSkills::new, ...)` that the Java compiler
+  desugared into a synthetic method on ClientProxy itself. The JVM verifier walks that
+  method body at class-load time, sees `INVOKESTATIC dev/xkmc/.../TabRegistry.registerTab`
+  + `NEW com/.../TabRunicSkills`, and has to verify `TabRunicSkills` is assignable to
+  `BaseTab`. That assignability check eager-resolves `BaseTab`, which fails with
+  `NoClassDefFoundError` when L2Tabs is absent — even though the `if (isModLoaded())`
+  guard means the lambda would never run. Fixed by extracting registration into
+  `client/integration/L2TabsClientIntegration.registerTab()` and passing it as a method
+  reference, mirroring the 1.0.0 Legendary Tabs treatment so the L2Tabs types stay
+  confined to `L2TabsClientIntegration` and `TabRunicSkills`.
+- **`/globallimit <n>` rejected every in-game invocation as "client-side".** The
+  `execute` method had a backwards guard: `if (source.getEntity() instanceof Player) { fail }`.
+  In singleplayer the integrated server's command source IS the local `ServerPlayer`,
+  and on dedicated servers any op invoking the command also runs as a `ServerPlayer`,
+  so the guard rejected every legitimate path. Only the server console / rcon path
+  worked. Brigadier commands registered via `RegisterCommandsEvent` already only run on
+  the logical server, and `requires(s -> s.hasPermission(2))` already gates op-only
+  access — no entity check was needed. The guard has been removed. (Reported on
+  CurseForge — see `COMMENT_TRIAGE.md`.)
+- **`disabledPerks` and `disabledPassives` were invisible in the YACL config UI.** Both
+  fields had `@SerialEntry` and `@ListGroup` annotations but no `@AutoGen`, so they
+  persisted to disk but never appeared in the in-game config screen. Users had to edit
+  `runicskills.common.json5` by hand, which one CurseForge user reported as confusion
+  about how to disable specific perks. Added `@AutoGen(category="common", group="general")`
+  to both. (Reported on CurseForge — see `COMMENT_TRIAGE.md`.)
+- **Scholar perk → enchantment-hiding side effect.** The `MixItemStack.appendEnchantmentNames`
+  mixin keyed off `RegistryPerks.SCHOLAR.isEnabled()` to decide whether to hide every
+  enchantment name on every item in the world (replacing them with a placeholder
+  "Requires Scholar" line). When a user added `"scholar"` to `disabledPerks` (the natural
+  way to "turn off" the perk, just like any other), `isEnabled()` returned `false`, so
+  the mixin took the hide branch — globally erasing enchantment text from every tooltip.
+  One CurseForge user reported this as "is there a way to disable hiding the enchantments"
+  after spending a while looking through the config without finding any toggle. Decoupled
+  the two: a new `enableScholarEnchantmentHiding` config (default `false`) is the only
+  thing that controls hiding. The Scholar perk is now solely about its XP/enchanting
+  bonus. The `false` default matches what most users expect — set to `true` if your pack
+  wants the historical hide-until-perk behaviour. (Reported on CurseForge — see
+  `COMMENT_TRIAGE.md`.)
+- **Per-integration "Generated N lock items" log lines spammed at INFO.** A user
+  reported "ice and fire disabled repeating forever" — the closest match in source was
+  the INFO log at `IceAndFireIntegration.java:75` firing once per `HandlerSkill.ForceRefresh()`
+  (i.e. once per `/skillsreload` and once at first cache load). Demoted all six
+  per-integration "Generated N lock items" log lines (Spartan, Blood Magic, Ice and
+  Fire, Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft) from INFO to DEBUG.
+  No tight loop reproducing "forever" was found in code; the user is encouraged to
+  attach a `latest.log` excerpt if 1.1.0 still spams. (Reported on CurseForge — see
+  `COMMENT_TRIAGE.md`.)
+
+### Changed
+- **Bumped network channel `PROTOCOL_VERSION` from `4` to `5`.** `CommonConfigSyncCP`
+  carries one new boolean (`enableScholarEnchantmentHiding`). Old clients connected to
+  1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent
+  state-corruption bug. Clients and servers must update together.
+- **Charge Mastery (Iron's Spells perk) now has a real effect.** Previously the perk was
+  registered and unlockable but the 1.0.2 changelog admitted "Charge Mastery registers
+  but is a UI-only no-op — `CastType.CHARGE` does not exist in ISS 3.x". The closest
+  3.x semantic is `CastType.LONG` (held cast that releases on key-up). The new handler
+  hooks `SpellDamageEvent` for `CastType.LONG` spells and applies a configurable
+  `chargeMasteryPercent` damage bonus (default `+25%`), modelling "released at full
+  power regardless of how briefly held." Stacks multiplicatively with Long Channel.
+- **24 deferred Botania perks now default-disabled.** The 1.0.1 changelog admitted that
+  24 of the 42 Botania perks (the keybind-activated, custom-render, custom-capability,
+  and projectile/physics ones) had blank effect handlers pending a follow-up pass. They
+  were toggleable in the tree but did nothing. Until those handlers ship, every affected
+  perk's `*RequiredLevel` config field defaults to `-1`, which causes the existing
+  null-register guard to elide them from the registry — so the tree no longer shows
+  inert icons by default. Pack authors who want them visible (e.g. for a future patch
+  that adds the handlers, or for cosmetic display) can set the level back to a positive
+  value in `runicskills.common.json5`. The list: Petal-Reader, Sparkle-Sense, Dowser's
+  Twig, Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's
+  Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query, Greed:
+  Cartographer-Prospector, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge,
+  Gaia's Witness, Oracle of the Nine Runes, Band of Aura: Passive Channel, Spring:
+  Verdant Pulse, Lens Mastery: Velocity, Lens Mastery: Potency, Lust: Pixie Affinity,
+  Sloth: Unbound Step, Gaia's Gift: Relic Attunement, Flügel's Grace, Manastorm.
+- **Sided-import lint extended** to forbid `dev.isxander.yacl3.*` executable-class
+  imports (`ConfigClassHandler`, `serializer.*`, `gui.*`, `api.*`) outside
+  `client/config/`. Annotation-only imports remain allowed because their RUNTIME
+  retention doesn't trigger class loading on the server. This is the single best
+  guardrail against re-introducing the 1.0.x dedicated-server crash.
+- **`mods.toml` YACL dependency** flipped from `mandatory=true` to `mandatory=false`,
+  ordering set to `AFTER`. YACL is now genuinely optional everywhere; the server side
+  doesn't need it (config persists via plain Gson) and the client side falls back to
+  the parent screen with a log warning when the user clicks Configure without YACL
+  installed.
+
+### Notes
+- **Save-compatible with 1.0.2.** No NBT schema changes. Existing `runicskills.common.json5`
+  files written by YACL load cleanly through `ConfigHolder`'s comment-stripper. Field
+  names are unchanged; values are preserved.
+- **Comment-triage doc** added at `COMMENT_TRIAGE.md` (repo root). Maps each CurseForge
+  user comment to its fix or "needs more info" status.
+- **Smoke-test matrix** added at `docs/SMOKE_TESTS.md`. Living checklist for runtime
+  verification per release; populated with regression rows for the 1.1.0 fixes.
+- **Tested:** `./gradlew check` passes (compile + sided-imports + new YACL forbid).
+  Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload —
+  in particular: a dedicated server boot without YACL installed (the primary regression
+  test for this release), and a client boot without L2Tabs.
+
 ## [1.0.2] - 2026-04-24
 
 Magic-tree cross-mod expansion. 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and cross-mod synergies (9), covering every A1–A5 catalog in `MAGIC-RUNIC-SKILLS.md` plus the §B synergy tier. All perks register null-safely when their required mods are absent, matching the Botania-integration pattern from 1.0.1.

@@ -1,26 +1,20 @@
 package com.otectus.runicskills.handler;
 
-import com.google.gson.GsonBuilder;
-import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.models.TitleModel;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
 public class HandlerTitlesConfig {
 
-    public static ConfigClassHandler<HandlerTitlesConfig> HANDLER = ConfigClassHandler.createBuilder(HandlerTitlesConfig.class)
-            .id(new ResourceLocation(RunicSkills.MOD_ID, "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(Configuration.getAbsoluteDirectory().resolve("runicskills.titles.json5"))
-                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
-                    .setJson5(true)
-                    .build())
-            .build();
+    // Server-safe: ConfigHolder replaces the previous YACL ConfigClassHandler. See
+    // HandlerCommonConfig for the full explanation.
+    public static final ConfigHolder<HandlerTitlesConfig> HANDLER = new ConfigHolder<>(
+            HandlerTitlesConfig.class,
+            Configuration.getAbsoluteDirectory().resolve("runicskills.titles.json5"),
+            HandlerTitlesConfig::new);
 
     @SerialEntry(comment = "Titles list")
     // Every title defined here are the default titles from the original mod

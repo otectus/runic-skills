@@ -7,7 +7,7 @@ A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through
 ![Java 17](https://img.shields.io/badge/Java-17-F89820)
 ![License Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. 1.0.1 added a 42-perk Botania integration (Wisdom + Magic trees) behind a strict optional-dependency guard. **1.0.2 is the magic-tree cross-mod expansion** — 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and 9 cross-mod synergies that activate only when multiple source mods are installed together.
+Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. 1.0.1 added a 42-perk Botania integration (Wisdom + Magic trees) behind a strict optional-dependency guard. 1.0.2 was the magic-tree cross-mod expansion — 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and 9 cross-mod synergies that activate only when multiple source mods are installed together. **1.1.0 ships the dedicated-server safety refactor** (YACL is now genuinely optional on servers — pre-1.1.0 the README claimed this but the code crashed at boot), the L2Tabs class-load fix, and a triage of CurseForge user reports including the `/globallimit` command bug and the Scholar/enchantment-hiding side effect.
 
 ---
 
@@ -83,15 +83,15 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.0.2.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.1.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
 No client-side-only nor server-side-only variants; one jar on both sides.
 
 ### Server operators
-- Drop the same jar on the dedicated server. YACL is **not** required server-side.
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=4`). Old clients fail fast instead of desyncing.
+- Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
+- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=5`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
@@ -202,7 +202,7 @@ The event object exposes `player` and `skill` and respects cancellation — canc
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=4`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=5`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills-common.json5` on the client is read for display defaults only.
 - **Title name custom display** — titles apply a display-name prefix via `setCustomName`. Set `titlesUseCustomName=false` in the common config to disable if you run a chat/nickname mod that collides.
 

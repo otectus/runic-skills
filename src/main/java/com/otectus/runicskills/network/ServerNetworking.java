@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class ServerNetworking {
     private static int packetId = 0;
-    private static final String PROTOCOL_VERSION = "4";
+    private static final String PROTOCOL_VERSION = "5";
     public static SimpleChannel instance;
 
     public static void init() {

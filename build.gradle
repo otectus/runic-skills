@@ -345,6 +345,31 @@ tasks.register('checkSidedImports') {
             ~/^\s*import\s+com\.mojang\.blaze3d\..*/,
     ]
 
+    // YACL is client-side only (mods.toml dependency `side = "CLIENT"`). Keeping any
+    // executable YACL class out of common-loaded code is what keeps dedicated servers
+    // bootable when YACL is absent. The handler POJOs use field-level YACL annotations
+    // (e.g. @SerialEntry, @AutoGen, @IntField) which are RUNTIME-retained but never
+    // dereferenced on the server — those imports are allowlisted so the lint doesn't
+    // false-fire on them. The forbid pattern targets the class-level YACL APIs that
+    // were the source of the 1.0.x dedicated-server crash.
+    def yaclForbidden = [
+            ~/^\s*import\s+dev\.isxander\.yacl3\.config\.v2\.api\.ConfigClassHandler.*/,
+            ~/^\s*import\s+dev\.isxander\.yacl3\.config\.v2\.api\.serializer\..*/,
+            ~/^\s*import\s+dev\.isxander\.yacl3\.gui\..*/,
+            ~/^\s*import\s+dev\.isxander\.yacl3\.api\..*/,
+    ]
+    def yaclAllowlist = [
+            'src/main/java/com/otectus/runicskills/client/config',
+            // YACL plugin classes (controller builders, list-group factories) reachable
+            // only via YACL reflection from @ListGroup-annotated fields. Never invoked
+            // from common-loaded code, so they don't cause the dedicated-server crash —
+            // their .class files just sit in the jar until YACL asks for them.
+            'src/main/java/com/otectus/runicskills/config/controller',
+            'src/main/java/com/otectus/runicskills/config/StringListGroup.java',
+            'src/main/java/com/otectus/runicskills/config/LockItemListGroup.java',
+            'src/main/java/com/otectus/runicskills/config/ItemListGroup.java',
+    ].collect { file(it).canonicalPath }
+
     // Configuration-time inputs so the task is up-to-date aware.
     def javaRoot = file('src/main/java/com/otectus/runicskills')
     inputs.dir javaRoot
@@ -352,14 +377,19 @@ tasks.register('checkSidedImports') {
 
     doLast {
         def violations = []
+        def yaclViolations = []
         javaRoot.eachFileRecurse { f ->
             if (!f.isFile() || !f.name.endsWith('.java')) return
             def path = f.canonicalPath
-            if (clientFiles.contains(path)) return
-            if (clientAllowlist.any { path == it || path.startsWith(it + File.separator) }) return
+            def isClient = clientFiles.contains(path) ||
+                    clientAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isYaclClient = yaclAllowlist.any { path == it || path.startsWith(it + File.separator) }
             f.eachLine { line, n ->
-                if (forbidden.any { line ==~ it }) {
+                if (!isClient && forbidden.any { line ==~ it }) {
                     violations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isYaclClient && yaclForbidden.any { line ==~ it }) {
+                    yaclViolations << "${f.path}:${n}: ${line.trim()}"
                 }
             }
         }
@@ -367,6 +397,11 @@ tasks.register('checkSidedImports') {
             throw new GradleException(
                     "Sided-import violations (move file under client/ or remove the import):\n  " +
                             violations.join('\n  '))
+        }
+        if (!yaclViolations.isEmpty()) {
+            throw new GradleException(
+                    "YACL client-only-class imports outside client/config/ (would crash dedicated servers without YACL):\n  " +
+                            yaclViolations.join('\n  '))
         }
     }
 }

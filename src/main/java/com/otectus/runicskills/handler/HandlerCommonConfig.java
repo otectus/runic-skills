@@ -1,28 +1,25 @@
 package com.otectus.runicskills.handler;
 
-import com.google.gson.GsonBuilder;
-import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.StringListGroup;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.Boolean;
 import dev.isxander.yacl3.config.v2.api.autogen.*;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class HandlerCommonConfig {
-    public static ConfigClassHandler<HandlerCommonConfig> HANDLER = ConfigClassHandler.createBuilder(HandlerCommonConfig.class)
-            .id(new ResourceLocation(RunicSkills.MOD_ID, "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(Configuration.getAbsoluteDirectory().resolve("runicskills.common.json5"))
-                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
-                    .setJson5(true)
-                    .build())
-            .build();
+    // Server-safe: the previous YACL ConfigClassHandler is replaced by ConfigHolder, which
+    // does not reference YACL types in its bytecode. The YACL annotations on individual
+    // fields below remain — they are only read reflectively by the client-side
+    // YaclConfigUiBuilder when the in-game config screen opens, never by the JVM at class
+    // load time. Dedicated servers without YACL on classpath now load this class cleanly.
+    public static final ConfigHolder<HandlerCommonConfig> HANDLER = new ConfigHolder<>(
+            HandlerCommonConfig.class,
+            Configuration.getAbsoluteDirectory().resolve("runicskills.common.json5"),
+            HandlerCommonConfig::new);
 
     @SerialEntry(comment = "Should the mod automatically check for updates on load?")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
@@ -54,10 +51,12 @@ public class HandlerCommonConfig {
     public int maxActivePerks = 0;
 
     @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"fire_attunement\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
+    @AutoGen(category = "common", group = "general")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPerks = Arrays.asList();
 
     @SerialEntry(comment = "Passive registry names to disable. Disabled passives cannot be leveled up; existing level is retained in save data but the attribute modifier is removed (runs on player login/respawn and /skillsreload). Use the registry path only, e.g. \"attack_damage\", or a full id like \"runicskills:max_health\".")
+    @AutoGen(category = "common", group = "general")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPassives = Arrays.asList();
 
@@ -84,6 +83,11 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean dropLockedItems = false;
+
+    @SerialEntry(comment = "If true, enchantment names are globally hidden in tooltips (replaced with a 'requires Scholar' placeholder line) until the Scholar perk is enabled in the disabledPerks list. Default false: enchantment names always render normally; the Scholar perk's only effect is its XP/enchanting bonus. Server-authoritative; mirrored to clients on join. Set to true if your modpack wants the historical hide-until-perk behaviour.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableScholarEnchantmentHiding = false;
 
     @SerialEntry(comment = "TAC:Zero have a special id system, so if you wanna get the id to restrict you need to enable this and shoot.")
     @AutoGen(category = "common", group = "general")
@@ -3665,11 +3669,19 @@ public class HandlerCommonConfig {
     @IntField(min = 1, max = 90)
     public int continuousFlowPercent = 20;
 
-    // Charge Mastery — CHARGE spells always fire at full power.
+    // Charge Mastery — boosts CastType.LONG (held-cast) spell damage. ISS 3.x has no
+    // CastType.CHARGE; LONG is the closest semantic match (held cast that releases on
+    // key-up). The +damage modelled here approximates "released at full power regardless
+    // of how long you held". Stacks multiplicatively with Long Channel's flat bonus.
     @SerialEntry(comment = "Required Magic level for Charge Mastery (-1 to disable)")
     @AutoGen(category = "common", group = "irons_spells")
     @IntField(min = -1, max = 1000)
     public int chargeMasteryRequiredLevel = 32;
+
+    @SerialEntry(comment = "Charge Mastery: percent damage bonus on Iron's Spells CastType.LONG spells (held casts). Default 25 = +25%.")
+    @AutoGen(category = "common", group = "irons_spells")
+    @IntField(min = 1, max = 200)
+    public int chargeMasteryPercent = 25;
 
     // ── Iron's Spells 'n Spellbooks — Phase 1b: school specialist triplets ──
     // For each of 9 schools: X-mancer (power), X-Warded (resist), X-Catalyst
@@ -4660,7 +4672,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Petal-Reader perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaPetalReaderRequiredLevel = 8;
+    public int botaniaPetalReaderRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Wisdom level required for Rune of Mana: Resonance perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
@@ -4675,7 +4687,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Sparkle-Sense perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaSparkleSenseRequiredLevel = 10;
+    public int botaniaSparkleSenseRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Sparkle-Sense highlight radius (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4685,7 +4697,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Dowser's Twig perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaDowsersTwigRequiredLevel = 12;
+    public int botaniaDowsersTwigRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Dowser's Twig reveal duration (seconds)")
     @AutoGen(category = "common", group = "botania")
@@ -4721,12 +4733,12 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Spring: Agricultor's Eye perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaAgricultorsEyeRequiredLevel = 18;
+    public int botaniaAgricultorsEyeRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Wisdom level required for Summer: Forager's Palate perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaForagersPalateRequiredLevel = 18;
+    public int botaniaForagersPalateRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Summer: Forager's Palate XP gain bonus percent (while buff active)")
     @AutoGen(category = "common", group = "botania")
@@ -4741,7 +4753,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Autumn: Loot-Hunter's Intuition perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaLootHuntersIntuitionRequiredLevel = 20;
+    public int botaniaLootHuntersIntuitionRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Autumn: Loot-Hunter's Intuition scan radius (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4756,7 +4768,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Winter: Still Listener perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaStillListenerRequiredLevel = 20;
+    public int botaniaStillListenerRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Winter: Still Listener hostile-detection radius while sneaking (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4766,7 +4778,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Manaseer's Lens perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaManaseersLensRequiredLevel = 22;
+    public int botaniaManaseersLensRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Manaseer's Lens through-wall burst-visibility radius (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4776,7 +4788,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Corporea Query perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaCorporeaQueryRequiredLevel = 24;
+    public int botaniaCorporeaQueryRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Corporea Query scan radius (blocks) for /know command")
     @AutoGen(category = "common", group = "botania")
@@ -4787,7 +4799,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Greed: Cartographer-Prospector perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaCartographerRequiredLevel = 28;
+    public int botaniaCartographerRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Greed: Cartographer-Prospector overlay duration (seconds)")
     @AutoGen(category = "common", group = "botania")
@@ -4807,12 +4819,12 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Sloth: Lazy Swap perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaLazySwapRequiredLevel = 28;
+    public int botaniaLazySwapRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Wisdom level required for Envy: Mirror's Read perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaMirrorsReadRequiredLevel = 30;
+    public int botaniaMirrorsReadRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Envy: Mirror's Read player-gear reveal radius (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4822,17 +4834,17 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Wisdom level required for Elven Knowledge perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaElvenKnowledgeRequiredLevel = 34;
+    public int botaniaElvenKnowledgeRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Wisdom level required for Gaia's Witness perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaGaiasWitnessRequiredLevel = 38;
+    public int botaniaGaiasWitnessRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Wisdom level required for Oracle of the Nine Runes perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaOracleNineRunesRequiredLevel = 40;
+    public int botaniaOracleNineRunesRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     // ── MAGIC tree — Low tier (Elemental / Rune-of-Mana foundation) ──
     @SerialEntry(comment = "Magic level required for Inner Wellspring perk (-1 to disable)")
@@ -4888,7 +4900,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Band of Aura: Passive Channel perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaBandOfAuraRequiredLevel = 14;
+    public int botaniaBandOfAuraRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Band of Aura: Passive Channel mana added per half-second tick to inventory items")
     @AutoGen(category = "common", group = "botania")
@@ -4899,7 +4911,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Spring: Verdant Pulse perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaVerdantPulseRequiredLevel = 18;
+    public int botaniaVerdantPulseRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Spring: Verdant Pulse bone-meal radius (blocks)")
     @AutoGen(category = "common", group = "botania")
@@ -4949,7 +4961,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Lens Mastery: Velocity perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaLensVelocityRequiredLevel = 22;
+    public int botaniaLensVelocityRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Lens Mastery: Velocity projectile/spell speed bonus percent")
     @AutoGen(category = "common", group = "botania")
@@ -4959,7 +4971,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Lens Mastery: Potency perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaLensPotencyRequiredLevel = 22;
+    public int botaniaLensPotencyRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Lens Mastery: Potency damage multiplier on next ability per cooldown")
     @AutoGen(category = "common", group = "botania")
@@ -4975,7 +4987,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Lust: Pixie Affinity perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaPixieAffinityRequiredLevel = 28;
+    public int botaniaPixieAffinityRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Lust: Pixie Affinity proc chance on damage taken (percent)")
     @AutoGen(category = "common", group = "botania")
@@ -5005,7 +5017,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Sloth: Unbound Step perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaUnboundStepRequiredLevel = 30;
+    public int botaniaUnboundStepRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Magic level required for Envy: Mirrored Wrath perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
@@ -5040,7 +5052,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Gaia's Gift: Relic Attunement perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaRelicAttunementRequiredLevel = 40;
+    public int botaniaRelicAttunementRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Magic level required for Terrasteel Ascension perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
@@ -5055,7 +5067,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Flügel's Grace perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaFlugelsGraceRequiredLevel = 36;
+    public int botaniaFlugelsGraceRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Flügel's Grace mid-air jump count (set to 3 for triple jump)")
     @AutoGen(category = "common", group = "botania")
@@ -5065,7 +5077,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Magic level required for Manastorm perk (-1 to disable)")
     @AutoGen(category = "common", group = "botania")
     @IntField(min = -1)
-    public int botaniaManastormRequiredLevel = 40;
+    public int botaniaManastormRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
 
     @SerialEntry(comment = "Manastorm cooldown (seconds)")
     @AutoGen(category = "common", group = "botania")

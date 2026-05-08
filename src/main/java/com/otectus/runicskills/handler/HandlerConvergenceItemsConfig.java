@@ -1,27 +1,21 @@
 package com.otectus.runicskills.handler;
 
-import com.google.gson.GsonBuilder;
-import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.StringListGroup;
-import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
+import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.ListGroup;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class HandlerConvergenceItemsConfig {
-    public static ConfigClassHandler<HandlerConvergenceItemsConfig> HANDLER = ConfigClassHandler.createBuilder(HandlerConvergenceItemsConfig.class)
-            .id(new ResourceLocation(RunicSkills.MOD_ID, "config"))
-            .serializer(config -> GsonConfigSerializerBuilder.create(config)
-                    .setPath(Configuration.getAbsoluteDirectory().resolve("runicskills.convergence-items.json5"))
-                    .appendGsonBuilder(GsonBuilder::setPrettyPrinting)
-                    .setJson5(true)
-                    .build())
-            .build();
+    // Server-safe: ConfigHolder replaces the previous YACL ConfigClassHandler. See
+    // HandlerCommonConfig for the full explanation.
+    public static final ConfigHolder<HandlerConvergenceItemsConfig> HANDLER = new ConfigHolder<>(
+            HandlerConvergenceItemsConfig.class,
+            Configuration.getAbsoluteDirectory().resolve("runicskills.convergence-items.json5"),
+            HandlerConvergenceItemsConfig::new);
 
     @SerialEntry(comment = "Convergence perk convergence item list")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)

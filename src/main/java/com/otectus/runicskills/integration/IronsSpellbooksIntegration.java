@@ -276,6 +276,17 @@ public class IronsSpellbooksIntegration {
                     event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
                 }
             }
+
+            // Charge Mastery: ISS 3.x has no CastType.CHARGE — treat CastType.LONG as the
+            // "held cast" equivalent and boost damage so partial-charge releases approximate
+            // full-charge damage. Multiplicative on top of Long Channel by design.
+            if (RegistryPerks.CHARGE_MASTERY != null && RegistryPerks.CHARGE_MASTERY.get().isEnabled(caster)) {
+                SpellDamageSource spellDs = event.getSpellDamageSource();
+                if (spellDs != null && spellDs.spell() != null && spellDs.spell().getCastType() == CastType.LONG) {
+                    double bonus = HandlerCommonConfig.HANDLER.instance().chargeMasteryPercent / 100.0;
+                    event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                }
+            }
         }
     }
 
