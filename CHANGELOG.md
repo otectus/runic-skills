@@ -2,200 +2,86 @@
 
 ## [1.1.0] - 2026-05-08
 
-Comment-triage release plus the long-standing dedicated-server YACL fix. Three CurseForge
-user reports were addressed; one P0 dedicated-server crash that the README has documented
-as fixed since 1.0.1 was actually fixed; one P0 client class-load regression on L2Tabs
-(same shape as the 1.0.0 Legendary Tabs fix) was caught and resolved.
+Consolidated post-1.0.0 release. Bundles the Botania integration (originally tagged 1.0.1), the magic-tree cross-mod expansion (originally tagged 1.0.2), the dedicated-server YACL safety refactor that the README has been advertising since 1.0.1 was actually fixed, the L2Tabs class-load fix (same shape as the 1.0.0 Legendary Tabs fix, missed at the time), and triage of three CurseForge user reports. Total of 120 new perks across five mod integrations plus a meaningful capability change — the mod now actually runs on dedicated servers without YACL installed.
 
-### Fixed
-- **Dedicated server crashed on boot when YACL was absent.** `mods.toml` had YACL declared
-  `mandatory=true, side="CLIENT"` so the FML manifest check passed, but `RunicSkills.<init>`
-  unconditionally called `Configuration.Init()` which triggered the static initializer of
-  every `Handler*Config` class, each of which built a `ConfigClassHandler` from
-  `dev.isxander.yacl3.config.v2.api.*`. With YACL declared `runtimeOnly` and absent from
-  the server's `mods/` folder, the JVM threw `NoClassDefFoundError:
-  dev/isxander/yacl3/config/v2/api/ConfigClassHandler` mid-construction. README has been
-  advertising "YACL is **not** required server-side" since 1.0.1 — the code now matches.
-  Fixed by introducing `com.otectus.runicskills.config.storage.ConfigHolder<T>`, a
-  server-safe wrapper that mirrors the previous `ConfigClassHandler` API surface
-  (`.instance()`, `.load()`, `.save()`, `.generateGui()`) without referencing any YACL
-  type in its bytecode. Persistence uses plain Gson against the existing
-  `runicskills.*.json5` files, with a JSON5-comment-stripper for backward compat with
-  YACL-written files. The YACL UI moves to a new `client/config/YaclConfigUiBuilder` that
-  is only loaded when the user clicks "Configure" on the client, and is itself reached
-  via reflection from `ConfigHolder` (no YACL types in `ConfigHolder`'s constant pool).
-  `mods.toml` flips to `mandatory=false` since YACL is now genuinely optional.
-- **Client crashed at mod construction when L2Tabs was absent.** Identical shape to the
-  1.0.0 Legendary Tabs crash: `RunicSkillsClient$ClientProxy` is a `@EventBusSubscriber`
-  class loaded by Forge via `Class.forName(..., true, loader)` at mod construction. The
-  `clientSetup` method contained an inline lambda
-  `() -> TabRegistry.registerTab(3500, TabRunicSkills::new, ...)` that the Java compiler
-  desugared into a synthetic method on ClientProxy itself. The JVM verifier walks that
-  method body at class-load time, sees `INVOKESTATIC dev/xkmc/.../TabRegistry.registerTab`
-  + `NEW com/.../TabRunicSkills`, and has to verify `TabRunicSkills` is assignable to
-  `BaseTab`. That assignability check eager-resolves `BaseTab`, which fails with
-  `NoClassDefFoundError` when L2Tabs is absent — even though the `if (isModLoaded())`
-  guard means the lambda would never run. Fixed by extracting registration into
-  `client/integration/L2TabsClientIntegration.registerTab()` and passing it as a method
-  reference, mirroring the 1.0.0 Legendary Tabs treatment so the L2Tabs types stay
-  confined to `L2TabsClientIntegration` and `TabRunicSkills`.
-- **`/globallimit <n>` rejected every in-game invocation as "client-side".** The
-  `execute` method had a backwards guard: `if (source.getEntity() instanceof Player) { fail }`.
-  In singleplayer the integrated server's command source IS the local `ServerPlayer`,
-  and on dedicated servers any op invoking the command also runs as a `ServerPlayer`,
-  so the guard rejected every legitimate path. Only the server console / rcon path
-  worked. Brigadier commands registered via `RegisterCommandsEvent` already only run on
-  the logical server, and `requires(s -> s.hasPermission(2))` already gates op-only
-  access — no entity check was needed. The guard has been removed. (Reported on
-  CurseForge — see `COMMENT_TRIAGE.md`.)
-- **`disabledPerks` and `disabledPassives` were invisible in the YACL config UI.** Both
-  fields had `@SerialEntry` and `@ListGroup` annotations but no `@AutoGen`, so they
-  persisted to disk but never appeared in the in-game config screen. Users had to edit
-  `runicskills.common.json5` by hand, which one CurseForge user reported as confusion
-  about how to disable specific perks. Added `@AutoGen(category="common", group="general")`
-  to both. (Reported on CurseForge — see `COMMENT_TRIAGE.md`.)
-- **Scholar perk → enchantment-hiding side effect.** The `MixItemStack.appendEnchantmentNames`
-  mixin keyed off `RegistryPerks.SCHOLAR.isEnabled()` to decide whether to hide every
-  enchantment name on every item in the world (replacing them with a placeholder
-  "Requires Scholar" line). When a user added `"scholar"` to `disabledPerks` (the natural
-  way to "turn off" the perk, just like any other), `isEnabled()` returned `false`, so
-  the mixin took the hide branch — globally erasing enchantment text from every tooltip.
-  One CurseForge user reported this as "is there a way to disable hiding the enchantments"
-  after spending a while looking through the config without finding any toggle. Decoupled
-  the two: a new `enableScholarEnchantmentHiding` config (default `false`) is the only
-  thing that controls hiding. The Scholar perk is now solely about its XP/enchanting
-  bonus. The `false` default matches what most users expect — set to `true` if your pack
-  wants the historical hide-until-perk behaviour. (Reported on CurseForge — see
-  `COMMENT_TRIAGE.md`.)
-- **Per-integration "Generated N lock items" log lines spammed at INFO.** A user
-  reported "ice and fire disabled repeating forever" — the closest match in source was
-  the INFO log at `IceAndFireIntegration.java:75` firing once per `HandlerSkill.ForceRefresh()`
-  (i.e. once per `/skillsreload` and once at first cache load). Demoted all six
-  per-integration "Generated N lock items" log lines (Spartan, Blood Magic, Ice and
-  Fire, Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft) from INFO to DEBUG.
-  No tight loop reproducing "forever" was found in code; the user is encouraged to
-  attach a `latest.log` excerpt if 1.1.0 still spams. (Reported on CurseForge — see
-  `COMMENT_TRIAGE.md`.)
+### Added — Botania (42 perks; 18 with effects, 24 default-disabled pending future implementation)
 
-### Changed
-- **Bumped network channel `PROTOCOL_VERSION` from `4` to `5`.** `CommonConfigSyncCP`
-  carries one new boolean (`enableScholarEnchantmentHiding`). Old clients connected to
-  1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent
-  state-corruption bug. Clients and servers must update together.
-- **Charge Mastery (Iron's Spells perk) now has a real effect.** Previously the perk was
-  registered and unlockable but the 1.0.2 changelog admitted "Charge Mastery registers
-  but is a UI-only no-op — `CastType.CHARGE` does not exist in ISS 3.x". The closest
-  3.x semantic is `CastType.LONG` (held cast that releases on key-up). The new handler
-  hooks `SpellDamageEvent` for `CastType.LONG` spells and applies a configurable
-  `chargeMasteryPercent` damage bonus (default `+25%`), modelling "released at full
-  power regardless of how briefly held." Stacks multiplicatively with Long Channel.
-- **24 deferred Botania perks now default-disabled.** The 1.0.1 changelog admitted that
-  24 of the 42 Botania perks (the keybind-activated, custom-render, custom-capability,
-  and projectile/physics ones) had blank effect handlers pending a follow-up pass. They
-  were toggleable in the tree but did nothing. Until those handlers ship, every affected
-  perk's `*RequiredLevel` config field defaults to `-1`, which causes the existing
-  null-register guard to elide them from the registry — so the tree no longer shows
-  inert icons by default. Pack authors who want them visible (e.g. for a future patch
-  that adds the handlers, or for cosmetic display) can set the level back to a positive
-  value in `runicskills.common.json5`. The list: Petal-Reader, Sparkle-Sense, Dowser's
-  Twig, Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's
-  Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query, Greed:
-  Cartographer-Prospector, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge,
-  Gaia's Witness, Oracle of the Nine Runes, Band of Aura: Passive Channel, Spring:
-  Verdant Pulse, Lens Mastery: Velocity, Lens Mastery: Potency, Lust: Pixie Affinity,
-  Sloth: Unbound Step, Gaia's Gift: Relic Attunement, Flügel's Grace, Manastorm.
-- **Sided-import lint extended** to forbid `dev.isxander.yacl3.*` executable-class
-  imports (`ConfigClassHandler`, `serializer.*`, `gui.*`, `api.*`) outside
-  `client/config/`. Annotation-only imports remain allowed because their RUNTIME
-  retention doesn't trigger class loading on the server. This is the single best
-  guardrail against re-introducing the 1.0.x dedicated-server crash.
-- **`mods.toml` YACL dependency** flipped from `mandatory=true` to `mandatory=false`,
-  ordering set to `AFTER`. YACL is now genuinely optional everywhere; the server side
-  doesn't need it (config persists via plain Gson) and the client side falls back to
-  the parent screen with a log warning when the user clicks Configure without YACL
-  installed.
-
-### Notes
-- **Save-compatible with 1.0.2.** No NBT schema changes. Existing `runicskills.common.json5`
-  files written by YACL load cleanly through `ConfigHolder`'s comment-stripper. Field
-  names are unchanged; values are preserved.
-- **Comment-triage doc** added at `COMMENT_TRIAGE.md` (repo root). Maps each CurseForge
-  user comment to its fix or "needs more info" status.
-- **Smoke-test matrix** added at `docs/SMOKE_TESTS.md`. Living checklist for runtime
-  verification per release; populated with regression rows for the 1.1.0 fixes.
-- **Tested:** `./gradlew check` passes (compile + sided-imports + new YACL forbid).
-  Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload —
-  in particular: a dedicated server boot without YACL installed (the primary regression
-  test for this release), and a client boot without L2Tabs.
-
-## [1.0.2] - 2026-04-24
-
-Magic-tree cross-mod expansion. 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and cross-mod synergies (9), covering every A1–A5 catalog in `MAGIC-RUNIC-SKILLS.md` plus the §B synergy tier. All perks register null-safely when their required mods are absent, matching the Botania-integration pattern from 1.0.1.
+- **Optional integration**, class-load-isolated. `BOTANIA_*` perks register only when `botania` is loaded and the perk's `required_level >= 0`; otherwise the `RegistryObject<Perk>` is `null` and every event path short-circuits via the existing `RegistryPerks.X != null` idiom. Botania API confined to two files:
+  - `integration/BotaniaCompat.java` — wraps `vazkii.botania.api.BotaniaForgeCapabilities`, `ManaItemHandler`, `ManaReceiver`, `ManaPool`. Offers `drainNearbyPool` / `hasNearbyPoolMana` / `drainPlayerMana` / `chargePlayerMana` / `getPlayerManaTotal`. Scans bounded to a 12×6×12 AABB.
+  - `integration/BotaniaIntegration.java` — Forge-bus event subscriber, registered via `RunicSkills.tryLoadIntegration("botania", ...)`. Hooks `ManaProficiencyEvent`, `ManaDiscountEvent`, `ManaItemsEvent` and Forge `TickEvent.PlayerTickEvent`, `LivingHurtEvent`, `CriticalHitEvent`, `LivingDeathEvent`, `BlockEvent.BreakEvent`, `LivingEntityUseItemEvent.Finish`.
+- **Tier layout** mirrors Botania's rune / season / sin / Gaia progression:
+  - **Wisdom low-tier** — Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student.
+  - **Wisdom mid-tier (Seasonal)** — Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query.
+  - **Wisdom high-tier (Sin / Gaia / Elven)** — Greed: Cartographer-Prospector, Pride: Far Reach, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
+  - **Magic low-tier (Rune)** — Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura: Passive Channel.
+  - **Magic mid-tier (Seasonal / Lens)** — Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Mastery: Velocity, Lens Mastery: Potency.
+  - **Magic high-tier (Sin / Gaia / relic)** — Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
+- **Full effect implementations (18 perks):** Tidewoven, Resonance, Inner Wellspring, Mirrored Wrath, Emberheart, Solar Conduit, Featherstep, Frostbound, Thundercall, Harvest Tithe, Green Thumb, Livingbark Student, Cake Combustion, Stone-Rooted, Terrasteel Ascension, Crown of Reach, Far Reach, Magnetite. Attribute modifiers piggy-back on the existing `RegistryAttributes.RegisterAttribute` helper; reach bonuses use Forge's `ENTITY_REACH` and `BLOCK_REACH` attributes.
+- **Default-disabled (24 perks)** — every keybind-activated, custom-render, custom-capability, and projectile/physics perk has its `*RequiredLevel` defaulted to `-1`, eliding the perk from the registry until a future implementation pass ships its handler. Pack authors who want them visible (for cosmetic display or a future patch) can set the level back to a positive value: Petal-Reader, Sparkle-Sense, Dowser's Twig, Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query, Greed: Cartographer-Prospector, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes, Band of Aura: Passive Channel, Spring: Verdant Pulse, Lens Velocity, Lens Potency, Lust: Pixie Affinity, Sloth: Unbound Step, Gaia's Gift: Relic Attunement, Flügel's Grace, Manastorm.
+- **Perk icons** reuse Botania's own 16×16 item textures via the `botania:` namespace. Nothing redistributed; paths resolve at render time from Botania's assets.
+- Build: `maven.blamejared.com` added to repositories, `compileOnly fg.deobf("vazkii.botania:Botania:1.20.1-451-FORGE:api")` added to dependencies. No runtime jar shipped.
+- mods.toml: optional `botania` dependency, `mandatory = false`, `ordering = "AFTER"`, `versionRange = "[1.20.1-441,)"`.
 
 ### Added — Iron's Spells 'n Spellbooks (46 perks)
 
-**Phase 1a — generic mana & casting (16 perks):** Wellspring, Quickening, Reservoir, Tempo, Arcane Recovery, Focus, Mana Bulwark, Arcane Reprieve, Mana Surge, Spellweaver, Resonant Casting, Imbued Focus, Quickcast, Long Channel, Continuous Flow, Charge Mastery. Five are reconciled as permanent `irons_spellbooks:*` attribute modifiers on a 10-tick throttle (Wellspring on `max_mana`, Quickening on `cast_time_reduction`, Reservoir on `mana_regen`, Tempo on `cooldown_reduction`, Mana Surge transient on `spell_power`/`mana_regen` while HP ≤ threshold). The remainder hook ISS events: `LivingDeathEvent` (Arcane Recovery), `LivingAttackEvent` on `CastType.LONG` (Focus), `LivingHurtEvent` (Mana Bulwark redirects damage→mana at 2:1), `ChangeManaEvent` (Arcane Reprieve auto-refill with 120s cooldown, Continuous Flow per-tick drain reduction on `CastType.CONTINUOUS`), `SpellOnCastEvent` (Spellweaver every-Nth-cast free, 10s combo window), `SpellDamageEvent` (Resonant Casting above-95%-mana damage bonus, Long Channel `CastType.LONG` bonus), `ModifySpellLevelEvent` (Imbued Focus +1 level), and `SpellCooldownAddedEvent.Pre` (Quickcast `CastType.INSTANT`-filtered cooldown reduction). Charge Mastery registers but is a UI-only no-op — `CastType.CHARGE` does not exist in ISS 3.x (only `NONE/INSTANT/LONG/CONTINUOUS`); retained for future API evolution.
+**Phase 1a — generic mana & casting (16 perks):** Wellspring, Quickening, Reservoir, Tempo, Arcane Recovery, Focus, Mana Bulwark, Arcane Reprieve, Mana Surge, Spellweaver, Resonant Casting, Imbued Focus, Quickcast, Long Channel, Continuous Flow, Charge Mastery. Five are reconciled as permanent `irons_spellbooks:*` attribute modifiers on a 10-tick throttle (Wellspring → `max_mana`, Quickening → `cast_time_reduction`, Reservoir → `mana_regen`, Tempo → `cooldown_reduction`, Mana Surge transient on `spell_power`/`mana_regen` while HP ≤ threshold). The remainder hook ISS events: `LivingDeathEvent` (Arcane Recovery), `LivingAttackEvent` on `CastType.LONG` (Focus), `LivingHurtEvent` (Mana Bulwark redirects damage→mana at 2:1), `ChangeManaEvent` (Arcane Reprieve auto-refill with 120s cooldown, Continuous Flow per-tick drain reduction on `CastType.CONTINUOUS`), `SpellOnCastEvent` (Spellweaver every-Nth-cast free, 10s combo window), `SpellDamageEvent` (Resonant Casting above-95%-mana damage bonus, Long Channel `CastType.LONG` bonus, Charge Mastery `CastType.LONG` bonus), `ModifySpellLevelEvent` (Imbued Focus +1 level), and `SpellCooldownAddedEvent.Pre` (Quickcast `CastType.INSTANT`-filtered cooldown reduction).
 
-**Phase 1b — school specialist triplets (28 perks):** for each of nine ISS schools (Fire, Ice, Lightning, Holy, Ender, Blood, Evocation, Nature, Eldritch) a three-perk triad plus the previously-missing Eldritch Attunement gate. X-mancer grants `+%` to the school's `irons_spellbooks:<school>_spell_power` (Magic tree). X-Warded grants `+%` to `irons_spellbooks:<school>_magic_resist` (Endurance tree). X-Catalyst is a 1-in-N-chance on-cast signature-effect proc — lightning/holy/ender/evocation/nature/eldritch apply `CHARGED`/`FORTIFY`/`PLANAR_SIGHT`/`ECHOING_STRIKES`/`OAKSKIN`/`ABYSSAL_SHROUD` to the caster via `SpellOnCastEvent`; fire/ice/blood apply `IMMOLATE`/`CHILLED`/`REND` to the victim via `SpellDamageEvent`.
+Charge Mastery: ISS 3.x has no `CastType.CHARGE` (only `NONE/INSTANT/LONG/CONTINUOUS`), so the perk treats `CastType.LONG` as the held-cast equivalent and applies a configurable `chargeMasteryPercent` damage bonus (default `+25%`). Stacks multiplicatively with Long Channel.
 
-**Phase 1c — summon/utility (2 perks):** Lord of the Dead (caster gains `+%` `summon_damage`, and newly-spawned `IMagicSummon` entities owned by the player get `+%` `MULTIPLY_BASE` on `MAX_HEALTH` via `EntityJoinLevelEvent`). Life Leech Bound (when a player-owned `IMagicSummon` damages a target, `%` of damage returns to the summoner as mana via `MagicData.addMana` on `LivingHurtEvent`).
+**Phase 1b — school specialist triplets (28 perks):** for each of nine ISS schools (Fire, Ice, Lightning, Holy, Ender, Blood, Evocation, Nature, Eldritch) a three-perk triad plus the previously-missing Eldritch Attunement gate. X-mancer grants `+%` to the school's `<school>_spell_power` (Magic tree). X-Warded grants `+%` to `<school>_magic_resist` (Endurance tree). X-Catalyst is a 1-in-N-chance on-cast signature-effect proc — lightning/holy/ender/evocation/nature/eldritch apply `CHARGED`/`FORTIFY`/`PLANAR_SIGHT`/`ECHOING_STRIKES`/`OAKSKIN`/`ABYSSAL_SHROUD` to the caster; fire/ice/blood apply `IMMOLATE`/`CHILLED`/`REND` to the victim.
+
+**Phase 1c — summon/utility (2 perks):** Lord of the Dead (caster gains `+%` `summon_damage`; newly-spawned `IMagicSummon` entities owned by the player get `+%` `MULTIPLY_BASE` on `MAX_HEALTH` via `EntityJoinLevelEvent`). Life Leech Bound (when a player-owned summon damages a target, `%` of damage returns as mana via `MagicData.addMana`).
 
 ### Added — Apotheosis & Apothic Attributes (12 perks)
 
-Socket Virtuoso (adds `+N` effective sockets to equipped items via `GetItemSocketsEvent` alongside the legacy Fortune-threshold bonus). Affix Affinity (counts Rare-or-better equipped affix items via `AffixHelper.getRarity()`, multiplies vanilla `ATTACK_DAMAGE` by per-item percent, and cuts incoming damage by a capped `1 - count × reduction` on `LivingHurtEvent`). Ten stat-stick perks reconciled on a 10-tick throttle against `ALObjects.Attributes.*`: Apothic Critical Mastery (`CRIT_CHANCE` + `CRIT_DAMAGE`), Vampiric Fangs (`LIFE_STEAL`), Reaper's Edge (`CURRENT_HP_DAMAGE`), Evasive (`DODGE_CHANCE`), Arrow Mastery (`ARROW_DAMAGE` + `ARROW_VELOCITY`, multiplicative), Earthbreaker (`MINING_SPEED`, multiplicative), Apothic Scholar (`EXPERIENCE_GAINED`, multiplicative), Spectral Ward (`PROT_PIERCE` flat + `PROT_SHRED` percent), Ghostbound (`GHOST_HEALTH`), Heart of the Healer (`HEALING_RECEIVED` + `OVERHEAL`). Two rename clashes resolved against the existing Fortune-tree `CRITICAL_MASTERY` and Intelligence-tree `SCHOLAR` by prefixing `apothic_`.
+Socket Virtuoso (`+N` effective sockets via `GetItemSocketsEvent`). Affix Affinity (counts Rare-or-better equipped affixes via `AffixHelper.getRarity()`, multiplies `ATTACK_DAMAGE` and caps damage reduction at `1 - count × reduction` on `LivingHurtEvent`). Ten stat-stick perks reconciled on a 10-tick throttle against `ALObjects.Attributes.*`: Apothic Critical Mastery (`CRIT_CHANCE` + `CRIT_DAMAGE`), Vampiric Fangs (`LIFE_STEAL`), Reaper's Edge (`CURRENT_HP_DAMAGE`), Evasive (`DODGE_CHANCE`), Arrow Mastery (`ARROW_DAMAGE` + `ARROW_VELOCITY`), Earthbreaker (`MINING_SPEED`), Apothic Scholar (`EXPERIENCE_GAINED`), Spectral Ward (`PROT_PIERCE` flat + `PROT_SHRED` percent), Ghostbound (`GHOST_HEALTH`), Heart of the Healer (`HEALING_RECEIVED` + `OVERHEAL`). Two rename clashes resolved against existing Fortune-tree `CRITICAL_MASTERY` and Intelligence-tree `SCHOLAR` by prefixing `apothic_`.
 
 ### Added — Ars Nouveau (11 perks)
 
-**Phase 2b — form & utility (4 perks):** Form Focus filters by `Spell.getCastMethod()` identity on the `MethodProjectile`/`MethodTouch`/`MethodSelf` singletons — Projectile and Self reduce mana cost via `SpellCostCalcEvent`, Touch boosts outgoing damage via `SpellDamageEvent.Pre`. Wild Manipulation reduces cost for any spell whose `recipe` contains a `SpellSchools.MANIPULATION`-tagged glyph (via a shared `spellContainsSchool` helper).
+**Form & utility (4 perks):** Form Focus filters by `Spell.getCastMethod()` identity on the `MethodProjectile`/`MethodTouch`/`MethodSelf` singletons — Projectile and Self reduce mana cost via `SpellCostCalcEvent`, Touch boosts outgoing damage via `SpellDamageEvent.Pre`. Wild Manipulation reduces cost for any spell whose recipe contains a `SpellSchools.MANIPULATION`-tagged glyph (via a shared `spellContainsSchool` helper).
 
-**Phase 2c — per-school (7 perks):** Hedgewitch: Water (ELEMENTAL_WATER cost + damage), Emberforged: Fire (ELEMENTAL_FIRE damage), Stormcaller: Air (ELEMENTAL_AIR damage), Geomancer: Earth (ELEMENTAL_EARTH damage), Conjurer (CONJURATION cost), Abjurer (ABJURATION damage/magnitude), Arcane Weaver (MANIPULATION damage, complementing Wild Manipulation's cost side). All reuse the Phase-2b school-membership check; all cost reductions floor at 1 Source. The doc's Necromant variant is dropped — Ars Nouveau 4.12.x `SpellSchools` has no NECROMANCY enum (only Abjuration/Conjuration/Manipulation and the four elementals).
+**Per-school (7 perks):** Hedgewitch (Water cost + damage), Emberforged (Fire damage), Stormcaller (Air damage), Geomancer (Earth damage), Conjurer (Conjuration cost), Abjurer (Abjuration damage/magnitude), Arcane Weaver (Manipulation damage). All cost reductions floor at 1 Source. The doc's Necromant variant was dropped — Ars Nouveau 4.12.x `SpellSchools` has no NECROMANCY enum (only Abjuration/Conjuration/Manipulation and the four elementals).
 
 ### Added — Cross-mod synergy (9 perks)
 
-Six Schoolbridges (require ISS + Ars): each reads the caster's ISS `<school>_spell_power` attribute and bleeds a configurable fraction into outgoing Ars damage of the matched school — Fire→ELEMENTAL_FIRE, Ice→ELEMENTAL_WATER, Lightning→ELEMENTAL_AIR, Nature→ELEMENTAL_EARTH, Holy→ABJURATION, Ender→MANIPULATION. Unified Arcana (ISS + Ars): refunds a percent of Ars cast cost to the caster's ISS mana pool via `SpellResolveEvent.Post` + `MagicData.addMana`. Triple Threat (ISS + Ars + Apoth): tick-reconciled `+%` modifiers on `max_mana`/`mana_regen`/`spell_power`, only active when all three mods are loaded. Affix Focus (ISS + Apoth): on `ModifySpellLevelEvent`, grants `+N` effective spell levels when the player has `N` or more Rare-or-better Apothic affix items equipped. Every cross-mod perk is null-registered at startup when any required mod is missing — the perks disappear from the tree entirely rather than rendering as inert icons.
+Six **Schoolbridges** (require ISS + Ars): each reads the caster's ISS `<school>_spell_power` attribute and bleeds a configurable fraction into outgoing Ars damage of the matched school — Fire→ELEMENTAL_FIRE, Ice→ELEMENTAL_WATER, Lightning→ELEMENTAL_AIR, Nature→ELEMENTAL_EARTH, Holy→ABJURATION, Ender→MANIPULATION. **Unified Arcana** (ISS + Ars): refunds a percent of Ars cast cost to the caster's ISS mana pool via `SpellResolveEvent.Post`. **Triple Threat** (ISS + Ars + Apotheosis): tick-reconciled `+%` modifiers on `max_mana`/`mana_regen`/`spell_power`, only active when all three mods are loaded. **Affix Focus** (ISS + Apotheosis): on `ModifySpellLevelEvent`, grants `+N` effective spell levels when the player has `N` or more Rare-or-better Apothic affix items equipped. Every cross-mod perk is null-registered when any required mod is missing — perks disappear from the tree rather than rendering as inert icons.
+
+### Added — Comment-triage configs
+
+- **`enableScholarEnchantmentHiding`** (`HandlerCommonConfig`, default `false`). Decouples the Scholar perk from the global enchantment-hiding mixin — see Fixed below. Mirrored through `CommonConfigSyncCP`.
+- **`chargeMasteryPercent`** (`HandlerCommonConfig`, default `25`, range `1–200`). Damage-bonus percent on `CastType.LONG` ISS spells when Charge Mastery is enabled.
+- **`docs/SMOKE_TESTS.md`** — runtime regression checklist, populated for the 1.1.0 fixes.
+- **`COMMENT_TRIAGE.md`** at repo root — public-facing per-comment ledger mapping each CurseForge report to its fix or "needs more info" status.
+
+### Fixed
+- **Dedicated server crashed on boot when YACL was absent.** `mods.toml` had YACL declared `mandatory=true, side="CLIENT"` so the FML manifest check passed, but `RunicSkills.<init>` unconditionally called `Configuration.Init()`, triggering the static initializer of every `Handler*Config` class — each of which built a `ConfigClassHandler` from `dev.isxander.yacl3.config.v2.api.*`. With YACL declared `runtimeOnly` and absent from the server's `mods/` folder, the JVM threw `NoClassDefFoundError: dev/isxander/yacl3/config/v2/api/ConfigClassHandler` mid-construction. README has been advertising "YACL is **not** required server-side" since 1.0.1 — the code now matches. Fixed by introducing `com.otectus.runicskills.config.storage.ConfigHolder<T>`, a server-safe wrapper that mirrors the previous `ConfigClassHandler` API surface (`.instance()`, `.load()`, `.save()`, `.generateGui()`) without referencing any YACL type in its bytecode. Persistence uses plain Gson against the existing `runicskills.*.json5` files, with a JSON5-comment-stripper for backward compat with YACL-written files. The YACL UI moves to `client/config/YaclConfigUiBuilder` (loaded only when the user opens the in-game config screen, reached via reflection from `ConfigHolder`). `mods.toml` flips to `mandatory=false`.
+- **Client crashed at mod construction when L2Tabs was absent.** Identical shape to the 1.0.0 Legendary Tabs crash, missed at the time: `RunicSkillsClient$ClientProxy` is a `@EventBusSubscriber` class loaded by Forge via `Class.forName(..., true, loader)` at mod construction. The `clientSetup` method contained an inline lambda `() -> TabRegistry.registerTab(3500, TabRunicSkills::new, ...)` — the verifier eager-resolved `TabRunicSkills`'s `BaseTab` superclass, which fails when L2Tabs is absent even though the `if (isModLoaded())` guard means the lambda would never run. Fixed by extracting registration into `client/integration/L2TabsClientIntegration.registerTab()` and passing it as a method reference, mirroring the Legendary Tabs treatment.
+- **`/globallimit <n>` rejected every in-game invocation as "client-side"** (CurseForge report). The `execute` method had a backwards guard: `if (source.getEntity() instanceof Player) { fail }`. In singleplayer the integrated server's command source IS the local `ServerPlayer`, and on dedicated servers any op invoking the command also runs as a `ServerPlayer`, so the guard rejected every legitimate path; only rcon/console worked. Brigadier commands registered via `RegisterCommandsEvent` already only run on the logical server, and `requires(s -> s.hasPermission(2))` already gates op-only access. Guard removed.
+- **`disabledPerks` and `disabledPassives` were invisible in the YACL config UI** (CurseForge report — "how do you disable certain perks?"). Both fields had `@SerialEntry` and `@ListGroup` annotations but no `@AutoGen`, so they persisted to disk but never appeared in the in-game config screen. Added `@AutoGen(category="common", group="general")` to both.
+- **Scholar perk → enchantment-hiding side effect** (CurseForge report — "is there a way to disable hiding the enchantments?"). The `MixItemStack.appendEnchantmentNames` mixin keyed off `RegistryPerks.SCHOLAR.isEnabled()` to decide whether to globally hide every enchantment name on every item. When a user added `"scholar"` to `disabledPerks` (the natural way to "turn off" the perk), `isEnabled()` returned `false`, so the mixin took the hide branch — globally erasing enchantment text from every tooltip in the world. Decoupled: a new `enableScholarEnchantmentHiding` config (default `false`) is the only thing that controls hiding. The Scholar perk is now solely about its XP/enchanting bonus.
+- **Per-integration "Generated N lock items" log lines spammed at INFO** (CurseForge report — "ice and fire disabled repeating forever"). The closest match in source was the INFO log at `IceAndFireIntegration.java:75` firing once per `HandlerSkill.ForceRefresh()`. Demoted all six per-integration "Generated N lock items" log lines (Spartan, Blood Magic, Ice and Fire, Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft) from INFO to DEBUG.
+- **Item-lock requirement tooltips ignored the `enableItemLocks` master toggle** (originally noted in 1.0.1). `RegistryClientEvents.onTooltipDisplay` appended the "Requirements:" block whenever `HandlerSkill.getValue(...)` returned a non-null list, without consulting the config that gates server-side enforcement. Players who disabled item locks could freely use tools like the trident but still saw "Requires Level X" text. Fixed by checking `enableItemLocks` before rendering — when locks are off, the requirement block is hidden so the UI matches enforcement. The synced value from `CommonConfigSyncCP` is authoritative on joined clients; pre-join/main-menu tooltips fall back to the local config value.
 
 ### Changed
-- **ISS compile dep bumped** from curse-maven file id `5539243` → `7402504` (pre-3.15 → 3.15.x). The older artifact predates `SpellCooldownAddedEvent` which Phase-1a Quickcast needs. No runtime behaviour change for older ISS versions — if the event doesn't fire, the perk simply never procs.
+- **Bumped network channel `PROTOCOL_VERSION` from `3` to `5`.** Two contributing wire-format growths: (a) `CommonConfigSyncCP` carries five new fields from the 1.0.0-era kill-switches (`maxActivePerks`, `disabledPerks`, `disabledPassives`, `perkSwapCooldownTicks`, `skillLevelUpCostMultiplier`) plus the new `PerkGroupsSyncCP` packet for datapack-driven perk groups; (b) one new boolean `enableScholarEnchantmentHiding` for the Scholar/enchantment-hiding decoupling. Old 1.0.0 clients connected to 1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent state-corruption bug. Clients and servers must update together.
+- **`mods.toml` YACL dependency** flipped from `mandatory=true` to `mandatory=false`, ordering set to `AFTER`. YACL is now genuinely optional everywhere; the server side doesn't need it (config persists via plain Gson) and the client side falls back to the parent screen with a log warning when the user clicks Configure without YACL installed.
+- **Sided-import lint extended** to forbid `dev.isxander.yacl3.*` executable-class imports (`ConfigClassHandler`, `serializer.*`, `gui.*`, `api.*`) outside `client/config/`. Annotation-only imports (`@SerialEntry`, `@AutoGen`, `@IntField`, `@FloatField`, `@Boolean`, `@ListGroup`) remain allowed because their RUNTIME retention doesn't trigger class loading on the server. Single best guardrail against re-introducing the dedicated-server crash.
+- **ISS compile dep bumped** from curse-maven file id `5539243` → `7402504` (pre-3.15 → 3.15.x). The older artifact predates `SpellCooldownAddedEvent` which Phase-1a Quickcast needs.
 - **Phase 1a texture-path audit.** Corrected ten `HandlerResources` entries to match the real ISS item sheet: `upgrade_orb_cast_time`→`cast_time_ring`, `upgrade_orb_mana_regen`→`mana_ring`, `antique_amulet`→`concentration_amulet`, `mana_potion`→`enchanted_ward_amulet`, `greater_mana_potion`→`greater_healing_potion`, `apprentice_spellbook`→`chronicle`, `affinity_ring`→`arcane_rune`, `scroll_of_haste`→`scroll`, `ancient_codex`→`chronicle_old`, `arcane_debris`→`arcane_essence`. Perks were functional before but rendered as missing-texture pink/black boxes.
-- **`apothItem()` helper path fix.** Apotheosis uses `textures/items/` (plural) not the vanilla `textures/item/`. Every new Apotheosis perk icon now resolves correctly against Apotheosis's actual texture layout.
+- **`apothItem()` helper path fix.** Apotheosis uses `textures/items/` (plural) not the vanilla `textures/item/`. Every Apotheosis perk icon now resolves correctly.
 - **Two design-doc rename clashes resolved:** doc's "Mana Shield" → `MANA_BULWARK` (doc's "Arcane Barrier" was already in use as an Endurance-tree perk), doc's "Second Wind" → `ARCANE_REPRIEVE` (Constitution tree already has `SECOND_WIND`).
-- **`VERSION` file synced** to `1.0.2` — it was left at `1.0.0` through the 1.0.1 release.
+- **`VERSION` file synced** to `1.1.0` — through 1.0.1 it was left at `1.0.0`, partially corrected to `1.0.2` in the 1.0.2 source-only release, and now matches the published version.
 
 ### Removed
-- `attribItem()` helper from `HandlerResources`. `attributeslib` has no `textures/item/*.png` assets — the helper was dead code across all six earlier phases of this release.
+- `attribItem()` helper from `HandlerResources`. `attributeslib` has no `textures/item/*.png` assets — the helper was dead code.
 
-### Skipped (design-doc flagged risky)
-Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Each is documented in the phase's original commit message with the reason.
-
-### Notes
-- Save-compatible with 1.0.1; no NBT or protocol-version changes. All 78 new perks default to behaviour-preserving `required_level ≥ 1` values; admins who want a subset can set `required_level = -1` per-perk to null-register it (matching the existing idiom).
-- Tested: `./gradlew check` (compile + sided-imports) passes after every phase. Runtime gameplay behaviour was not smoke-tested in an interactive client; recommend verifying at a minimum: Mana Bulwark damage→mana redirect, Arcane Reprieve's 120s cooldown, Affix Affinity's damage-reduction cap, and any Schoolbridge with both ISS and Ars loaded.
-
-## [1.0.1] - 2026-04-24
-
-Botania integration. 42 new perks (19 Wisdom + 23 Magic) flavored around Botania's rune / season / sin / Gaia progression, wired behind a strict class-load-isolation pattern so the mod is a clean optional dependency.
-
-### Added
-- **Botania optional integration.** Every `BOTANIA_*` perk registers only when `botania` is present in the modlist and its `required_level >= 0`; otherwise the corresponding `RegistryObject<Perk>` is null and every event path short-circuits via the existing `RegistryPerks.X != null` idiom. Botania API access is confined to two new files:
-  - `integration/BotaniaCompat.java` — class-load-isolated wrapper around `vazkii.botania.api.BotaniaForgeCapabilities`, `ManaItemHandler`, `ManaReceiver`, `ManaPool`. Offers `drainNearbyPool` / `hasNearbyPoolMana` / `drainPlayerMana` / `chargePlayerMana` / `getPlayerManaTotal`. Scans are bounded to a 12×6×12 AABB per the integration plan.
-  - `integration/BotaniaIntegration.java` — Forge-bus event subscriber (`@SubscribeEvent` on instance methods, registered via `RunicSkills.tryLoadIntegration("botania", ...)`). Subscribes to Botania's `ManaProficiencyEvent`, `ManaDiscountEvent`, `ManaItemsEvent` and to Forge's `TickEvent.PlayerTickEvent`, `LivingHurtEvent` (attacker + target), `CriticalHitEvent`, `LivingDeathEvent`, `BlockEvent.BreakEvent`, `LivingEntityUseItemEvent.Finish`.
-- **42 new perks, wired end-to-end** (config fields in `HandlerCommonConfig`, texture ResourceLocations in `HandlerResources`, `RegistryObject<Perk>` entries in `RegistryPerks`, and `en_us.json` display names + descriptions for each). Tier layout mirrors Botania's rune progression:
-  - **Wisdom low-tier (Elemental / Rune-of-Mana):** Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student.
-  - **Wisdom mid-tier (Seasonal):** Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query.
-  - **Wisdom high-tier (Sin / Gaia / Elven):** Greed: Cartographer-Prospector, Pride: Far Reach, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
-  - **Magic low-tier (Rune foundation):** Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura: Passive Channel.
-  - **Magic mid-tier (Seasonal / Lens):** Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Mastery: Velocity, Lens Mastery: Potency.
-  - **Magic high-tier (Sin / Gaia / relic):** Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
-- **Full effect implementations this release (18 perks):** Tidewoven, Resonance, Inner Wellspring, Mirrored Wrath, Emberheart, Solar Conduit, Featherstep, Frostbound, Thundercall, Harvest Tithe, Green Thumb, Livingbark Student, Cake Combustion, Stone-Rooted, Terrasteel Ascension, Crown of Reach, Far Reach, Magnetite. Attribute-based modifiers piggy-back on the existing `RegistryAttributes.RegisterAttribute` helper; reach bonuses use Forge's `ForgeMod.ENTITY_REACH` and `ForgeMod.BLOCK_REACH` attributes.
-- **Perk icons reuse Botania's own 16×16 item textures** via the `botania:` namespace — each of the 42 perks maps to a unique `botania:textures/item/*.png` (16 runes, lens_speed/lens_power/lens_storm, reach_ring/swap_ring/magnet_ring/aura_ring/mana_ring/mana_mirror/mana_tablet/mana_cookie, monocle/itemfinder/sextant/divining_rod, lexicon/lexicon_elven/twig_wand/corporea_spark/gaia_head, flight_tiara/terrasteel_ingot/king_key, livingwood_twig/overgrowth_seed/infused_seeds, third_eye_0/third_eye_2). Nothing is redistributed: the paths resolve at render time from Botania's own assets, so the perks only ever render when Botania is loaded (which is a hard precondition for the perk existing at all).
-- Build: `maven.blamejared.com` added to `build.gradle` repositories, `compileOnly fg.deobf("vazkii.botania:Botania:1.20.1-451-FORGE:api")` added to dependencies. No runtime jar is shipped.
-- mods.toml: optional `botania` dependency entry, `mandatory = false`, `ordering = "AFTER"`, `versionRange = "[1.20.1-441,)"`.
+### Skipped (design-doc flagged risky, deferred to 1.2.0+)
+Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Reasons documented in the original phase commit messages.
 
 ### Notes
-- Tested: `./gradlew compileJava` passes against the real Botania 1.20.1-451-FORGE `:api` jar with no errors.
-- Fallback when Botania is absent: verified class-load-isolation — `vazkii.botania.*` imports only live inside `BotaniaCompat` and `BotaniaIntegration`, both of which are never class-loaded (and thus never verified) on a Botania-less runtime because `tryLoadIntegration` short-circuits before `Class.forName` and `RegistryPerks`' ternary guards null out every Botania field before their register lambdas instantiate.
-- Effect implementations deferred to a follow-up pass (24 perks): client render (Sparkle-Sense, Manaseer's Lens, Still Listener, Agricultor's Eye, Cartographer-Prospector), keybind-activated (Dowser's Twig, Verdant Pulse, Manastorm, Flügel's Grace, Loot-Hunter's Intuition), custom capability or progression (Gaia's Witness extra slot, Relic Attunement curio slot, Elven Knowledge chapter unlock, Band of Aura virtual mana item, Pixie Affinity summon), tooltip / command / projectile / physics (Petal-Reader, Mirror's Read, Oracle of the Nine Runes, Lazy Swap, Corporea Query, Lens Velocity, Lens Potency, Forager's Palate XP flag, Unbound Step movement mixin). Each is registered and toggleable; only its effect handler is blank.
-- Save-compatible with 1.0.0; no NBT schema or protocol-version changes.
+- **Save-compatible with 1.0.0.** No NBT schema changes. Existing `runicskills.common.json5` files (whether written by YACL pre-1.1.0 or by pack admins) load cleanly through `ConfigHolder`'s comment-stripper. Field names are unchanged; values are preserved. Players who unlocked any of the 24 default-disabled Botania perks before will simply see them disappear from the tree — their NBT rank entries are preserved and will reactivate if a pack admin sets the `*RequiredLevel` back to a positive value.
+- **Tested:** `./gradlew clean build` passes (compile + sided-imports + new YACL forbid + jar assembly + reobf). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: dedicated server boot without YACL installed (the flagship fix this release exists for), client boot without L2Tabs, `/globallimit` from singleplayer with cheats, `disabledPerks=["scholar"]` no longer hiding enchantments.
+- This release supersedes the source-only 1.0.1 (Botania) and 1.0.2 (magic-tree) tags; only 1.1.0 ships to CurseForge. The 1.0.x tags remain in git history for reference.
 
 ## [1.0.0] - 2026-04-24
 
