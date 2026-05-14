@@ -2,6 +2,7 @@ package com.otectus.runicskills.registry.title;
 
 import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.event.TitleEarnedEvent;
 import com.otectus.runicskills.handler.HandlerConfigClient;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.network.packet.client.TitleOverlayCP;
@@ -10,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +60,9 @@ public class Title {
         if (!getRequirement(serverPlayer) && check) {
             TitleOverlayCP.send(serverPlayer, this);
             SkillCapability.get(serverPlayer).setUnlockTitle(this, true);
+            // Fire public Forge event (since 1.2.0). Non-cancelable — unlock is already
+            // committed to the capability by the time subscribers see this.
+            MinecraftForge.EVENT_BUS.post(new TitleEarnedEvent(serverPlayer, this));
             SyncSkillCapabilityCP.send(serverPlayer);
         }
     }

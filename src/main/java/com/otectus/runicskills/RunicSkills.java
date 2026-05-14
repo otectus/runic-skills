@@ -66,19 +66,30 @@ public class RunicSkills {
         // Integrations that import external mod APIs — loaded via Class.forName so the
         // integration class is never in RunicSkills' constant pool, preventing
         // NoClassDefFoundError when the dependency mod is absent.
+        //
+        // Each load is now gated on its enable<Mod>Integration master toggle (since 1.2.0),
+        // so pack authors who want zero Runic Skills hooks into a given mod can soft-disable
+        // without removing the dep. Perks belonging to the integration remain in the registry
+        // (save data stable across toggle flips) but their effects are inert.
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+
         tryLoadIntegration("curios",           "com.otectus.runicskills.handler.HandlerCurios");
         tryLoadIntegration("tacz",             "com.otectus.runicskills.integration.TacZIntegration");
         tryLoadIntegration("cgm",              "com.otectus.runicskills.integration.CrayfishGunModIntegration");
         tryLoadIntegration("scguns",           "com.otectus.runicskills.integration.ScorchedGuns2Integration");
-        tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
-        tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
-        tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
-        tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
+        if (cfg.enableIronsSpellbooksIntegration)
+            tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
+        if (cfg.enableArsNouveauIntegration)
+            tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
+        if (cfg.enableApotheosisIntegration)
+            tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
+        if (cfg.enableBotaniaIntegration)
+            tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation.
-        if (SpartanIntegration.isAnyLoaded())
+        if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded())
             MinecraftForge.EVENT_BUS.register(new SpartanIntegration());
-        if (IceAndFireIntegration.isModLoaded())
+        if (cfg.enableIceAndFireIntegration && IceAndFireIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new IceAndFireIntegration());
         if (CataclysmIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new CataclysmIntegration());

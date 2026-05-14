@@ -16,7 +16,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -56,8 +58,9 @@ public class RunicSkillsClient {
 
             ClientCapabilityAccess.register();
             MinecraftForge.EVENT_BUS.register(new RegistryClientEvents());
-            MinecraftForge.EVENT_BUS.register(new OverlaySkillGui());
-            MinecraftForge.EVENT_BUS.register(new OverlayTitleGui());
+            // Tick subscribers remain on the Forge bus; render is now wired via RegisterGuiOverlaysEvent below.
+            MinecraftForge.EVENT_BUS.register(OverlaySkillGui.INSTANCE);
+            MinecraftForge.EVENT_BUS.register(OverlayTitleGui.INSTANCE);
 
             if (L2TabsIntegration.isModLoaded()) {
                 // Use a method reference to L2TabsClientIntegration#registerTab rather than an
@@ -96,6 +99,18 @@ public class RunicSkillsClient {
         @SubscribeEvent
         public static void registerKeys(RegisterKeyMappingsEvent event) {
             event.register(RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN);
+        }
+
+        /**
+         * Register the two HUD overlays as named layers (since 1.2.0). Both render
+         * "above" the hotbar — same visual position as the prior {@code DebugText}
+         * piggy-back, but resource packs can now relocate them via the standard
+         * Forge overlay above/below APIs.
+         */
+        @SubscribeEvent
+        public static void registerOverlays(RegisterGuiOverlaysEvent event) {
+            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "skill_overlay", OverlaySkillGui.INSTANCE);
+            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "title_overlay", OverlayTitleGui.INSTANCE);
         }
 
         @SubscribeEvent

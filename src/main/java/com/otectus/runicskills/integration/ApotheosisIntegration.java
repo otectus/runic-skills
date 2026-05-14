@@ -169,6 +169,53 @@ public class ApotheosisIntegration {
             int bonus = HandlerCommonConfig.HANDLER.instance().socketVirtuosoBonus;
             if (bonus > 0) event.setSockets(event.getSockets() + bonus);
         }
+
+        // Apothic Apprentice perk (1.2.0): higher-tier socket bonus, additive with Socket Virtuoso.
+        if (RegistryPerks.APOTHIC_APPRENTICE != null && RegistryPerks.APOTHIC_APPRENTICE.get().isEnabled(owner)) {
+            int bonus = HandlerCommonConfig.HANDLER.instance().apothicApprenticeBonus;
+            if (bonus > 0) event.setSockets(event.getSockets() + bonus);
+        }
+    }
+
+    // ── 1.2.0: Gem-Threaded Armor — apply transient ARMOR modifier scaling with equipped socket count ──
+    private static final UUID APOTH_GEM_THREADED_UUID = UUID.fromString("3a8b1c5d-9f7e-4d2a-8b1c-5d9f7e4d2a8b");
+
+    @SubscribeEvent
+    public void onEquipChangeGemThreaded(LivingEquipmentChangeEvent event) {
+        if (!(event.getEntity() instanceof Player player) || player instanceof FakePlayer) return;
+        if (RegistryPerks.GEM_THREADED_ARMOR == null) return;
+        AttributeInstance armor = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        if (armor == null) return;
+
+        AttributeModifier existing = armor.getModifier(APOTH_GEM_THREADED_UUID);
+        if (!RegistryPerks.GEM_THREADED_ARMOR.get().isEnabled(player)) {
+            if (existing != null) armor.removeModifier(existing);
+            return;
+        }
+
+        int totalSockets = countEquippedSockets(player);
+        double bonus = totalSockets * HandlerCommonConfig.HANDLER.instance().gemThreadedArmorPerSocket;
+        if (bonus > 0) {
+            if (existing == null || existing.getAmount() != bonus) {
+                if (existing != null) armor.removeModifier(existing);
+                armor.addTransientModifier(new AttributeModifier(APOTH_GEM_THREADED_UUID,
+                        "runicskills:gem_threaded_armor", bonus,
+                        AttributeModifier.Operation.ADDITION));
+            }
+        } else if (existing != null) {
+            armor.removeModifier(existing);
+        }
+    }
+
+    /** Counts total sockets across equipped Apotheosis-affixed items (sums all slots). */
+    static int countEquippedSockets(Player player) {
+        int count = 0;
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !AffixHelper.hasAffixes(stack)) continue;
+            count += dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets(stack);
+        }
+        return count;
     }
 
     /**

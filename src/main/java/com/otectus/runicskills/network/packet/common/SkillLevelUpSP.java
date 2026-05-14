@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.common;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.event.SkillLevelUpEvent;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
@@ -13,6 +14,7 @@ import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -57,6 +59,12 @@ public class SkillLevelUpSP {
                 }
 
                 int requiredPoints = requiredPoints(skillLevel);
+
+                // Fire public Forge event (since 1.2.0). Subscribers may cancel to abort
+                // the level-up without consuming XP or syncing back to the client.
+                if (MinecraftForge.EVENT_BUS.post(new SkillLevelUpEvent(player, skillPlayer, skillLevel, skillLevel + 1))) {
+                    return;
+                }
 
                 capability.addSkillLevel(skillPlayer, 1);
                 SyncSkillCapabilityCP.send(player);

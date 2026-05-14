@@ -7,6 +7,13 @@ import net.minecraftforge.fml.ModList;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+/**
+ * Legacy KubeJS shim. Since 1.2.0 the canonical level-up hook is the public Forge
+ * {@link com.otectus.runicskills.event.SkillLevelUpEvent} which KubeJS subscribes
+ * to natively via its Forge-event bridge — no reflection needed. This class
+ * remains so existing pack scripts using the {@code SkillLevelUpEventJS} surface
+ * keep working unchanged. Will be removed in a future major.
+ */
 public class KubeJSIntegration {
 
     // Reflection handles are resolved lazily on first call and cached for the lifetime
@@ -22,6 +29,12 @@ public class KubeJSIntegration {
         return ModList.get().isLoaded("kubejs");
     }
 
+    /**
+     * @deprecated Since 1.2.0. Subscribe to {@link com.otectus.runicskills.event.SkillLevelUpEvent}
+     *     on {@code MinecraftForge.EVENT_BUS} instead. Kept for backward compatibility with
+     *     existing KubeJS pack scripts; will be removed in a future major.
+     */
+    @Deprecated(forRemoval = true)
     public boolean postLevelUpEvent(Player player, Skill skill) {
         if (REFLECTION_FAILED) return false;
         if (!REFLECTION_READY) {

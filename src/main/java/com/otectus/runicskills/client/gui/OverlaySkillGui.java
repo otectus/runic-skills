@@ -16,20 +16,28 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+/**
+ * Skill-requirement warning overlay. Since 1.2.0 this renders through the named
+ * Forge overlay layer {@code runicskills:skill_overlay} (registered via
+ * {@code RegisterGuiOverlaysEvent}) instead of piggy-backing on the F3 debug
+ * event — resource packs can now relocate it via the standard above/below
+ * overlay APIs. The tick subscriber remains on the Forge bus.
+ */
 @OnlyIn(Dist.CLIENT)
-public class OverlaySkillGui {
+public class OverlaySkillGui implements IGuiOverlay {
+    public static final OverlaySkillGui INSTANCE = new OverlaySkillGui();
+
     private final Minecraft client = Minecraft.getInstance();
     private static List<Skills> skills = null;
     private static int showTicks = 0;
 
-    @SubscribeEvent(priority = EventPriority.NORMAL)
-    public void onHudRender(CustomizeGuiOverlayEvent.DebugText event) {
-        GuiGraphics matrixStack = event.getGuiGraphics();
+    @Override
+    public void render(ForgeGui gui, GuiGraphics matrixStack, float partialTick, int screenWidth, int screenHeight) {
         if (this.client.level != null && this.client.player != null && showTicks > 0 && skills != null && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             matrixStack.pose().pushPose();
             int xOff = this.client.getWindow().getGuiScaledWidth() / 2;

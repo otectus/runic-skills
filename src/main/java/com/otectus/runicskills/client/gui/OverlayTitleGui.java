@@ -11,24 +11,30 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.awt.*;
 
+/**
+ * Title-earned overlay. Since 1.2.0 rendered through the named Forge overlay
+ * layer {@code runicskills:title_overlay} (registered via
+ * {@code RegisterGuiOverlaysEvent}) instead of the F3 debug event.
+ */
 @OnlyIn(Dist.CLIENT)
-public class OverlayTitleGui {
+public class OverlayTitleGui implements IGuiOverlay {
+    public static final OverlayTitleGui INSTANCE = new OverlayTitleGui();
+
     private final Minecraft client = Minecraft.getInstance();
     public static TitleQueue list = new TitleQueue();
     public static int timerTicks = 110;
     public static int showTicks = 110;
     private static int scaleTick = 0;
 
-    @SubscribeEvent(priority = EventPriority.NORMAL)
-    public void onHudRender(CustomizeGuiOverlayEvent.DebugText event) {
-        GuiGraphics matrixStack = event.getGuiGraphics();
+    @Override
+    public void render(ForgeGui gui, GuiGraphics matrixStack, float partialTick, int screenWidth, int screenHeight) {
         if (this.client.level != null && this.client.player != null && showTicks >= 0 && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             if (list.count() > 0) {
                 Title getTitle = list.peek();

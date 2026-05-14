@@ -1,6 +1,7 @@
 package com.otectus.runicskills.network.packet.common;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.event.PassiveLevelUpEvent;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryAttributes;
@@ -11,6 +12,7 @@ import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkEvent;
 
 public class PassiveLevelDownSP {
@@ -39,7 +41,14 @@ public class PassiveLevelDownSP {
 
                 Passive passive = RegistryPassives.getPassive(this.passive);
                 if (passive == null) return;
-                if (capability.getPassiveLevel(passive) <= 0) return;
+                int currentLevel = capability.getPassiveLevel(passive);
+                if (currentLevel <= 0) return;
+
+                // Fire public Forge event (since 1.2.0). Same event class used for level-ups;
+                // subscribers should compare oldLevel vs newLevel to distinguish.
+                if (MinecraftForge.EVENT_BUS.post(new PassiveLevelUpEvent(player, passive, currentLevel, currentLevel - 1))) {
+                    return;
+                }
 
                 capability.subPassiveLevel(passive, 1);
                 RegistryAttributes.modifierAttributes(player); // H8: Recalculate attributes after passive change

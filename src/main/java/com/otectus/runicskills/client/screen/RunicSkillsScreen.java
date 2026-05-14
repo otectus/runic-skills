@@ -165,6 +165,19 @@ public class RunicSkillsScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, delta);
     }
 
+    /**
+     * Returns the number of ±1 actions to perform for a passive-button click, based on
+     * modifier keys (since 1.2.0). Plain click = 1, Shift = 5, Ctrl = 10, Alt = clear/max.
+     * Clamped to {@code remaining} so we don't queue packets that the server will reject.
+     */
+    private int bulkClickAmount(int remaining) {
+        if (remaining <= 0) return 0;
+        if (Screen.hasAltDown()) return remaining;
+        if (Screen.hasControlDown()) return Math.min(10, remaining);
+        if (Screen.hasShiftDown()) return Math.min(5, remaining);
+        return 1;
+    }
+
     private void drawScreen(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, float delta) {
         renderBackground(guiGraphics);
 
@@ -944,14 +957,20 @@ public class RunicSkillsScreen extends Screen {
                 if (item instanceof Passive passive) {
                     if (iconLayout.decrementBounds().contains(mouseX, mouseY) && passive.getLevel() > 0) {
                         Utils.playSound();
-                        PassiveLevelDownSP.send(passive);
+                        // Bulk-level (since 1.2.0): Shift ×5, Ctrl ×10, Alt = clear (max remaining).
+                        int amount = bulkClickAmount(passive.getLevel());
+                        for (int i = 0; i < amount; i++) PassiveLevelDownSP.send(passive);
                         return true;
                     }
                     if (iconLayout.incrementBounds().contains(mouseX, mouseY)
                             && passive.getLevel() < passive.getMaxLevel()
                             && detailState.capability().getSkillLevel(passive.getSkill()) >= passive.getNextLevelUp()) {
                         Utils.playSound();
-                        PassiveLevelUpSP.send(passive);
+                        // Bulk-level (since 1.2.0). Server validates each increment independently;
+                        // increments past the current skill-level cap are rejected silently.
+                        int remaining = passive.getMaxLevel() - passive.getLevel();
+                        int amount = bulkClickAmount(remaining);
+                        for (int i = 0; i < amount; i++) PassiveLevelUpSP.send(passive);
                         return true;
                     }
                 } else if (item instanceof Perk perk && iconLayout.frameBounds().contains(mouseX, mouseY) && perk.getToggle()) {

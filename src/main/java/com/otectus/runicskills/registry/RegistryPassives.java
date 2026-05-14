@@ -121,6 +121,7 @@ public class RegistryPassives {
         return cachedValues;
     }
 
+    @org.jetbrains.annotations.Nullable
     public static Passive getPassive(String passiveName) {
         if (cachedByName == null) {
             cachedByName = getCachedValues().stream()

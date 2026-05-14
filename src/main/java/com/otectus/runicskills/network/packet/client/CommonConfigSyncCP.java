@@ -30,6 +30,17 @@ public class CommonConfigSyncCP {
     private final boolean enableScholarEnchantmentHiding;
     private final boolean displayTitlesAsPrefix;
 
+    // Per-integration master toggles (since 1.2.0). Server-authoritative so the client
+    // can render tooltips honestly when the server has soft-disabled a mod's integration.
+    private final boolean enableSpartanIntegration;
+    private final boolean enableBloodMagicIntegration;
+    private final boolean enableIceAndFireIntegration;
+    private final boolean enableIronsSpellbooksIntegration;
+    private final boolean enableArsNouveauIntegration;
+    private final boolean enableApotheosisIntegration;
+    private final boolean enableBotaniaIntegration;
+    private final boolean enableJewelcraftIntegration;
+
     // Passive
     private final float attackDamageValue;
     private final float attackKnockbackValue;
@@ -111,6 +122,14 @@ public class CommonConfigSyncCP {
         dropLockedItems = HandlerCommonConfig.HANDLER.instance().dropLockedItems;
         enableScholarEnchantmentHiding = HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding;
         displayTitlesAsPrefix = HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix;
+        enableSpartanIntegration = HandlerCommonConfig.HANDLER.instance().enableSpartanIntegration;
+        enableBloodMagicIntegration = HandlerCommonConfig.HANDLER.instance().enableBloodMagicIntegration;
+        enableIceAndFireIntegration = HandlerCommonConfig.HANDLER.instance().enableIceAndFireIntegration;
+        enableIronsSpellbooksIntegration = HandlerCommonConfig.HANDLER.instance().enableIronsSpellbooksIntegration;
+        enableArsNouveauIntegration = HandlerCommonConfig.HANDLER.instance().enableArsNouveauIntegration;
+        enableApotheosisIntegration = HandlerCommonConfig.HANDLER.instance().enableApotheosisIntegration;
+        enableBotaniaIntegration = HandlerCommonConfig.HANDLER.instance().enableBotaniaIntegration;
+        enableJewelcraftIntegration = HandlerCommonConfig.HANDLER.instance().enableJewelcraftIntegration;
         attackDamageValue = HandlerCommonConfig.HANDLER.instance().attackDamageValue;
         attackKnockbackValue = HandlerCommonConfig.HANDLER.instance().attackKnockbackValue;
         maxHealthValue = HandlerCommonConfig.HANDLER.instance().maxHealthValue;
@@ -189,6 +208,14 @@ public class CommonConfigSyncCP {
         dropLockedItems = buffer.readBoolean();
         enableScholarEnchantmentHiding = buffer.readBoolean();
         displayTitlesAsPrefix = buffer.readBoolean();
+        enableSpartanIntegration = buffer.readBoolean();
+        enableBloodMagicIntegration = buffer.readBoolean();
+        enableIceAndFireIntegration = buffer.readBoolean();
+        enableIronsSpellbooksIntegration = buffer.readBoolean();
+        enableArsNouveauIntegration = buffer.readBoolean();
+        enableApotheosisIntegration = buffer.readBoolean();
+        enableBotaniaIntegration = buffer.readBoolean();
+        enableJewelcraftIntegration = buffer.readBoolean();
         attackDamageValue = buffer.readFloat();
         attackKnockbackValue = buffer.readFloat();
         maxHealthValue = buffer.readFloat();
@@ -269,6 +296,14 @@ public class CommonConfigSyncCP {
         buffer.writeBoolean(this.dropLockedItems);
         buffer.writeBoolean(this.enableScholarEnchantmentHiding);
         buffer.writeBoolean(this.displayTitlesAsPrefix);
+        buffer.writeBoolean(this.enableSpartanIntegration);
+        buffer.writeBoolean(this.enableBloodMagicIntegration);
+        buffer.writeBoolean(this.enableIceAndFireIntegration);
+        buffer.writeBoolean(this.enableIronsSpellbooksIntegration);
+        buffer.writeBoolean(this.enableArsNouveauIntegration);
+        buffer.writeBoolean(this.enableApotheosisIntegration);
+        buffer.writeBoolean(this.enableBotaniaIntegration);
+        buffer.writeBoolean(this.enableJewelcraftIntegration);
         buffer.writeFloat(this.attackDamageValue);
         buffer.writeFloat(this.attackKnockbackValue);
         buffer.writeFloat(this.maxHealthValue);
@@ -352,6 +387,14 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().dropLockedItems = this.dropLockedItems;
                 HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding = this.enableScholarEnchantmentHiding;
                 HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix = displayTitlesAsPrefix;
+                HandlerCommonConfig.HANDLER.instance().enableSpartanIntegration = this.enableSpartanIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableBloodMagicIntegration = this.enableBloodMagicIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableIceAndFireIntegration = this.enableIceAndFireIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableIronsSpellbooksIntegration = this.enableIronsSpellbooksIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableArsNouveauIntegration = this.enableArsNouveauIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableApotheosisIntegration = this.enableApotheosisIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableBotaniaIntegration = this.enableBotaniaIntegration;
+                HandlerCommonConfig.HANDLER.instance().enableJewelcraftIntegration = this.enableJewelcraftIntegration;
                 HandlerCommonConfig.HANDLER.instance().attackDamageValue = this.attackDamageValue;
                 HandlerCommonConfig.HANDLER.instance().attackKnockbackValue = this.attackKnockbackValue;
                 HandlerCommonConfig.HANDLER.instance().maxHealthValue = this.maxHealthValue;

@@ -804,6 +804,55 @@ public class IronsSpellbooksIntegration {
         }
     }
 
+    /**
+     * Spellsocket (1.2.0) — +N effective spell levels per N equipped Apotheosis sockets.
+     * Caps at spellsocketMaxBonus regardless of socket count.
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onModifySpellLevelSpellsocket(ModifySpellLevelEvent event) {
+        if (RegistryPerks.SPELLSOCKET == null) return;
+        if (!ModList.get().isLoaded("apotheosis")) return;
+        if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
+        if (!RegistryPerks.SPELLSOCKET.get().isEnabled(player)) return;
+
+        int totalSockets = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            net.minecraft.world.item.ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.hasAffixes(stack)) continue;
+            totalSockets += dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets(stack);
+        }
+
+        int socketsPerLevel = Math.max(1, HandlerCommonConfig.HANDLER.instance().spellsocketSocketsPerLevel);
+        int maxBonus = HandlerCommonConfig.HANDLER.instance().spellsocketMaxBonus;
+        int bonus = Math.min(maxBonus, totalSockets / socketsPerLevel);
+        if (bonus > 0) event.addLevels(bonus);
+    }
+
+    /**
+     * Resonant Affixes (1.2.0) — ISS spell-damage bonus per rare-or-better equipped
+     * Apotheosis-affix item. Multiplicative; stacks with other spell-damage perks.
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onSpellDamageResonantAffixes(SpellDamageEvent event) {
+        if (RegistryPerks.RESONANT_AFFIXES == null) return;
+        if (!ModList.get().isLoaded("apotheosis")) return;
+        Entity src = event.getSpellDamageSource().getEntity();
+        if (!(src instanceof Player player) || player.isCreative()) return;
+        if (!RegistryPerks.RESONANT_AFFIXES.get().isEnabled(player)) return;
+
+        int count = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            net.minecraft.world.item.ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.hasAffixes(stack)) continue;
+            var rarity = dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.getRarity(stack);
+            if (rarity.isBound() && rarity.get().ordinal() >= 2) count++;
+        }
+        if (count <= 0) return;
+
+        float pct = count * (HandlerCommonConfig.HANDLER.instance().resonantAffixesPercent / 100.0f);
+        event.setAmount(event.getAmount() * (1.0f + pct));
+    }
+
     /** Quickcast — cooldown reduction applied only to INSTANT-type spells. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onSpellCooldownQuickcast(SpellCooldownAddedEvent.Pre event) {

@@ -18,8 +18,26 @@ public class ServerNetworking {
     private static final String PROTOCOL_VERSION = "5";
     public static SimpleChannel instance;
 
+    /**
+     * Channel-acceptance predicate (since 1.2.0). Wraps the previous {@code PROTOCOL_VERSION::equals}
+     * with a clear log on mismatch — Forge's player-facing disconnect message remains generic
+     * because the kick is initiated by Forge's negotiation layer, not our channel, but operators
+     * now have a server-log line with the exact required vs reported versions.
+     */
+    private static boolean acceptsVersion(String peerVersion) {
+        boolean ok = PROTOCOL_VERSION.equals(peerVersion);
+        if (!ok) {
+            RunicSkills.getLOGGER().warn(
+                "Runic Skills network protocol mismatch: this side requires PROTOCOL_VERSION={}, peer reports {}. " +
+                "Update both client and server to the same Runic Skills release.",
+                PROTOCOL_VERSION, peerVersion
+            );
+        }
+        return ok;
+    }
+
     public static void init() {
-        instance = NetworkRegistry.ChannelBuilder.named(new ResourceLocation(RunicSkills.MOD_ID, "network")).networkProtocolVersion(() -> PROTOCOL_VERSION).clientAcceptedVersions(PROTOCOL_VERSION::equals).serverAcceptedVersions(PROTOCOL_VERSION::equals).simpleChannel();
+        instance = NetworkRegistry.ChannelBuilder.named(new ResourceLocation(RunicSkills.MOD_ID, "network")).networkProtocolVersion(() -> PROTOCOL_VERSION).clientAcceptedVersions(ServerNetworking::acceptsVersion).serverAcceptedVersions(ServerNetworking::acceptsVersion).simpleChannel();
 
         instance.registerMessage(packetId++, ConfigSyncCP.class, ConfigSyncCP::toBytes, ConfigSyncCP::new, ConfigSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, DynamicConfigSyncCP.class, DynamicConfigSyncCP::toBytes, DynamicConfigSyncCP::new, DynamicConfigSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));

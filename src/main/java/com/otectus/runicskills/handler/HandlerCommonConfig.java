@@ -104,6 +104,51 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.TRUE_FALSE)
     public boolean displayTitlesAsPrefix = true;
 
+    // Per-integration master toggles (since 1.2.0). When false, the entire integration
+    // is soft-disabled: its event subscriber is never registered with the Forge bus.
+    // Perks belonging to the integration remain in the registry (so save data is stable
+    // across toggle flips) but their effects are inert. Lock-item toggles below remain
+    // a finer-grained subset and apply only when the master toggle is true.
+    @SerialEntry(comment = "Master toggle for the Spartan Weaponry integration. When false, the integration class is not registered with the Forge event bus, disabling all Spartan-related effects (lock items, weapon mastery, attack range modifier, etc.). Set to false if you load Spartan Weaponry but want zero Runic Skills hooks into it.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableSpartanIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Blood Magic integration. When false, item lock generation is skipped.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableBloodMagicIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Ice and Fire integration. When false, the integration class is not registered with the Forge event bus, disabling lock-item generation and any future Ice and Fire hooks.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableIceAndFireIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Iron's Spells 'n Spellbooks integration. When false, ISS-specific perks (Wellspring, Quickening, every school specialist triplet, Adaptive Caster, ISS Cascade Attunement, etc.) become inert and the integration class is not registered.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableIronsSpellbooksIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Ars Nouveau integration. When false, Ars perks (Form Focus, every school perk, Ars Familiar Attunement, Sourcelink Affix, etc.) become inert and the integration class is not registered.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableArsNouveauIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Apotheosis / Apothic Attributes integration. When false, Socket Virtuoso, Apothic Apprentice, Affix Affinity, Gem-Threaded Armor, Spellsocket, Resonant Affixes, etc. become inert.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableApotheosisIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Botania integration. When false, every Botania perk (Tidewoven, Resonance, Inner Wellspring, Mana Overflow, etc.) becomes inert and the integration class is not registered.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableBotaniaIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Jewelcraft integration. When false, item lock generation is skipped.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableJewelcraftIntegration = true;
+
     // Spartan Weaponry integration
     @SerialEntry(comment = "Enable automatic item locking for Spartan Weaponry, Spartan Shields, Spartan Cataclysm, and Spartan Fire items")
     @AutoGen(category = "common", group = "spartan")
@@ -3939,6 +3984,41 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Affix Affinity perk: damage reduction percent per rare+ equipped affix item")
     @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 20)
     public int affixAffinityReductionPercent = 2;
+
+    // ── Phase B (1.2.0): Apothic Apprentice — Fortune-tree higher-tier socket bonus ──
+    @SerialEntry(comment = "Required Fortune level for Apothic Apprentice (-1 to disable). Higher-tier mirror of Socket Virtuoso: adds N additional sockets on top of Socket Virtuoso's bonus.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int apothicApprenticeRequiredLevel = 26;
+    @SerialEntry(comment = "Apothic Apprentice perk: extra effective socket count on equipped items (added to Socket Virtuoso's bonus when both are enabled)")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 5)
+    public int apothicApprenticeBonus = 2;
+
+    // ── Phase B (1.2.0): Gem-Threaded Armor — Endurance-tree armor on socket count ──
+    @SerialEntry(comment = "Required Endurance level for Gem-Threaded Armor (-1 to disable). Grants flat ARMOR per equipped socket across all equipped Apotheosis-affixed gear.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int gemThreadedArmorRequiredLevel = 20;
+    @SerialEntry(comment = "Gem-Threaded Armor perk: flat ARMOR per equipped socket. Reconciled every 10 ticks on equipment change.")
+    @AutoGen(category = "common", group = "apothic_attributes") @FloatField(min = 0.1f, max = 5.0f)
+    public float gemThreadedArmorPerSocket = 0.5f;
+
+    // ── Phase B (1.2.0): Spellsocket — Magic-tree ISS spell-level bonus per equipped socket ──
+    @SerialEntry(comment = "Required Magic level for Spellsocket (-1 to disable). Requires both ISS and Apotheosis loaded.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int spellsocketRequiredLevel = 22;
+    @SerialEntry(comment = "Spellsocket perk: equipped-socket count required for +1 effective spell level. Caps at the value of spellsocketMaxBonus.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 20)
+    public int spellsocketSocketsPerLevel = 3;
+    @SerialEntry(comment = "Spellsocket perk: max effective +N spell levels granted by this perk regardless of equipped socket count.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 10)
+    public int spellsocketMaxBonus = 3;
+
+    // ── Phase B (1.2.0): Resonant Affixes — Magic-tree spell-damage bonus per rare+ affix item ──
+    @SerialEntry(comment = "Required Magic level for Resonant Affixes (-1 to disable). Requires both ISS and Apotheosis loaded.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)
+    public int resonantAffixesRequiredLevel = 24;
+    @SerialEntry(comment = "Resonant Affixes perk: ISS spell-damage bonus percent per rare-or-better equipped Apotheosis-affix item.")
+    @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = 1, max = 25)
+    public int resonantAffixesPercent = 3;
 
     @SerialEntry(comment = "Required Dexterity level for Apothic Critical Mastery (-1 to disable)")
     @AutoGen(category = "common", group = "apothic_attributes") @IntField(min = -1, max = 1000)

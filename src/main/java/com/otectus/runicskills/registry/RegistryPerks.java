@@ -828,6 +828,49 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().affixAffinityDamagePercent),
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().affixAffinityReductionPercent)
             ));
+
+    // ── 1.2.0: Apothic Apprentice (higher-tier Socket Virtuoso mirror) ──
+    public static final RegistryObject<Perk> APOTHIC_APPRENTICE =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothicApprenticeRequiredLevel < 0
+            ? null : PERKS.register("apothic_apprentice", () -> register(
+                    "apothic_apprentice", RegistrySkills.FORTUNE,
+                    HandlerCommonConfig.HANDLER.instance().apothicApprenticeRequiredLevel,
+                    HandlerResources.APOTH_APPRENTICE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().apothicApprenticeBonus)
+            ));
+
+    // ── 1.2.0: Gem-Threaded Armor — armor bonus scaling with equipped socket count ──
+    public static final RegistryObject<Perk> GEM_THREADED_ARMOR =
+            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().gemThreadedArmorRequiredLevel < 0
+            ? null : PERKS.register("gem_threaded_armor", () -> register(
+                    "gem_threaded_armor", RegistrySkills.ENDURANCE,
+                    HandlerCommonConfig.HANDLER.instance().gemThreadedArmorRequiredLevel,
+                    HandlerResources.APOTH_GEM_THREADED_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().gemThreadedArmorPerSocket)
+            ));
+
+    // ── 1.2.0: Spellsocket — ISS spell-level bonus per N equipped sockets ──
+    public static final RegistryObject<Perk> SPELLSOCKET =
+            !ApotheosisIntegration.isModLoaded() || !IronsSpellbooksIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().spellsocketRequiredLevel < 0
+            ? null : PERKS.register("spellsocket", () -> register(
+                    "spellsocket", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().spellsocketRequiredLevel,
+                    HandlerResources.APOTH_SPELLSOCKET_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().spellsocketSocketsPerLevel),
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().spellsocketMaxBonus)
+            ));
+
+    // ── 1.2.0: Resonant Affixes — ISS spell-damage bonus per rare+ affix item ──
+    public static final RegistryObject<Perk> RESONANT_AFFIXES =
+            !ApotheosisIntegration.isModLoaded() || !IronsSpellbooksIntegration.isModLoaded()
+                    || HandlerCommonConfig.HANDLER.instance().resonantAffixesRequiredLevel < 0
+            ? null : PERKS.register("resonant_affixes", () -> register(
+                    "resonant_affixes", RegistrySkills.MAGIC,
+                    HandlerCommonConfig.HANDLER.instance().resonantAffixesRequiredLevel,
+                    HandlerResources.APOTH_RESONANT_AFFIXES_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().resonantAffixesPercent)
+            ));
     public static final RegistryObject<Perk> APOTHIC_CRITICAL_MASTERY =
             !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryRequiredLevel < 0
             ? null : PERKS.register("apothic_critical_mastery", () -> register(
@@ -4786,6 +4829,7 @@ public class RegistryPerks {
         return cachedValues;
     }
 
+    @org.jetbrains.annotations.Nullable
     public static Perk getPerk(String perkName) {
         if (cachedByName == null) {
             cachedByName = getCachedValues().stream()

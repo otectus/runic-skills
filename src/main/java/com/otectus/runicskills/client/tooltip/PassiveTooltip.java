@@ -51,6 +51,7 @@ public final class PassiveTooltip {
             list.add(Component.literal(Utils.getModName(passive.getMod())).withStyle(ChatFormatting.BLUE).withStyle(ChatFormatting.ITALIC));
         }
 
-        return list;
+        // Clamp wide translation strings so the tooltip doesn't overflow at GUI scale 4 / 4K.
+        return TooltipWrap.wrap(list, 200);
     }
 }

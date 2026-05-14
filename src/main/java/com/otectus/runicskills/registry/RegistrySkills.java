@@ -59,6 +59,7 @@ public class RegistrySkills {
         return cachedValues;
     }
 
+    @org.jetbrains.annotations.Nullable
     public static Skill getSkill(String skillName) {
         if (cachedByName == null) {
             cachedByName = getCachedValues().stream()

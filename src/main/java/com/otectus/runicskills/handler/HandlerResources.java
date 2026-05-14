@@ -503,6 +503,12 @@ public class HandlerResources {
     public static final ResourceLocation APOTH_GHOSTBOUND_PERK        = apothItem("prismatic_web");
     public static final ResourceLocation APOTH_HEART_HEALER_PERK      = apothItem("potion_charm");
 
+    // ── 1.2.0: deferred-backlog perks ──
+    public static final ResourceLocation APOTH_APPRENTICE_PERK        = apothItem("gem_dust");
+    public static final ResourceLocation APOTH_GEM_THREADED_PERK      = apothItem("sigil_of_socketing");
+    public static final ResourceLocation APOTH_SPELLSOCKET_PERK       = apothItem("vial_of_expulsion");
+    public static final ResourceLocation APOTH_RESONANT_AFFIXES_PERK  = apothItem("vial_of_extraction");
+
     // ── Ars Nouveau — Phase 2b form/utility perks ──
     public static final ResourceLocation ARS_FORM_PROJECTILE_PERK     = arsItem("projectile");
     public static final ResourceLocation ARS_FORM_TOUCH_PERK          = arsItem("touch");

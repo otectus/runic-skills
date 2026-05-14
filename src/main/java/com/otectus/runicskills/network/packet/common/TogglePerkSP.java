@@ -1,6 +1,7 @@
 package com.otectus.runicskills.network.packet.common;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.event.PerkToggleEvent;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
@@ -13,6 +14,7 @@ import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkEvent;
 
 public class TogglePerkSP {
@@ -57,7 +59,13 @@ public class TogglePerkSP {
                 // Disabling (rank 0) is always allowed — including for perks disabled via config,
                 // so players can clear a stuck rank and get their SP state consistent with the current rules.
                 if (this.targetRank <= 0) {
+                    int prevRank = capability.getPerkRank(perk);
+                    if (MinecraftForge.EVENT_BUS.post(new PerkToggleEvent.Pre(player, perk, prevRank, 0, prevRank > 0, false))) {
+                        SyncSkillCapabilityCP.send(player);
+                        return;
+                    }
                     capability.setPerkRank(perk, 0);
+                    MinecraftForge.EVENT_BUS.post(new PerkToggleEvent.Post(player, perk, prevRank, 0, prevRank > 0, false));
                     SyncSkillCapabilityCP.send(player);
                     return;
                 }
@@ -118,6 +126,13 @@ public class TogglePerkSP {
                     }
                 }
 
+                // Fire the public Forge Pre event (since 1.2.0). All built-in validation has passed
+                // by this point; subscribers may add custom rules and cancel.
+                if (MinecraftForge.EVENT_BUS.post(new PerkToggleEvent.Pre(player, perk, currentRank, this.targetRank, currentRank > 0, true))) {
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
+
                 capability.setPerkRank(perk, this.targetRank);
 
                 // Start the swap cooldown only when a perk was just enabled from rank 0.
@@ -125,6 +140,9 @@ public class TogglePerkSP {
                     int cdTicks = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
                     if (cdTicks > 0) capability.setCooldown(SkillCapability.COOLDOWN_PERK_SWAP, cdTicks);
                 }
+
+                // Fire the Post event after commit. Non-cancelable; observers only.
+                MinecraftForge.EVENT_BUS.post(new PerkToggleEvent.Post(player, perk, currentRank, this.targetRank, currentRank > 0, true));
 
                 SyncSkillCapabilityCP.send(player);
             }

@@ -1,5 +1,91 @@
 # Changelog
 
+## [1.2.0] - 2026-05-14
+
+Balanced content + quality release. Ships a public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) — external Java mods and KubeJS can now hook level-ups and perk toggles without reflection. Adds 8 per-integration master toggles so pack authors can soft-disable any major integration without removing the dep mod. Adds 4 deferred-backlog perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes). Tooltip width-clamp at GUI scale 4. HUD overlays moved to named layers so resource packs can relocate them. Bulk-level passives via Shift/Ctrl/Alt-click. Translated protocol-mismatch log line for server ops. CI workflow added. Save-compatible with 1.1.0.
+
+### Added — Public Forge event API (since 1.2.0)
+
+- **`SkillLevelUpEvent`** — fired on the Forge bus from `SkillLevelUpSP.handle` after validation succeeds, before capability mutation and the client sync packet. `@Cancelable`; cancelling aborts the level-up cleanly without consuming XP. Extends `PlayerEvent`. Fields: `Skill skill`, `int oldLevel`, `int newLevel`.
+- **`PassiveLevelUpEvent`** — fired from both `PassiveLevelUpSP.handle` and `PassiveLevelDownSP.handle`. Subscribers wanting only the level-up direction should filter `newLevel > oldLevel`. `@Cancelable`. Fields: `Passive passive`, `int oldLevel`, `int newLevel`.
+- **`PerkToggleEvent.Pre` / `.Post`** — fired around `TogglePerkSP.handle`. `Pre` fires after the built-in validation chain succeeds, before any state mutation; cancelling aborts the toggle and resyncs the client. `Post` fires after rank/cooldown writes and is non-cancelable. Both have `int oldRank`, `int newRank`, `boolean wasEnabled`, `boolean isEnabled`.
+- **`TitleEarnedEvent`** — fired from `Title.setRequirement` whenever `unlockTitle` flips false→true. Non-cancelable. Fields: `Title title`.
+
+All four events are documented as a public API and will be maintained across minor versions. KubeJS hooks them natively via its Forge-event bridge — `onForgeEvent("net.minecraftforge.event.entity.player.PlayerEvent$SkillLevelUpEvent", event => ...)` works out of the box. Legacy KubeJS scripts using the older `SkillLevelUpEventJS` surface still work unchanged through the `KubeJSIntegration` shim (which is now marked `@Deprecated(forRemoval = true)`; removal is scheduled for a future major).
+
+### Added — Perks (4)
+
+Four perks from the 1.1.0 "Skipped" backlog land this release. The remaining five and the eleven Phase-3 capstones are either dropped permanently (most lack a public API in their upstream mod) or deferred to 1.3.0+ (see below).
+
+- **Apothic Apprentice** (Fortune, Apotheosis) — higher-tier socket bonus. `+N` effective sockets on top of Socket Virtuoso's bonus. Trivial counterpart to the existing perk; both stack additively when enabled. Default `requiredLevel = 26`, bonus = 2 sockets.
+- **Gem-Threaded Armor** (Endurance, Apotheosis) — flat ARMOR per equipped socket. Hook `LivingEquipmentChangeEvent`; iterate `dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets` across all equipment slots; apply a transient ADDITION modifier on `Attributes.ARMOR` keyed by a fixed UUID. Reconciles on equipment change, not per tick. Default `requiredLevel = 20`, +0.5 armor per socket.
+- **Spellsocket** (Magic, Apotheosis + ISS) — `ModifySpellLevelEvent` adds `+1` effective spell level per `socketsPerLevel` equipped sockets, capped at `maxBonus`. Same iteration pattern as Affix Focus. Default `requiredLevel = 22`, 3 sockets per +1 level, max +3.
+- **Resonant Affixes** (Magic, Apotheosis + ISS) — ISS `SpellDamageEvent` multiplies outgoing spell damage by `1 + (rare+ affix count × percent)`. Mirrors Affix Affinity's iteration pattern but on spell damage rather than melee. Default `requiredLevel = 24`, +3% per Rare-or-better item.
+
+All four config keys live in `HandlerCommonConfig` under the `apothic_attributes` group with corresponding `*RequiredLevel` and magnitude knobs. Lang keys added to `en_us.json`; other locales fall back to English.
+
+### Added — Per-integration master toggles (8 booleans)
+
+New `enable<Mod>Integration` booleans in `HandlerCommonConfig` under the `integrations` group, default `true`. When false, the integration class is **never registered** with the Forge event bus — every event handler in the integration is inert. Perks belonging to the integration remain in the registry (so save data is stable across toggle flips). Synced through `CommonConfigSyncCP` so the client can render UI honestly. The existing lock-item toggles (`*EnableLockItems`) remain a finer-grained subset that gates only the lock-item generation.
+
+Coverage: Spartan Weaponry, Blood Magic, Ice and Fire, Iron's Spells, Ars Nouveau, Apotheosis, Botania, Jewelcraft.
+
+### Added — Tooltip word-wrap helper
+
+`TooltipWrap.wrap(List<Component>, int maxWidthPx)` clamps long perk/passive tooltip lines via `Minecraft.getInstance().font.split(...)`. Applied at the end of `PerkTooltip.tooltip()` and `PassiveTooltip.tooltip()` with a 200px clamp — eliminates offscreen tooltip overflow at GUI scale 4 / 4K. Lines that already fit pass through unchanged so translation keys are preserved in the common case.
+
+### Added — Bulk-level passives
+
+Shift-click a passive ± button to apply ±5; Ctrl-click ±10; Alt-click clears (or maxes) the passive subject to skill-level gates. Each click sends N `PassiveLevelUpSP` / `PassiveLevelDownSP` packets; the server validates each independently and silently rejects increments past the cap. Skill level-up still uses single-click (server rate-limit on `SkillLevelUpSP` makes bulk-level less useful there). Implemented in `RunicSkillsScreen.bulkClickAmount`.
+
+### Added — CI workflow
+
+`.github/workflows/build.yml` runs `./gradlew build` on push and pull request — compiles, runs `checkSidedImports`, reobfuscates, and assembles the jar on a clean Ubuntu image. Catches the dedicated-server class-load regression class on a clean classpath (no YACL, no L2Tabs, no optional mods); 1.0.0 (Legendary Tabs) and 1.1.0 (YACL) shipped that bug separately, so a no-optional-mods CI build is the highest-value smoke gate. Build artifact (jar) uploaded for 7 days.
+
+### Changed
+
+- **HUD overlays migrated to `RegisterGuiOverlaysEvent`.** `OverlaySkillGui` and `OverlayTitleGui` previously piggy-backed on `CustomizeGuiOverlayEvent.DebugText` (the F3 overlay event — worked but conceptually wrong). Now registered as named layers `runicskills:skill_overlay` and `runicskills:title_overlay` above the hotbar layer. Same render code, same visual position; resource packs can now relocate them via the standard `above`/`below` overlay APIs. Tick subscribers remain on the Forge bus for state updates.
+- **`KubeJSIntegration` deprecated** in favor of the new Forge events. `postLevelUpEvent` is now `@Deprecated(forRemoval = true)` — its reflective fast-path cache stays for back-compat with existing pack scripts; new scripts should subscribe to `SkillLevelUpEvent` on the Forge bus directly. Migration documented in [docs/API_EVENTS.md](docs/API_EVENTS.md).
+- **`@Nullable` annotations** on `RegistryPerks.getPerk`, `RegistryPassives.getPassive`, `RegistrySkills.getSkill` (returns null for unknown registry names). IntelliJ + IDEA plugin now surfaces unchecked dereferences as warnings — closes the residual P1 #5 leads from the 0.9.3 audit.
+- **Protocol-mismatch log line** (1.2.0). `ServerNetworking.acceptsVersion` now logs a clear warning when a connecting peer reports a different `PROTOCOL_VERSION` — server ops can diagnose mismatches from the log instead of debugging a generic Forge disconnect. The player-facing disconnect message remains Forge's generic "channel mismatch" because the kick is initiated by Forge's negotiation layer; full message translation would require an invasive negotiation-layer mixin not worth the risk.
+
+### Fixed
+
+- (No new bug fixes this release — 1.1.0 was the catch-up consolidation.)
+
+### Removed from roadmap (won't ship)
+
+After triaging each deferred design-doc perk against the actual upstream API surface, the following are dropped permanently because they require invasive mixins into private dispatch paths or assume APIs that don't exist:
+
+- **Pack Caller** — ISS `SummonManager` is private and event-less.
+- **Eldritch Apprentice** — Eldritch research XP lives in a private capability with no extraction hook.
+- **Spawner Mage** / **Spawner Sanctuary** — ISS summons ≠ vanilla `SpawnerBlockEntity`; the perks conflate two mechanics. Apotheosis has no spawner event either.
+- **Split-Caster** — ISS 3.15 has no spell-casting-split event; pervasive mixin into spell dispatch is too invasive for the value.
+- **Glyph-Imbued Gem** — gem metadata is immutable post-socketing; no post-apply hook.
+- **Enchanter's Insight** — design assumes Ars uses enchantments (it uses glyphs); conceptual mismatch.
+- **Enchanter-Arms** — no Apotheosis event for enchantment-apply success.
+- **Apparatus Synergy** — Apotheosis Loot Apparatus is datapack-only; no hook.
+- **Mythical Scribe** — Ars has no glyph-discovery XP event.
+
+### Deferred to 1.3.0+
+
+Doable but blocked on implementation budget or scoped to wait until the new 1.2.0 event API has bedded in:
+
+- **Sourcelink Affix** — Ars `SpellResolveEvent.Post` + affix-name match for source refund. Drops to lower priority because it depends on Apotheosis affix-name stability.
+- **Adaptive Caster** — per-player school-cast history map with decay; signal-state pattern needs more design.
+- **Ars Familiar Attunement** — `EntityJoinLevelEvent` filtered by `IFamiliar`. Needs verification against Ars 4.12.x familiar-spawn paths.
+- **Botania Mana Overflow** — `TickEvent.PlayerTickEvent` + nearby-pool drain on mana-cap. Counterpart to Tidewoven/Resonance.
+- **ISS Cascade Attunement** — N-casts-of-X-unlock-Y-for-30s transient state map.
+- **Datapack-driven titles** — Forge's `IForgeRegistry<Title>` is frozen after `RegistryEvent`; full datapack support requires a parallel runtime title store with its own evaluation/sync plumbing. The existing `HandlerTitlesConfig.titleList` YACL config already lets pack authors author titles, just without vanilla `/reload` hot-swap. Targeted for 1.3.0.
+- **Gemsmith**, **Lucky Loot**, **Library Dedication**, **Ars Scholar**, **Glyphsmith**, **Bookwyrm's Apprentice** — all require reflection into private upstream state; group into a future "Ars / Apotheosis deep-integration" pass.
+- **Ritualist**, **Dead King's Debt**, **Ritualized Reforge**, **Arcane Syncretism** — multi-event coordination across mods; benefit from the 1.2.0 event API once external mods start adopting it.
+- **GameTest scaffolding** — initial gradle wiring and test-class scaffold are designed but the structure-file setup and per-class loader plumbing want a focused release. CI build of the main jar lands now; full GameTest run in CI lands later.
+
+### Notes
+
+- **Save-compatible with 1.1.0.** No NBT schema changes; the four new perk ranks default to 0 on first load. The 8 new config booleans default to `true` (preserve existing behavior). `PROTOCOL_VERSION` stays at `5` — no wire-format breaking changes. The 1.1.0→1.2.0 upgrade is drop-in.
+- **Tested:** `./gradlew clean build` passes (compileJava + `checkSidedImports` + reobf + jar assembly). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: client tooltip render at GUI scale 4 (no overflow), Apothic Apprentice + Socket Virtuoso stacking on a rare gem-socketed item, Spellsocket bonus visible in F3 spell-level overlay, Shift-click bulk-level a passive from 0 to 5 in one click.
+
 ## [1.1.0] - 2026-05-08
 
 Consolidated post-1.0.0 release. Bundles the Botania integration (originally tagged 1.0.1), the magic-tree cross-mod expansion (originally tagged 1.0.2), the dedicated-server YACL safety refactor that the README has been advertising since 1.0.1 was actually fixed, the L2Tabs class-load fix (same shape as the 1.0.0 Legendary Tabs fix, missed at the time), and triage of three CurseForge user reports. Total of 120 new perks across five mod integrations plus a meaningful capability change — the mod now actually runs on dedicated servers without YACL installed.
