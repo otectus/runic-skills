@@ -819,7 +819,7 @@ public class IronsSpellbooksIntegration {
         for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
             net.minecraft.world.item.ItemStack stack = player.getItemBySlot(slot);
             if (stack.isEmpty() || !dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper.hasAffixes(stack)) continue;
-            totalSockets += dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets(stack);
+            totalSockets += dev.shadowsoffire.apotheosis.adventure.socket.SocketHelper.getSockets(stack);
         }
 
         int socketsPerLevel = Math.max(1, HandlerCommonConfig.HANDLER.instance().spellsocketSocketsPerLevel);

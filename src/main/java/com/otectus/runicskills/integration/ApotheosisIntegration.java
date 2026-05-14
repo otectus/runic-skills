@@ -213,7 +213,7 @@ public class ApotheosisIntegration {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = player.getItemBySlot(slot);
             if (stack.isEmpty() || !AffixHelper.hasAffixes(stack)) continue;
-            count += dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets(stack);
+            count += dev.shadowsoffire.apotheosis.adventure.socket.SocketHelper.getSockets(stack);
         }
         return count;
     }
