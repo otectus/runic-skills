@@ -73,6 +73,24 @@ Everything below this line is runtime smoke testing that must be done by hand.
 | 5.3 | `/skillsreload` propagates config / lock-items / perk-groups to all clients | | Existing 0.9.7 / 1.0.0 plumbing. |
 | 5.4 | Client login → server-authoritative `enableScholarEnchantmentHiding` overrides local value | | New in 1.1.0; verify the synced bool flips the mixin behaviour. |
 
+## 6. 1.2.x verification
+
+| # | Test | Result | Notes |
+|---|---|---|---|
+| 6.1 | Single-player idle for 60s after spawn — zero "Runic Skills network protocol mismatch" lines in `latest.log` | | **L1.2 fix verification.** 1.2.0 introduced periodic-probe WARN spam; 1.2.1's `equals` filter didn't match; 1.2.2 uses `startsWith` for `ABSENT` / `ALLOWVANILLA` prefixes. |
+| 6.2 | Modpack without Cataclysm — missing-entity title-condition WARNs each fire exactly once at login, never again | | **L2 fix.** Pre-1.2.1 these ERROR'd every 10s × player; 1.2.1 warn-once cache via `ConcurrentHashMap.newKeySet()`. |
+| 6.3 | Mod loads with no internet access — single DEBUG line from `getLatestVersion`, no WARN stack trace | | **L3 fix.** Pre-1.2.1 logged full `FileNotFoundException` stack on every boot; 1.2.1 catches FNF/SocketTimeout/UnknownHost specifically. |
+| 6.4 | Mod loads without BetterCombat / PointBlank installed — no "@Mixin target ... was not found" lines | | **L4 fix.** Pre-1.2.1 logged two WARN lines per absent target mod; 1.2.1 adds `@Pseudo` to both mixins. The unrelated "Error loading class: ..." lines from Forge's class transformer remain (one per absent mod), and are acceptable informational noise. |
+| 6.5 | Apothic Apprentice + Socket Virtuoso both enabled on a rare gem-socketed item — sockets stack additively | | **1.2.0 new perk.** Both contribute to `event.setSockets(event.getSockets() + bonus)` in `ApotheosisIntegration.onGetItemSockets`. |
+| 6.6 | Gem-Threaded Armor enabled — F3+H shows armor modifier from `runicskills:gem_threaded_armor` UUID scaling with equipped socket count | | **1.2.0 new perk.** `LivingEquipmentChangeEvent` recomputes total sockets via `SocketHelper.getSockets` and applies ADDITION modifier on `Attributes.ARMOR`. |
+| 6.7 | Spellsocket enabled + 6 equipped sockets — `ModifySpellLevelEvent` adds +2 effective spell levels (3 sockets/level cap) | | **1.2.0 new perk.** Capped at `spellsocketMaxBonus` (default 3). |
+| 6.8 | Resonant Affixes enabled + 4 Rare-or-better affix items equipped — ISS spell damage shows +12% bonus (3% × 4) | | **1.2.0 new perk.** `SpellDamageEvent` multiplier; mirrors Affix Affinity's iteration pattern. |
+| 6.9 | Java mod subscribes to `SkillLevelUpEvent` on Forge bus — event fires; cancellation prevents level-up and XP consumption | | **1.2.0 public Forge event API.** Verify all four events (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`). |
+| 6.10 | Tooltip render at GUI scale 4 / 4K — no offscreen tooltip overflow on multi-rank perks (shift-hover for description) | | **1.2.0 tooltip word-wrap.** `TooltipWrap.wrap(list, 200)` clamps lines via `font.split`. |
+| 6.11 | Shift-click passive ± button → applies 5 levels; Ctrl-click → 10; Alt-click → max (subject to skill-level cap) | | **1.2.0 bulk-level.** `RunicSkillsScreen.bulkClickAmount` reads `Screen.hasShift/Ctrl/AltDown()`. |
+| 6.12 | Skills HUD overlay layer registered as `runicskills:skill_overlay` (and `:title_overlay`) — resource packs can `above`/`below` it via overlay APIs | | **1.2.0 `RegisterGuiOverlaysEvent` migration.** Replaces the prior `CustomizeGuiOverlayEvent.DebugText` piggy-back. |
+| 6.13 | Per-integration master toggle (e.g. `enableBotaniaIntegration=false`) — Botania perks remain in registry but events inert | | **1.2.0 integration toggles.** `RunicSkills.<init>` gates each `tryLoadIntegration` / direct-instantiate path. Synced via `CommonConfigSyncCP`. |
+
 ---
 
 ## Reporting gaps

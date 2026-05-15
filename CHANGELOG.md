@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.2] - 2026-05-14
+
+Second log-noise hotfix. The 1.2.1 fix for `ServerNetworking.acceptsVersion` used `NetworkRegistry.ABSENT.equals(peerVersion)` but the predicate's WARN still fired every ~5 seconds in single-player. Either Forge 47.3.0's `NetworkRegistry.ABSENT` constant value drifts from the open-source value (likely the trailing 🤔 emoji suffix differing across charset configurations), or the predicate receives a wrapped/processed peerVersion that doesn't exactly equal the constant. Switched to defensive prefix matching (`startsWith("ABSENT")` / `startsWith("ALLOWVANILLA")`) — the textual prefix is invariant across Forge versions even when the emoji suffix isn't.
+
+Also refreshes the README to point at the latest jar, document the public Forge event API as the canonical 1.2.0+ scripting hook, and append the four new Apotheosis perks to the integrations table. Extends `docs/SMOKE_TESTS.md` with a new "1.2.x verification" section (13 test rows) covering all 1.2.x changes: new perks, event API, tooltip wrap, bulk-level, HUD overlay layers, integration master toggles, and the log-noise fixes.
+
+### Fixed
+- **`ServerNetworking.acceptsVersion` WARN spam still present after 1.2.1.** Replaced `NetworkRegistry.ABSENT.equals(...)` / `ACCEPTVANILLA.equals(...)` with `peerVersion.startsWith("ABSENT")` / `startsWith("ALLOWVANILLA")`. Defensive against the constant-value drift that prevented the 1.2.1 fix from matching at runtime — confirmed by retesting `latest.log` after the 1.2.1 install, which still showed the WARN firing every 5 seconds with `peer reports ABSENT ?`.
+
+### Changed
+- `README.md` installation jar reference 1.1.0 → 1.2.2; appended a milestone sentence describing 1.2.x feature highlights (Forge event API, four new Apotheosis perks, eight integration toggles, tooltip word-wrap, named-layer HUD overlays, bulk-level passives) and a brief mention of the 1.2.1 + 1.2.2 hotfixes.
+- `README.md` KubeJS scripting section extended to reference the public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) as the canonical 1.2.0+ hook, with a pointer to `docs/API_EVENTS.md`. Legacy `SKILL_LEVELUP` reflection bridge documented as deprecated.
+- `README.md` Apotheosis integration row updated with the four 1.2.0-shipped perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes).
+- `docs/SMOKE_TESTS.md`: new "Section 6 — 1.2.x verification" with 13 test rows covering every 1.2.x change.
+
+### Notes
+- Save-compatible with 1.2.x and 1.1.x. No NBT, no `PROTOCOL_VERSION`, no config, no perk behavior changes — pure log noise + documentation.
+- Tested: `./gradlew build` passes; on the user's CurseForge instance (no Cataclysm, no BetterCombat, no PointBlank installed) the 1.2.2 install over the 1.2.1 install should show **zero Runic Skills WARN/ERROR lines** in a 60s post-spawn idle window.
+
 ## [1.2.1] - 2026-05-14
 
 Log-noise hotfix. Four issues surfaced by the 1.2.0 post-release smoke test on a real CurseForge instance (`latest.log` review across the 1.2.0 session and four 1.1.0 archives for baseline comparison). Zero functional changes — no NBT, no `PROTOCOL_VERSION`, no perk behavior. Drop-in over 1.2.0.

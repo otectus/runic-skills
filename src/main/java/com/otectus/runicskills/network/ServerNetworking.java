@@ -24,16 +24,20 @@ public class ServerNetworking {
      * because the kick is initiated by Forge's negotiation layer, not our channel, but operators
      * now have a server-log line with the exact required vs reported versions.
      *
-     * <p>Since 1.2.1: filters out the {@link NetworkRegistry#ABSENT} and
-     * {@link NetworkRegistry#ACCEPTVANILLA} sentinels that Forge passes during periodic
-     * channel-acceptance probes (LAN advertising, ping handlers) every ~5 seconds. Those
-     * are not real connecting peers — logging them in single-player flooded the server
-     * log. We still log a WARN when a real peer reports an actual mismatched version
-     * string, which is what server operators actually want to see.
+     * <p>Since 1.2.2: prefix-matches the {@code NetworkRegistry.ABSENT} ("ABSENT 🤔") and
+     * {@code NetworkRegistry.ACCEPTVANILLA} ("ALLOWVANILLA 👍") sentinels that Forge passes
+     * during periodic channel-acceptance probes (LAN advertising, ping handlers) every
+     * ~5 seconds. The 1.2.1 fix used {@code .equals(...)} against the constants but didn't
+     * match at runtime — Forge 47.3.0's value evidently drifts from the open-source value
+     * (likely the trailing emoji), or the predicate receives a wrapped peerVersion. The
+     * textual prefix is invariant across Forge versions, so prefix-match is defensive.
+     * We still log a WARN when a real peer reports an actual mismatched version string.
      */
     private static boolean acceptsVersion(String peerVersion) {
         if (PROTOCOL_VERSION.equals(peerVersion)) return true;
-        if (NetworkRegistry.ABSENT.equals(peerVersion) || NetworkRegistry.ACCEPTVANILLA.equals(peerVersion)) {
+        if (peerVersion != null
+                && (peerVersion.startsWith("ABSENT")
+                    || peerVersion.startsWith("ALLOWVANILLA"))) {
             return false;
         }
         RunicSkills.getLOGGER().warn(
