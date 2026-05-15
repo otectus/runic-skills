@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "com.otectus.runicskills.mixin",
   "compatibilityLevel": "JAVA_17",
+  "plugin": "com.otectus.runicskills.mixin.RunicSkillsMixinPlugin",
   "refmap": "runicskills.refmap.json",
   "client": [
     "MixForgeGui",

@@ -11,8 +11,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-// @Pseudo (since 1.2.1): silently skip the target-class load attempt when PointBlank
-// isn't installed, instead of emitting an "@Mixin target ... was not found" WARN.
+// @Pseudo (since 1.2.1): silently skip the Mixin "@Mixin target was not found"
+// WARN when PointBlank isn't installed. Since 1.3.1, RunicSkillsMixinPlugin
+// also gates this mixin on ModList containing "pointblank" so Mixin never asks
+// Forge's TransformingClassLoader for the target bytecode (which is what
+// eliminates the classloader-side "Error loading class" WARN). @Pseudo is
+// retained as defence-in-depth.
 @Pseudo
 @Mixin(GunItem.class)
 public class MixGunItem {

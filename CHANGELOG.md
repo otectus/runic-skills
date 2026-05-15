@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.1] - 2026-05-15
+
+Log-noise hotfix on top of 1.3.0. 1.2.1's `@Pseudo` fix for the `MixTargetFinder` / `MixGunItem` WARNs silenced Mixin's own "@Mixin target was not found" line but left Forge's classloader-side "Error loading class" WARN firing on every startup when BetterCombat or PointBlank are absent — confirmed in the 1.3.0 smoke-test log (and present identically in 1.2.1 and 1.2.2 logs). 1.3.1 closes that residual gap with a Mixin Config Plugin (`IMixinConfigPlugin`) that excludes those two mixins entirely when their target mods aren't installed, so Mixin never asks the classloader for the missing target's bytecode and neither WARN can fire from any source. Pure log noise; zero functional change.
+
+### Fixed
+
+- **`Error loading class: net/bettercombat/client/collision/TargetFinder` and `... com/vicmatskiv/pointblank/item/GunItem` WARN at startup** when BetterCombat / PointBlank aren't installed. `@Pseudo` (added in 1.2.1) only suppressed Mixin's `@Mixin target was not found` WARN; the earlier `TransformingClassLoader` "Error loading class" WARN fires independently when the `class.class` literal in `@Mixin({TargetFinder.class})` triggers a bytecode lookup against the missing class. New `RunicSkillsMixinPlugin implements IMixinConfigPlugin` returns `false` from `shouldApplyMixin(...)` for these two mixins when their target mods aren't present in `LoadingModList`, so Mixin never asks the classloader for the target bytecode and the WARN can't fire. Pre-existing since the BetterCombat / PointBlank mixins were introduced; partially fixed in 1.2.1, fully fixed here.
+
+### Notes
+
+- Save-compatible with 1.3.0 and 1.2.x. No NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema, no perk behavior changes — pure log noise.
+- `@Pseudo` retained on both mixins as defence-in-depth: if a future runtime bypasses the plugin gate (e.g., via JVM args), Mixin still treats the missing target as optional rather than throwing.
+- `runicskills.mixins.json` now declares `"plugin": "com.otectus.runicskills.mixin.RunicSkillsMixinPlugin"`.
+- Tested: `./gradlew build` passes; `./gradlew checkSidedImports` passes; on the user's CurseForge instance (no BetterCombat, no PointBlank installed) the 1.3.1 install over the 1.3.0 install should show **zero Runic Skills WARN/ERROR lines** in a 60s post-spawn idle window — a clean diff against the two residual "Error loading class" lines visible in the 1.3.0 smoke-test log.
+
 ## [1.3.0] - 2026-05-14
 
 Data-driven content release. Two headline features: custom skill visuals (datapack-driven overrides for skill overview/detail/background art with full namespaced-id support) and an FTB Quests integration (six native task types — `skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected` — wired through a save-isolated quest bridge). KubeJS perk/passive helpers now accept arbitrary `namespace:path` texture ids so pack scripts can point at any mod's item or texture sprite without copying assets. Save-compatible with 1.2.x — no NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema drift; both new features are entirely additive and absent-when-disabled.

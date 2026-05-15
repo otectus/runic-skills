@@ -24,10 +24,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-// @Pseudo (since 1.2.1): silently skip the target-class load attempt when BetterCombat
-// isn't installed, instead of emitting an "@Mixin target ... was not found" WARN.
-// The mixin is correctly inert in that case — no transformations are applied — but the
-// WARN at startup looked alarming to users running without BetterCombat.
+// @Pseudo (since 1.2.1): silently skip the Mixin "@Mixin target was not found"
+// WARN when BetterCombat isn't installed. The mixin is correctly inert in that
+// case — no transformations are applied.
+//
+// Since 1.3.1, RunicSkillsMixinPlugin#shouldApplyMixin further gates this mixin
+// on ModList containing "bettercombat" so Mixin never asks Forge's
+// TransformingClassLoader for the target bytecode, which eliminates the
+// classloader-side "Error loading class" WARN that @Pseudo alone doesn't cover.
+// @Pseudo is retained as defence-in-depth for any future runtime that bypasses
+// the plugin gate.
 @Pseudo
 @Mixin({TargetFinder.class})
 public abstract class MixTargetFinder {
