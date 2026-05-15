@@ -41,6 +41,8 @@ Runic Skills is built to feel like part of your modpack rather than an island. O
 - **Apotheosis & Apothic Attributes** — Affix, gem, and socket awareness. Broader attribute pool for passives.
 - **KubeJS** — Script your own skills, perks, passives, titles, and conditions. A `SKILL_LEVELUP` event is exposed.
 - **L2Tabs / Legendary Tabs** — Skills shows up as a native tab in those mods' strips instead of being drawn twice.
+- **FTB Quests** (since 1.3.0) — Six native task types (`runicskills:skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) so quest authors can gate FTB Quests on Runic Skills progression. Sticky completion by default; opt-in `"sticky": false` for live-threshold semantics. Backfills on login.
+- **Custom skill visuals** (since 1.3.0) — Override per-skill overview/detail/background art with a single datapack JSON per skill at `data/<ns>/runicskills/skill_visuals/<id>.json`. Accepts arbitrary `namespace:path` texture ids so pack authors can point at any mod's item or texture sprite without shipping copies under the runicskills namespace.
 - **Farmers Delight, Blood Magic, Ice and Fire, Cataclysm, Mowzie's Mobs, Enigmatic Legacy, Stalwart Dungeons, Bosses of Mass Destruction, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Natures Aura, More Vanilla, Fantasy Armor, Jewelcraft, Locks** — Auto-generated level-gate lock lists for each.
 - **Crayfish Gun Mod (unofficial), Scorched Guns 2, TacZ, PointBlank (Vic's)** — Gun-fire events honour Runic Skills perks and locks.
 
@@ -98,6 +100,23 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 - `/titles <player> <title> set true|false` — grant or revoke a title.
 
 ---
+
+## What's new in 1.3.2
+
+- **Skill-panel header text is legible again.** The skill name, level/rank line, player name + XP, and "Choose Your Title" heading all render in black on the light gray panel background instead of white-on-white-ish. Pure cosmetic — no behaviour change, no save change.
+
+## What's new in 1.3.1
+
+- **No more "Error loading class" WARN at startup** when BetterCombat or PointBlank aren't installed. 1.2.1's `@Pseudo` fix silenced one of the two startup WARNs for those optional-target mixins; 1.3.1 finishes the job with a Mixin Config Plugin that gates the mixins on `LoadingModList` presence so Mixin never even asks the classloader for the missing target classes. Save-compatible with 1.3.0; no NBT, no protocol, no config changes.
+
+## What's new in 1.3.0
+
+Two data-driven features for pack authors:
+
+- **Custom skill visuals.** A new datapack folder at `data/<ns>/runicskills/skill_visuals/*.json` lets you override per-skill overview/detail/background art. Each field is optional — fill in just the slot you want to override, the rest fall through to the legacy defaults. Texture ids accept either bare paths (resolved to `runicskills:` for parity with prior KubeJS scripts) or fully-qualified `namespace:path` ResourceLocations. KubeJS `Perk.add(...)` / `Passive.add(...)` helpers also accept namespaced texture ids now, so scripts can point directly at any mod's item sprite without copying assets under the `runicskills` namespace. Reloads pick up overrides via `/reload` or world load.
+- **FTB Quests integration.** Six native task types — `skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected` — registered via FTB Quests' official `TaskType` API. Sticky completion by default (matching the "checked off, stays checked" UX players expect); opt-in `"sticky": false` per task for live-threshold semantics that reset on respec / passive level-down. Login + respawn + respec trigger a full task re-evaluation so quests added retroactively complete for already-qualified players. Master toggle `enableFTBQuestsIntegration = true` in the common config. Tested against FTB Quests Forge `[2001.4,)` (2001.4.22 at release). The integration is reflectively loaded so the mod boots cleanly when FTB Quests isn't installed — zero classloading risk, identical to the existing KubeJS / Ars Nouveau / Botania pattern.
+
+Save-compatible with 1.2.x. No NBT, no PROTOCOL_VERSION bump, no new packets. Both features are entirely additive — every existing skill, perk, passive, title, and integration toggle continues to work exactly as before.
 
 ## What's new in 1.1.0
 
