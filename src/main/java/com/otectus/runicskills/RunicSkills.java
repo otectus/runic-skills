@@ -120,6 +120,11 @@ public class RunicSkills {
                             LOGGER.info(">> NEW VERSION AVAILABLE: {}", version);
                         }
                     }
+                } catch (java.io.FileNotFoundException | java.net.SocketTimeoutException | java.net.UnknownHostException e) {
+                    // Expected: VERSION file not published yet, no network, GitHub
+                    // unreachable. Don't spam the log with a full stack trace —
+                    // a single DEBUG line is enough for users who actually care.
+                    LOGGER.debug(">> Update check unavailable: {}", e.toString());
                 } catch (Exception e) {
                     LOGGER.warn(">> Error checking for updates!", e);
                 }

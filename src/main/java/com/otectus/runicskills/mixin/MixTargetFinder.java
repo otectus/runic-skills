@@ -13,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,6 +24,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+// @Pseudo (since 1.2.1): silently skip the target-class load attempt when BetterCombat
+// isn't installed, instead of emitting an "@Mixin target ... was not found" WARN.
+// The mixin is correctly inert in that case — no transformations are applied — but the
+// WARN at startup looked alarming to users running without BetterCombat.
+@Pseudo
 @Mixin({TargetFinder.class})
 public abstract class MixTargetFinder {
     @Inject(method = {"findAttackTargetResult"}, at = {@At("HEAD")}, cancellable = true, remap = false)

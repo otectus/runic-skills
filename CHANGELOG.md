@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.1] - 2026-05-14
+
+Log-noise hotfix. Four issues surfaced by the 1.2.0 post-release smoke test on a real CurseForge instance (`latest.log` review across the 1.2.0 session and four 1.1.0 archives for baseline comparison). Zero functional changes — no NBT, no `PROTOCOL_VERSION`, no perk behavior. Drop-in over 1.2.0.
+
+### Fixed
+
+- **`ServerNetworking.acceptsVersion` log spam in single-player.** The 1.2.0 protocol-mismatch WARN fired every ~5 seconds against Forge's periodic channel-acceptance probes (which pass `NetworkRegistry.ABSENT` and `NetworkRegistry.ACCEPTVANILLA` sentinel strings on LAN advertising / ping handlers). Now filters those two sentinels out before logging, so the WARN only fires on a real peer reporting a mismatched version string — which is the case server operators actually want to see. Regression introduced in 1.2.0 Phase C4.
+- **`EntityKilledCondition` / `EntityKilledByCondition` ERROR-spam on every title-tick.** The title-check tick handler (`TickEventHandler.onPlayerTickLow`, every 200 ticks = 10s) evaluates each title's conditions for each online player. Default title configs reference Cataclysm and Ice and Fire entities; modpacks without those mods saw 2-12 ERROR lines per minute steady state per player. Now: warn-once per unique missing entity name per JVM session via a `ConcurrentHashMap.newKeySet()` guard, demoted from ERROR to WARN with clearer wording (`"Title condition references unknown entity '<id>'. The title will never unlock until that entity's mod is installed."`). Pre-existing bug, finally addressed.
+- **`getLatestVersion` 404 logged a full stack trace as WARN** at every mod-load. The catch-all `Exception` handler printed the full `FileNotFoundException` for the routine "VERSION file not yet published on GitHub" case. Now catches `FileNotFoundException`, `SocketTimeoutException`, and `UnknownHostException` separately and demotes to a single DEBUG line; the generic catch-all retains WARN+stack for genuinely unexpected failures. Pre-existing.
+- **`MixTargetFinder` and `MixGunItem` Mixin-target-not-found WARN** at startup when BetterCombat / PointBlank are absent. The mixins correctly compile inert (no transformations are applied), but Mixin's class loader emits a WARN when it can't find the target class. Added `@Pseudo` to both — Mixin now silently skips the target-load attempt for these inherently optional-mod-targeting mixins. Pre-existing.
+
+### Notes
+- Save-compatible with 1.2.0; no schema, protocol, or config changes.
+- Tested: `./gradlew build` passes. Runtime smoke against the user's local CurseForge instance (no Cataclysm, no BetterCombat, no PointBlank installed) should show zero spurious WARN/ERROR lines from Runic Skills over a 60s idle window after spawn — a sharp contrast from the 14+ WARN and 30+ ERROR lines in the 1.2.0 `latest.log` over the same window.
+
 ## [1.2.0] - 2026-05-14
 
 Balanced content + quality release. Ships a public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) — external Java mods and KubeJS can now hook level-ups and perk toggles without reflection. Adds 8 per-integration master toggles so pack authors can soft-disable any major integration without removing the dep mod. Adds 4 deferred-backlog perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes). Tooltip width-clamp at GUI scale 4. HUD overlays moved to named layers so resource packs can relocate them. Bulk-level passives via Shift/Ctrl/Alt-click. Translated protocol-mismatch log line for server ops. CI workflow added. Save-compatible with 1.1.0.

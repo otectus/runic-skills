@@ -23,17 +23,25 @@ public class ServerNetworking {
      * with a clear log on mismatch — Forge's player-facing disconnect message remains generic
      * because the kick is initiated by Forge's negotiation layer, not our channel, but operators
      * now have a server-log line with the exact required vs reported versions.
+     *
+     * <p>Since 1.2.1: filters out the {@link NetworkRegistry#ABSENT} and
+     * {@link NetworkRegistry#ACCEPTVANILLA} sentinels that Forge passes during periodic
+     * channel-acceptance probes (LAN advertising, ping handlers) every ~5 seconds. Those
+     * are not real connecting peers — logging them in single-player flooded the server
+     * log. We still log a WARN when a real peer reports an actual mismatched version
+     * string, which is what server operators actually want to see.
      */
     private static boolean acceptsVersion(String peerVersion) {
-        boolean ok = PROTOCOL_VERSION.equals(peerVersion);
-        if (!ok) {
-            RunicSkills.getLOGGER().warn(
-                "Runic Skills network protocol mismatch: this side requires PROTOCOL_VERSION={}, peer reports {}. " +
-                "Update both client and server to the same Runic Skills release.",
-                PROTOCOL_VERSION, peerVersion
-            );
+        if (PROTOCOL_VERSION.equals(peerVersion)) return true;
+        if (NetworkRegistry.ABSENT.equals(peerVersion) || NetworkRegistry.ACCEPTVANILLA.equals(peerVersion)) {
+            return false;
         }
-        return ok;
+        RunicSkills.getLOGGER().warn(
+            "Runic Skills network protocol mismatch: this side requires PROTOCOL_VERSION={}, peer reports {}. " +
+            "Update both client and server to the same Runic Skills release.",
+            PROTOCOL_VERSION, peerVersion
+        );
+        return false;
     }
 
     public static void init() {
