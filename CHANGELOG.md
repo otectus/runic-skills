@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.2] - 2026-05-15
+
+UI readability hotfix on top of 1.3.1. The skill panel's header text (skill name, level/rank, player name + XP, "Choose Your Title") renders on a light gray panel background but uses `Utils.FONT_COLOR = Color.WHITE` — low contrast and noticeably hard to read on most monitors. 1.3.2 flips `FONT_COLOR` to `Color.BLACK`, restoring legibility everywhere this constant is used. Pure cosmetic; no behaviour change.
+
+### Changed
+
+- **`Utils.FONT_COLOR`** flipped from `Color.WHITE.getRGB()` to `Color.BLACK.getRGB()`. Single-constant change. Affects the detail-page header (skill name, level/rank string), the overview-page header (player name, XP level), and the titles-page header ("Choose Your Title") — every render site that routes through `Utils.drawCenter(...)` or directly references `Utils.FONT_COLOR`. Other white-on-dark text in the GUI (skill level in overview grid cells, current-title button text, perk-level overlays over icons, HUD overlays over the game world) is unchanged — it renders on dark backgrounds where white is the correct choice.
+
+### Notes
+
+- Save-compatible with 1.3.x and 1.2.x. No NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema, no perk behaviour changes — pure cosmetic.
+- Tested: `./gradlew build` passes; `./gradlew checkSidedImports` passes; no resource pack textures touched (light panel art unchanged, text-color flip is code-only).
+
 ## [1.3.1] - 2026-05-15
 
 Log-noise hotfix on top of 1.3.0. 1.2.1's `@Pseudo` fix for the `MixTargetFinder` / `MixGunItem` WARNs silenced Mixin's own "@Mixin target was not found" line but left Forge's classloader-side "Error loading class" WARN firing on every startup when BetterCombat or PointBlank are absent — confirmed in the 1.3.0 smoke-test log (and present identically in 1.2.1 and 1.2.2 logs). 1.3.1 closes that residual gap with a Mixin Config Plugin (`IMixinConfigPlugin`) that excludes those two mixins entirely when their target mods aren't installed, so Mixin never asks the classloader for the missing target's bytecode and neither WARN can fire from any source. Pure log noise; zero functional change.

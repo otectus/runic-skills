@@ -26,7 +26,7 @@ import net.minecraftforge.fml.ModList;
 
 
 public class Utils {
-    public static final int FONT_COLOR = Color.WHITE.getRGB();
+    public static final int FONT_COLOR = Color.BLACK.getRGB();
     public static final int SKILL_ABBR_COLOR = new Color(240, 240, 240).getRGB();
     public static final int SKILL_LEVEL_COLOR = Color.WHITE.getRGB();
     public static final int TITLE_SELECTED_COLOR = 0x55FF55;
