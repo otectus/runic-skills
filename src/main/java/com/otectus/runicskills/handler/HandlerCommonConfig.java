@@ -144,6 +144,11 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableBotaniaIntegration = true;
 
+    @SerialEntry(comment = "Master toggle for the FTB Quests integration (since 1.3.0). When false, Runic Skills task types are not registered and quest progress is not updated by skill/perk/passive/title changes. Disable for packs that ship FTB Quests but don't want Runic Skills tasks to appear in the task editor.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableFTBQuestsIntegration = true;
+
     @SerialEntry(comment = "Master toggle for the Jewelcraft integration. When false, item lock generation is skipped.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)

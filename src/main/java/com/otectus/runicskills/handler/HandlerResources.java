@@ -1,6 +1,7 @@
 package com.otectus.runicskills.handler;
 
 import com.otectus.runicskills.RunicSkills;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;
 
 public class HandlerResources {
@@ -697,5 +698,24 @@ public class HandlerResources {
 
     public static ResourceLocation create(String path) {
         return new ResourceLocation(RunicSkills.MOD_ID, path);
+    }
+
+    // Namespace-aware texture parser (since 1.3.0). Accepts either a bare path
+    // (which is wrapped in the runicskills namespace, preserving legacy KubeJS
+    // behaviour) or a fully-qualified "namespace:path" id. Invalid ids are
+    // logged once and resolved to NULL_PERK so the renderer never NPEs.
+    public static ResourceLocation parseTexture(String value) {
+        if (value == null || value.isBlank()) return NULL_PERK;
+        int colon = value.indexOf(':');
+        if (colon <= 0) {
+            String path = value.startsWith(":") ? value.substring(1) : value;
+            return new ResourceLocation(RunicSkills.MOD_ID, path);
+        }
+        try {
+            return new ResourceLocation(value);
+        } catch (ResourceLocationException ex) {
+            RunicSkills.getLOGGER().warn("Invalid texture id '{}', using NULL_PERK: {}", value, ex.getMessage());
+            return NULL_PERK;
+        }
     }
 }

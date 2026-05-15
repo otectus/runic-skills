@@ -2,6 +2,7 @@ package com.otectus.runicskills.network.packet.common;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.event.PassiveLevelUpEvent;
+import com.otectus.runicskills.integration.quests.RunicQuestBridge;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryAttributes;
@@ -61,6 +62,7 @@ public class PassiveLevelUpSP {
                 }
 
                 capability.addPassiveLevel(passive, 1);
+                RunicQuestBridge.onPassiveLevelChanged(player, passive, currentLevel, currentLevel + 1);
                 RegistryAttributes.modifierAttributes(player); // H8: Recalculate attributes after passive change
                 RegistryTitles.syncTitles(player); // P5: Sync titles on passive level change
                 SyncSkillCapabilityCP.send(player);

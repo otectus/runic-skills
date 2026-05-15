@@ -85,6 +85,8 @@ public class RunicSkills {
             tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
         if (cfg.enableBotaniaIntegration)
             tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
+        if (cfg.enableFTBQuestsIntegration)
+            tryLoadIntegration("ftbquests",        "com.otectus.runicskills.integration.quests.FTBQuestsIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation.
         if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded())

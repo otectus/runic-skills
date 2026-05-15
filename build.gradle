@@ -257,6 +257,16 @@ dependencies {
     // Gecko Lib compatibility
     runtimeOnly fg.deobf("curse.maven:geckolib-388172:5460309")
 
+    // FTB Quests Forge compatibility (since 1.3.0). Compile-only CurseForge artifacts;
+    // resolved at runtime only when the mod is present in the modlist. Architectury
+    // is a transitive runtime requirement of FTB Quests but is not declared here —
+    // pack authors who ship FTB Quests are responsible for shipping Architectury
+    // alongside it. The CurseForge Maven repo (cursemaven) is already declared above.
+    // ftb-quests-forge project 289412 file 8078538 = 2001.4.22 (1.20.1 latest)
+    // ftb-library-forge project 404465 file 7296748 = 2001.2.12 (1.20.1 latest)
+    compileOnly fg.deobf("curse.maven:ftb-quests-forge-289412:8078538")
+    compileOnly fg.deobf("curse.maven:ftb-library-forge-404465:7296748")
+
     // QuiltMC Parsers
     implementation("org.quiltmc.parsers:json:0.2.1")
     implementation("org.quiltmc.parsers:gson:0.2.1")

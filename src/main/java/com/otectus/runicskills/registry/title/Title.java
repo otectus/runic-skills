@@ -63,6 +63,9 @@ public class Title {
             // Fire public Forge event (since 1.2.0). Non-cancelable — unlock is already
             // committed to the capability by the time subscribers see this.
             MinecraftForge.EVENT_BUS.post(new TitleEarnedEvent(serverPlayer, this));
+            // Quest bridge (since 1.3.0). FTB Quests title_unlocked tasks re-evaluate
+            // here. The current code path is unlock-only; there is no re-lock branch.
+            com.otectus.runicskills.integration.quests.RunicQuestBridge.onTitleUnlockedChanged(serverPlayer, this, true);
             SyncSkillCapabilityCP.send(serverPlayer);
         }
     }

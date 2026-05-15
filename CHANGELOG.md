@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.3.0] - 2026-05-14
+
+Data-driven content release. Two headline features: custom skill visuals (datapack-driven overrides for skill overview/detail/background art with full namespaced-id support) and an FTB Quests integration (six native task types — `skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected` — wired through a save-isolated quest bridge). KubeJS perk/passive helpers now accept arbitrary `namespace:path` texture ids so pack scripts can point at any mod's item or texture sprite without copying assets. Save-compatible with 1.2.x — no NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema drift; both new features are entirely additive and absent-when-disabled.
+
+### Added — Custom skill visuals
+
+- **`data/<namespace>/runicskills/skill_visuals/<id>.json` datapack folder** (new). One JSON per skill with optional fields `overview_icon`, `detail_icon`, `background`. Any field defaults through to the legacy hardcoded asset, so authors can override a single slot without re-supplying the rest. Loaded via the new `SkillVisualsReloadListener` (extends `SimpleJsonResourceReloadListener`, modeled on the existing `PerkGroupsReloadListener`); reloads pick up overrides through `/reload` like any other datapack data.
+- **`HandlerResources.parseTexture(String)`** — new namespace-aware parser. Accepts either `namespace:path` (vanilla `ResourceLocation` syntax) or a bare path (preserved as `runicskills:<path>` for parity with the legacy `HandlerResources.create(...)` callers). Invalid ids log a single WARN and resolve to `NULL_PERK`. The legacy `create(...)` static stays at line 698 unchanged — addon mods calling it keep working.
+- **`Perk.add(...)` and `Passive.add(...)` KubeJS helpers** route their `texture` argument through `parseTexture(...)`. Existing scripts using path-only strings see zero behavioral change; new scripts can pass `botania:textures/item/lexicon.png`, `ars_nouveau:textures/item/jar_of_light.png`, etc.
+- **`SkillVisuals` record + accessors on `Skill`.** New `getOverviewIcon()`, `getDetailIcon()`, `getBackgroundTexture()` methods read the override layer with fall-through to the legacy `lockedTexture[]` / `background` defaults. The progressive 4-tier locked icon array is untouched — overrides are a single static slot per skill by design, matching the spec's per-skill semantics.
+
+### Added — FTB Quests integration
+
+- **Six task types** registered via `TaskTypes.register(...)`:
+
+| Task id | Fields | Completes when |
+|---|---|---|
+| `runicskills:skill_level` | `skill`, `required_level` | named skill ≥ required level |
+| `runicskills:global_level` | `required_total` | sum of all skill levels ≥ required total |
+| `runicskills:perk_rank` | `perk`, `required_rank` | named perk's rank ≥ required rank (1 = enabled) |
+| `runicskills:passive_level` | `passive`, `required_level` | named passive ≥ required level |
+| `runicskills:title_unlocked` | `title` | named title unlocked on the player capability |
+| `runicskills:title_selected` | `title` | player is actively wearing the named title |
+
+- **Sticky completion by default.** Once a task completes it stays complete even if the player's underlying state drops below the threshold (the standard FTBQ "checked off, stays checked" UX). Pack authors who want live-threshold semantics — task progress reflecting current state, including regressions on respec / passive-down — add `"sticky": false` to the task JSON.
+- **`RunicQuestBridge` always-loaded facade.** Static no-op-by-default delegators that the network/event layer calls unconditionally. When FTB Quests is absent the facade dispatches every call to a NOOP listener (one volatile read + one empty virtual dispatch — measurable cost is essentially zero). The reflectively-loaded `FTBQuestsIntegration` installs the real listener on construction; no FTB types ever enter the always-loaded constant pool.
+- **`enableFTBQuestsIntegration` master toggle** in `HandlerCommonConfig` (default `true`). Matches the 1.2.0 per-integration toggle pattern: when false, task types are not registered and the bridge stays no-op.
+- **Bridge wired into every authoritative mutation site:** `SkillLevelUpSP` (post-`addSkillLevel`), `PassiveLevelUpSP` / `PassiveLevelDownSP`, `SetPlayerTitleSP`, `Title.setRequirement` (post-unlock). `TogglePerkSP` is consumed via the existing 1.2.0 `PerkToggleEvent.Post` rather than a fifth inline call.
+- **Login + clone + respawn backfill.** `PlayerLifecycleHandler.onPlayerJoinWorld` and `onPlayerClone`, plus `RespecCommand`, call `RunicQuestBridge.refreshAll(player)` so quests author quests retroactively against players who are already qualified, and so non-sticky tasks regress correctly on respec.
+- **Optional compile-time dependency.** `compileOnly fg.deobf("maven.modrinth:ftb-quests-forge:2001.4.9")` + `ftb-library-forge:2001.2.6`. `mods.toml` declares `ftbquests` as `mandatory = false, versionRange = "[2001.4,)"`. The Modrinth Maven was already in the build.
+
+### Changed
+
+- **`RunicSkillsScreen` detail-page state cached per render frame.** `buildDetailPageState()` previously sorted passives/perks and rebuilt the row layout in both `drawDetailBackground()` and `drawDetail()` on every render frame — duplicate work per frame across `render()`. A small per-frame cache (invalidated at the top of `render()` and populated lazily by `getDetailPageStateForRender()`) collapses that to one rebuild per frame. Click handlers still call `buildDetailPageState()` directly to avoid serving stale layout after a click changes page state.
+- **Skill render call sites swapped to the new accessors.** `RunicSkillsScreen` lines 257/282/302 now read `getOverviewIcon()` / `getBackgroundTexture()` / `getDetailIcon()` instead of `getLockedTexture()` / `background` directly. Legacy defaults are preserved through fall-through, so packs without a `skill_visuals` JSON see no visual change.
+
+### Notes
+
+- **Save-compatible with 1.2.x.** No `SkillCapability` schema changes; no `PROTOCOL_VERSION` bump; no new Runic Skills packets. FTB task progress lives in FTB Quests' own NBT.
+- **Without FTB Quests installed:** zero classloading errors, no `Loaded integration ... ftbquests` log line, bridge stays in NOOP mode. The mod boots clean on a vanilla-Forge + Runic-Skills modlist.
+- **Asset caveat for custom skill visuals.** Texture ids must point at assets the **client** has — datapack overrides on a dedicated server don't conjure client textures out of thin air. Pack the assets in the same resource pack as the datapack JSON.
+- **Asset validation.** `SkillVisualsReloadListener` calls `manager.getResource(loc).isPresent()` on each override at apply time; missing assets log a single per-file WARN rather than letting users find pink-black sentinels in the menu.
+- **Version matrix.** Runic Skills 1.3.0 / Forge 1.20.1-47.3.0+ / FTB Quests Forge `[2001.4,)` (tested against 2001.4.9). Java 17.
+- **Public Forge event API is unchanged.** 1.2.0's `SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent` all behave identically. `Post` variants for skill/passive events are deferred to a future minor; the inline bridge calls cover what FTB Quests needs without an API change.
+
 ## [1.2.2] - 2026-05-14
 
 Second log-noise hotfix. The 1.2.1 fix for `ServerNetworking.acceptsVersion` used `NetworkRegistry.ABSENT.equals(peerVersion)` but the predicate's WARN still fired every ~5 seconds in single-player. Either Forge 47.3.0's `NetworkRegistry.ABSENT` constant value drifts from the open-source value (likely the trailing 🤔 emoji suffix differing across charset configurations), or the predicate receives a wrapped/processed peerVersion that doesn't exactly equal the constant. Switched to defensive prefix matching (`startsWith("ABSENT")` / `startsWith("ALLOWVANILLA")`) — the textual prefix is invariant across Forge versions even when the emoji suffix isn't.

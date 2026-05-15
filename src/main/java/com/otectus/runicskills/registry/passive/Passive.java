@@ -45,7 +45,7 @@ public class Passive {
 
         final Skill resolvedSkill = skill;
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, passiveName);
-        return new Passive(key, () -> resolvedSkill, HandlerResources.create(texture), attribute, attributeUUID, attributeValue, levelsRequired);
+        return new Passive(key, () -> resolvedSkill, HandlerResources.parseTexture(texture), attribute, attributeUUID, attributeValue, levelsRequired);
     }
 
     public Passive get() {

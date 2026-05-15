@@ -60,7 +60,7 @@ public class Perk {
             throw new IllegalArgumentException("Skill name doesn't exist: " + skillName);
         }
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, perkName);
-        return new Perk(key, () -> skill, levelRequirement, HandlerResources.create(texture), perkValues);
+        return new Perk(key, () -> skill, levelRequirement, HandlerResources.parseTexture(texture), perkValues);
     }
 
     // KubeJS support - multi rank
@@ -70,7 +70,7 @@ public class Perk {
             throw new IllegalArgumentException("Skill name doesn't exist: " + skillName);
         }
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, perkName);
-        return new Perk(key, () -> skill, rankLevelReqs, HandlerResources.create(texture), rankedValues);
+        return new Perk(key, () -> skill, rankLevelReqs, HandlerResources.parseTexture(texture), rankedValues);
     }
 
     public Skill getSkill() {

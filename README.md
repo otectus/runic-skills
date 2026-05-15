@@ -21,6 +21,9 @@ Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills i
 - [Supported mod integrations](#supported-mod-integrations)
 - [Commands](#commands)
 - [Configuration](#configuration)
+- [Custom skill visuals](#custom-skill-visuals)
+- [FTB Quests integration](#ftb-quests-integration)
+- [Version matrix](#version-matrix)
 - [Building from source](#building-from-source)
 - [KubeJS scripting hook](#kubejs-scripting-hook)
 - [Server / multiplayer notes](#server--multiplayer-notes)
@@ -123,6 +126,7 @@ Runic Skills detects installed mods at runtime and enables matching content with
 | **Crayfish Gun Mod (unofficial)**, **Scorched Guns 2**, **TacZ**, **PointBlank** (Vic's) | Gun-fire events honour Runic Skills perks/locks |
 | **L2Tabs** | Registers the Skills tab in L2Tabs' strip (priority 3500) |
 | **Legendary Tabs** (Sfiomn) | Registers a native `TabBase` for the Legendary Tabs sidebar (priority configurable) |
+| **FTB Quests** (since 1.3.0) | Six native task types (`skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) — see the [FTB Quests integration](#ftb-quests-integration) section |
 
 If you're a mod author and want Runic Skills to integrate with your mod, open an issue or a PR — each integration is a single Java class with an `isModLoaded()` gate, see [`src/main/java/com/otectus/runicskills/integration/`](src/main/java/com/otectus/runicskills/integration/).
 
@@ -153,6 +157,82 @@ Two configuration surfaces:
 2. **Client config** (`config/runicskills-client.toml`) — Forge config spec. Covers rendering toggles (critical-roll overlay, lucky-drop overlay, perk mod-name display), sort orders, and the Legendary Tabs priority.
 
 Title definitions and their conditions live as datapack JSON under `data/runicskills/titles/*.json`. Reload with `/skills reload`.
+
+---
+
+## Custom skill visuals
+
+Since 1.3.0, the overview-grid icon, detail-page icon, and detail-page background of every skill can be overridden via datapack. Files live at `data/<namespace>/runicskills/skill_visuals/<id>.json`:
+
+```json
+{
+  "skill": "magic",
+  "overview_icon": "my_pack:textures/gui/runicskills/magic_overview.png",
+  "detail_icon": "my_pack:textures/gui/runicskills/magic_detail.png",
+  "background": "my_pack:textures/gui/runicskills/magic_bg.png"
+}
+```
+
+- `skill` is required and identifies the target by its lowercase name (`strength`, `constitution`, `dexterity`, `endurance`, `intelligence`, `building`, `wisdom`, `magic`, `fortune`, `tinkering`).
+- `overview_icon`, `detail_icon`, and `background` are all optional. Any field omitted falls back to the legacy hardcoded asset, so you can override a single slot without re-supplying the rest.
+- Texture ids accept either a fully-qualified `namespace:path` or a bare path. Bare paths resolve to the `runicskills` namespace for parity with the legacy KubeJS helper.
+- Reloads pick up overrides via the standard datapack reload path (`/reload` or world load). Removing the JSON restores the default on the next reload.
+
+**Client-asset caveat.** Texture ids must point at assets the **client** actually has. Datapack overrides on a dedicated server don't conjure client textures out of thin air — ship the PNGs in a resource pack (or as part of the pack's overrides folder) alongside the JSON.
+
+KubeJS perk/passive scripts also accept namespaced texture ids since 1.3.0:
+
+```js
+// Before 1.3.0: had to ship the texture inside the runicskills namespace.
+// Since 1.3.0: any mod's texture works.
+Perk.add('test_perk', 'magic', 1, 'botania:textures/item/lexicon.png', [Value.of(...)])
+```
+
+The progressive 4-tier "locked icon" array on each skill (the icon that fills in as you level up) is **not** part of the override — it's a single static slot per skill. Pack authors who want progressive art can replace the underlying `runicskills:textures/skill/<name>/locked_*.png` files via a resource pack instead.
+
+---
+
+## FTB Quests integration
+
+Since 1.3.0, with FTB Quests Forge installed, Runic Skills registers six task types you can add directly in the FTB Quests editor:
+
+| Task id | Fields | Completes when |
+|---|---|---|
+| `runicskills:skill_level` | `skill` (string), `required_level` (int) | named skill ≥ required level |
+| `runicskills:global_level` | `required_total` (int) | sum of all skill levels ≥ required total |
+| `runicskills:perk_rank` | `perk` (string), `required_rank` (int, default 1) | named perk's rank ≥ required rank |
+| `runicskills:passive_level` | `passive` (string), `required_level` (int) | named passive ≥ required level |
+| `runicskills:title_unlocked` | `title` (string) | named title unlocked on the player |
+| `runicskills:title_selected` | `title` (string) | player is actively wearing the named title |
+
+Example task SNBT / JSON:
+
+```json
+{ "type": "runicskills:skill_level",     "skill": "magic",        "required_level": 20 }
+{ "type": "runicskills:global_level",    "required_total": 100 }
+{ "type": "runicskills:perk_rank",       "perk": "berserker",      "required_rank": 1 }
+{ "type": "runicskills:passive_level",   "passive": "magic_resist","required_level": 5 }
+{ "type": "runicskills:title_unlocked",  "title": "administrator" }
+{ "type": "runicskills:title_selected",  "title": "administrator" }
+```
+
+**Sticky completion is the default.** Once a task completes, it stays complete even if the player respecs or levels a passive back down — matches the "checked off, stays checked" UX players expect from FTB Quests. To opt into live-threshold semantics (task progress reflects current state, including regressions), add `"sticky": false` to the task block:
+
+```json
+{ "type": "runicskills:passive_level", "passive": "magic_resist", "required_level": 5, "sticky": false }
+```
+
+**Backfill on login.** When a player logs in (or respawns / is cloned after a death), every Runic Skills task is re-evaluated. Authors can ship FTB Quests data after players have already leveled past the threshold without leaving them with phantom-incomplete quests.
+
+**Configuration.** Disable the integration entirely via `enableFTBQuestsIntegration = false` in `runicskills-common.json5` (or **Mods → Runic Skills → Config → Integrations**). Task types are not registered when the toggle is off; quests using these types will appear as "unknown" in the editor.
+
+---
+
+## Version matrix
+
+| Runic Skills | Minecraft | Forge | Java | FTB Quests Forge (optional) |
+|---|---|---|---|---|
+| 1.3.0 | 1.20.1 | 47.3.0+ | 17 | `[2001.4,)` (tested against 2001.4.9) |
 
 ---
 

@@ -106,6 +106,7 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new PerkGroupsReloadListener());
+        event.addListener(new com.otectus.runicskills.registry.skill.SkillVisualsReloadListener());
     }
 
     @SubscribeEvent
@@ -122,6 +123,7 @@ public class PlayerLifecycleHandler {
                 });
                 RegistryAttributes.modifierAttributes(serverPlayerNew);
                 RegistryTitles.syncTitles(serverPlayerNew);
+                com.otectus.runicskills.integration.quests.RunicQuestBridge.refreshAll(serverPlayerNew);
                 if (!serverPlayerOld.isDeadOrDying()) {
                     serverPlayerNew.setHealth(serverPlayerOld.getHealth());
                 } else {
@@ -141,6 +143,7 @@ public class PlayerLifecycleHandler {
                 SyncSkillCapabilityCP.send(serverPlayer);
                 RegistryAttributes.modifierAttributes(serverPlayer);
                 RegistryTitles.syncTitles(serverPlayer);
+                com.otectus.runicskills.integration.quests.RunicQuestBridge.refreshAll(serverPlayer);
 
                 if (HandlerCommonConfig.HANDLER.instance().checkForUpdates
                         && RunicSkills.UpdatesAvailable.left) {

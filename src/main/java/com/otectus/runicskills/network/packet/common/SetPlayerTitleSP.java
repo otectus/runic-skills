@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.common;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.quests.RunicQuestBridge;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryTitles;
@@ -52,6 +53,7 @@ public class SetPlayerTitleSP {
             }
 
             capability.setPlayerTitle(title);
+            RunicQuestBridge.onTitleSelected(player, title);
 
             if (HandlerCommonConfig.HANDLER.instance().titlesUseCustomName) {
                 player.setCustomName(Component.translatable(title.getKey()));

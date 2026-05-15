@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.integration.quests.RunicQuestBridge;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryAttributes;
 import com.otectus.runicskills.registry.RegistryPassives;
@@ -51,6 +52,10 @@ public class RespecCommand {
 
             RegistryAttributes.modifierAttributes(player);
             SyncSkillCapabilityCP.send(player);
+            // Re-evaluate every active FTB Quests task after a respec. Sticky tasks
+            // (default) hold their completed state; non-sticky tasks reset to 0
+            // because the player's progression dropped below their thresholds.
+            RunicQuestBridge.refreshAll(player);
 
             source.getSource().sendSuccess(() -> Component.translatable("commands.message.respec.success", player.getName().copy().withStyle(ChatFormatting.BOLD)), false);
 

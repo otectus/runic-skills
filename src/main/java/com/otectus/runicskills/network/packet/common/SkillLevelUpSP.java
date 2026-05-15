@@ -5,6 +5,7 @@ import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.event.SkillLevelUpEvent;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.quests.RunicQuestBridge;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
@@ -67,6 +68,7 @@ public class SkillLevelUpSP {
                 }
 
                 capability.addSkillLevel(skillPlayer, 1);
+                RunicQuestBridge.onSkillLevelChanged(player, skillPlayer, skillLevel, skillLevel + 1);
                 SyncSkillCapabilityCP.send(player);
                 if (!player.isCreative()) {
                     addPlayerXP(player, requiredPoints * -1);

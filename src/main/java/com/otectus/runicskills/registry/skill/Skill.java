@@ -21,6 +21,11 @@ public class Skill {
     public final ResourceLocation background;
     public List<Perk> list = new ArrayList<>();
 
+    // Optional datapack-driven visual override (since 1.3.0). Written by the
+    // SkillVisualsReloadListener on /reload (off-thread relative to render);
+    // read by RunicSkillsScreen during rendering.
+    private volatile SkillVisuals visuals;
+
     public Skill(int index, ResourceLocation key, ResourceLocation[] lockedTexture, ResourceLocation background) {
         this.index = index;
         this.key = key;
@@ -123,6 +128,38 @@ public class Skill {
         }
 
         return this.lockedTexture[index];
+    }
+
+    // ===== Visual override layer (since 1.3.0) =====
+
+    public void setVisuals(SkillVisuals visuals) {
+        this.visuals = visuals;
+    }
+
+    public void clearVisuals() {
+        this.visuals = null;
+    }
+
+    public SkillVisuals getVisuals() {
+        return this.visuals;
+    }
+
+    public ResourceLocation getOverviewIcon() {
+        SkillVisuals v = this.visuals;
+        if (v != null && v.overviewIcon() != null) return v.overviewIcon();
+        return getLockedTexture();
+    }
+
+    public ResourceLocation getDetailIcon() {
+        SkillVisuals v = this.visuals;
+        if (v != null && v.detailIcon() != null) return v.detailIcon();
+        return getLockedTexture();
+    }
+
+    public ResourceLocation getBackgroundTexture() {
+        SkillVisuals v = this.visuals;
+        if (v != null && v.background() != null) return v.background();
+        return this.background;
     }
 }
 

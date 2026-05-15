@@ -32,6 +32,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -127,6 +128,14 @@ public class RunicSkillsScreen extends Screen {
     private int perkActualPage = 0;
     private int perkSizePage = 0;
 
+    // Per-frame cache for buildDetailPageState() (since 1.3.0). The build method
+    // sorts collections and re-derives row layout on every call; without caching
+    // it ran four times per frame (drawDetailBackground, drawDetail, mouse-event
+    // recompute, etc.). The cache is invalidated at the top of render() and
+    // populated lazily by getDetailPageStateForRender().
+    private DetailPageState cachedDetailState;
+    private boolean detailStateCacheValid;
+
     private int scrollDropDown = 0;
     private int scrollHandleY = 0;
     private boolean scrollingDropDown = false;
@@ -156,6 +165,10 @@ public class RunicSkillsScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        // Invalidate the per-frame detail-state cache so the first reader rebuilds.
+        this.detailStateCacheValid = false;
+        this.cachedDetailState = null;
+
         int x = panelLeft();
         int y = panelTop();
 
@@ -254,7 +267,7 @@ public class RunicSkillsScreen extends Screen {
                 hoveredSkill = skill;
             }
 
-            guiGraphics.blit(skill.getLockedTexture(), iconBounds.x(), iconBounds.y(), 0.0F, 0.0F,
+            guiGraphics.blit(skill.getOverviewIcon(), iconBounds.x(), iconBounds.y(), 0.0F, 0.0F,
                     OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE);
             guiGraphics.drawString(client.font,
                     Component.translatable(skill.getKey() + ".abbreviation").withStyle(ChatFormatting.BOLD),
@@ -277,10 +290,13 @@ public class RunicSkillsScreen extends Screen {
     }
 
     private void drawDetailBackground(GuiGraphics guiGraphics, int panelX, int panelY) {
-        DetailPageState detailState = buildDetailPageState();
-        if (detailState != null && detailState.skill().background != null) {
-            guiGraphics.blit(detailState.skill().background, panelX + DETAIL_CONTENT_X, panelY + 30, 0.0F, 0.0F,
-                    DETAIL_CONTENT_WIDTH, 156, 16, 16);
+        DetailPageState detailState = getDetailPageStateForRender();
+        if (detailState != null) {
+            ResourceLocation background = detailState.skill().getBackgroundTexture();
+            if (background != null) {
+                guiGraphics.blit(background, panelX + DETAIL_CONTENT_X, panelY + 30, 0.0F, 0.0F,
+                        DETAIL_CONTENT_WIDTH, 156, 16, 16);
+            }
         }
     }
 
@@ -289,7 +305,7 @@ public class RunicSkillsScreen extends Screen {
             return;
         }
 
-        DetailPageState detailState = buildDetailPageState();
+        DetailPageState detailState = getDetailPageStateForRender();
         if (detailState == null) {
             return;
         }
@@ -299,7 +315,7 @@ public class RunicSkillsScreen extends Screen {
         int skillLevel = detailState.skillLevel();
         String rank = skill.getRank(skillLevel).getString();
 
-        guiGraphics.blit(skill.getLockedTexture(), panelX + 12, panelY + 9, 0.0F, 0.0F, 16, 16, 16, 16);
+        guiGraphics.blit(skill.getDetailIcon(), panelX + 12, panelY + 9, 0.0F, 0.0F, 16, 16, 16, 16);
         guiGraphics.drawString(client.font, Component.translatable(key).withStyle(ChatFormatting.BOLD), panelX + 34, panelY + 8, Utils.FONT_COLOR, false);
         guiGraphics.drawString(client.font,
                 Component.translatable("screen.perk.level_and_rank", Utils.numberFormat(skillLevel),
@@ -636,6 +652,19 @@ public class RunicSkillsScreen extends Screen {
         } else {
             this.scrollHandleY = listY + Math.round((float) scrollTravel * this.scrollDropDown / maxOffset);
         }
+    }
+
+    /**
+     * Render-time accessor. Returns the per-frame cached {@link DetailPageState} if
+     * a render in the current frame already built one; otherwise rebuilds and
+     * caches it. Click/mouse handlers should call {@link #buildDetailPageState()}
+     * directly to avoid serving stale row layout after a click changes page state.
+     */
+    private DetailPageState getDetailPageStateForRender() {
+        if (this.detailStateCacheValid) return this.cachedDetailState;
+        this.cachedDetailState = buildDetailPageState();
+        this.detailStateCacheValid = true;
+        return this.cachedDetailState;
     }
 
     private DetailPageState buildDetailPageState() {
