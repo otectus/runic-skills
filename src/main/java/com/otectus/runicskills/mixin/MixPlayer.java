@@ -23,6 +23,6 @@ public abstract class MixPlayer {
         if (SkillCapability.get(player) == null) return;
         if (RegistryPerks.ATHLETICS == null) return;
         if (!RegistryPerks.ATHLETICS.get().isEnabled(player)) return;
-        cir.setReturnValue((int) (cir.getReturnValue() * RegistryPerks.ATHLETICS.get().getValue()[0]));
+        cir.setReturnValue((int) (cir.getReturnValue() * RegistryPerks.ATHLETICS.get().getActiveValue(player)[0]));
     }
 }

@@ -20,7 +20,7 @@ public abstract class MixEnchantmentMenu {
     private void runicskills$reduceEnchantLevelRequirement(Player player, int id, CallbackInfoReturnable<Boolean> cir) {
         if (id >= 0 && id < this.costs.length && RegistryPerks.ENCHANTERS_INSIGHT != null &&
                 RegistryPerks.ENCHANTERS_INSIGHT.get().isEnabled(player)) {
-            double reduction = RegistryPerks.ENCHANTERS_INSIGHT.get().getValue()[0] / 100.0;
+            double reduction = RegistryPerks.ENCHANTERS_INSIGHT.get().getActiveValue(player)[0] / 100.0;
             this.costs[id] = Math.max(1, (int) (this.costs[id] * (1.0 - reduction)));
         }
     }

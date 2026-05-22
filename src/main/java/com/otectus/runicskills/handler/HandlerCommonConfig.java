@@ -60,6 +60,10 @@ public class HandlerCommonConfig {
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPassives = Arrays.asList();
 
+    @SerialEntry(comment = "Power registry names to disable. Disabled powers cannot be equipped; previously-equipped entries are filtered out at runtime. Use the registry path only, e.g. \"fire_mark\" or a full id like \"runicskills:fire_mark\".")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> disabledPowers = Arrays.asList();
+
     @SerialEntry(comment = "Per-player cooldown (in ticks, 20 = 1 second) between enabling perks. 0 = no cooldown (default). Applies only when going from disabled to enabled (not rank-ups, not disabling). Rejects server-side; clients attempting to enable during the cooldown are resynced.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 0, max = 72000)
@@ -690,6 +694,21 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int devastatingBlowPercent = 25;
 
+    @SerialEntry(comment = "Vengeance perk: how long after being struck the bonus damage applies to the attacker (ticks; 20 = 1 second)")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 20, max = 6000)
+    public int vengeanceWindowTicks = 600;
+
+    @SerialEntry(comment = "Blade Storm perk: window (ticks) within which recent hits count toward the multi-target trigger")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 20, max = 600)
+    public int bladeStormWindowTicks = 80;
+
+    @SerialEntry(comment = "Blade Storm perk: minimum distinct targets hit within the window to grant the attack-speed bonus")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 2, max = 10)
+    public int bladeStormMinTargets = 2;
+
     @SerialEntry(comment = "Blood Fury perk bonus damage percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -714,6 +733,15 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int trophyHunterPercent = 15;
+
+    @SerialEntry(comment = "Trophy Hunter perk: namespaces whose mobs count as 'elite/boss' for the damage bonus")
+    public List<String> trophyHunterBossNamespaces = Arrays.asList(
+            "apotheosis", "cataclysm", "iceandfire", "mowziesmobs", "saintsdragons", "bossesofmass");
+
+    @SerialEntry(comment = "Trophy Hunter perk: min max-health for a non-namespace-matched mob to count as 'elite'")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 10000)
+    public int trophyHunterMinHealthForElite = 100;
 
     @SerialEntry(comment = "Draconic Fury perk bonus damage percent")
     @AutoGen(category = "common", group = "perks")

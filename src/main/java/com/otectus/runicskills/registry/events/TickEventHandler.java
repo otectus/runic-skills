@@ -42,7 +42,7 @@ public class TickEventHandler {
             serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(provider -> {
                 if (provider.getCounterAttack()) {
                     provider.setCounterAttackTimer(provider.getCounterAttackTimer() + 1);
-                    if (RegistryPerks.COUNTER_ATTACK != null && provider.getCounterAttackTimer() >= RegistryPerks.COUNTER_ATTACK.get().getValue()[0] * 40.0D) {
+                    if (RegistryPerks.COUNTER_ATTACK != null && provider.getCounterAttackTimer() >= RegistryPerks.COUNTER_ATTACK.get().getActiveValue(serverPlayer)[0] * 40.0D) {
                         provider.setCounterAttack(false);
                         provider.setCounterAttackTimer(0);
                         new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ATTACK_DAMAGE, 0.0F, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(false);
@@ -52,10 +52,10 @@ public class TickEventHandler {
                 provider.tickCooldowns();
             });
             if (RegistryPerks.ONE_HANDED != null) {
-                new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ATTACK_DAMAGE, (float) RegistryPerks.ONE_HANDED.get().getValue()[0], RegistryAttributes.ONE_HANDED_UUID).amplifyAttribute((serverPlayer.getOffhandItem().getCount() == 0 && RegistryPerks.ONE_HANDED.get().isEnabled(serverPlayer)));
+                new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ATTACK_DAMAGE, (float) RegistryPerks.ONE_HANDED.get().getActiveValue(serverPlayer)[0], RegistryAttributes.ONE_HANDED_UUID).amplifyAttribute((serverPlayer.getOffhandItem().getCount() == 0 && RegistryPerks.ONE_HANDED.get().isEnabled(serverPlayer)));
             }
             if (RegistryPerks.DIAMOND_SKIN != null) {
-                new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ARMOR, (float) RegistryPerks.DIAMOND_SKIN.get().getValue()[1], RegistryAttributes.DIAMOND_SKIN_UUID).amplifyAttribute((serverPlayer.isShiftKeyDown() && RegistryPerks.DIAMOND_SKIN.get().isEnabled(serverPlayer)));
+                new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ARMOR, (float) RegistryPerks.DIAMOND_SKIN.get().getActiveValue(serverPlayer)[1], RegistryAttributes.DIAMOND_SKIN_UUID).amplifyAttribute((serverPlayer.isShiftKeyDown() && RegistryPerks.DIAMOND_SKIN.get().isEnabled(serverPlayer)));
             }
 
             if (serverPlayer.getHealth() > serverPlayer.getMaxHealth())
@@ -65,7 +65,7 @@ public class TickEventHandler {
                 new RegistryEffects.AddEffect(serverPlayer, RegistryPerks.CAT_EYES.get().isEnabled(player), MobEffects.NIGHT_VISION).add(210);
             }
             if (RegistryPerks.DIAMOND_SKIN != null) {
-                new RegistryEffects.AddEffect(serverPlayer, RegistryPerks.DIAMOND_SKIN.get().isEnabled(player), MobEffects.DAMAGE_RESISTANCE).add(210, (int) (RegistryPerks.DIAMOND_SKIN.get().getValue()[0] - 1.0D));
+                new RegistryEffects.AddEffect(serverPlayer, RegistryPerks.DIAMOND_SKIN.get().isEnabled(player), MobEffects.DAMAGE_RESISTANCE).add(210, (int) (RegistryPerks.DIAMOND_SKIN.get().getActiveValue(serverPlayer)[0] - 1.0D));
             }
         }
     }

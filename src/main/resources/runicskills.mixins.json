@@ -20,7 +20,8 @@
     "MixTargetFinder",
     "MixVillager",
     "MixCraftingMenu",
-    "MixEnchantmentMenu"
+    "MixEnchantmentMenu",
+    "MixTrueInvisibilityEffect"
   ],
   "injectors": {
     "defaultRequire": 1

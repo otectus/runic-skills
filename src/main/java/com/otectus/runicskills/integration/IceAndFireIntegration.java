@@ -195,6 +195,7 @@ public class IceAndFireIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingHurt(LivingHurtEvent event) {
+        if (!isModLoaded()) return;
         Entity source = event.getSource().getEntity();
 
         // Dragon Slayer: Player attacks Ice and Fire entity -> bonus damage

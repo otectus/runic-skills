@@ -21,6 +21,7 @@ public class MowziesMobsIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingHurt(LivingHurtEvent event) {
+        if (!isModLoaded()) return;
         Entity source = event.getSource().getEntity();
 
         // Boss Hunter: Player attacks Mowzie's entity -> bonus damage

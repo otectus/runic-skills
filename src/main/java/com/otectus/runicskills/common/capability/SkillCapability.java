@@ -5,11 +5,16 @@ import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
 import com.otectus.runicskills.registry.*;
+import com.otectus.runicskills.registry.powers.Power;
+import com.otectus.runicskills.registry.powers.PowerTier;
 import com.otectus.runicskills.registry.skill.Skill;
 import com.otectus.runicskills.registry.passive.Passive;
 import com.otectus.runicskills.registry.perks.Perk;
 import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +25,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +63,17 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     public double betterCombatEntityRange = 0.0D;
 
     public Map<String, Integer> perkCooldowns = new HashMap<>();
+
+    // Powers system (RUNIC_SKILLS_POWERS.md). Marks/Seals/Crown are equipped slots; cooldowns
+    // and windows are runtime state keyed by Power id (path only, mod-id implicit). Caps mirror
+    // PowerTier.maxEquipped — the SP packet enforces server-side, the lists here are trusted.
+    public List<String> equippedMarks = new ArrayList<>();
+    public List<String> equippedSeals = new ArrayList<>();
+    public String equippedCrown = "";
+    /** powerId → absolute server game-time at which the Power becomes available again (ICDs). */
+    public Map<String, Long> powerCooldowns = new HashMap<>();
+    /** powerId → absolute server game-time at which a buffered window/proc expires. */
+    public Map<String, Long> powerWindows = new HashMap<>();
 
     private Map<String, Integer> mapSkills() {
         Map<String, Integer> map = new HashMap<>();
@@ -103,6 +121,16 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         } else {
             this.perkCooldowns.put(perkName, ticks);
         }
+    }
+
+    // S6 fix: perk-keyed cooldown accessors that derive the key from the Perk itself,
+    // avoiding new hardcoded constants whenever a perk wants a cooldown.
+    public int getCooldown(Perk perk) {
+        return perk == null ? 0 : getCooldown("perk." + perk.getName());
+    }
+
+    public void setCooldown(Perk perk, int ticks) {
+        if (perk != null) setCooldown("perk." + perk.getName(), ticks);
     }
 
     public void tickCooldowns() {
@@ -181,6 +209,102 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
     public boolean isPerkActive(Perk perk) {
         return getPerkRank(perk) >= 1;
+    }
+
+    // ── Powers ─────────────────────────────────────────────────────────────────
+
+    /** Equipped power-ids in the given tier (path only, mod-id implicit; never null, may be empty). */
+    public List<String> getEquippedPowers(PowerTier tier) {
+        return switch (tier) {
+            case MARK -> this.equippedMarks;
+            case SEAL -> this.equippedSeals;
+            case CROWN -> this.equippedCrown.isEmpty() ? Collections.emptyList() : List.of(this.equippedCrown);
+        };
+    }
+
+    public boolean isPowerEquipped(Power power) {
+        if (power == null) return false;
+        return isPowerEquipped(power.getName(), power.getTier());
+    }
+
+    public boolean isPowerEquipped(String powerName, PowerTier tier) {
+        return switch (tier) {
+            case MARK -> this.equippedMarks.contains(powerName);
+            case SEAL -> this.equippedSeals.contains(powerName);
+            case CROWN -> this.equippedCrown.equals(powerName);
+        };
+    }
+
+    /** Returns true if the slot was free and the power was added; false on duplicate or full. */
+    public boolean equipPower(Power power) {
+        if (power == null) return false;
+        String name = power.getName();
+        switch (power.getTier()) {
+            case MARK -> {
+                if (this.equippedMarks.contains(name) || this.equippedMarks.size() >= PowerTier.MARK.maxEquipped) return false;
+                this.equippedMarks.add(name);
+                return true;
+            }
+            case SEAL -> {
+                if (this.equippedSeals.contains(name) || this.equippedSeals.size() >= PowerTier.SEAL.maxEquipped) return false;
+                this.equippedSeals.add(name);
+                return true;
+            }
+            case CROWN -> {
+                if (!this.equippedCrown.isEmpty()) return false;
+                this.equippedCrown = name;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean unequipPower(Power power) {
+        if (power == null) return false;
+        String name = power.getName();
+        return switch (power.getTier()) {
+            case MARK -> this.equippedMarks.remove(name);
+            case SEAL -> this.equippedSeals.remove(name);
+            case CROWN -> {
+                if (this.equippedCrown.equals(name)) {
+                    this.equippedCrown = "";
+                    yield true;
+                }
+                yield false;
+            }
+        };
+    }
+
+    /** Power cooldowns are absolute game-times. Returns true while the cooldown is still active. */
+    public boolean isPowerOnCooldown(String powerName, long now) {
+        Long until = this.powerCooldowns.get(powerName);
+        return until != null && until > now;
+    }
+
+    public void setPowerCooldown(String powerName, long availableAt) {
+        if (availableAt <= 0) {
+            this.powerCooldowns.remove(powerName);
+        } else {
+            this.powerCooldowns.put(powerName, availableAt);
+        }
+    }
+
+    public boolean isPowerWindowActive(String powerName, long now) {
+        Long until = this.powerWindows.get(powerName);
+        return until != null && until > now;
+    }
+
+    public void setPowerWindow(String powerName, long expiresAt) {
+        if (expiresAt <= 0) {
+            this.powerWindows.remove(powerName);
+        } else {
+            this.powerWindows.put(powerName, expiresAt);
+        }
+    }
+
+    public long getPowerWindowExpiry(String powerName) {
+        Long until = this.powerWindows.get(powerName);
+        return until == null ? 0L : until;
     }
 
     // Backward-compatible accessors used by existing code
@@ -277,6 +401,26 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
             cooldownsTag.putInt(entry.getKey(), entry.getValue());
         }
         nbt.put("perkCooldowns", cooldownsTag);
+
+        // Powers
+        ListTag marksTag = new ListTag();
+        for (String n : this.equippedMarks) marksTag.add(StringTag.valueOf(n));
+        nbt.put("power.equippedMarks", marksTag);
+        ListTag sealsTag = new ListTag();
+        for (String n : this.equippedSeals) sealsTag.add(StringTag.valueOf(n));
+        nbt.put("power.equippedSeals", sealsTag);
+        nbt.putString("power.equippedCrown", this.equippedCrown);
+        CompoundTag powerCdTag = new CompoundTag();
+        for (Map.Entry<String, Long> e : this.powerCooldowns.entrySet()) {
+            powerCdTag.putLong(e.getKey(), e.getValue());
+        }
+        nbt.put("powerCooldowns", powerCdTag);
+        CompoundTag powerWinTag = new CompoundTag();
+        for (Map.Entry<String, Long> e : this.powerWindows.entrySet()) {
+            powerWinTag.putLong(e.getKey(), e.getValue());
+        }
+        nbt.put("powerWindows", powerWinTag);
+
         nbt.putString("playerTitle", this.playerTitle);
         nbt.putDouble("betterCombatEntityRange", this.betterCombatEntityRange);
         return nbt;
@@ -333,6 +477,29 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
             if (cd > 0) this.perkCooldowns.put(COOLDOWN_LIMIT_BREAKER, cd);
         }
 
+        // Powers
+        this.equippedMarks.clear();
+        if (nbt.contains("power.equippedMarks", Tag.TAG_LIST)) {
+            ListTag marksTag = nbt.getList("power.equippedMarks", Tag.TAG_STRING);
+            for (int i = 0; i < marksTag.size(); i++) this.equippedMarks.add(marksTag.getString(i));
+        }
+        this.equippedSeals.clear();
+        if (nbt.contains("power.equippedSeals", Tag.TAG_LIST)) {
+            ListTag sealsTag = nbt.getList("power.equippedSeals", Tag.TAG_STRING);
+            for (int i = 0; i < sealsTag.size(); i++) this.equippedSeals.add(sealsTag.getString(i));
+        }
+        this.equippedCrown = nbt.contains("power.equippedCrown") ? nbt.getString("power.equippedCrown") : "";
+        this.powerCooldowns.clear();
+        if (nbt.contains("powerCooldowns", Tag.TAG_COMPOUND)) {
+            CompoundTag cdTag = nbt.getCompound("powerCooldowns");
+            for (String key : cdTag.getAllKeys()) this.powerCooldowns.put(key, cdTag.getLong(key));
+        }
+        this.powerWindows.clear();
+        if (nbt.contains("powerWindows", Tag.TAG_COMPOUND)) {
+            CompoundTag winTag = nbt.getCompound("powerWindows");
+            for (String key : winTag.getAllKeys()) this.powerWindows.put(key, winTag.getLong(key));
+        }
+
         this.playerTitle = nbt.contains("playerTitle") ? nbt.getString("playerTitle") : RegistryTitles.getTitle("titleless").getName();
         this.betterCombatEntityRange = nbt.getDouble("betterCombatEntityRange");
     }
@@ -352,6 +519,13 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         }
 
         this.perkCooldowns = new HashMap<>(source.perkCooldowns);
+
+        this.equippedMarks = new ArrayList<>(source.equippedMarks);
+        this.equippedSeals = new ArrayList<>(source.equippedSeals);
+        this.equippedCrown = source.equippedCrown;
+        this.powerCooldowns = new HashMap<>(source.powerCooldowns);
+        this.powerWindows = new HashMap<>(source.powerWindows);
+
         this.playerTitle = source.playerTitle;
         this.betterCombatEntityRange = source.betterCombatEntityRange;
     }

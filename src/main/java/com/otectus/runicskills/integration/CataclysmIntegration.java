@@ -32,6 +32,7 @@ public class CataclysmIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingHurt(LivingHurtEvent event) {
+        if (!isModLoaded()) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         DamageSource damageSource = event.getSource();

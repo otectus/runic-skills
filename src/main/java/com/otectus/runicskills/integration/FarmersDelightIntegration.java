@@ -23,6 +23,7 @@ public class FarmersDelightIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
+        if (!isModLoaded()) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         ItemStack item = event.getItem();

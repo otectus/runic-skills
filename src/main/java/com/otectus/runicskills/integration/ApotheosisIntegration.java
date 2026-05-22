@@ -30,8 +30,13 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.RegistryObject;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles integration with Apotheosis mod.
@@ -39,13 +44,63 @@ import java.util.UUID;
  */
 public class ApotheosisIntegration {
 
-    // Track the last player who interacted with items, used to provide player
-    // context for Apotheosis events that lack it. Safe because the Minecraft
-    // server is single-threaded.
-    private static Player lastInteractingPlayer = null;
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    // B4 fix: bounded recent-interactor cache keyed by player UUID. Replaces the
+    // single-field `lastInteractingPlayer` to scope socketing-player attribution
+    // to a short interaction window and tolerate concurrent interactions across
+    // multiple players. Entries past the window are pruned periodically.
+    private static final Map<UUID, Long> recentInteractors = new ConcurrentHashMap<>();
+    private static final long INTERACTION_WINDOW_TICKS = 20L; // 1 second @ 20 tps
+
+    // B3 fix: rarities Apotheosis recognises by canonical path name. Unknown
+    // paths default-deny on rarity gating and log once to surface API drift.
+    private static final Set<String> UNKNOWN_RARITIES_LOGGED = ConcurrentHashMap.newKeySet();
 
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("apotheosis");
+    }
+
+    private static void recordInteraction(Player p) {
+        if (p == null || p.level() == null) return;
+        recentInteractors.put(p.getUUID(), p.level().getGameTime());
+    }
+
+    /**
+     * Returns the most-recent interactor whose interaction is still inside
+     * {@link #INTERACTION_WINDOW_TICKS}, or null if none. Used to attribute
+     * Apotheosis events that lack a player context (e.g. ItemSocketingEvent).
+     */
+    private static Player resolveInteractor() {
+        if (RunicSkills.server == null) return null;
+        long now = RunicSkills.server.getTickCount();
+        UUID best = null;
+        long bestTime = Long.MIN_VALUE;
+        for (Map.Entry<UUID, Long> e : recentInteractors.entrySet()) {
+            long age = now - e.getValue();
+            if (age > INTERACTION_WINDOW_TICKS) continue;
+            if (e.getValue() > bestTime) {
+                bestTime = e.getValue();
+                best = e.getKey();
+            }
+        }
+        if (best == null) return null;
+        return RunicSkills.server.getPlayerList().getPlayer(best);
+    }
+
+    /** Periodic prune to keep the map bounded. Called from onPlayerTickPhase2a. */
+    private static void pruneInteractors() {
+        if (RunicSkills.server == null) return;
+        long now = RunicSkills.server.getTickCount();
+        recentInteractors.entrySet().removeIf(e -> now - e.getValue() > INTERACTION_WINDOW_TICKS);
+    }
+
+    private static void warnOnceForUnknownRarity(ResourceLocation id) {
+        String key = id == null ? "null" : id.toString();
+        if (UNKNOWN_RARITIES_LOGGED.add(key)) {
+            LOGGER.warn("Apotheosis rarity '{}' is not mapped in HandlerCommonConfig — defaulting to deny. " +
+                    "Update apothRarity*Level config fields if this rarity should be allowed.", key);
+        }
     }
 
     // ── Affix Rarity Gating ──
@@ -53,6 +108,13 @@ public class ApotheosisIntegration {
     /**
      * Gets the required Fortune level for an item based on its affix rarity.
      * Returns 0 if the item has no affixes or rarity gating is disabled.
+     *
+     * B3 fix: matches rarity by ResourceLocation path (canonical name) instead
+     * of ordinal. Apotheosis's LootRarity is an Apotheosis-reload-managed enum
+     * whose ordinal shifts if upstream reorders or inserts tiers; matching by
+     * name keeps gating correct across Apotheosis updates and default-denies
+     * unknown tiers (returns Integer.MAX_VALUE) so a new rarity can never be
+     * silently equipped without a config update.
      */
     private int getRequiredFortuneLevel(ItemStack stack) {
         if (!HandlerCommonConfig.HANDLER.instance().apothEnableAffixRarityGating) return 0;
@@ -61,20 +123,26 @@ public class ApotheosisIntegration {
         DynamicHolder<LootRarity> rarityHolder = AffixHelper.getRarity(stack);
         if (!rarityHolder.isBound()) return 0;
 
-        LootRarity rarity = rarityHolder.get();
-        int ordinal = rarity.ordinal();
+        ResourceLocation rarityId = rarityHolder.getId();
+        if (rarityId == null) return 0;
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
 
-        // ordinal 0 = common (no gate), 1 = uncommon, 2 = rare, 3 = epic, 4 = mythic, 5 = ancient
-        return switch (ordinal) {
-            case 1 -> config.apothRarityUncommonLevel;
-            case 2 -> config.apothRarityRareLevel;
-            case 3 -> config.apothRarityEpicLevel;
-            case 4 -> config.apothRarityMythicLevel;
-            case 5 -> config.apothRarityAncientLevel;
-            default -> 0;
+        return switch (rarityId.getPath()) {
+            case "common" -> 0;
+            case "uncommon" -> config.apothRarityUncommonLevel;
+            case "rare" -> config.apothRarityRareLevel;
+            case "epic" -> config.apothRarityEpicLevel;
+            case "mythic" -> config.apothRarityMythicLevel;
+            case "ancient" -> config.apothRarityAncientLevel;
+            default -> {
+                warnOnceForUnknownRarity(rarityId);
+                yield Integer.MAX_VALUE; // default-deny
+            }
         };
     }
+
+    /** B3 fix: canonical rarity names treated as "rare or higher" for affix-affinity counting. */
+    private static final Set<String> RARE_OR_HIGHER = Set.of("rare", "epic", "mythic", "ancient");
 
     private boolean canPlayerUseAffixItem(Player player, ItemStack stack) {
         int requiredLevel = getRequiredFortuneLevel(stack);
@@ -93,7 +161,7 @@ public class ApotheosisIntegration {
         if (player.isCreative() || player instanceof FakePlayer) return;
         if (event.getSlot().getType() != EquipmentSlot.Type.ARMOR) return;
 
-        lastInteractingPlayer = player;
+        recordInteraction(player);
 
         ItemStack item = event.getTo();
         if (!canPlayerUseAffixItem(player, item)) {
@@ -113,7 +181,7 @@ public class ApotheosisIntegration {
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
 
-        lastInteractingPlayer = player;
+        recordInteraction(player);
 
         if (!canPlayerUseAffixItem(player, event.getItemStack())) {
             event.setCanceled(true);
@@ -126,7 +194,7 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        lastInteractingPlayer = event.getEntity();
+        recordInteraction(event.getEntity());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -134,7 +202,7 @@ public class ApotheosisIntegration {
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
 
-        lastInteractingPlayer = player;
+        recordInteraction(player);
 
         if (!canPlayerUseAffixItem(player, player.getMainHandItem())) {
             event.setCanceled(true);
@@ -221,13 +289,18 @@ public class ApotheosisIntegration {
     /**
      * Finds the player who has the given ItemStack in their equipment slots.
      * Uses reference equality to match the exact ItemStack instance.
+     *
+     * B4 fix: fast-path uses the recent-interactor cache (bounded, per-UUID)
+     * instead of a single static field; falls back to scanning all online
+     * players if the cached interactor doesn't own the stack.
      */
     private Player findItemOwner(ItemStack stack) {
-        // First check the last known interacting player (fast path)
-        if (lastInteractingPlayer != null && !lastInteractingPlayer.isRemoved()) {
+        // Fast path: any recent interactor whose equipment matches the stack.
+        Player recent = resolveInteractor();
+        if (recent != null && !recent.isRemoved()) {
             for (EquipmentSlot slot : EquipmentSlot.values()) {
-                if (lastInteractingPlayer.getItemBySlot(slot) == stack) {
-                    return lastInteractingPlayer;
+                if (recent.getItemBySlot(slot) == stack) {
+                    return recent;
                 }
             }
         }
@@ -250,15 +323,18 @@ public class ApotheosisIntegration {
     public void onItemSocketing(ItemSocketingEvent.ModifyResult event) {
         if (RegistryPerks.GEM_ATTUNEMENT == null) return;
 
-        // Use the last interacting player as the socketing player
-        Player player = lastInteractingPlayer;
+        // B4 fix: attribute socketing to the most-recent interactor within the 1-second
+        // window. Two-player concurrent interactions no longer cross-pollinate; if no
+        // recent interactor exists, default-deny the perk-aware branch and fall through
+        // to vanilla Apotheosis behavior.
+        Player player = resolveInteractor();
         if (player == null || player.isRemoved()) return;
         if (player.isCreative() || player instanceof FakePlayer) return;
 
         if (!RegistryPerks.GEM_ATTUNEMENT.get().isEnabled(player)) return;
 
         // Probability roll: 1 in X chance to preserve the gem
-        int probability = (int) RegistryPerks.GEM_ATTUNEMENT.get().getValue()[0];
+        int probability = (int) RegistryPerks.GEM_ATTUNEMENT.get().getActiveValue(player)[0];
         if (probability <= 0) return;
 
         int roll = (int) Math.floor(Math.random() * probability);
@@ -323,6 +399,10 @@ public class ApotheosisIntegration {
         Player player = event.player;
         if (player.level().isClientSide) return;
         if ((player.tickCount % 10) != 0) return;
+
+        // B4 fix: prune the interactor map periodically so it stays bounded even
+        // if the server runs for days with no socketing events.
+        if ((player.tickCount % 100) == 0) pruneInteractors();
 
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
 
@@ -439,14 +519,16 @@ public class ApotheosisIntegration {
                 AttributeModifier.Operation.ADDITION);
     }
 
-    /** Counts equipped items of Rare rarity or higher (ordinal ≥ 2). */
+    /** Counts equipped items of Rare rarity or higher. B3 fix: name-keyed instead of ordinal. */
     private static int countRareAffixItems(Player player) {
         int count = 0;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = player.getItemBySlot(slot);
             if (stack.isEmpty() || !AffixHelper.hasAffixes(stack)) continue;
             DynamicHolder<LootRarity> rarityHolder = AffixHelper.getRarity(stack);
-            if (rarityHolder.isBound() && rarityHolder.get().ordinal() >= 2) {
+            if (!rarityHolder.isBound()) continue;
+            ResourceLocation id = rarityHolder.getId();
+            if (id != null && RARE_OR_HIGHER.contains(id.getPath())) {
                 count++;
             }
         }

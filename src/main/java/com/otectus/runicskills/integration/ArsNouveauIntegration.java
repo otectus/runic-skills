@@ -117,8 +117,13 @@ public class ArsNouveauIntegration {
                 && event.context != null && event.context.getSpell() != null) {
             Spell spell = event.context.getSpell();
             HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+            // B7 fix: read Hedgewitch damage% from perk.getActiveValue (Value[1]) so
+            // the same source-of-truth flows into tooltips and gameplay.
+            int hedgewitchDmg = RegistryPerks.ARS_HEDGEWITCH != null
+                    ? (int) RegistryPerks.ARS_HEDGEWITCH.get().getActiveValue(schoolCaster)[1]
+                    : 0;
             event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
-                    RegistryPerks.ARS_HEDGEWITCH, SpellSchools.ELEMENTAL_WATER, c.arsHedgewitchDamagePercent);
+                    RegistryPerks.ARS_HEDGEWITCH, SpellSchools.ELEMENTAL_WATER, hedgewitchDmg);
             event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
                     RegistryPerks.ARS_EMBERFORGED, SpellSchools.ELEMENTAL_FIRE, c.arsEmberforgedDamagePercent);
             event.damage = applySchoolDamage(schoolCaster, spell, event.damage,
@@ -268,10 +273,12 @@ public class ArsNouveauIntegration {
         }
 
         // ── Phase 2c: per-school cost reductions (Hedgewitch, Conjurer) ──
+        // B7 fix: Hedgewitch cost% read from perk.getActiveValue (Value[0]).
         if (RegistryPerks.ARS_HEDGEWITCH != null
                 && RegistryPerks.ARS_HEDGEWITCH.get().isEnabled(player)
                 && spellContainsSchool(spell, SpellSchools.ELEMENTAL_WATER)) {
-            int reduced = (int) (event.currentCost * (1.0 - c.arsHedgewitchCostPercent / 100.0));
+            double hwCostPercent = RegistryPerks.ARS_HEDGEWITCH.get().getActiveValue(player)[0];
+            int reduced = (int) (event.currentCost * (1.0 - hwCostPercent / 100.0));
             event.currentCost = Math.max(reduced, 1);
         }
         if (RegistryPerks.ARS_CONJURER != null

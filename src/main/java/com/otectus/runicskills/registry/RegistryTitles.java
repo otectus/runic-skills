@@ -17,8 +17,11 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -31,9 +34,38 @@ public class RegistryTitles {
     public static final RegistryObject<Title> ADMIN = TITLES.register("administrator", () -> register("administrator", false));
 
     public static void load(IEventBus eventBus) {
+        // Defensive dedup: in 1.3.3 we saw "Duplicate registration rookie" at boot even though
+        // the on-disk titles.json5 has rookie exactly once and the compiled `List.of(...)` default
+        // has it exactly once. Root cause is a YACL 3.5.0→3.6.6 interaction we couldn't fully
+        // unwind via static analysis (bytecode + javap evidence shows YACL's `loadSafely` does a
+        // plain reflective field-replacement). The dedup is correct regardless: second occurrences
+        // of any TitleId log a one-line warning and skip the DeferredRegister.register call.
+        //
+        // 1.3.5: after registration, the deduped list also REPLACES the runtime
+        // `titleList` field so every downstream consumer (serverPlayerTitles, future
+        // iterators) sees only the registered entries. Without this, the skipped
+        // duplicate TitleModel lingered in titleList with `_title == null`, causing
+        // an NPE in serverPlayerTitles during player join (the 1.3.4 world-join crash).
+        Set<String> seenTitleIds = new HashSet<>();
+        List<TitleModel> uniqueTitles = new ArrayList<>();
         HandlerTitlesConfig.HANDLER.instance().titleList.forEach(title -> {
+            if (title == null || title.TitleId == null || title.TitleId.isEmpty()) {
+                RunicSkills.getLOGGER().warn("Skipping null/unnamed TitleModel entry in titleList.");
+                return;
+            }
+            if (!seenTitleIds.add(title.TitleId)) {
+                RunicSkills.getLOGGER().warn(
+                        "Duplicate title id '{}' in titleList; ignoring duplicate (suspected YACL List.of/Gson interaction).",
+                        title.TitleId);
+                return;
+            }
             title.registry(TITLES);
+            uniqueTitles.add(title);
         });
+
+        // Replace the runtime titleList with the deduped copy so every downstream
+        // consumer (serverPlayerTitles, future iterators) sees only registered entries.
+        HandlerTitlesConfig.HANDLER.instance().titleList = List.copyOf(uniqueTitles);
 
         TITLES.register(eventBus);
 
@@ -78,7 +110,19 @@ public class RegistryTitles {
         if (!serverPlayer.isDeadOrDying())
             serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(capability -> {
                 for (TitleModel titleModel : HandlerTitlesConfig.HANDLER.instance().titleList) {
-                    titleModel.getTitle().setRequirement(serverPlayer, titleModel.CheckRequirements(serverPlayer));
+                    // 1.3.5 defense-in-depth: after the load() dedup + field-replacement,
+                    // every TitleModel here SHOULD have non-null _title. Guard anyway —
+                    // if anything ever desyncs (e.g. a future code path adds a TitleModel
+                    // without going through load()), we log + skip rather than NPE during
+                    // player join (which disconnects with "Invalid player data").
+                    Title title = titleModel.getTitle();
+                    if (title == null) {
+                        RunicSkills.getLOGGER().warn(
+                                "TitleModel '{}' has null backing Title in serverPlayerTitles; skipping (titleList desync).",
+                                titleModel.TitleId);
+                        continue;
+                    }
+                    title.setRequirement(serverPlayer, titleModel.CheckRequirements(serverPlayer));
                 }
                 ADMIN.get().setRequirement(serverPlayer, serverPlayer.hasPermissions(2));
             });

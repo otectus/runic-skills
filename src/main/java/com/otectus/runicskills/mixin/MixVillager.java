@@ -36,7 +36,7 @@ public abstract class MixVillager {
     private void runicskills$applyHagglerDiscount(Player player, CallbackInfo info) {
         if (player == null || RegistryPerks.HAGGLER == null || !RegistryPerks.HAGGLER.get().isEnabled(player)) return;
         Villager self = (Villager) (Object) this;
-        double pct = RegistryPerks.HAGGLER.get().getValue()[0] / 100.0D;
+        double pct = RegistryPerks.HAGGLER.get().getActiveValue(player)[0] / 100.0D;
         for (MerchantOffer offer : self.getOffers()) {
             int discount = Math.max((int) Math.floor(pct * offer.getBaseCostA().getCount()), 1);
             offer.addToSpecialPriceDiff(-discount);

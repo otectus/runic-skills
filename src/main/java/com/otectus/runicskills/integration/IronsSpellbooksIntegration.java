@@ -354,7 +354,7 @@ public class IronsSpellbooksIntegration {
             long lastUse = arcaneReprieveLastUse.getOrDefault(player.getUUID(), Long.MIN_VALUE);
             int cdTicks = HandlerCommonConfig.HANDLER.instance().arcaneReprieveCooldown * 20;
             if (now - lastUse >= cdTicks) {
-                double[] values = RegistryPerks.ARCANE_REPRIEVE.get().getValue();
+                double[] values = RegistryPerks.ARCANE_REPRIEVE.get().getActiveValue(player);
                 double pct = values.length > 0 ? values[0] : 40.0;
                 AttributeInstance maxMana = player.getAttribute(AttributeRegistry.MAX_MANA.get());
                 float restore = (float) ((maxMana != null ? maxMana.getValue() : 100.0) * pct / 100.0);

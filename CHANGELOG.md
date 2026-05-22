@@ -1,201 +1,130 @@
 # Changelog
 
-## [1.3.2] - 2026-05-15
+## [Unreleased] — R0 Hardening
 
-UI readability hotfix on top of 1.3.1. The skill panel's header text (skill name, level/rank, player name + XP, "Choose Your Title") renders on a light gray panel background but uses `Utils.FONT_COLOR = Color.WHITE` — low contrast and noticeably hard to read on most monitors. 1.3.2 flips `FONT_COLOR` to `Color.BLACK`, restoring legibility everywhere this constant is used. Pure cosmetic; no behaviour change.
-
-### Changed
-
-- **`Utils.FONT_COLOR`** flipped from `Color.WHITE.getRGB()` to `Color.BLACK.getRGB()`. Single-constant change. Affects the detail-page header (skill name, level/rank string), the overview-page header (player name, XP level), and the titles-page header ("Choose Your Title") — every render site that routes through `Utils.drawCenter(...)` or directly references `Utils.FONT_COLOR`. Other white-on-dark text in the GUI (skill level in overview grid cells, current-title button text, perk-level overlays over icons, HUD overlays over the game world) is unchanged — it renders on dark backgrounds where white is the correct choice.
-
-### Notes
-
-- Save-compatible with 1.3.x and 1.2.x. No NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema, no perk behaviour changes — pure cosmetic.
-- Tested: `./gradlew build` passes; `./gradlew checkSidedImports` passes; no resource pack textures touched (light panel art unchanged, text-color flip is code-only).
-
-## [1.3.1] - 2026-05-15
-
-Log-noise hotfix on top of 1.3.0. 1.2.1's `@Pseudo` fix for the `MixTargetFinder` / `MixGunItem` WARNs silenced Mixin's own "@Mixin target was not found" line but left Forge's classloader-side "Error loading class" WARN firing on every startup when BetterCombat or PointBlank are absent — confirmed in the 1.3.0 smoke-test log (and present identically in 1.2.1 and 1.2.2 logs). 1.3.1 closes that residual gap with a Mixin Config Plugin (`IMixinConfigPlugin`) that excludes those two mixins entirely when their target mods aren't installed, so Mixin never asks the classloader for the missing target's bytecode and neither WARN can fire from any source. Pure log noise; zero functional change.
+Implementation of the R0 hardening release from `plan-the-full-implementation-floofy-quokka.md` against findings in `perk-audit-2026-05-18.md`. Surgical bug fixes only; no perk content added.
 
 ### Fixed
 
-- **`Error loading class: net/bettercombat/client/collision/TargetFinder` and `... com/vicmatskiv/pointblank/item/GunItem` WARN at startup** when BetterCombat / PointBlank aren't installed. `@Pseudo` (added in 1.2.1) only suppressed Mixin's `@Mixin target was not found` WARN; the earlier `TransformingClassLoader` "Error loading class" WARN fires independently when the `class.class` literal in `@Mixin({TargetFinder.class})` triggers a bytecode lookup against the missing class. New `RunicSkillsMixinPlugin implements IMixinConfigPlugin` returns `false` from `shouldApplyMixin(...)` for these two mixins when their target mods aren't present in `LoadingModList`, so Mixin never asks the classloader for the target bytecode and the WARN can't fire. Pre-existing since the BetterCombat / PointBlank mixins were introduced; partially fixed in 1.2.1, fully fixed here.
+- **B1 (P1) — `STEALTH_MASTERY` visibility values inverted.** [`mixin/MixLivingEntity.java:195`](src/main/java/com/otectus/runicskills/mixin/MixLivingEntity.java#L195) now reads `Value[1]` (sneak %) when crouched and `Value[0]` (unsneak %) when standing, matching the registration order in [`RegistryPerks.java:111-113`](src/main/java/com/otectus/runicskills/registry/RegistryPerks.java#L111). Pre-fix: crouching made the player MORE visible. The fix also uses `getActiveValue(player)` to pre-emptively bake in rank-awareness (R1 work).
+- **B5 (P3) — `STEALTH_MASTERY` mixin guard order.** `isEnabled` check folded into the outer `null`-guard so the value array is only read when the perk would actually apply.
+- **B6 (P3) — Integration `@SubscribeEvent` handlers ungated by `isModLoaded()`.** Added an early-return `if (!isModLoaded()) return;` to the `onLivingHurt` / `onItemUseFinish` handlers in [`IceAndFireIntegration`](src/main/java/com/otectus/runicskills/integration/IceAndFireIntegration.java#L196), [`MowziesMobsIntegration`](src/main/java/com/otectus/runicskills/integration/MowziesMobsIntegration.java#L22), [`CataclysmIntegration`](src/main/java/com/otectus/runicskills/integration/CataclysmIntegration.java#L33), [`FarmersDelightIntegration`](src/main/java/com/otectus/runicskills/integration/FarmersDelightIntegration.java#L24). These integration classes are loaded unconditionally; without the guard, every relevant Forge event paid the cost of a `ForgeRegistries` lookup even when the target mod was absent.
+- **B7 (P3) — `ARS_HEDGEWITCH` declared two `Value`s the handler never read.** [`ArsNouveauIntegration.java:121` and `:271`](src/main/java/com/otectus/runicskills/integration/ArsNouveauIntegration.java#L121) now read the cost% and damage% from `perk.getActiveValue(player)[0]` / `[1]` instead of `HandlerCommonConfig.HANDLER.instance().arsHedgewitchCostPercent` / `…DamagePercent`. Tooltip substitution and gameplay now share the same source of truth.
+- **Curios NPE silently swallowed.** [`handler/HandlerCurios.java:38`](src/main/java/com/otectus/runicskills/handler/HandlerCurios.java#L38) `catch (NullPointerException ignored)` replaced with a logged catch (`LOGGER.warn`). Still defaults to `DENY` for safety, but unexpected NPEs now surface in the log instead of hiding bugs.
 
-### Notes
+### Added
 
-- Save-compatible with 1.3.0 and 1.2.x. No NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema, no perk behavior changes — pure log noise.
-- `@Pseudo` retained on both mixins as defence-in-depth: if a future runtime bypasses the plugin gate (e.g., via JVM args), Mixin still treats the missing target as optional rather than throwing.
-- `runicskills.mixins.json` now declares `"plugin": "com.otectus.runicskills.mixin.RunicSkillsMixinPlugin"`.
-- Tested: `./gradlew build` passes; `./gradlew checkSidedImports` passes; on the user's CurseForge instance (no BetterCombat, no PointBlank installed) the 1.3.1 install over the 1.3.0 install should show **zero Runic Skills WARN/ERROR lines** in a 60s post-spawn idle window — a clean diff against the two residual "Error loading class" lines visible in the 1.3.0 smoke-test log.
+- **S6 — Perk-keyed cooldown helpers** on `SkillCapability`: `getCooldown(Perk)` and `setCooldown(Perk, int)` derive the cooldown key as `"perk." + perk.getName()`. New perks needing a cooldown no longer require updating the hardcoded `COOLDOWN_*` constants. Existing constants (`COOLDOWN_LIMIT_BREAKER`, `COOLDOWN_PERK_SWAP`, `COOLDOWN_COUNTER_ATTACK`, `COOLDOWN_COUNTER_ATTACK_TIMER`) retained for the three existing call sites.
+- **`disabledPowers` config field** in `HandlerCommonConfig`. Pre-existing in-progress Powers code referenced this without a declaration; added as a `List<String>` matching the `disabledPerks` / `disabledPassives` shape. Comment documents its semantics: equipped powers from the list are filtered out at runtime.
 
-## [1.3.0] - 2026-05-14
+### Deferred
 
-Data-driven content release. Two headline features: custom skill visuals (datapack-driven overrides for skill overview/detail/background art with full namespaced-id support) and an FTB Quests integration (six native task types — `skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected` — wired through a save-isolated quest bridge). KubeJS perk/passive helpers now accept arbitrary `namespace:path` texture ids so pack scripts can point at any mod's item or texture sprite without copying assets. Save-compatible with 1.2.x — no NBT, no `PROTOCOL_VERSION`, no protocol packets, no config schema drift; both new features are entirely additive and absent-when-disabled.
+- **B8 — 17 non-uniform `RequiredLevel` field name standardisation.** Investigation showed the rename touches ~40 fields across `HandlerCommonConfig`, `RegistryPerks`, `ArsNouveauIntegration`, `DynamicConfigSyncCP`, and YACL UI lang labels (12+ locales). Combined with the existing-config-file migration risk, B8 doesn't fit R0. Tracked for a dedicated hygiene release after R13.
 
-### Added — Custom skill visuals
+### Audit follow-up
 
-- **`data/<namespace>/runicskills/skill_visuals/<id>.json` datapack folder** (new). One JSON per skill with optional fields `overview_icon`, `detail_icon`, `background`. Any field defaults through to the legacy hardcoded asset, so authors can override a single slot without re-supplying the rest. Loaded via the new `SkillVisualsReloadListener` (extends `SimpleJsonResourceReloadListener`, modeled on the existing `PerkGroupsReloadListener`); reloads pick up overrides through `/reload` like any other datapack data.
-- **`HandlerResources.parseTexture(String)`** — new namespace-aware parser. Accepts either `namespace:path` (vanilla `ResourceLocation` syntax) or a bare path (preserved as `runicskills:<path>` for parity with the legacy `HandlerResources.create(...)` callers). Invalid ids log a single WARN and resolve to `NULL_PERK`. The legacy `create(...)` static stays at line 698 unchanged — addon mods calling it keep working.
-- **`Perk.add(...)` and `Passive.add(...)` KubeJS helpers** route their `texture` argument through `parseTexture(...)`. Existing scripts using path-only strings see zero behavioral change; new scripts can pass `botania:textures/item/lexicon.png`, `ars_nouveau:textures/item/jar_of_light.png`, etc.
-- **`SkillVisuals` record + accessors on `Skill`.** New `getOverviewIcon()`, `getDetailIcon()`, `getBackgroundTexture()` methods read the override layer with fall-through to the legacy `lockedTexture[]` / `background` defaults. The progressive 4-tier locked icon array is untouched — overrides are a single static slot per skill by design, matching the spec's per-skill semantics.
+- B2 (multi-rank values systemically ignored): completed in R1 (see below).
+- B3 + B4 (Apotheosis rarity ordinal + interactor race): rolling out in R2.
+- The 373 inert perks: rolling out per-tree in R3–R12.
 
-### Added — FTB Quests integration
+## [Unreleased] — R1 Multi-rank rollout (B2)
 
-- **Six task types** registered via `TaskTypes.register(...)`:
-
-| Task id | Fields | Completes when |
-|---|---|---|
-| `runicskills:skill_level` | `skill`, `required_level` | named skill ≥ required level |
-| `runicskills:global_level` | `required_total` | sum of all skill levels ≥ required total |
-| `runicskills:perk_rank` | `perk`, `required_rank` | named perk's rank ≥ required rank (1 = enabled) |
-| `runicskills:passive_level` | `passive`, `required_level` | named passive ≥ required level |
-| `runicskills:title_unlocked` | `title` | named title unlocked on the player capability |
-| `runicskills:title_selected` | `title` | player is actively wearing the named title |
-
-- **Sticky completion by default.** Once a task completes it stays complete even if the player's underlying state drops below the threshold (the standard FTBQ "checked off, stays checked" UX). Pack authors who want live-threshold semantics — task progress reflecting current state, including regressions on respec / passive-down — add `"sticky": false` to the task JSON.
-- **`RunicQuestBridge` always-loaded facade.** Static no-op-by-default delegators that the network/event layer calls unconditionally. When FTB Quests is absent the facade dispatches every call to a NOOP listener (one volatile read + one empty virtual dispatch — measurable cost is essentially zero). The reflectively-loaded `FTBQuestsIntegration` installs the real listener on construction; no FTB types ever enter the always-loaded constant pool.
-- **`enableFTBQuestsIntegration` master toggle** in `HandlerCommonConfig` (default `true`). Matches the 1.2.0 per-integration toggle pattern: when false, task types are not registered and the bridge stays no-op.
-- **Bridge wired into every authoritative mutation site:** `SkillLevelUpSP` (post-`addSkillLevel`), `PassiveLevelUpSP` / `PassiveLevelDownSP`, `SetPlayerTitleSP`, `Title.setRequirement` (post-unlock). `TogglePerkSP` is consumed via the existing 1.2.0 `PerkToggleEvent.Post` rather than a fifth inline call.
-- **Login + clone + respawn backfill.** `PlayerLifecycleHandler.onPlayerJoinWorld` and `onPlayerClone`, plus `RespecCommand`, call `RunicQuestBridge.refreshAll(player)` so quests author quests retroactively against players who are already qualified, and so non-sticky tasks regress correctly on respec.
-- **Optional compile-time dependency.** `compileOnly fg.deobf("maven.modrinth:ftb-quests-forge:2001.4.9")` + `ftb-library-forge:2001.2.6`. `mods.toml` declares `ftbquests` as `mandatory = false, versionRange = "[2001.4,)"`. The Modrinth Maven was already in the build.
-
-### Changed
-
-- **`RunicSkillsScreen` detail-page state cached per render frame.** `buildDetailPageState()` previously sorted passives/perks and rebuilt the row layout in both `drawDetailBackground()` and `drawDetail()` on every render frame — duplicate work per frame across `render()`. A small per-frame cache (invalidated at the top of `render()` and populated lazily by `getDetailPageStateForRender()`) collapses that to one rebuild per frame. Click handlers still call `buildDetailPageState()` directly to avoid serving stale layout after a click changes page state.
-- **Skill render call sites swapped to the new accessors.** `RunicSkillsScreen` lines 257/282/302 now read `getOverviewIcon()` / `getBackgroundTexture()` / `getDetailIcon()` instead of `getLockedTexture()` / `background` directly. Legacy defaults are preserved through fall-through, so packs without a `skill_visuals` JSON see no visual change.
-
-### Notes
-
-- **Save-compatible with 1.2.x.** No `SkillCapability` schema changes; no `PROTOCOL_VERSION` bump; no new Runic Skills packets. FTB task progress lives in FTB Quests' own NBT.
-- **Without FTB Quests installed:** zero classloading errors, no `Loaded integration ... ftbquests` log line, bridge stays in NOOP mode. The mod boots clean on a vanilla-Forge + Runic-Skills modlist.
-- **Asset caveat for custom skill visuals.** Texture ids must point at assets the **client** has — datapack overrides on a dedicated server don't conjure client textures out of thin air. Pack the assets in the same resource pack as the datapack JSON.
-- **Asset validation.** `SkillVisualsReloadListener` calls `manager.getResource(loc).isPresent()` on each override at apply time; missing assets log a single per-file WARN rather than letting users find pink-black sentinels in the menu.
-- **Version matrix.** Runic Skills 1.3.0 / Forge 1.20.1-47.3.0+ / FTB Quests Forge `[2001.4,)` (tested against 2001.4.9). Java 17.
-- **Public Forge event API is unchanged.** 1.2.0's `SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent` all behave identically. `Post` variants for skill/passive events are deferred to a future minor; the inline bridge calls cover what FTB Quests needs without an API change.
-
-## [1.2.2] - 2026-05-14
-
-Second log-noise hotfix. The 1.2.1 fix for `ServerNetworking.acceptsVersion` used `NetworkRegistry.ABSENT.equals(peerVersion)` but the predicate's WARN still fired every ~5 seconds in single-player. Either Forge 47.3.0's `NetworkRegistry.ABSENT` constant value drifts from the open-source value (likely the trailing 🤔 emoji suffix differing across charset configurations), or the predicate receives a wrapped/processed peerVersion that doesn't exactly equal the constant. Switched to defensive prefix matching (`startsWith("ABSENT")` / `startsWith("ALLOWVANILLA")`) — the textual prefix is invariant across Forge versions even when the emoji suffix isn't.
-
-Also refreshes the README to point at the latest jar, document the public Forge event API as the canonical 1.2.0+ scripting hook, and append the four new Apotheosis perks to the integrations table. Extends `docs/SMOKE_TESTS.md` with a new "1.2.x verification" section (13 test rows) covering all 1.2.x changes: new perks, event API, tooltip wrap, bulk-level, HUD overlay layers, integration master toggles, and the log-noise fixes.
-
-### Fixed
-- **`ServerNetworking.acceptsVersion` WARN spam still present after 1.2.1.** Replaced `NetworkRegistry.ABSENT.equals(...)` / `ACCEPTVANILLA.equals(...)` with `peerVersion.startsWith("ABSENT")` / `startsWith("ALLOWVANILLA")`. Defensive against the constant-value drift that prevented the 1.2.1 fix from matching at runtime — confirmed by retesting `latest.log` after the 1.2.1 install, which still showed the WARN firing every 5 seconds with `peer reports ABSENT ?`.
-
-### Changed
-- `README.md` installation jar reference 1.1.0 → 1.2.2; appended a milestone sentence describing 1.2.x feature highlights (Forge event API, four new Apotheosis perks, eight integration toggles, tooltip word-wrap, named-layer HUD overlays, bulk-level passives) and a brief mention of the 1.2.1 + 1.2.2 hotfixes.
-- `README.md` KubeJS scripting section extended to reference the public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) as the canonical 1.2.0+ hook, with a pointer to `docs/API_EVENTS.md`. Legacy `SKILL_LEVELUP` reflection bridge documented as deprecated.
-- `README.md` Apotheosis integration row updated with the four 1.2.0-shipped perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes).
-- `docs/SMOKE_TESTS.md`: new "Section 6 — 1.2.x verification" with 13 test rows covering every 1.2.x change.
-
-### Notes
-- Save-compatible with 1.2.x and 1.1.x. No NBT, no `PROTOCOL_VERSION`, no config, no perk behavior changes — pure log noise + documentation.
-- Tested: `./gradlew build` passes; on the user's CurseForge instance (no Cataclysm, no BetterCombat, no PointBlank installed) the 1.2.2 install over the 1.2.1 install should show **zero Runic Skills WARN/ERROR lines** in a 60s post-spawn idle window.
-
-## [1.2.1] - 2026-05-14
-
-Log-noise hotfix. Four issues surfaced by the 1.2.0 post-release smoke test on a real CurseForge instance (`latest.log` review across the 1.2.0 session and four 1.1.0 archives for baseline comparison). Zero functional changes — no NBT, no `PROTOCOL_VERSION`, no perk behavior. Drop-in over 1.2.0.
+Implementation of the R1 multi-rank rollout from `plan-the-full-implementation-floofy-quokka.md`. Strategy (a): mechanical replacement of every `perk.getValue()[N]` callsite with `perk.getActiveValue(player)[N]` so rank-aware values flow through to gameplay.
 
 ### Fixed
 
-- **`ServerNetworking.acceptsVersion` log spam in single-player.** The 1.2.0 protocol-mismatch WARN fired every ~5 seconds against Forge's periodic channel-acceptance probes (which pass `NetworkRegistry.ABSENT` and `NetworkRegistry.ACCEPTVANILLA` sentinel strings on LAN advertising / ping handlers). Now filters those two sentinels out before logging, so the WARN only fires on a real peer reporting a mismatched version string — which is the case server operators actually want to see. Regression introduced in 1.2.0 Phase C4.
-- **`EntityKilledCondition` / `EntityKilledByCondition` ERROR-spam on every title-tick.** The title-check tick handler (`TickEventHandler.onPlayerTickLow`, every 200 ticks = 10s) evaluates each title's conditions for each online player. Default title configs reference Cataclysm and Ice and Fire entities; modpacks without those mods saw 2-12 ERROR lines per minute steady state per player. Now: warn-once per unique missing entity name per JVM session via a `ConcurrentHashMap.newKeySet()` guard, demoted from ERROR to WARN with clearer wording (`"Title condition references unknown entity '<id>'. The title will never unlock until that entity's mod is installed."`). Pre-existing bug, finally addressed.
-- **`getLatestVersion` 404 logged a full stack trace as WARN** at every mod-load. The catch-all `Exception` handler printed the full `FileNotFoundException` for the routine "VERSION file not yet published on GitHub" case. Now catches `FileNotFoundException`, `SocketTimeoutException`, and `UnknownHostException` separately and demotes to a single DEBUG line; the generic catch-all retains WARN+stack for genuinely unexpected failures. Pre-existing.
-- **`MixTargetFinder` and `MixGunItem` Mixin-target-not-found WARN** at startup when BetterCombat / PointBlank are absent. The mixins correctly compile inert (no transformations are applied), but Mixin's class loader emits a WARN when it can't find the target class. Added `@Pseudo` to both — Mixin now silently skips the target-load attempt for these inherently optional-mod-targeting mixins. Pre-existing.
-
-### Notes
-- Save-compatible with 1.2.0; no schema, protocol, or config changes.
-- Tested: `./gradlew build` passes. Runtime smoke against the user's local CurseForge instance (no Cataclysm, no BetterCombat, no PointBlank installed) should show zero spurious WARN/ERROR lines from Runic Skills over a 60s idle window after spawn — a sharp contrast from the 14+ WARN and 30+ ERROR lines in the 1.2.0 `latest.log` over the same window.
-
-## [1.2.0] - 2026-05-14
-
-Balanced content + quality release. Ships a public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) — external Java mods and KubeJS can now hook level-ups and perk toggles without reflection. Adds 8 per-integration master toggles so pack authors can soft-disable any major integration without removing the dep mod. Adds 4 deferred-backlog perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes). Tooltip width-clamp at GUI scale 4. HUD overlays moved to named layers so resource packs can relocate them. Bulk-level passives via Shift/Ctrl/Alt-click. Translated protocol-mismatch log line for server ops. CI workflow added. Save-compatible with 1.1.0.
-
-### Added — Public Forge event API (since 1.2.0)
-
-- **`SkillLevelUpEvent`** — fired on the Forge bus from `SkillLevelUpSP.handle` after validation succeeds, before capability mutation and the client sync packet. `@Cancelable`; cancelling aborts the level-up cleanly without consuming XP. Extends `PlayerEvent`. Fields: `Skill skill`, `int oldLevel`, `int newLevel`.
-- **`PassiveLevelUpEvent`** — fired from both `PassiveLevelUpSP.handle` and `PassiveLevelDownSP.handle`. Subscribers wanting only the level-up direction should filter `newLevel > oldLevel`. `@Cancelable`. Fields: `Passive passive`, `int oldLevel`, `int newLevel`.
-- **`PerkToggleEvent.Pre` / `.Post`** — fired around `TogglePerkSP.handle`. `Pre` fires after the built-in validation chain succeeds, before any state mutation; cancelling aborts the toggle and resyncs the client. `Post` fires after rank/cooldown writes and is non-cancelable. Both have `int oldRank`, `int newRank`, `boolean wasEnabled`, `boolean isEnabled`.
-- **`TitleEarnedEvent`** — fired from `Title.setRequirement` whenever `unlockTitle` flips false→true. Non-cancelable. Fields: `Title title`.
-
-All four events are documented as a public API and will be maintained across minor versions. KubeJS hooks them natively via its Forge-event bridge — `onForgeEvent("net.minecraftforge.event.entity.player.PlayerEvent$SkillLevelUpEvent", event => ...)` works out of the box. Legacy KubeJS scripts using the older `SkillLevelUpEventJS` surface still work unchanged through the `KubeJSIntegration` shim (which is now marked `@Deprecated(forRemoval = true)`; removal is scheduled for a future major).
-
-### Added — Perks (4)
-
-Four perks from the 1.1.0 "Skipped" backlog land this release. The remaining five and the eleven Phase-3 capstones are either dropped permanently (most lack a public API in their upstream mod) or deferred to 1.3.0+ (see below).
-
-- **Apothic Apprentice** (Fortune, Apotheosis) — higher-tier socket bonus. `+N` effective sockets on top of Socket Virtuoso's bonus. Trivial counterpart to the existing perk; both stack additively when enabled. Default `requiredLevel = 26`, bonus = 2 sockets.
-- **Gem-Threaded Armor** (Endurance, Apotheosis) — flat ARMOR per equipped socket. Hook `LivingEquipmentChangeEvent`; iterate `dev.shadowsoffire.apotheosis.adventure.affix.socket.SocketHelper.getSockets` across all equipment slots; apply a transient ADDITION modifier on `Attributes.ARMOR` keyed by a fixed UUID. Reconciles on equipment change, not per tick. Default `requiredLevel = 20`, +0.5 armor per socket.
-- **Spellsocket** (Magic, Apotheosis + ISS) — `ModifySpellLevelEvent` adds `+1` effective spell level per `socketsPerLevel` equipped sockets, capped at `maxBonus`. Same iteration pattern as Affix Focus. Default `requiredLevel = 22`, 3 sockets per +1 level, max +3.
-- **Resonant Affixes** (Magic, Apotheosis + ISS) — ISS `SpellDamageEvent` multiplies outgoing spell damage by `1 + (rare+ affix count × percent)`. Mirrors Affix Affinity's iteration pattern but on spell damage rather than melee. Default `requiredLevel = 24`, +3% per Rare-or-better item.
-
-All four config keys live in `HandlerCommonConfig` under the `apothic_attributes` group with corresponding `*RequiredLevel` and magnitude knobs. Lang keys added to `en_us.json`; other locales fall back to English.
-
-### Added — Per-integration master toggles (8 booleans)
-
-New `enable<Mod>Integration` booleans in `HandlerCommonConfig` under the `integrations` group, default `true`. When false, the integration class is **never registered** with the Forge event bus — every event handler in the integration is inert. Perks belonging to the integration remain in the registry (so save data is stable across toggle flips). Synced through `CommonConfigSyncCP` so the client can render UI honestly. The existing lock-item toggles (`*EnableLockItems`) remain a finer-grained subset that gates only the lock-item generation.
-
-Coverage: Spartan Weaponry, Blood Magic, Ice and Fire, Iron's Spells, Ars Nouveau, Apotheosis, Botania, Jewelcraft.
-
-### Added — Tooltip word-wrap helper
-
-`TooltipWrap.wrap(List<Component>, int maxWidthPx)` clamps long perk/passive tooltip lines via `Minecraft.getInstance().font.split(...)`. Applied at the end of `PerkTooltip.tooltip()` and `PassiveTooltip.tooltip()` with a 200px clamp — eliminates offscreen tooltip overflow at GUI scale 4 / 4K. Lines that already fit pass through unchanged so translation keys are preserved in the common case.
-
-### Added — Bulk-level passives
-
-Shift-click a passive ± button to apply ±5; Ctrl-click ±10; Alt-click clears (or maxes) the passive subject to skill-level gates. Each click sends N `PassiveLevelUpSP` / `PassiveLevelDownSP` packets; the server validates each independently and silently rejects increments past the cap. Skill level-up still uses single-click (server rate-limit on `SkillLevelUpSP` makes bulk-level less useful there). Implemented in `RunicSkillsScreen.bulkClickAmount`.
-
-### Added — CI workflow
-
-`.github/workflows/build.yml` runs `./gradlew build` on push and pull request — compiles, runs `checkSidedImports`, reobfuscates, and assembles the jar on a clean Ubuntu image. Catches the dedicated-server class-load regression class on a clean classpath (no YACL, no L2Tabs, no optional mods); 1.0.0 (Legendary Tabs) and 1.1.0 (YACL) shipped that bug separately, so a no-optional-mods CI build is the highest-value smoke gate. Build artifact (jar) uploaded for 7 days.
+- **B2 (P1, systemic) — Multi-rank perk values silently ignored.** 28 `RegistryPerks.<NAME>.get().getValue()[N]` callsites across `CombatEventHandler` (10), `CraftingEventHandler` (10), `TickEventHandler` (4), `BotaniaIntegration` (16), `ApotheosisIntegration` (1), `IronsSpellbooksIntegration` (1), `MixLivingEntity` (2), `MixPlayer` (1), `MixVillager` (1), `MixEnchantmentMenu` (1), `TreasureHunterPerk` (1) replaced with `getActiveValue(player)[N]`. Previously, a multi-rank perk would always apply rank-1 values regardless of the player's actual rank. No currently-shipping perks were multi-rank, so this is a latent-bug fix, not a behavior change for existing playthroughs — but it unblocks every future multi-rank perk in R3–R12.
 
 ### Changed
 
-- **HUD overlays migrated to `RegisterGuiOverlaysEvent`.** `OverlaySkillGui` and `OverlayTitleGui` previously piggy-backed on `CustomizeGuiOverlayEvent.DebugText` (the F3 overlay event — worked but conceptually wrong). Now registered as named layers `runicskills:skill_overlay` and `runicskills:title_overlay` above the hotbar layer. Same render code, same visual position; resource packs can now relocate them via the standard `above`/`below` overlay APIs. Tick subscribers remain on the Forge bus for state updates.
-- **`KubeJSIntegration` deprecated** in favor of the new Forge events. `postLevelUpEvent` is now `@Deprecated(forRemoval = true)` — its reflective fast-path cache stays for back-compat with existing pack scripts; new scripts should subscribe to `SkillLevelUpEvent` on the Forge bus directly. Migration documented in [docs/API_EVENTS.md](docs/API_EVENTS.md).
-- **`@Nullable` annotations** on `RegistryPerks.getPerk`, `RegistryPassives.getPassive`, `RegistrySkills.getSkill` (returns null for unknown registry names). IntelliJ + IDEA plugin now surfaces unchecked dereferences as warnings — closes the residual P1 #5 leads from the 0.9.3 audit.
-- **Protocol-mismatch log line** (1.2.0). `ServerNetworking.acceptsVersion` now logs a clear warning when a connecting peer reports a different `PROTOCOL_VERSION` — server ops can diagnose mismatches from the log instead of debugging a generic Forge disconnect. The player-facing disconnect message remains Forge's generic "channel mismatch" because the kick is initiated by Forge's negotiation layer; full message translation would require an invasive negotiation-layer mixin not worth the risk.
+- **`TreasureHunterPerk.drop()` signature.** Now takes a `Player` argument so rank-aware value lookup has a player context. Only caller (`CraftingEventHandler.java:49`) was updated.
+
+## [Unreleased] — R3 Strength tree (in progress, 15 of 35 perks)
+
+Per-tree perk-content rollout from `plan-the-full-implementation-floofy-quokka.md`, continued. Batch 1 closed the trivial weapon/armor modifiers; batch 2 closes the always-available, no-new-integration subset (state-bearing perks: target-HP gates, last-attacker memo, recent-hit ring buffer, save-from-fatal); batch 3 scaffolds the four new mod-integration classes; batch 4 wires the mod-gated Strength perks through those scaffolds via reflective namespace matching (no new build deps). 20 perks remain in R3: 6 vague-batch (deferred for clarification) + 10 in existing integrations (deferred to a follow-up cleanup batch) + 4 cosmetic/system-rewrite perks audit-flagged out of plan scope.
+
+### Added — Strength perks (batch 1: trivial weapon/armor modifiers)
+
+- **WEAPON_MASTER.** Flat % bonus damage on melee hits when the player's main hand holds a Sword / Axe / Trident. Tools (pickaxe, shovel) explicitly excluded. Multi-rank-aware via `getActiveValue(player)`.
+- **ARMOR_PIERCING.** Bonus damage scales linearly with target armor (0 → 20 armor). Approximates "ignore X% of armor" in a `LivingHurtEvent`-side calculation rather than recomputing vanilla's armor formula.
+- **HEAVY_STRIKES.** Bonus damage when the target is actively blocking with a shield (`target.isBlocking()`).
+- **WARMONGER.** Bonus damage when the target's armor value > 0. Composes multiplicatively with `HEAVY_STRIKES` and `ARMOR_PIERCING` per lang descriptions.
+- **POWER_ATTACK.** Critical hits get an additional % damage on top of vanilla's 1.5×. Wired into `onPlayerCriticalHit` after the existing `BERSERKER` branch.
+
+### Added — Strength perks (batch 2: state-bearing on-hit triggers)
+
+- **EXECUTE.** Bonus % damage when the target's post-armor HP fraction is below 25%. Threshold baked into the lang description; no config knob. Composes into the bonus accumulator alongside the batch-1 stack.
+- **DEVASTATING_BLOW.** Bonus % damage on the opening hit (`target.getHealth() >= target.getMaxHealth()`); the `>=` (rather than `==`) tolerates float regen edge-cases.
+- **VENGEANCE.** New victim-side handler `onLivingHurtStrengthVictim` (LOWEST priority) records the last `LivingEntity` to damage the player into a transient static `Map<UUID, AttackerMemo>` on `CombatEventHandler`. The attacker-side handler reads the memo and applies the % bonus when the current target UUID matches and the hit happened within `vengeanceWindowTicks` (default 600 ticks / 30 s, configurable). Self-damage and indirect damage (no living entity source) skip memo recording. Mirrors the R2 `ApotheosisIntegration.recentInteractors` pattern — transient, no NBT, no protocol bump.
+- **BLADE_STORM.** Recent-hit ring buffer per attacker UUID (`Map<UUID, Deque<HitRecord>>`, cap 16, synchronized — modelled on `PowerRuntime.SpellHistory`). Each attacker-side hit pushes a `HitRecord(targetUUID, gameTime)`; when the count of distinct target UUIDs in the last `bladeStormWindowTicks` (default 80) reaches `bladeStormMinTargets` (default 2), the player gets a transient `ATTACK_SPEED` `AttributeModifier` (`MULTIPLY_BASE`, +`Value[0]%`) keyed by a deterministic UUID, refreshed on each subsequent qualifying hit and removed by the 100-tick `onServerTick` pruner when the window lapses. Attack-speed not damage — matches the lang description.
+- **LAST_STAND.** Save-from-fatal interpretation. The new victim handler clamps a hit that would otherwise kill the player (`incoming >= currentHP`) to leave 1 HP, opens a 40-tick bonus-damage window in a static `Map<UUID, Long>`, and sets the S6 perk-keyed cooldown to 1200 ticks (60 s) via `cap.setCooldown(perk, 1200)`. While the active window is current, the attacker-side handler applies `+Value[0]%` outgoing damage. The clamp never amplifies a hit; further fatal hits inside the cooldown kill normally.
+
+Three new tuning fields in `HandlerCommonConfig`: `vengeanceWindowTicks` (default 600), `bladeStormWindowTicks` (default 80), `bladeStormMinTargets` (default 2). All server-side reads — not synced to clients, no protocol bump.
+
+New static state on [`CombatEventHandler`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java): `RECENT_HITS`, `LAST_ATTACKER`, `LAST_STAND_ACTIVE_UNTIL`, `BLADE_STORM_ACTIVE_UNTIL`. All four maps are pruned every 100 ticks in `onServerTick(Phase.END)`; the BLADE_STORM pruner additionally strips the `ATTACK_SPEED` modifier from any online player whose window has lapsed. State is transient (no NBT, no sync, dies with the server) — matches the R2 Apotheosis precedent.
+
+### Added — Integration scaffolding (batch 3)
+
+Four new mod-integration classes registered on the Forge bus via `RunicSkills.tryLoadIntegration(modId, fqcn)`. Each is a reflective-load class with a no-op `@SubscribeEvent onLivingHurt(LivingHurtEvent)` handler at NORMAL priority that batch 4 will populate with perk-effect code. The reflective-load path keeps the JVM from resolving the upstream APIs when the target mod is absent (same pattern as the existing Botania / Ars Nouveau / ISS / Apotheosis integrations).
+
+- **[`SaintsDragonsIntegration`](src/main/java/com/otectus/runicskills/integration/SaintsDragonsIntegration.java)** (mod id `saintsdragons`) — landing site for `DRACONIC_FURY`, `GLADIATOR`, `TROPHY_HUNTER` (R3 batch 4) plus the ~5 cross-tree perks (`DRAGON_BREATH_SHIELD`, `DRAGON_HEART`, `HEARTY_FEAST`, `DRAGON_RIDER`, `UNDYING_WILL`) wired in R4/R5/R6.
+- **[`NichirinDynastyIntegration`](src/main/java/com/otectus/runicskills/integration/NichirinDynastyIntegration.java)** (mod id `nichirin_dynasty`) — landing site for `NICHIRIN_BLADE`, `DRAGON_BONE_MASTERY` (R3 batch 4) plus `BLOODLUST` (later).
+- **[`SamuraiDynastyIntegration`](src/main/java/com/otectus/runicskills/integration/SamuraiDynastyIntegration.java)** (mod id `samurai_dynasty`) — pre-existing 277-line lock-generator class extended with event-handler scaffolding. Lock-generation paths (weapon / armor / katana / accessory) and the HandlerSkill call site are untouched. Landing site for `CLEAVE`, `TITANS_GRIP`, `SAMURAIS_EDGE` (R3 batch 4) plus 6 cross-tree perks (`LIGHTNING_ROD`, `NINJA_TRAINING`, `OBSIDIAN_SKIN`, `POISON_ARROW`, `WIND_RUNNER`, `SAMURAI_RESOLVE`) across R5/R6.
+- **[`EnigmaticLegacyIntegration`](src/main/java/com/otectus/runicskills/integration/EnigmaticLegacyIntegration.java)** (mod id `enigmaticlegacy`) — landing site for `ANCIENT_STRENGTH`, `CATACLYSMS_WRATH`, `CURSE_WARD` (R3 batch 4) plus ~8 cross-tree perks (`ARMOR_OF_FAITH`, `ARTIFACT_HUNTER`, `ENIGMATIC_PROTECTION`, `ENIGMATIC_UNDERSTANDING`, `ENIGMATIC_VITALITY`, `ENIGMATIC_WISDOM`, `MYSTIC_ANALYSIS`, `SAGES_FOCUS`, `SOUL_SUSTENANCE`) across R4/R7/R11.
+
+Bootstrap wiring added to [`RunicSkills.java`](src/main/java/com/otectus/runicskills/RunicSkills.java) alongside the existing reflective-load block. Each scaffold class includes a defensive `isModLoaded()` guard inside its handler (R0 B6 hardening pattern — belt-and-braces against a future refactor changing the registration path).
+
+### Added — Strength perks (batch 4: mod-gated, reflective namespace match)
+
+Four mod-gated perks wired into their batch-3 scaffold handlers + one always-available perk (TROPHY_HUNTER) in `CombatEventHandler`. All five detect their target items / entities by ResourceLocation namespace + path patterns instead of importing the upstream mod APIs — no new build dependencies, no Compat-wrapper classes, no stub jars.
+
+- **NICHIRIN_BLADE** ([`NichirinDynastyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/NichirinDynastyIntegration.java)). Bonus % damage when the player's main-hand item is in the `nichirin_dynasty` namespace.
+- **SAMURAIS_EDGE** ([`SamuraiDynastyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/SamuraiDynastyIntegration.java)). Bonus % damage when the main-hand item is in `samurai_dynasty` and its registry-id path contains `katana`, `wakizashi`, `odachi`, or `nagamaki` — matches the lang's "katana weapons" while excluding polearms, clubs, and short blades.
+- **ANCIENT_STRENGTH** ([`EnigmaticLegacyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/EnigmaticLegacyIntegration.java)). Bonus % damage when the main-hand item is in `enigmaticlegacy`.
+- **DRACONIC_FURY** ([`SaintsDragonsIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/SaintsDragonsIntegration.java)). Bonus % damage AND `target.setSecondsOnFire(2 + pct/25)` when the main-hand item is in `saintsdragons` and its path contains a draconic-anatomy keyword (`fang`/`claw`/`horn`/`tooth`/`wing`/`scale`/`dragon`). Two-part effect honours the lang's "bonus fire damage" with a visible ignite alongside the % bonus.
+- **TROPHY_HUNTER** (`CombatEventHandler.onLivingHurtStrengthAttacker`). Bonus % damage when the target qualifies as elite/boss by either (a) entity-type namespace ∈ `trophyHunterBossNamespaces` (default: apotheosis, cataclysm, iceandfire, mowziesmobs, saintsdragons, bossesofmass), OR (b) `MOB_CATEGORY == MONSTER && getMaxHealth() >= trophyHunterMinHealthForElite` (default 100). Vanilla Ender Dragon (200 HP) and Wither (300 HP) match (b); Elder Guardian (80 HP) does not at the default threshold — adjust if it should.
+
+New shared utility [`integration/IntegrationHelpers.java`](src/main/java/com/otectus/runicskills/integration/IntegrationHelpers.java) with three null-safe static methods (`itemFromMod`, `entityFromMod`, `itemPathContains`). Replaces the inline namespace-match idiom every integration was re-implementing. Reused by all 5 batch-4 handlers; older integrations (Spartan, IceAndFire, Mowzies, FarmersDelight) still use their inline copies but could migrate in a future hygiene pass.
+
+Two new config fields in `HandlerCommonConfig` for TROPHY_HUNTER tunables: `trophyHunterBossNamespaces` (`List<String>`) and `trophyHunterMinHealthForElite` (int, default 100). The four mod-gated perks reuse their existing `*Percent` fields. No protocol bump.
+
+### Deferred — R3 vague-batch (expanded from 3 to 6 — pending clarification session)
+
+Six Strength perks register but their lang descriptions don't uniquely determine a mechanic. Per the parent plan's vague-perk pause protocol, they're held for a single decision-batch session before R3 ships as `1.3.0`:
+
+- **`RUNIC_MIGHT`** (original) — "Runic ore weapons deal %s bonus damage." No vanilla "runic ore"; candidate gates: Apotheosis-affixed items, Ars Nouveau Source weapons, Ice and Fire dragonsteel, a datapack-driven item tag, or the mod's own items.
+- **`PRIMAL_FURY`** (original) — "When below 50%% health, your desperation grants %s bonus attack damage." Threshold is baked into the lang but has no Value slot; unclear if 50% should be configurable, and how it stacks with `LAST_STAND` active window.
+- **`UNSTOPPABLE_FORCE`** (original) — "Your strikes have a %s chance to briefly stun enemies." No vanilla stun effect, no duration slot in Value array. Candidate effects: `Slowness V`, `Wither I`, `irons_spellbooks:stun` (if ISS loaded), or a per-tick `setDeltaMovement(ZERO)`.
+- **`CLEAVE`** (batch 4) — "Your melee attacks cleave through enemies, hitting additional nearby targets." No `Value[]` declaration in `RegistryPerks`, no `cleavePercent` config. Need: AABB radius, target-count cap, damage scaling (flat split, per-target percent, or both).
+- **`TITANS_GRIP`** (batch 4) — "Your immense strength allows you to wield two-handed weapons alongside a shield." No `Value[]`. Need: definition of "two-handed weapon" (per-item-id list, per-attribute, or `SamuraiDynastyIntegration.WeaponType` enum), and the actual relaxation mechanic (allow shield in off-hand while wielding two-handed? bonus damage? speed-penalty removal?). Gated on `SpartanIntegration` per registration.
+- **`GLADIATOR`** (batch 4) — "Your shield bash damage is increased by %s." Vanilla has no shield bash. Need: definition (mod-provided shield-bash event detection? Re-interpret as "damage while blocking with shield raised"? Spartan Shields integration?). Currently always-available — the resolution may move the gate.
+
+Implementation lives in [`CombatEventHandler.onLivingHurtStrengthAttacker`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java) at NORMAL priority (attacker side) and [`CombatEventHandler.onLivingHurtStrengthVictim`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java) at LOWEST priority (victim side). Compile-clean; full `./gradlew build` passes including `:checkSidedImports`.
+
+### Fixed (1.3.4 hotfix — boot crash regression)
+
+- **`IllegalArgumentException: Duplicate registration rookie` at mod construction.** The 1.3.3 deploy crashed on first boot inside [`RegistryTitles.load`](src/main/java/com/otectus/runicskills/registry/RegistryTitles.java) — the per-title `forEach` over `HandlerTitlesConfig.titleList` invoked `DeferredRegister.register("rookie", …)` twice, with the second call throwing. Investigation found the on-disk `runicskills.titles.json5` has exactly one rookie entry, the compiled `List.of(new TitleModel(), …)` default has exactly one (the no-arg `TitleModel()` ctor sets `TitleId = "rookie"`), and YACL 3.6.6's `GsonConfigSerializer.loadSafely` does a plain reflective field-replacement (`field.set(instance, gson.fromJson(…))`). The doubling could not be explained from bytecode alone — the most plausible cause is a behavior shift between YACL 3.5.0 (compile-against version) and 3.6.6 (runtime version) in handling fields initialized to immutable `List.of(…)` defaults. Fix: defensive dedup in `RegistryTitles.load` — a `HashSet<String>` of seen `TitleId`s skips second occurrences with a one-line warning, and a null/empty TitleId guard precedes it. Correct regardless of where the doubling enters; surface area minimal. Investigation notes preserved in [the continue-r3-strength-tree plan file](C:\Users\crims\.claude\plans\continue-r3-strength-tree-curried-porcupine.md).
+
+### Fixed (1.3.5 hotfix — world-join crash regression)
+
+- **`Connection Lost — Invalid player data` on world entry.** The 1.3.4 dedup fixed the boot crash but exposed a downstream NPE: `serverPlayerTitles` iterated the raw `HandlerTitlesConfig.HANDLER.instance().titleList` (still containing the runtime-duplicated `TitleModel`) and called `getTitle().setRequirement(...)` on every entry. The skipped duplicate's `_title` field was never initialized (the 1.3.4 dedup skipped its `title.registry(TITLES)` call) → NPE → Forge aborts player placement and disconnects the client with the vanilla "Invalid player data" message. Fix: `RegistryTitles.load` now also replaces `HandlerTitlesConfig.HANDLER.instance().titleList = List.copyOf(uniqueTitles)` after registration, so downstream consumers see only the registered entries. `serverPlayerTitles` also gains a defensive `getTitle() != null` guard with a warning log as defense-in-depth.
+
+### Fixed (1.3.6 hotfix — world-join crash, third stage: unregistered Powers packets)
+
+- **`IllegalArgumentException: Invalid message PowerOverridesSyncCP` on world entry (same "Invalid player data" disconnect message).** Pre-existing latent bug unmasked by the 1.3.5 title-NPE fix. The 1.1.0 CHANGELOG entry claimed `PROTOCOL_VERSION` was bumped from 3 → 5 and that three new Powers packets (`PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP`) were added, but [`ServerNetworking.init`](src/main/java/com/otectus/runicskills/network/ServerNetworking.java#L21) had `PROTOCOL_VERSION = "4"` and zero `registerMessage(...)` calls for the three Powers packets. `PlayerLifecycleHandler.onPlayerLoggedInEvent` calls `PowerOverridesSyncCP.sendToPlayer` on join, which made Forge's `IndexedMessageCodec.build` throw `Invalid message …`; Forge's `firePlayerLoggedIn` propagated the exception and the server aborted player placement. The 1.3.4 title NPE was firing earlier in the same player-join code path and masked this — once 1.3.5 fixed the NPE, this surfaced. Fix: register `PowerOverridesSyncCP` (PLAY_TO_CLIENT), `PowerProcCP` (PLAY_TO_CLIENT), and `PowerEquipSP` (PLAY_TO_SERVER) in `ServerNetworking.init`, and bump `PROTOCOL_VERSION` to `"5"` to match the documented 1.1.0 wire format. No new build dependencies; no wire-format change beyond what 1.1.0 already documented.
+
+## [Unreleased] — R2 Apotheosis hardening (B3 + B4)
+
+Implementation of the R2 Apotheosis hardening release from `plan-the-full-implementation-floofy-quokka.md`.
 
 ### Fixed
 
-- (No new bug fixes this release — 1.1.0 was the catch-up consolidation.)
-
-### Removed from roadmap (won't ship)
-
-After triaging each deferred design-doc perk against the actual upstream API surface, the following are dropped permanently because they require invasive mixins into private dispatch paths or assume APIs that don't exist:
-
-- **Pack Caller** — ISS `SummonManager` is private and event-less.
-- **Eldritch Apprentice** — Eldritch research XP lives in a private capability with no extraction hook.
-- **Spawner Mage** / **Spawner Sanctuary** — ISS summons ≠ vanilla `SpawnerBlockEntity`; the perks conflate two mechanics. Apotheosis has no spawner event either.
-- **Split-Caster** — ISS 3.15 has no spell-casting-split event; pervasive mixin into spell dispatch is too invasive for the value.
-- **Glyph-Imbued Gem** — gem metadata is immutable post-socketing; no post-apply hook.
-- **Enchanter's Insight** — design assumes Ars uses enchantments (it uses glyphs); conceptual mismatch.
-- **Enchanter-Arms** — no Apotheosis event for enchantment-apply success.
-- **Apparatus Synergy** — Apotheosis Loot Apparatus is datapack-only; no hook.
-- **Mythical Scribe** — Ars has no glyph-discovery XP event.
-
-### Deferred to 1.3.0+
-
-Doable but blocked on implementation budget or scoped to wait until the new 1.2.0 event API has bedded in:
-
-- **Sourcelink Affix** — Ars `SpellResolveEvent.Post` + affix-name match for source refund. Drops to lower priority because it depends on Apotheosis affix-name stability.
-- **Adaptive Caster** — per-player school-cast history map with decay; signal-state pattern needs more design.
-- **Ars Familiar Attunement** — `EntityJoinLevelEvent` filtered by `IFamiliar`. Needs verification against Ars 4.12.x familiar-spawn paths.
-- **Botania Mana Overflow** — `TickEvent.PlayerTickEvent` + nearby-pool drain on mana-cap. Counterpart to Tidewoven/Resonance.
-- **ISS Cascade Attunement** — N-casts-of-X-unlock-Y-for-30s transient state map.
-- **Datapack-driven titles** — Forge's `IForgeRegistry<Title>` is frozen after `RegistryEvent`; full datapack support requires a parallel runtime title store with its own evaluation/sync plumbing. The existing `HandlerTitlesConfig.titleList` YACL config already lets pack authors author titles, just without vanilla `/reload` hot-swap. Targeted for 1.3.0.
-- **Gemsmith**, **Lucky Loot**, **Library Dedication**, **Ars Scholar**, **Glyphsmith**, **Bookwyrm's Apprentice** — all require reflection into private upstream state; group into a future "Ars / Apotheosis deep-integration" pass.
-- **Ritualist**, **Dead King's Debt**, **Ritualized Reforge**, **Arcane Syncretism** — multi-event coordination across mods; benefit from the 1.2.0 event API once external mods start adopting it.
-- **GameTest scaffolding** — initial gradle wiring and test-class scaffold are designed but the structure-file setup and per-class loader plumbing want a focused release. CI build of the main jar lands now; full GameTest run in CI lands later.
-
-### Notes
-
-- **Save-compatible with 1.1.0.** No NBT schema changes; the four new perk ranks default to 0 on first load. The 8 new config booleans default to `true` (preserve existing behavior). `PROTOCOL_VERSION` stays at `5` — no wire-format breaking changes. The 1.1.0→1.2.0 upgrade is drop-in.
-- **Tested:** `./gradlew clean build` passes (compileJava + `checkSidedImports` + reobf + jar assembly). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: client tooltip render at GUI scale 4 (no overflow), Apothic Apprentice + Socket Virtuoso stacking on a rare gem-socketed item, Spellsocket bonus visible in F3 spell-level overlay, Shift-click bulk-level a passive from 0 to 5 in one click.
+- **B3 (P2) — Apotheosis rarity ordinal hardcode replaced with name-keyed lookup.** [`ApotheosisIntegration.getRequiredFortuneLevel`](src/main/java/com/otectus/runicskills/integration/ApotheosisIntegration.java#L80) and [`countRareAffixItems`](src/main/java/com/otectus/runicskills/integration/ApotheosisIntegration.java#L408) now match rarity by `DynamicHolder.getId().getPath()` (`"common"`, `"uncommon"`, `"rare"`, `"epic"`, `"mythic"`, `"ancient"`) instead of `ordinal()`. Unknown rarity paths log once via `warnOnceForUnknownRarity` and default-deny (`Integer.MAX_VALUE`) — a future Apotheosis update that inserts a new tier can no longer be silently equipped without a config update.
+- **B4 (P2) — Apotheosis `lastInteractingPlayer` static-field race replaced with bounded UUID-keyed map.** Replaced the single `private static Player lastInteractingPlayer` with `recentInteractors: ConcurrentHashMap<UUID, Long>` keyed on player UUID and time-stamped to the current game tick. Reads via `resolveInteractor()` return only the most-recent interactor inside `INTERACTION_WINDOW_TICKS` (20 ticks / 1 second). Entries past the window are pruned every 100 ticks from `onPlayerTickPhase2a`. Two-player concurrent interactions no longer cross-pollinate socketing attribution; if no recent interactor exists, the perk-aware branch defaults to no-op and Apotheosis vanilla behavior takes over.
 
 ## [1.1.0] - 2026-05-08
 
-Consolidated post-1.0.0 release. Bundles the Botania integration (originally tagged 1.0.1), the magic-tree cross-mod expansion (originally tagged 1.0.2), the dedicated-server YACL safety refactor that the README has been advertising since 1.0.1 was actually fixed, the L2Tabs class-load fix (same shape as the 1.0.0 Legendary Tabs fix, missed at the time), and triage of three CurseForge user reports. Total of 120 new perks across five mod integrations plus a meaningful capability change — the mod now actually runs on dedicated servers without YACL installed.
+Consolidated post-1.0.0 release. Bundles the Botania integration (originally tagged 1.0.1), the magic-tree cross-mod expansion (originally tagged 1.0.2), the eight-alpha Powers framework development (originally tagged 1.1.0-alpha1..alpha8), the dedicated-server YACL safety refactor that the README has been advertising since 1.0.1 was actually fixed, the L2Tabs class-load fix (same shape as the 1.0.0 Legendary Tabs fix, missed at the time), and triage of three CurseForge user reports. **120 perks across five mod integrations + 75 Powers metadata stubs (28 with wired behavior) + a meaningful capability change** — the mod now actually runs on dedicated servers without YACL installed.
 
 ### Added — Botania (42 perks; 18 with effects, 24 default-disabled pending future implementation)
 
@@ -239,6 +168,49 @@ Socket Virtuoso (`+N` effective sockets via `GetItemSocketsEvent`). Affix Affini
 
 Six **Schoolbridges** (require ISS + Ars): each reads the caster's ISS `<school>_spell_power` attribute and bleeds a configurable fraction into outgoing Ars damage of the matched school — Fire→ELEMENTAL_FIRE, Ice→ELEMENTAL_WATER, Lightning→ELEMENTAL_AIR, Nature→ELEMENTAL_EARTH, Holy→ABJURATION, Ender→MANIPULATION. **Unified Arcana** (ISS + Ars): refunds a percent of Ars cast cost to the caster's ISS mana pool via `SpellResolveEvent.Post`. **Triple Threat** (ISS + Ars + Apotheosis): tick-reconciled `+%` modifiers on `max_mana`/`mana_regen`/`spell_power`, only active when all three mods are loaded. **Affix Focus** (ISS + Apotheosis): on `ModifySpellLevelEvent`, grants `+N` effective spell levels when the player has `N` or more Rare-or-better Apothic affix items equipped. Every cross-mod perk is null-registered when any required mod is missing — perks disappear from the tree rather than rendering as inert icons.
 
+### Added — Powers framework (75 catalogue, 28 wired, 11 of 15 Crowns)
+
+A new tiered abilities subsystem (Marks / Seals / Crowns) sits as a peer to the existing Perks tree. 75 Powers metadata entries are registered (5 per ISS school × 9 + 5 per cross-cutting category × 6); 28 have wired event-handler behaviors; the remaining 47 are equip-eligible no-op stubs that the UI can enumerate while their handlers ship in a follow-up. ISS-school Powers null-register when `irons_spellbooks` is absent; cross-cutting Powers are mod-agnostic. See `RUNIC_SKILLS_POWERS.md` for the full design spec.
+
+**Framework infrastructure:**
+- **`Power` / `PowerTier` / `PowerSchool`** ([registry/powers/](src/main/java/com/otectus/runicskills/registry/powers/)) — `Power` is pure metadata (tier, school `ResourceLocation`, governing skill, level gate, ICD, optional required mod-id); behavior lives in `PowerEventDispatcher` keyed by `Power.getName()`, matching the existing Perk pattern.
+- **`RegistryPowers`** — `DeferredRegister<Power>` parallel to `RegistryPerks`, with 75 `RegistryObject<Power>` entries and `getPower`/`getByTier`/`getBySchool`/`isDisabled` static helpers.
+- **`SkillCapability` extended** — new fields `equippedMarks: List<String>` (cap 5), `equippedSeals: List<String>` (cap 3), `equippedCrown: String`, `powerCooldowns: Map<String,Long>` (absolute game-time), `powerWindows: Map<String,Long>`. NBT keys `power.equippedMarks` / `power.equippedSeals` / `power.equippedCrown` / `powerCooldowns` / `powerWindows`, round-tripped in `serializeNBT` / `deserializeNBT` / `copyFrom`. Slot caps enforced inside `equipPower()`.
+- **`PowerOverrides` JSON loader** at `data/<ns>/powers/*.json`. Schema: `{ required_skill_level, icd_ticks, values: { k: number } }` — every field optional; packs can tune one knob without overriding the rest. `PowerOverridesReloadListener extends SimpleJsonResourceReloadListener` mirrors the `PerkGroupsReloadListener` pattern. Dispatcher reads via `PowerOverridesManager.valueOr(power, "damage_multiplier_bonus", fallback)`.
+- **Three new network packets** — `PowerOverridesSyncCP` (server → client, pushes tuned values on login and `/skillsreload`), `PowerProcCP` (server → client, 8-particle enchant-rune burst at the player for proc feedback), `PowerEquipSP` (player → server, equip/unequip with server-authoritative skill/tier/mod-gate validation).
+- **`PowerEventDispatcher`** ([registry/events/PowerEventDispatcher.java](src/main/java/com/otectus/runicskills/registry/events/PowerEventDispatcher.java)) — single Forge-bus subscriber registered only when ISS is loaded. Subscribes to `SpellOnCastEvent`, `SpellDamageEvent`, `LivingDamageEvent`, `LivingDeathEvent`, `LivingHurtEvent`, `CriticalHitEvent`, `SpellTeleportEvent`, `LivingDropsEvent`, `PlayerTickEvent`, `PlayerLoggedOutEvent`. Every handler short-circuits via `isEquipped(player, ro)` which honours the `disabledPowers` config.
+- **`PowerRuntime`** ([common/powers/](src/main/java/com/otectus/runicskills/common/powers/)) — bundles 8 shared per-player services into one static container: nested `SpellHistory` (ring-buffer of recent casts), `DamageTypeMemory`, `ProcWindows`, `InternalCooldowns`, `TargetTags`, `AllyDetector` (same-team players + owned-summon chains), `PositionBuffer` (60-tick rolling snapshot for Unraveled), `SummonRegistry`. Cleared on `PlayerLoggedOutEvent`; transient (persistent Power state lives on `SkillCapability`).
+- **`IronsSpellbooksPowerCompat`** — class-load-isolated wrapper for every `io.redspace.ironsspellbooks.*` symbol the dispatcher touches (`MagicData`, `AttributeRegistry.MAX_MANA`, `SchoolRegistry`, `SpellRegistry`, 10 `MobEffectRegistry` entries, event accessors). Same pattern as `BotaniaCompat`; ISS API is quarantined.
+- **`disabledPowers` config** — list of Power registry ids or fully-qualified names, admin kill-switch parallel to `disabledPerks`/`disabledPassives`.
+
+**75 Powers catalogue:**
+- **45 ISS-school Powers** — 5 per school (Mark/Mark/Seal/Seal/Crown) across Fire, Ice, Lightning, Holy, Ender, Evocation, Nature, Blood, Eldritch. All Magic-gated (30/60/90 for Mark/Seal/Crown).
+- **30 cross-cutting Powers** — 5 per category (Mark/Mark/Seal/Seal/Crown) across Projectile (Dexterity), Channel (Magic), Summon (Wisdom), Mobility (Dexterity), Weapon-Caster (Strength), Utility (Wisdom).
+
+**28 wired behaviors (47 still-stubbed):**
+- **11 Marks** — Sanctified Strike (HOLY +25% vs UNDEAD), Poisoner's Thumb (+15% vs poisoned), Brittle (+15% vs `chilled`), Blind Witness (+20% vs blinded), Crimson Tithe (heal 10% of blood-school damage dealt), Kindle (+20% FIRE vs `immolate`), Fortifying Bond (`fortify` self-pulse on HOLY casts), Forbidden Knowledge (Eldritch cast → 10s window where kills double drops), Rooted (`Regeneration I` pulse while standing still under `oakskin`), Step Between (`SpellTeleportEvent` opens a 30-tick window; next spell +20%), Vex Taunt (player-summon hits → 30% chance to redirect mob aggro).
+- **6 Seals** — Skybreaker (airborne Lightning cast opens window for +25% next damage; lightning-school kill clears Ascension cooldown), Guided Fate (any projectile +20% vs `guiding_bolt`-marked target), Harvest the Weak (blood-school kill on ≤30%-HP target stacks `HEALTH_BOOST`), Crackle Arc (player-melee + self-`charged` chains 4 magic damage to nearest hostile within 4 blocks; 10-tick ICD), Sacrifice Cascade (`irons_spellbooks:sacrifice` cast applies REND in 8-block radius + flat 15-mana refund), Counterspell Riposte (`irons_spellbooks:counterspell` cast opens 4s window; next damage +20%).
+- **11 Crowns** (9 of 9 ISS-school + 2 of 6 cross-cutting):
+  - **The Heart's Toll (Blood)** — `SpellOnCastEvent` deducts 5% of current HP via `magic` source on blood-school casts; `SpellDamageEvent` applies +30% above the 10%-HP floor and −50% below it. JSON-tunable on all four magnitudes.
+  - **Pyroclasm (Fire)** — entities dying with `immolate` near a Pyroclasm-equipped player detonate a 3-block fire AOE for 6 damage and reapply 4s `immolate`. Per-player rolling cap of 6 detonations per 2s window prevents chain-collapse.
+  - **Unraveled (Ender)** — first consumer of `PowerRuntime.PositionBuffer`. Cancels `LivingDeathEvent`, teleports the player to a 60-tick-old snapshot, restores 30% HP / 50% mana, clears all `MobEffect`s. 10-minute ICD, committed only on a successful rewind (no-ops cleanly if there's no past position).
+  - **The Apocrypha Awakens (Eldritch)** — inverted mana relationship: ≤20% mana → Eldritch costs 50% less + damage +40%; ≥80% mana → damage −20%; between thresholds → unchanged.
+  - **Thunder Lord (Lightning)** — every lightning-school damage instance opens a 4s proc window; while active, `onPlayerTick` every 40 ticks strikes the nearest hostile mob within 10 blocks for 3 magic damage. Non-recursive (uses vanilla `magic()` source, not ISS lightning).
+  - **The Grove Remembers (Nature)** — `LivingDamageEvent` from the player; if target carries ≥3 harmful `MobEffect`s, +30% damage on that hit.
+  - **Herald of Dawn (Holy)** — `LivingHurtEvent` on the equipped player, only on the hit that *crosses* the 30%-HP threshold (HP-fraction was above 30% before this damage, ≤30% after); heals self for 8 HP, applies 8s `fortify`, AABB-scans 12 blocks for {allies (heal+fortify) | hostile mobs in combat (10 holy damage)}. 30s ICD.
+  - **Glacial Sovereign (Ice)** — first non-trivial consumer of `PowerRuntime.SpellHistory.countSinceTick`. Every 20 ticks, if the player has cast ≥3 ice-school spells in the last 15s, scans a 12-block AABB and extends every active `chilled` instance on non-ally living entities by 20 ticks (capped at 200 ticks total).
+  - **Folded Space (Mobility cross-cutting)** — `SpellTeleportEvent` opens a 60-tick window; the next teleport-class spell to cast within that window pays 50% mana cost. Teleport spells matched via explicit allowlist (`teleport`, `blink`, `frost_step`, `blood_step`) — Magic Missile and Eldritch Blast also live in Ender school and would falsely qualify under a school filter.
+  - **Warmage's Covenant (Weapon-Caster cross-cutting)** — first `CriticalHitEvent` subscriber. A successful melee crit (vanilla or `Result.ALLOW`) opens a 10-tick window; the next `SpellDamageEvent` from the player consumes it for +25% damage.
+  - **Trickster's Aria (Evocation)** — first ISS-targeted mixin in the project. `MixTrueInvisibilityEffect` injects at HEAD of `io.redspace.ironsspellbooks.effect.TrueInvisibilityEffect.onDealDamage(LivingHurtEvent)` and cancels the invisibility-strip when the attacker has the Power equipped, the suppress window is active, and the damage's directEntity is a `Projectile`. Melee/touch damage still breaks invis (preserves the spec's counterplay clause). Sibling `.firstshot` window: first projectile-form `SpellDamageEvent` while active fires for +50%. Mixin uses `@Pseudo` + `remap = false` so the project still loads cleanly when ISS is absent — sets the pattern for future ISS-targeted hooks.
+
+**`PowersScreen` UI** ([client/screen/PowersScreen.java](src/main/java/com/otectus/runicskills/client/screen/PowersScreen.java)): three-column Marks/Seals/Crown panel with school-color-coded names (Fire orange, Ice cyan, Lightning yellow, Holy ivory, Ender violet, Blood crimson, Evocation green, Nature olive, Eldritch mint), Equip/Unequip vanilla `Button` per row, hover tooltip (translated name, tier, school, description, skill requirement, disabled-config flag), independent per-column scroll. Equip clicks send `PowerEquipSP`; the `SyncSkillCapabilityCP` resync rebuilds the buttons on the next frame. Runestone-slab visual polish: translucent dark title band with amber rules + amber title text; color-coded slot counter (`Marks 3/5 · Seals 2/3 · Crown 1/1`, red when full / green when free / dim grey when empty); per-column translucent backing panels with amber column-header underlines; equipped-row marker (2px amber stripe + `✓` prefix + bright-green name); amber-tinted hover band; footer hint band (`Esc to close · Scroll to navigate · Hover for details`). All chrome via `GuiGraphics.fill` calls — no new texture assets.
+
+**`/powers` admin command** (op-2 gated, mirrors `/titles`): `/powers list [mark|seal|crown]` (color-coded by equipped/disabled/grey), `/powers view` (caller's slot counter + equipped names), `/powers equip <power>` (tab-completion, bypasses skill-level gate for testing but respects tier slots and `disabledPowers`), `/powers unequip <power>` (suggestions narrow to equipped names).
+
+**`OPEN_POWERS_SCREEN` keybind** (default `U`, sits next to the existing `Y` for Skills). Registered in `RunicSkillsClient.ClientProxy.registerKeys`.
+
+**75 new lang keys** in `en_us.json`: `power.runicskills.<id>` + `power.runicskills.<id>.description` for every Power, plus `key.runicskills.open_powers`, `screen.runicskills.powers.{title,equip,unequip,no_capability}`, 3 `tier.runicskills.*`, 6 `school.runicskills.*`. Other locales fall back to en_us pending native translations.
+
 ### Added — Comment-triage configs
 
 - **`enableScholarEnchantmentHiding`** (`HandlerCommonConfig`, default `false`). Decouples the Scholar perk from the global enchantment-hiding mixin — see Fixed below. Mirrored through `CommonConfigSyncCP`.
@@ -256,25 +228,30 @@ Six **Schoolbridges** (require ISS + Ars): each reads the caster's ISS `<school>
 - **Item-lock requirement tooltips ignored the `enableItemLocks` master toggle** (originally noted in 1.0.1). `RegistryClientEvents.onTooltipDisplay` appended the "Requirements:" block whenever `HandlerSkill.getValue(...)` returned a non-null list, without consulting the config that gates server-side enforcement. Players who disabled item locks could freely use tools like the trident but still saw "Requires Level X" text. Fixed by checking `enableItemLocks` before rendering — when locks are off, the requirement block is hidden so the UI matches enforcement. The synced value from `CommonConfigSyncCP` is authoritative on joined clients; pre-join/main-menu tooltips fall back to the local config value.
 
 ### Changed
-- **Bumped network channel `PROTOCOL_VERSION` from `3` to `5`.** Two contributing wire-format growths: (a) `CommonConfigSyncCP` carries five new fields from the 1.0.0-era kill-switches (`maxActivePerks`, `disabledPerks`, `disabledPassives`, `perkSwapCooldownTicks`, `skillLevelUpCostMultiplier`) plus the new `PerkGroupsSyncCP` packet for datapack-driven perk groups; (b) one new boolean `enableScholarEnchantmentHiding` for the Scholar/enchantment-hiding decoupling. Old 1.0.0 clients connected to 1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent state-corruption bug. Clients and servers must update together.
+- **Bumped network channel `PROTOCOL_VERSION` from `3` to `5`.** Single coherent jump that absorbs every wire-format growth since the last public release: (a) five 1.0.0-era kill-switch fields on `CommonConfigSyncCP` (`maxActivePerks`, `disabledPerks`, `disabledPassives`, `perkSwapCooldownTicks`, `skillLevelUpCostMultiplier`) plus the new `PerkGroupsSyncCP` packet for datapack-driven perk groups; (b) one new boolean `enableScholarEnchantmentHiding` on `CommonConfigSyncCP` for the Scholar/enchantment-hiding decoupling; (c) three new Powers packets (`PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP`) plus the new equipped-Powers / `powerCooldowns` / `powerWindows` fields propagated via `SyncSkillCapabilityCP`. Old 1.0.0 clients connected to 1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent state-corruption bug. Clients and servers must update together.
 - **`mods.toml` YACL dependency** flipped from `mandatory=true` to `mandatory=false`, ordering set to `AFTER`. YACL is now genuinely optional everywhere; the server side doesn't need it (config persists via plain Gson) and the client side falls back to the parent screen with a log warning when the user clicks Configure without YACL installed.
 - **Sided-import lint extended** to forbid `dev.isxander.yacl3.*` executable-class imports (`ConfigClassHandler`, `serializer.*`, `gui.*`, `api.*`) outside `client/config/`. Annotation-only imports (`@SerialEntry`, `@AutoGen`, `@IntField`, `@FloatField`, `@Boolean`, `@ListGroup`) remain allowed because their RUNTIME retention doesn't trigger class loading on the server. Single best guardrail against re-introducing the dedicated-server crash.
 - **ISS compile dep bumped** from curse-maven file id `5539243` → `7402504` (pre-3.15 → 3.15.x). The older artifact predates `SpellCooldownAddedEvent` which Phase-1a Quickcast needs.
 - **Phase 1a texture-path audit.** Corrected ten `HandlerResources` entries to match the real ISS item sheet: `upgrade_orb_cast_time`→`cast_time_ring`, `upgrade_orb_mana_regen`→`mana_ring`, `antique_amulet`→`concentration_amulet`, `mana_potion`→`enchanted_ward_amulet`, `greater_mana_potion`→`greater_healing_potion`, `apprentice_spellbook`→`chronicle`, `affinity_ring`→`arcane_rune`, `scroll_of_haste`→`scroll`, `ancient_codex`→`chronicle_old`, `arcane_debris`→`arcane_essence`. Perks were functional before but rendered as missing-texture pink/black boxes.
 - **`apothItem()` helper path fix.** Apotheosis uses `textures/items/` (plural) not the vanilla `textures/item/`. Every Apotheosis perk icon now resolves correctly.
 - **Two design-doc rename clashes resolved:** doc's "Mana Shield" → `MANA_BULWARK` (doc's "Arcane Barrier" was already in use as an Endurance-tree perk), doc's "Second Wind" → `ARCANE_REPRIEVE` (Constitution tree already has `SECOND_WIND`).
+- **`PlayerLifecycleHandler` extensions** — `onPlayerLoggedInEvent` now also sends `PowerOverridesSyncCP` alongside the existing config / perk-group / skill-capability syncs; `onAddReloadListeners` now also registers `PowerOverridesReloadListener` alongside `PerkGroupsReloadListener`. `RunicSkillsClient.ClientProxy.registerKeys` now also registers `OPEN_POWERS_SCREEN` (default `U`).
 - **`VERSION` file synced** to `1.1.0` — through 1.0.1 it was left at `1.0.0`, partially corrected to `1.0.2` in the 1.0.2 source-only release, and now matches the published version.
 
 ### Removed
 - `attribItem()` helper from `HandlerResources`. `attributeslib` has no `textures/item/*.png` assets — the helper was dead code.
 
 ### Skipped (design-doc flagged risky, deferred to 1.2.0+)
-Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Reasons documented in the original phase commit messages.
+- **Perks** — Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Reasons documented in the original phase commit messages.
+- **Powers — 4 cross-cutting Crowns remaining:** Arcanist's Barrage (Projectile), The Long Note (Channel), The Conductor (Summon — needs `SummonManager` wrap, same blocker as Pack Caller), The Still Mind (Utility).
+- **Powers — design-deferred halves of shipped Crowns:** Glacial Sovereign's "Chilled accumulation rate doubled" half (application rate not mutable from the dispatcher) and Ice Tomb death-deny half (needs `LivingDeathEvent` cancel + scheduled re-kill timer scaffold); The Grove Remembers's heal-reduction half (vanilla `LivingHealEvent` lacks an attacker pointer for target-tagging); Folded Space's CD-bypass half (no per-spell cooldown override on `SpellOnCastEvent`); Thunder Lord's CD-reduction half (no per-spell-id cooldown mutator on cast events); Apocrypha Awakens's smooth damage curve between thresholds (shipped as discrete bands).
+- **Powers — broader design items:** Power Points budget (the doc's 1-PP-per-50-total-skill formula isn't enforced; current MVP allows 5/3/1 for any qualified player; follow-up: add `maxActivePowers` config to `PowerEquipSP`); full ally-detection beyond same-team players + owned-summon chains; codec-driven `MapCodec`-polymorphic Trigger/Effect dispatch (shipped the simpler numeric-override JSON which covers the admin-tuning use case without the polymorphic registration burden).
 
 ### Notes
-- **Save-compatible with 1.0.0.** No NBT schema changes. Existing `runicskills.common.json5` files (whether written by YACL pre-1.1.0 or by pack admins) load cleanly through `ConfigHolder`'s comment-stripper. Field names are unchanged; values are preserved. Players who unlocked any of the 24 default-disabled Botania perks before will simply see them disappear from the tree — their NBT rank entries are preserved and will reactivate if a pack admin sets the `*RequiredLevel` back to a positive value.
-- **Tested:** `./gradlew clean build` passes (compile + sided-imports + new YACL forbid + jar assembly + reobf). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: dedicated server boot without YACL installed (the flagship fix this release exists for), client boot without L2Tabs, `/globallimit` from singleplayer with cheats, `disabledPerks=["scholar"]` no longer hiding enchantments.
-- This release supersedes the source-only 1.0.1 (Botania) and 1.0.2 (magic-tree) tags; only 1.1.0 ships to CurseForge. The 1.0.x tags remain in git history for reference.
+- **Save-compatible with 1.0.0.** No NBT schema breakage. Existing `runicskills.common.json5` files (whether written by YACL pre-1.1.0 or by pack admins) load cleanly through `ConfigHolder`'s comment-stripper. Field names are unchanged; values are preserved. The new Powers fields on `SkillCapability` default to empty (`equippedMarks` / `equippedSeals` empty lists, `equippedCrown` empty string, `powerCooldowns` / `powerWindows` empty maps) so 1.0.x saves migrate trivially. Players who unlocked any of the 24 default-disabled Botania perks before will simply see them disappear from the tree — their NBT rank entries are preserved and will reactivate if a pack admin sets the `*RequiredLevel` back to a positive value.
+- **Tested:** `./gradlew clean build` passes (compile + sided-imports + new YACL forbid + jar assembly + reobf). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: dedicated server boot without YACL installed (the flagship fix this release exists for), client boot without L2Tabs, `/globallimit` from singleplayer with cheats, `disabledPerks=["scholar"]` no longer hiding enchantments. Powers behavior tests recommended per Power; the most useful spot-checks are the doc-flagged risky ones (Unraveled rewind, Trickster's Aria invisibility-suppress + first-shot bonus, The Heart's Toll HP cost + damage curve, Glacial Sovereign chilled-extension on a stack of mobs).
+- **Localization:** 9 of 17 locale files fall back to en_us for the new Powers strings and the `enableScholarEnchantmentHiding` / `chargeMasteryPercent` config labels; native translations are a follow-up.
+- **Supersession note:** This entry replaces the source-only 1.0.1, 1.0.2, and 1.1.0-alpha1..alpha8 tags. Only 1.1.0 ships to CurseForge. The earlier tags remain in git history for reference.
 
 ## [1.0.0] - 2026-04-24
 

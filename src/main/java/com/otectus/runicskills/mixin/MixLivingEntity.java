@@ -121,7 +121,7 @@ public abstract class MixLivingEntity {
     private boolean this$onAddEffect(MobEffectInstance effect, Player player) {
         int duration = effect.getDuration();
         if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL && (RegistryPerks.LION_HEART != null && RegistryPerks.LION_HEART.get().isEnabled(player))) {
-            duration -= (int)((double)effect.getDuration() * RegistryPerks.LION_HEART.get().getValue()[0] / 100.0D);
+            duration -= (int)((double)effect.getDuration() * RegistryPerks.LION_HEART.get().getActiveValue(player)[0] / 100.0D);
         }
 
         MobEffectInstance newEffect = new MobEffectInstance(effect.getEffect(), duration, effect.getAmplifier());
@@ -155,7 +155,7 @@ public abstract class MixLivingEntity {
         int amplifier = effect.getAmplifier();
         if (effect.getEffect().getCategory() == MobEffectCategory.BENEFICIAL && player.isUsingItem() && (player.getMainHandItem().getItem() instanceof PotionItem || player.getOffhandItem().getItem() instanceof PotionItem)) {
             if (RegistryPerks.ALCHEMY_MANIPULATION != null && RegistryPerks.ALCHEMY_MANIPULATION.get().isEnabled(player)) {
-                amplifier += (int)RegistryPerks.ALCHEMY_MANIPULATION.get().getValue()[0];
+                amplifier += (int)RegistryPerks.ALCHEMY_MANIPULATION.get().getActiveValue(player)[0];
             }
 
             float newDuration = (float)((int)(player.getAttributeValue(RegistryAttributes.BENEFICIAL_EFFECT.get()) * 20.0D));
@@ -192,11 +192,13 @@ public abstract class MixLivingEntity {
         LivingEntity var6 = this.this$class;
         if (var6 instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer)var6;
-            if(RegistryPerks.STEALTH_MASTERY != null){
-                double isSneaking = player.isShiftKeyDown() ? RegistryPerks.STEALTH_MASTERY.get().getValue()[0] : RegistryPerks.STEALTH_MASTERY.get().getValue()[1];
-                if (RegistryPerks.STEALTH_MASTERY.get().isEnabled(player)) {
-                    cir.setReturnValue(visibilityPercent * isSneaking / 100.0D);
-                }
+            if (RegistryPerks.STEALTH_MASTERY != null && RegistryPerks.STEALTH_MASTERY.get().isEnabled(player)) {
+                double[] values = RegistryPerks.STEALTH_MASTERY.get().getActiveValue(player);
+                // Value[] order (RegistryPerks.java:111-113):
+                //   [0] = unsneak percent — visibility when standing
+                //   [1] = sneak percent   — visibility when crouching
+                double visibilityFactor = player.isShiftKeyDown() ? values[1] : values[0];
+                cir.setReturnValue(visibilityPercent * visibilityFactor / 100.0D);
             }
         }
 

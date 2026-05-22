@@ -1,5 +1,6 @@
 package com.otectus.runicskills.handler;
 
+import com.mojang.logging.LogUtils;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,11 +11,14 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import org.slf4j.Logger;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioEquipEvent;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 
 public class HandlerCurios {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("curios");
     }
@@ -35,7 +39,9 @@ public class HandlerCurios {
                     }
                 }
                 // This NullPointerException can happen if this event is triggered before the player fully establish the connection.
-                catch (NullPointerException ignored) {
+                // Log so unexpected NPEs surface in logs instead of being silently swallowed.
+                catch (NullPointerException e) {
+                    LOGGER.warn("Curios canUseItem check threw NPE for {}: defaulting to DENY", player.getName().getString(), e);
                     event.setResult(Event.Result.DENY);
                 }
 

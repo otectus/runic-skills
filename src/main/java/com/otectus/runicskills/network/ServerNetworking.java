@@ -15,6 +15,12 @@ import java.util.Optional;
 
 public class ServerNetworking {
     private static int packetId = 0;
+    // 1.3.6: bumped "4" -> "5" to match the 1.1.0 CHANGELOG claim. The 1.1.0 release notes
+    // documented the three new Powers packets (PowerOverridesSyncCP, PowerProcCP, PowerEquipSP)
+    // and the protocol bump, but neither the registerMessage calls nor the version constant
+    // were ever landed in code. The missing registration caused IllegalArgumentException:
+    // "Invalid message PowerOverridesSyncCP" on player join, surfaced after the 1.3.5 title-NPE
+    // hotfix.
     private static final String PROTOCOL_VERSION = "5";
     public static SimpleChannel instance;
 
@@ -67,6 +73,13 @@ public class ServerNetworking {
         // CounterAttackSP removed: damage modifier is now computed entirely server-side in CombatEventHandler
         instance.registerMessage(packetId++, SetPlayerTitleSP.class, SetPlayerTitleSP::toBytes, SetPlayerTitleSP::new, SetPlayerTitleSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         instance.registerMessage(packetId++, OpenEnderChestSP.class, OpenEnderChestSP::toBytes, OpenEnderChestSP::new, OpenEnderChestSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        // Powers system packets (1.1.0 CHANGELOG documented them but they were never
+        // registered — caused the 1.3.5 world-join crash once the title-NPE was fixed).
+        // PowerOverridesSyncCP is sent at PlayerLoggedInEvent (see PlayerLifecycleHandler:62).
+        instance.registerMessage(packetId++, PowerOverridesSyncCP.class, PowerOverridesSyncCP::toBytes, PowerOverridesSyncCP::new, PowerOverridesSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, PowerProcCP.class, PowerProcCP::toBytes, PowerProcCP::new, PowerProcCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, PowerEquipSP.class, PowerEquipSP::toBytes, PowerEquipSP::new, PowerEquipSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static void sendToServer(Object message) {

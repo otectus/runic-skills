@@ -46,7 +46,7 @@ public class CraftingEventHandler {
                 event.getState().is(RegistryTags.Blocks.DIRT) && RegistryPerks.TREASURE_HUNTER.get().isEnabled(player)) {
             Level level = player.level();
             BlockPos pos = event.getPos();
-            ItemStack stack = TreasureHunterPerk.drop();
+            ItemStack stack = TreasureHunterPerk.drop(player);
             if (stack != null) {
                 ItemEntity itemEntity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
                 enqueueTask(level, () -> level.addFreshEntity(itemEntity), 0);
@@ -59,8 +59,8 @@ public class CraftingEventHandler {
         Player player = event.getEntity();
         if (player != null && RegistryPerks.CONVERGENCE != null) {
             if (player instanceof FakePlayer) return;
-            int randomizer = ThreadLocalRandom.current().nextInt((int) RegistryPerks.CONVERGENCE.get().getValue()[0]);
-            if (RegistryPerks.CONVERGENCE.get().isEnabled(player) && (RegistryPerks.CONVERGENCE.get().getValue()[0] >= 100 || randomizer == 1)) {
+            int randomizer = ThreadLocalRandom.current().nextInt((int) RegistryPerks.CONVERGENCE.get().getActiveValue(player)[0]);
+            if (RegistryPerks.CONVERGENCE.get().isEnabled(player) && (RegistryPerks.CONVERGENCE.get().getActiveValue(player)[0] >= 100 || randomizer == 1)) {
                 ItemStack convergenceItem = ConvergencePerk.drop(event.getCrafting());
                 if (convergenceItem != null) {
                     player.drop(convergenceItem, false);
@@ -109,11 +109,11 @@ public class CraftingEventHandler {
         Player player = event.getEntity();
         if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
             if (RegistryPerks.LOCKSMITH != null && RegistryPerks.LOCKSMITH.get().isEnabled(player)) {
-                int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LOCKSMITH.get().getValue()[0]);
+                int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LOCKSMITH.get().getActiveValue(player)[0]);
                 if (random == 0) {
                     int bonusXp = 5;
                     if (RegistryPerks.SAFE_CRACKER != null && RegistryPerks.SAFE_CRACKER.get().isEnabled(player)) {
-                        bonusXp += (int) RegistryPerks.SAFE_CRACKER.get().getValue()[0];
+                        bonusXp += (int) RegistryPerks.SAFE_CRACKER.get().getActiveValue(player)[0];
                     }
                     serverPlayer.giveExperiencePoints(bonusXp);
                 }
@@ -128,7 +128,7 @@ public class CraftingEventHandler {
                 RegistryPerks.LORE_MASTERY.get().isEnabled(sp)) {
             if (sp.containerMenu instanceof net.minecraft.world.inventory.GrindstoneMenu) {
                 int originalXp = event.getOrb().getValue();
-                int bonusXp = (int) (originalXp * (RegistryPerks.LORE_MASTERY.get().getValue()[0] - 1.0));
+                int bonusXp = (int) (originalXp * (RegistryPerks.LORE_MASTERY.get().getActiveValue(sp)[0] - 1.0));
                 if (bonusXp > 0) {
                     sp.giveExperiencePoints(bonusXp);
                 }
@@ -143,7 +143,7 @@ public class CraftingEventHandler {
                 Entity entity1 = event.getSource().getEntity();
                 if (entity1 instanceof ServerPlayer player) {
                     if (RegistryPerks.FIGHTING_SPIRIT != null) {
-                        new RegistryEffects.AddEffect(player, RegistryPerks.FIGHTING_SPIRIT.get().isEnabled(player), MobEffects.DAMAGE_BOOST).add((int) (10.0D + 20.0D * RegistryPerks.FIGHTING_SPIRIT.get().getValue()[1]), (int) (RegistryPerks.FIGHTING_SPIRIT.get().getValue()[0] - 1.0D));
+                        new RegistryEffects.AddEffect(player, RegistryPerks.FIGHTING_SPIRIT.get().isEnabled(player), MobEffects.DAMAGE_BOOST).add((int) (10.0D + 20.0D * RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[1]), (int) (RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[0] - 1.0D));
                     }
                 }
             }
@@ -151,7 +151,7 @@ public class CraftingEventHandler {
             Entity entity = event.getSource().getEntity();
             if (entity instanceof Player player) {
                 if (RegistryPerks.LIFE_EATER != null && RegistryPerks.LIFE_EATER.get().isEnabled(player)) {
-                    player.heal((float) RegistryPerks.LIFE_EATER.get().getValue()[0]);
+                    player.heal((float) RegistryPerks.LIFE_EATER.get().getActiveValue(player)[0]);
                 }
             }
 
@@ -159,7 +159,7 @@ public class CraftingEventHandler {
                 entity = event.getSource().getEntity();
                 if (entity instanceof Player player) {
                     if (RegistryPerks.LUCKY_DROP != null && RegistryPerks.LUCKY_DROP.get().isEnabled(player)) {
-                        int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LUCKY_DROP.get().getValue()[0]);
+                        int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[0]);
                         if (random == 0) {
                             List<ItemStack> equipment = new ArrayList<>();
                             for (ItemStack next : event.getEntity().getAllSlots()) {
@@ -182,8 +182,8 @@ public class CraftingEventHandler {
                                         ItemStack itemStack = dropEntity.getItem();
                                         if (!equipment.contains(itemStack)) {
                                             if (itemStack.getMaxStackSize() > 1)
-                                                itemStack.setCount(itemStack.getCount() * (int) RegistryPerks.LUCKY_DROP.get().getValue()[1]);
-                                            PlayerMessagesCP.send(player, "overlay.perk.runicskills.lucky_drop", (int) RegistryPerks.LUCKY_DROP.get().getValue()[1]);
+                                                itemStack.setCount(itemStack.getCount() * (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[1]);
+                                            PlayerMessagesCP.send(player, "overlay.perk.runicskills.lucky_drop", (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[1]);
                                             dropEntity.setItem(itemStack);
                                         }
                                     }

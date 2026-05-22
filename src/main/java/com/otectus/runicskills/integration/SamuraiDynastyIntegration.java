@@ -1,21 +1,91 @@
 package com.otectus.runicskills.integration;
 
+import com.mojang.logging.LogUtils;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Samurai Dynasty integration.
+ *
+ * <p>Pre-existing item-lock generator (weapons, armor, accessories — see
+ * {@code generateLockItems()} and the {@code generate*} helpers below). R3
+ * batch 3 adds event-handler scaffolding so the class can host effect code
+ * for Strength-tree perks gated on this mod (CLEAVE, TITANS_GRIP, SAMURAIS_EDGE)
+ * plus the ~6 cross-tree perks (LIGHTNING_ROD, NINJA_TRAINING, OBSIDIAN_SKIN,
+ * POISON_ARROW, WIND_RUNNER, SAMURAI_RESOLVE). Effect code lands in R3 batch 4
+ * (Strength) and later releases (rest).
+ *
+ * <p>The lock-generation path is unchanged. The class is now registered on
+ * {@code MinecraftForge.EVENT_BUS} via {@code tryLoadIntegration} so the new
+ * {@code @SubscribeEvent} handler below receives events.
+ */
 public class SamuraiDynastyIntegration {
 
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final String MOD_ID = "samurai_dynasty";
 
     public static boolean isModLoaded() {
         return ModList.get().isLoaded(MOD_ID);
+    }
+
+    public SamuraiDynastyIntegration() {
+        LOGGER.debug("Samurai Dynasty integration scaffold loaded (R3 batch 3); perk effects land in batch 4+.");
+    }
+
+    /**
+     * Attacker-side hook for Strength-tree perks gated on Samurai Dynasty.
+     * Currently wires SAMURAIS_EDGE (bonus damage with katana-class weapons).
+     * CLEAVE and TITANS_GRIP are deferred to the vague-batch decision session
+     * (no Value[] declarations — mechanic magnitude is undefined).
+     */
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void onLivingHurt(LivingHurtEvent event) {
+        if (!isModLoaded()) return;
+        Entity src = event.getSource().getEntity();
+        if (!(src instanceof Player player) || player.isCreative() || player instanceof FakePlayer) return;
+
+        // SAMURAIS_EDGE — bonus % damage when wielding a Samurai Dynasty katana-class
+        // weapon. The Samurai Dynasty katana family includes katana, wakizashi, odachi,
+        // and nagamaki (all curved-blade weapons); kunai/sai/kama/etc. are excluded as
+        // not "katana" per the lang. Detection by namespace + path-contains-katana-family
+        // keyword to keep the build dep-free.
+        if (RegistryPerks.SAMURAIS_EDGE != null && RegistryPerks.SAMURAIS_EDGE.get().isEnabled(player)) {
+            ItemStack main = player.getMainHandItem();
+            if (IntegrationHelpers.itemFromMod(main, MOD_ID) && isKatanaClassItem(main)) {
+                double pct = RegistryPerks.SAMURAIS_EDGE.get().getActiveValue(player)[0];
+                float dmg = event.getAmount();
+                event.setAmount(dmg + dmg * (float) (pct / 100.0));
+            }
+        }
+    }
+
+    /**
+     * True if the item's registry-id path matches a Samurai Dynasty katana-family
+     * weapon name. Used by SAMURAIS_EDGE; intentionally narrow to exclude polearms
+     * (naginata / kamayari), clubs (tetsubo), short blades (kunai / sai / kama),
+     * and utility items (shuko) so the perk matches the lang ("with katana weapons").
+     */
+    private static boolean isKatanaClassItem(ItemStack stack) {
+        return IntegrationHelpers.itemPathContains(stack, "katana")
+                || IntegrationHelpers.itemPathContains(stack, "wakizashi")
+                || IntegrationHelpers.itemPathContains(stack, "odachi")
+                || IntegrationHelpers.itemPathContains(stack, "nagamaki");
     }
 
     // --- Weapon Types ---

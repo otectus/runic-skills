@@ -7,6 +7,7 @@ import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,8 +22,8 @@ public class TreasureHunterPerk {
         cachedItems = null;
     }
 
-    public static ItemStack drop() {
-        int randomizer = (int) Math.floor(Math.random() * RegistryPerks.TREASURE_HUNTER.get().getValue()[0]);
+    public static ItemStack drop(Player player) {
+        int randomizer = (int) Math.floor(Math.random() * RegistryPerks.TREASURE_HUNTER.get().getActiveValue(player)[0]);
         ItemStack stack = null;
         for (int i = 0; i < getItems().size(); i++) {
             List<BlockDrops> drops = getItems().get(i);

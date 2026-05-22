@@ -127,7 +127,7 @@ public class BotaniaIntegration {
         if (player.tickCount % POOL_SCAN_INTERVAL_TICKS == 0
                 && RegistryPerks.INNER_WELLSPRING != null
                 && RegistryPerks.INNER_WELLSPRING.get().isEnabled(player)) {
-            int perTick = (int) RegistryPerks.INNER_WELLSPRING.get().getValue()[0];
+            int perTick = (int) RegistryPerks.INNER_WELLSPRING.get().getActiveValue(player)[0];
             if (perTick > 0) {
                 int drained = BotaniaCompat.drainNearbyPool(
                         player.level(), player.blockPosition(), perTick);
@@ -140,7 +140,7 @@ public class BotaniaIntegration {
                 && RegistryPerks.MAGNETITE != null
                 && RegistryPerks.MAGNETITE.get().isEnabled(player)
                 && !player.isShiftKeyDown()) {
-            int radius = (int) RegistryPerks.MAGNETITE.get().getValue()[0];
+            int radius = (int) RegistryPerks.MAGNETITE.get().getActiveValue(player)[0];
             pullItemsToward(player, radius);
         }
 
@@ -169,7 +169,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.RUNE_OF_EARTH_STONE_ROOTED == null) return;
         boolean enabled = RegistryPerks.RUNE_OF_EARTH_STONE_ROOTED.get().isEnabled(player)
                 && isStandingOnStoneFamily(player);
-        float amount = (float) RegistryPerks.RUNE_OF_EARTH_STONE_ROOTED.get().getValue()[0];
+        float amount = (float) RegistryPerks.RUNE_OF_EARTH_STONE_ROOTED.get().getActiveValue(player)[0];
         new RegistryAttributes.RegisterAttribute(player, Attributes.ARMOR, amount, BOTANIA_STONE_ROOTED_UUID)
                 .amplifyAttribute(enabled);
     }
@@ -177,7 +177,7 @@ public class BotaniaIntegration {
     private static void applyTerrasteelAscension(ServerPlayer player) {
         if (RegistryPerks.TERRASTEEL_ASCENSION == null) return;
         boolean enabled = RegistryPerks.TERRASTEEL_ASCENSION.get().isEnabled(player);
-        float hp = (float) RegistryPerks.TERRASTEEL_ASCENSION.get().getValue()[0];
+        float hp = (float) RegistryPerks.TERRASTEEL_ASCENSION.get().getActiveValue(player)[0];
         new RegistryAttributes.RegisterAttribute(player, Attributes.MAX_HEALTH, hp, BOTANIA_TERRASTEEL_HP_UUID)
                 .amplifyAttribute(enabled);
         new RegistryAttributes.RegisterAttribute(player, Attributes.ARMOR_TOUGHNESS, 1.0f, BOTANIA_TERRASTEEL_TGH_UUID)
@@ -187,7 +187,7 @@ public class BotaniaIntegration {
     private static void applyCrownOfReach(ServerPlayer player) {
         if (RegistryPerks.CROWN_OF_REACH == null) return;
         boolean enabled = RegistryPerks.CROWN_OF_REACH.get().isEnabled(player);
-        float bonus = (float) RegistryPerks.CROWN_OF_REACH.get().getValue()[0];
+        float bonus = (float) RegistryPerks.CROWN_OF_REACH.get().getActiveValue(player)[0];
         new RegistryAttributes.RegisterAttribute(player, ForgeMod.ENTITY_REACH.get(), bonus, BOTANIA_CROWN_ENT_UUID)
                 .amplifyAttribute(enabled);
         new RegistryAttributes.RegisterAttribute(player, ForgeMod.BLOCK_REACH.get(), bonus, BOTANIA_CROWN_BLK_UUID)
@@ -197,7 +197,7 @@ public class BotaniaIntegration {
     private static void applyFarReach(ServerPlayer player) {
         if (RegistryPerks.BOTANIA_FAR_REACH == null) return;
         boolean enabled = RegistryPerks.BOTANIA_FAR_REACH.get().isEnabled(player);
-        float bonus = (float) RegistryPerks.BOTANIA_FAR_REACH.get().getValue()[0];
+        float bonus = (float) RegistryPerks.BOTANIA_FAR_REACH.get().getActiveValue(player)[0];
         new RegistryAttributes.RegisterAttribute(player, ForgeMod.ENTITY_REACH.get(), bonus, BOTANIA_FAR_REACH_ENT_UUID)
                 .amplifyAttribute(enabled);
         new RegistryAttributes.RegisterAttribute(player, ForgeMod.BLOCK_REACH.get(), bonus, BOTANIA_FAR_REACH_BLK_UUID)
@@ -227,7 +227,7 @@ public class BotaniaIntegration {
         // Rune of Fire: Emberheart — flat fire damage on attacks
         if (RegistryPerks.RUNE_OF_FIRE_EMBERHEART != null
                 && RegistryPerks.RUNE_OF_FIRE_EMBERHEART.get().isEnabled(player)) {
-            float extra = (float) RegistryPerks.RUNE_OF_FIRE_EMBERHEART.get().getValue()[0];
+            float extra = (float) RegistryPerks.RUNE_OF_FIRE_EMBERHEART.get().getActiveValue(player)[0];
             if (extra > 0.0f) event.setAmount(event.getAmount() + extra);
             victim.setSecondsOnFire(Math.max(victim.getRemainingFireTicks() / 20, 2));
         }
@@ -237,7 +237,7 @@ public class BotaniaIntegration {
                 && RegistryPerks.SOLAR_CONDUIT.get().isEnabled(player)
                 && player.level().isDay()
                 && player.level().canSeeSky(player.blockPosition())) {
-            int pct = (int) RegistryPerks.SOLAR_CONDUIT.get().getValue()[0];
+            int pct = (int) RegistryPerks.SOLAR_CONDUIT.get().getActiveValue(player)[0];
             event.setAmount(event.getAmount() * (1.0f + pct / 100.0f));
         }
     }
@@ -255,7 +255,7 @@ public class BotaniaIntegration {
         if (source.is(net.minecraft.world.damagesource.DamageTypes.FALL)
                 && RegistryPerks.RUNE_OF_AIR_FEATHERSTEP != null
                 && RegistryPerks.RUNE_OF_AIR_FEATHERSTEP.get().isEnabled(player)) {
-            float mult = (float) RegistryPerks.RUNE_OF_AIR_FEATHERSTEP.get().getValue()[0];
+            float mult = (float) RegistryPerks.RUNE_OF_AIR_FEATHERSTEP.get().getActiveValue(player)[0];
             event.setAmount(event.getAmount() * mult);
         }
 
@@ -264,8 +264,8 @@ public class BotaniaIntegration {
                 && source.getDirectEntity() == source.getEntity() // melee (not projectile)
                 && RegistryPerks.FROSTBOUND != null
                 && RegistryPerks.FROSTBOUND.get().isEnabled(player)) {
-            float coldDmg = (float) RegistryPerks.FROSTBOUND.get().getValue()[0];
-            int slowSeconds = (int) RegistryPerks.FROSTBOUND.get().getValue()[1];
+            float coldDmg = (float) RegistryPerks.FROSTBOUND.get().getActiveValue(player)[0];
+            int slowSeconds = (int) RegistryPerks.FROSTBOUND.get().getActiveValue(player)[1];
             if (coldDmg > 0) attacker.hurt(player.damageSources().freeze(), coldDmg);
             attacker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slowSeconds * 20, 0));
         }
@@ -293,7 +293,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.THUNDERCALL == null
                 || !RegistryPerks.THUNDERCALL.get().isEnabled(player)) return;
 
-        int pct = (int) RegistryPerks.THUNDERCALL.get().getValue()[0];
+        int pct = (int) RegistryPerks.THUNDERCALL.get().getActiveValue(player)[0];
         if (RNG.nextInt(100) >= pct) return;
         if (!(player.level() instanceof ServerLevel serverLevel)) return;
 
@@ -334,7 +334,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.HARVEST_TITHE == null
                 || !RegistryPerks.HARVEST_TITHE.get().isEnabled(player)) return;
 
-        int pct = (int) RegistryPerks.HARVEST_TITHE.get().getValue()[0];
+        int pct = (int) RegistryPerks.HARVEST_TITHE.get().getActiveValue(player)[0];
         if (RNG.nextInt(100) >= pct) return;
 
         LivingEntity victim = event.getEntity();
@@ -358,7 +358,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.BOTANIA_GREEN_THUMB != null
                 && RegistryPerks.BOTANIA_GREEN_THUMB.get().isEnabled(player)
                 && (state.is(BlockTags.LEAVES) || state.is(BlockTags.FLOWERS) || state.is(BlockTags.TALL_FLOWERS))) {
-            int oneInN = (int) RegistryPerks.BOTANIA_GREEN_THUMB.get().getValue()[0];
+            int oneInN = (int) RegistryPerks.BOTANIA_GREEN_THUMB.get().getActiveValue(player)[0];
             if (RNG.nextInt(Math.max(1, oneInN)) == 0) {
                 ItemStack drop = state.getBlock().asItem().getDefaultInstance();
                 if (!drop.isEmpty()) {
@@ -371,7 +371,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.BOTANIA_LIVINGBARK_STUDENT != null
                 && RegistryPerks.BOTANIA_LIVINGBARK_STUDENT.get().isEnabled(player)
                 && state.is(BlockTags.LOGS)) {
-            int pct = (int) RegistryPerks.BOTANIA_LIVINGBARK_STUDENT.get().getValue()[0];
+            int pct = (int) RegistryPerks.BOTANIA_LIVINGBARK_STUDENT.get().getActiveValue(player)[0];
             if (RNG.nextInt(100) < pct) {
                 // Give an oak sapling as the safe default; the tree-type-aware version is a polish task.
                 BlockPos pos = event.getPos();
@@ -397,7 +397,7 @@ public class BotaniaIntegration {
         if (RegistryPerks.CAKE_COMBUSTION != null
                 && RegistryPerks.CAKE_COMBUSTION.get().isEnabled(player)
                 && player.getFoodData().getFoodLevel() >= 20) {
-            int seconds = (int) RegistryPerks.CAKE_COMBUSTION.get().getValue()[0];
+            int seconds = (int) RegistryPerks.CAKE_COMBUSTION.get().getActiveValue(player)[0];
             player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, seconds * 20, 0));
             player.level().playSound(null, player, SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.6f, 1.0f);
         }

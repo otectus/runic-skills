@@ -9,6 +9,7 @@ import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.packet.client.*;
 import com.otectus.runicskills.registry.*;
 import com.otectus.runicskills.registry.perks.PerkGroupsReloadListener;
+import com.otectus.runicskills.registry.powers.PowerOverridesReloadListener;
 import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -58,6 +59,7 @@ public class PlayerLifecycleHandler {
                 CommonConfigSyncCP.sendToPlayer(serverPlayer);
                 DynamicConfigSyncCP.sendToPlayer(serverPlayer);
                 PerkGroupsSyncCP.sendToPlayer(serverPlayer);
+                PowerOverridesSyncCP.sendToPlayer(serverPlayer);
             }
         }
     }
@@ -87,6 +89,7 @@ public class PlayerLifecycleHandler {
         UpdateSkillLevelCommand.register(event.getDispatcher());
         RespecCommand.register(event.getDispatcher());
         ListSkillsCommand.register(event.getDispatcher());
+        PowersCommand.register(event.getDispatcher());
     }
 
     @SubscribeEvent
@@ -107,6 +110,7 @@ public class PlayerLifecycleHandler {
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new PerkGroupsReloadListener());
         event.addListener(new com.otectus.runicskills.registry.skill.SkillVisualsReloadListener());
+        event.addListener(new PowerOverridesReloadListener());
     }
 
     @SubscribeEvent

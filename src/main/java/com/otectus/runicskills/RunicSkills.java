@@ -56,12 +56,21 @@ public class RunicSkills {
         RegistrySkills.load(eventBus);
         RegistryPassives.load(eventBus);
         RegistryPerks.load(eventBus);
+        RegistryPowers.load(eventBus);
         RegistryAttributes.load(eventBus);
         RegistrySounds.load(eventBus);
         RegistryArguments.load(eventBus);
         RegistryTitles.load(eventBus);
 
         MinecraftForge.EVENT_BUS.register(new RegistryCommonEvents());
+        // Powers dispatcher imports ISS event types at class-load time, so gate its load on
+        // ISS presence to avoid NoClassDefFoundError — same rule as the other ISS-typed
+        // integration class. Powers that don't touch ISS (cross-cutting categories) are
+        // currently unimplemented Phase 2/3 work; when they land, split the dispatcher into
+        // an ISS half and a vanilla half so cross-cutting Powers still fire without ISS.
+        if (IronsSpellbooksIntegration.isModLoaded()) {
+            MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.PowerEventDispatcher());
+        }
 
         // Integrations that import external mod APIs — loaded via Class.forName so the
         // integration class is never in RunicSkills' constant pool, preventing
@@ -87,6 +96,16 @@ public class RunicSkills {
             tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
         if (cfg.enableFTBQuestsIntegration)
             tryLoadIntegration("ftbquests",        "com.otectus.runicskills.integration.quests.FTBQuestsIntegration");
+        // R3 batch 3 scaffolding: integration classes registered so batch 4 has live
+        // @SubscribeEvent landing sites. Each handler is a no-op until batch 4 wires
+        // its Strength-tree perks (DRACONIC_FURY / GLADIATOR / TROPHY_HUNTER for Saints'
+        // Dragons; NICHIRIN_BLADE / DRAGON_BONE_MASTERY for Nichirin; CLEAVE / TITANS_GRIP
+        // / SAMURAIS_EDGE for Samurai; ANCIENT_STRENGTH / CATACLYSMS_WRATH for Enigmatic
+        // Legacy). Reflective load keeps the JVM from resolving the upstream APIs.
+        tryLoadIntegration("saintsdragons",    "com.otectus.runicskills.integration.SaintsDragonsIntegration");
+        tryLoadIntegration("nichirin_dynasty", "com.otectus.runicskills.integration.NichirinDynastyIntegration");
+        tryLoadIntegration("samurai_dynasty",  "com.otectus.runicskills.integration.SamuraiDynastyIntegration");
+        tryLoadIntegration("enigmaticlegacy",  "com.otectus.runicskills.integration.EnigmaticLegacyIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation.
         if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded())
