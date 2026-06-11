@@ -16,7 +16,15 @@ public class AdvancementCondition extends ConditionImpl<Boolean> {
 
     @Override
     public void ProcessVariable(String value, ServerPlayer serverPlayer) {
-        Advancement advancement = Objects.requireNonNull(serverPlayer.getServer()).getAdvancements().getAdvancement(new ResourceLocation(value.replace("-", "/")));
+        // tryParse returns null (instead of throwing ResourceLocationException) on a malformed
+        // advancement id, so a typo in a title condition can't crash title evaluation.
+        ResourceLocation advancementId = ResourceLocation.tryParse(value.replace("-", "/"));
+        if (advancementId == null) {
+            RunicSkills.getLOGGER().error(">> Error! Advancement name {} is not a valid resource location!", value);
+            setProcessedValue(false);
+            return;
+        }
+        Advancement advancement = Objects.requireNonNull(serverPlayer.getServer()).getAdvancements().getAdvancement(advancementId);
         if (advancement == null){
             RunicSkills.getLOGGER().error(">> Error! Advancement name {} not found!", value);
             setProcessedValue(false);

@@ -23,7 +23,10 @@ public class ConfigParser {
             RunicSkills.getLOGGER().warn(">> [{}] Malformed resource location (expected 'namespace:path'): {}", context, resourceString);
             return Optional.empty();
         }
-        ResourceLocation loc = new ResourceLocation(parts[0], parts[1]);
+        ResourceLocation loc = tryBuild(parts[0], parts[1], resourceString, context);
+        if (loc == null) {
+            return Optional.empty();
+        }
         Item item = ForgeRegistries.ITEMS.getValue(loc);
         if (item == null) {
             RunicSkills.getLOGGER().warn(">> [{}] Item not found in registry: {}", context, loc);
@@ -42,7 +45,23 @@ public class ConfigParser {
             RunicSkills.getLOGGER().warn(">> [{}] Malformed resource location (expected 'namespace:path'): {}", context, resourceString);
             return Optional.empty();
         }
-        return Optional.of(new ResourceLocation(parts[0], parts[1]));
+        ResourceLocation loc = tryBuild(parts[0], parts[1], resourceString, context);
+        return Optional.ofNullable(loc);
+    }
+
+    /**
+     * Builds a {@link ResourceLocation}, returning {@code null} (with a WARN) instead of throwing
+     * {@code ResourceLocationException} when the namespace/path contain illegal characters. The
+     * earlier {@code new ResourceLocation(parts[0], parts[1])} could crash config loading on a
+     * single typo (e.g. an uppercase letter or space in a modpack-author's entry).
+     */
+    private static ResourceLocation tryBuild(String namespace, String path, String original, String context) {
+        try {
+            return new ResourceLocation(namespace, path);
+        } catch (RuntimeException e) {
+            RunicSkills.getLOGGER().warn(">> [{}] Invalid resource location '{}': {}", context, original, e.getMessage());
+            return null;
+        }
     }
 
     /**

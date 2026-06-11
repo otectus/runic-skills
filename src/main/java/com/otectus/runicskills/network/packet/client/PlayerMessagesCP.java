@@ -37,7 +37,9 @@ public class PlayerMessagesCP {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             LocalPlayer localPlayer = (Minecraft.getInstance()).player;
-            assert localPlayer != null;
+            // Explicit guard instead of `assert` (no-op in production): the player can be gone by the
+            // time this runs on the client thread (world unload / fast respawn) — don't NPE.
+            if (localPlayer == null) return;
             if (this.message.equals("overlay.perk.runicskills.lucky_drop") && HandlerConfigClient.showLuckyDropPerkOverlay.get()) {
                 localPlayer.displayClientMessage(Component.translatable(this.message, this.amount), true);
             } else if ((this.message.equals("overlay.perk.runicskills.critical_roll_1") || this.message.equals("overlay.perk.runicskills.critical_roll_6")) && HandlerConfigClient.showCriticalRollPerkOverlay.get()) {

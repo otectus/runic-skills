@@ -29,8 +29,9 @@ public abstract class MixShulkerBullet {
         LivingEntity livingentity = (entity1 instanceof LivingEntity) ? (LivingEntity) entity1 : null;
         boolean flag = entity.hurt(this.this$class.damageSources().mobProjectile(this.this$class, livingentity), 4.0F);
         if (flag) {
-            assert livingentity != null;
-            this.this$class.doEnchantDamageEffects(livingentity, entity);
+            // Guard instead of `assert livingentity != null` (assertions are off in production, so the
+            // assert was a no-op and doEnchantDamageEffects could NPE when the bullet has no living owner).
+            if (livingentity != null) this.this$class.doEnchantDamageEffects(livingentity, entity);
             if (entity instanceof LivingEntity livingentity1) {
                 if (livingentity1 instanceof Player player) {
                     if (RegistryPerks.TURTLE_SHIELD == null || !RegistryPerks.TURTLE_SHIELD.get().isEnabled(player)) {

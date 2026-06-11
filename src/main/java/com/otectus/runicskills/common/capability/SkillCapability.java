@@ -332,8 +332,14 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         this.playerTitle = title.getName();
     }
 
+    // Null-safe registry lookups: ForgeRegistries.*.getKey(...) returns null for an
+    // unregistered/modded entry (e.g. an item from a mod being removed). A null id cannot match
+    // any lock entry, so use is allowed. The previous Objects.requireNonNull(...) threw an NPE here
+    // — on the server during a use/attack/equip, mid-gameplay — instead of gracefully allowing it.
+    // This mirrors the null check already present in ClientCapabilityAccess.canUseItemClient.
     public boolean canUseItem(Player player, ItemStack item) {
-        return canUse(player, Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item.getItem())));
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
+        return id == null || canUse(player, id);
     }
 
     public boolean canUseItem(Player player, ResourceLocation resourceLocation) {
@@ -345,11 +351,13 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     public boolean canUseBlock(Player player, Block block) {
-        return canUse(player, Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(block)));
+        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(block);
+        return id == null || canUse(player, id);
     }
 
     public boolean canUseEntity(Player player, Entity entity) {
-        return canUse(player, Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType())));
+        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        return id == null || canUse(player, id);
     }
 
     private boolean canUse(Player player, ResourceLocation resource) {

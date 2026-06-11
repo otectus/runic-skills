@@ -4,7 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.otectus.runicskills.RunicSkills;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -12,6 +13,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.function.Supplier;
 
 /**
@@ -41,6 +43,12 @@ import java.util.function.Supplier;
  * and is wrapped in error-handling there for the YACL-absent case.
  */
 public class ConfigHolder<T> {
+
+    // Own slf4j logger rather than LOGGER: a generic config-storage utility
+    // shouldn't depend on the @Mod main class, and this keeps the class loadable (and its
+    // load/save/recovery paths unit-testable) without bootstrapping Forge. slf4j is bound to
+    // Forge's Log4j2 at runtime, so in-game log output is unchanged aside from the logger name.
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigHolder.class);
 
     private final Class<T> type;
     private final Path path;
@@ -79,18 +87,38 @@ public class ConfigHolder<T> {
                     instance = loaded;
                     return;
                 }
+                // File existed but parsed to null (empty file, or a literal `null`). Fall
+                // through to regenerate, logging at INFO so it's traceable but not alarming.
+                LOGGER.info("Config {} was empty; regenerating defaults.", path);
             } catch (Exception e) {
-                RunicSkills.getLOGGER().warn(
-                        "Failed to read {} ({}); falling back to defaults",
-                        path, e.getMessage());
+                // Malformed file. Preserve the user's (broken) edits as a sibling .invalid copy
+                // before overwriting with defaults, so a typo never silently destroys their work.
+                LOGGER.warn(
+                        "Failed to parse {} ({}); regenerating defaults and keeping the unparseable "
+                        + "file as {}.invalid for recovery.", path, e.getMessage(), path.getFileName());
+                backupInvalid();
             }
+        } else {
+            // First run, or the user deleted the file. Deleting a config REGENERATES defaults —
+            // it does not disable a feature. INFO names the file so this is obvious in the log.
+            LOGGER.info("Config {} not found; writing defaults.", path);
         }
         instance = defaultSupplier.get();
         try {
             ensureParent();
             save();
         } catch (Exception e) {
-            RunicSkills.getLOGGER().warn("Failed to write defaults to {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to write defaults to {}: {}", path, e.getMessage());
+        }
+    }
+
+    /** Copies an unparseable config file to a sibling {@code <name>.invalid} before it is overwritten. */
+    private void backupInvalid() {
+        try {
+            Path backup = path.resolveSibling(path.getFileName().toString() + ".invalid");
+            Files.copy(path, backup, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            LOGGER.warn("Could not back up unparseable config {}: {}", path, e.getMessage());
         }
     }
 
@@ -99,14 +127,14 @@ public class ConfigHolder<T> {
         try {
             ensureParent();
         } catch (IOException e) {
-            RunicSkills.getLOGGER().warn("Failed to create parent directory for {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to create parent directory for {}: {}", path, e.getMessage());
             return;
         }
         Gson gson = prettyPrint ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
         try (Writer w = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             gson.toJson(instance, w);
         } catch (IOException e) {
-            RunicSkills.getLOGGER().warn("Failed to save {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to save {}: {}", path, e.getMessage());
         }
     }
 

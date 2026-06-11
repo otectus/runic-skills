@@ -41,7 +41,11 @@ public class RegisterItem {
                 player.sendSystemMessage(Component.literal("No item detected in main hand!"));
                 return Command.SINGLE_SUCCESS;
             }
-            ResourceLocation location = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(stack.getItem()));
+            ResourceLocation location = ForgeRegistries.ITEMS.getKey(stack.getItem());
+            if (location == null) {
+                player.sendSystemMessage(Component.literal("Item in main hand is not a registered item; cannot add it to the lock list."));
+                return Command.SINGLE_SUCCESS;
+            }
             String skillName = command.getArgument("skill", String.class);
             Integer level = command.getArgument("level", Integer.class);
 

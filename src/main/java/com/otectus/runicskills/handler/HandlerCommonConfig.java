@@ -61,6 +61,7 @@ public class HandlerCommonConfig {
     public List<String> disabledPassives = Arrays.asList();
 
     @SerialEntry(comment = "Power registry names to disable. Disabled powers cannot be equipped; previously-equipped entries are filtered out at runtime. Use the registry path only, e.g. \"fire_mark\" or a full id like \"runicskills:fire_mark\".")
+    @AutoGen(category = "common", group = "general")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPowers = Arrays.asList();
 
@@ -940,6 +941,16 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int eagleEyePercent = 15;
 
+    @SerialEntry(comment = "Eagle Eye: distance (blocks) where the bonus starts ramping up from 0")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 200)
+    public int eagleEyeRampStartBlocks = 10;
+
+    @SerialEntry(comment = "Eagle Eye: distance (blocks) where the bonus reaches its full configured value")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 2, max = 400)
+    public int eagleEyeRampFullBlocks = 40;
+
     @SerialEntry(comment = "Rapid Fire perk attack speed percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1075,6 +1086,11 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int sniperPercent = 20;
+
+    @SerialEntry(comment = "Sniper: minimum distance (blocks) to the target before the bonus applies")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 200)
+    public int sniperDistanceThreshold = 30;
 
     @SerialEntry(comment = "Smoke Bomb perk stealth duration percent")
     @AutoGen(category = "common", group = "perks")
@@ -3071,9 +3087,14 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int arcaneBarrierRequiredLevel = 16;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int spellQuickeningRequiredLevel = 12;
+    // Spell Quickening was a duplicate of the working QUICKENING perk
+    // (see IronsSpellbooksIntegration#onPlayerTickPhase1a). Default value -1 disables
+    // registration so it no longer appears in the skill tree. Players who already
+    // unlocked it keep their skill points; flip back to a positive value if a
+    // distinct effect is ever implemented.
+    @SerialEntry(comment = "Required level to unlock Spell Quickening (-1 = disabled; duplicate of Quickening)")
+    @IntField(min = -1)
+    public int spellQuickeningRequiredLevel = -1;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int sourceAttunementRequiredLevel = 18;

@@ -28,7 +28,8 @@ public class RegistryClientEvents {
             List<Component> tooltips = event.getToolTip();
             ItemStack itemStack = event.getItemStack();
 
-            ResourceLocation location = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem()));
+            ResourceLocation location = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+            if (location == null) return; // unregistered/modded item: no lock entry possible, don't NPE the tooltip
             List<Skills> list = HandlerSkill.getValue(location.toString());
             if (list != null && HandlerCommonConfig.HANDLER.instance().enableItemLocks) {
                 // Capability may not be synced yet when a tooltip renders pre-join; treat
