@@ -270,6 +270,25 @@ dependencies {
     // QuiltMC Parsers
     implementation("org.quiltmc.parsers:json:0.2.1")
     implementation("org.quiltmc.parsers:gson:0.2.1")
+
+    // Unit tests (audit 1.3.7). Plain JUnit 5 against pure-logic classes that do not require a
+    // running Minecraft. gson + slf4j-api are declared explicitly so the test classpath is
+    // self-contained and does not depend on ForgeGradle putting the patched MC jar on it.
+    testImplementation platform("org.junit:junit-bom:5.10.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testImplementation "com.google.code.gson:gson:2.10.1"
+    testImplementation "org.slf4j:slf4j-api:2.0.9"
+    testRuntimeOnly "org.slf4j:slf4j-simple:2.0.9"
+}
+
+// Run JUnit 5 tests with `./gradlew test`. ForgeGradle leaves the default test source set in
+// place; these tests deliberately avoid Minecraft/Forge types so they run without game bootstrap.
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
