@@ -1,5 +1,63 @@
 # Changelog
 
+## [1.3.7] - 2026-06-10 — Configuration reliability audit
+
+Audit pass focused on config lifecycle, the YACL config screen, item locking, and integration gating. Driven by two user reports: "disabling item locking does nothing" and "the YACL config screen does nothing."
+
+### Fixed
+
+- **`/skillsreload` now reloads every config file, not just lock items.** `HandlerSkill.ForceRefresh()` previously re-read only `runicskills.lockItems.json5`, so edits to `runicskills.common.json5` — including the `enableItemLocks` master toggle, the disabled perk/passive/power lists, integration toggles and multipliers — never took effect until a full restart (and the command re-synced the stale in-memory values to clients). A new `Configuration.reloadAll()` reloads all four holders before rebuilding the lock cache and re-syncing. (Root cause of "disabling item locking does nothing.")
+- **The config screen no longer silently no-ops on a YACL version mismatch.** `YaclConfigUiBuilder.buildScreen` caught only `NoClassDefFoundError | RuntimeException`; a present-but-incompatible YACL (e.g. installing "the latest" YACL whose API drifted from the 3.5.0 build) throws `LinkageError` subtypes that escaped the catch, so clicking *Configure* did nothing. It now catches `LinkageError | RuntimeException`, logs one actionable ERROR naming the installed YACL version, and shows a vanilla fallback screen pointing at the log instead of a blank no-op. (Root cause of "the YACL config screen does nothing.")
+- **Integration master toggles now gate lock-item generation.** Disabling e.g. `enableSpartanIntegration` previously still injected that integration's generated locks (only the finer `spartanEnableLockItems` was checked). Setting `enableItemLocks = false` now also stops *all* integration lock generation, not just enforcement.
+- **`disabledPowers` is now editable in the config screen** — it was persisted but missing its `@AutoGen` annotation, unlike `disabledPerks`/`disabledPassives`.
+- Config (re)generation now logs at INFO naming the file; an unparseable config is backed up to `<name>.invalid` before defaults are rewritten, so a typo never silently destroys a hand-edited file.
+- Hardened registry lookups (`canUseItem/Block/Entity`, the lock tooltip, `/registeritem`) against `NullPointerException` for unregistered/modded entries.
+- Defensive `ResourceLocation` parsing for user-supplied config strings (lock-item ids, advancement title conditions) — a malformed entry is logged and skipped instead of crashing config load.
+- Replaced production-disabled `assert x != null` guards (Shulker-bullet mixin, client message packet) with real null checks.
+- Added the 17 missing YACL config-group translation keys; documented the intentionally file-only config fields.
+- Resolved an unresolved git merge conflict in `gradle.properties` and synced the version across `gradle.properties`, `VERSION`, and `CLAUDE.md`.
+
+### Added
+
+- JUnit test suite for config round-trip/recovery, JSON5 comment stripping, and lock-evaluation gating.
+- `AUDIT.md`, `VERIFICATION.md`, and `FOLLOW_UPS.md`; a "Disabling item locking" section in the README/CurseForge description.
+
+## [Unreleased] — Phase 1 dead-perk wiring
+
+Implementation of Phase 1 from the 2026-05 perk audit (`~/.claude/plans/you-are-a-senior-zazzy-thompson.md`). The audit confirmed five user-reported "active but ineffective" perks (Mowzie's Might, Sniper, Eagle Eye, Spell Quickening, Key Forge) as part of a wider pattern: 358 of 522 registered perks had zero references outside `RegistryPerks.java`. Phase 1 wires the five named perks; Phases 2-9 cover the remaining trees in subsequent commits.
+
+### Fixed
+
+- **Mowzie's Might** — `MOWZIES_MIGHT` was registered with config/lang/texture but never read by any code. [`MowziesMobsIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/MowziesMobsIntegration.java#L57) now applies `mowziesMightPercent` damage bonus when the player's main hand matches a curated Mowzie weapon allow-list (`geomancer_staff`, `ice_crystal`, `naga_fang_dagger`, `solar_spear_item`, `axe_of_a_thousand_metals_item`, `wrought_axe`, `spear`, `dart`, `wing_blade`, `spear_throwing`). Missing IDs from the list are filtered at runtime via `ForgeRegistries.ITEMS.containsKey`, so updates to Mowzie that rename or drop items never crash.
+- **Sniper** — `SNIPER` had no distance check in the arrow handler. [`CombatEventHandler.onPlayerShootArrow`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java#L549) now adds a flat `sniperPercent` bonus when the impact distance exceeds the new `sniperDistanceThreshold` config (default 30 blocks).
+- **Eagle Eye** — `EAGLE_EYE` similarly had no distance scaling. Same handler now adds a linear ramp from `eagleEyeRampStartBlocks` (default 10) to `eagleEyeRampFullBlocks` (default 40); composes additively with Sniper for long-range archer builds.
+- **Key Forge** — `KEY_FORGE` was registered against a non-existent "Sniper's Skills" integration in the audit notes; the real source is Locks Reforged (`locks:key` → `locks:master_key`). New [`LocksIntegration.onItemCrafted`](src/main/java/com/otectus/runicskills/integration/LocksIntegration.java#L40) handler rolls `keyForgePercent` chance to replace a crafted `locks:key` stack with a `locks:master_key` of the same count. LocksIntegration is now event-bus-registered in [`RunicSkills.java`](src/main/java/com/otectus/runicskills/RunicSkills.java#L121) when the locks mod is loaded.
+
+### Deprecated
+
+- **Spell Quickening** — `SPELL_QUICKENING` was a duplicate of the working `QUICKENING` perk ([`IronsSpellbooksIntegration.java:468`](src/main/java/com/otectus/runicskills/integration/IronsSpellbooksIntegration.java#L468) wires `QUICKENING` to `CAST_TIME_REDUCTION`, but no equivalent code exists for `SPELL_QUICKENING`). The two had overlapping tooltips and adding a second modifier would have stacked invisibly with the working perk. `spellQuickeningRequiredLevel` default is now `-1` so the registration's `< 0` gate disables the perk entirely; the `@IntField(min = 1)` annotation was relaxed to `min = -1` to permit the sentinel value. Players who already unlocked Spell Quickening keep their skill points; only the unlockable node is removed from the Magic tree.
+
+### Added
+
+- **`sniperDistanceThreshold`** (default 30) — Sniper's minimum impact distance, [`HandlerCommonConfig.java:1083`](src/main/java/com/otectus/runicskills/handler/HandlerCommonConfig.java#L1083).
+- **`eagleEyeRampStartBlocks`** (default 10) and **`eagleEyeRampFullBlocks`** (default 40) — Eagle Eye's ramp endpoints, [`HandlerCommonConfig.java:943`](src/main/java/com/otectus/runicskills/handler/HandlerCommonConfig.java#L943).
+
+### Phase 2A: Strength tree easy-wins
+
+Four additional Strength perks wired into the existing [`CombatEventHandler.onLivingHurtStrengthAttacker`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java#L284) block. All reuse the additive-bonus composition pattern (`bonus += dmg * pct/100`).
+
+- **PRIMAL_FURY** — bonus damage when the player's HP fraction is below 50%. Stacks with Berserker (different trigger surface — Berserker is crit-only).
+- **SPARTANS_DISCIPLINE** — bonus damage when the main hand is any `spartanweaponry:*` item. Namespace match, no item-allow-list to keep stale.
+- **SACRED_FIRE** — sets the target on fire for 4 seconds. No damage bonus; the perk has no `Value` array — it's a binary on/off trigger.
+- **UNSTOPPABLE_FORCE** — `unstoppableForcePercent` chance per hit to apply Slowness II for 30 ticks (~1.5s). The percent is the proc chance, not a damage multiplier — matches the tooltip ("%s chance to briefly stun").
+
+### Audit follow-up
+
+- **Phase 2B (remaining Strength)** — BLOODLUST (kill→attack-speed; needs new transient-modifier infrastructure), BLOOD_FURY (Blood Magic-gated crit lifesteal), CLEAVE (multi-target AoE), TITANS_GRIP (shield + 2H — likely mixin), MYTHICAL_BERSERKER (last-stand variant), STALWART_STRIKER (dungeon-mob heal), WARLORDS_PRESENCE (ally aura), GLADIATOR (no shield-bash mechanic in vanilla to hook), POLEARM_MASTERY (Spartan polearm subset), DRAGON_BONE_MASTERY (Ice and Fire item allow-list), CATACLYSMS_WRATH (Cataclysm item allow-list), CHAIN_LIGHTNING_STRIKE (ISS lightning entity spawn), RUNIC_MIGHT (source mod unclear), SIEGE_BREAKER (Cataclysm boss detection).
+- **Phase 3 (Dexterity tree, 36 dead perks)** — additional arrow perks (PRECISION_SHOT, SHARPSHOOTER, MULTISHOT_MASTERY, ...) and movement perks (ACROBAT, FLEET_FOOTED, ...).
+- **Phase 4 (Magic tree, 35 dead perks)** — most are ISS attribute reconciliations via the existing `reconcileModifier` pattern.
+- Phases 5-9 — remaining aptitudes (Constitution, Endurance, Intelligence, Wisdom, Building, Tinkering, Fortune).
+
 ## [Unreleased] — R0 Hardening
 
 Implementation of the R0 hardening release from `plan-the-full-implementation-floofy-quokka.md` against findings in `perk-audit-2026-05-18.md`. Surgical bug fixes only; no perk content added.

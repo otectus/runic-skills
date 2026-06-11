@@ -81,7 +81,8 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 ## For modpack makers
 
-- **Every number is in a config.** Skill max level, XP curves, lock-item lists, title requirements, per-integration toggles. You can tune the whole pack from `config/runicskills-common.json5` (editable via the in-game config GUI as well).
+- **Every number is in a config.** Skill max level, XP curves, lock-item lists, title requirements, per-integration toggles. You can tune the whole pack from `config/RunicSkills/runicskills.common.json5` (editable via the in-game config GUI as well).
+- **Disabling item locking** has four distinct levers: the `enableItemLocks` master toggle (whole feature, in the common config / **Config → General**), removing entries from `config/RunicSkills/runicskills.lockItems.json5`, the per-integration `*EnableLockItems` / `enable*Integration` toggles, and — importantly — *not* deleting `runicskills.lockItems.json5`, which **regenerates** the default locks rather than disabling them. Apply edits with `/skillsreload`.
 - **Titles are data-driven.** Datapack JSON under `data/runicskills/titles/` — ship your own title pack by dropping files in your pack. Reload live with `/skills reload`.
 - **KubeJS scripting.** Register custom skills, perks, passives, titles, and condition types from server scripts. See the [`KubeJS scripting hook`](https://github.com/otectus/runic-skills#kubejs-scripting-hook) section of the README for examples.
 - **Sided-imports lint** runs at build time — no `net.minecraft.client.*` code leaks into common-side logic, so the mod is safe on dedicated servers. Repeatedly audited for packet-deserialization security (see the 0.9.2 CHANGELOG entry).
@@ -100,6 +101,15 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 - `/titles <player> <title> set true|false` — grant or revoke a title.
 
 ---
+
+## What's new in 1.3.7
+
+Configuration-reliability audit driven by two user reports.
+
+- **"Disabling item locking does nothing" is fixed.** `/skillsreload` now re-reads *every* config file, not just the lock list — so editing the `enableItemLocks` master toggle (in `config/RunicSkills/runicskills.common.json5`) applies live, no restart. Previously only `runicskills.lockItems.json5` was reloaded, so common-config edits were ignored until a full restart. See the new **Disabling item locking** guide below — and note that *deleting* the lock file regenerates the defaults, it does not disable locking.
+- **"The config screen does nothing" is fixed.** If YACL is the wrong version (e.g. you grabbed the latest YACL whose API drifted), clicking Configure now shows a clear screen naming your installed YACL version and pointing at the log, plus one actionable error line — instead of silently doing nothing. A present-but-incompatible YACL used to throw a `LinkageError` that slipped past the error handling.
+- **`Disabled powers` is now editable in the config GUI** (it was saved to disk but missing from the screen, like `Disabled perks`/`Disabled passives` were before 1.1.0).
+- **Integration master toggles now also stop that integration's auto-generated locks**, and a malformed config file is backed up to `<name>.invalid` before defaults are restored. Plus NPE hardening for modded/unregistered items and defensive parsing of config ids.
 
 ## What's new in 1.3.2
 

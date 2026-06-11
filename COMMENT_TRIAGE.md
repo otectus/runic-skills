@@ -89,6 +89,52 @@ and we'll edit the entry.
 
 ---
 
+## 1.3.7 (2026-06-10) — Configuration reliability audit
+
+### Comment 3a — "Whenever I try to disable the item locking, nothing happens. I may be doing this wrong because my way of turning off the item blocking was deleting the item blocking config file."
+- **Status:** Fixed in 1.3.7.
+- **Affected:** Config lifecycle (`/skillsreload`) + discoverability + docs.
+- **Root cause (confirmed):** Two compounding issues. (1) `/skillsreload` only re-read
+  `runicskills.lockItems.json5` — `HandlerSkill.ForceRefresh()` never reloaded
+  `runicskills.common.json5`, where the `enableItemLocks` master toggle lives. So editing the
+  toggle and reloading did nothing (the command even re-synced the stale in-memory value to
+  clients); only a full restart applied it. (2) The toggle lives in the *common* config, but the
+  obviously-named "item blocking config file" is `runicskills.lockItems.json5` — deleting that
+  silently regenerates the 500+ default locks on next launch, so the user's "fix" was a reset.
+  The enforcement itself was correct (every path already honored `enableItemLocks`).
+- **Fix:** `Configuration.reloadAll()` now reloads all four config holders before the lock cache
+  rebuild + resync, so `/skillsreload` applies `enableItemLocks` (and every other common-config
+  field) live. Config (re)generation logs at INFO naming the file, so a deleted file is visibly a
+  *regeneration*. README/CurseForge gained a "Disabling item locking" section spelling out the
+  four levers. See `HandlerSkill.ForceRefresh`, `Configuration.reloadAll`, `ConfigHolder.load`.
+- **Suggested reply:** "Thanks — this was a real bug. Deleting `runicskills.lockItems.json5`
+  doesn't disable locking; it regenerates the default lock list on the next launch. The actual
+  off switch is `enableItemLocks` in `config/RunicSkills/runicskills.common.json5` (or **Mods →
+  Runic Skills → Config → General → Enable item locks**). In 1.3.6 editing it and running
+  `/skillsreload` didn't take effect because the reload command wasn't re-reading the common
+  config — 1.3.7 fixes that, so the toggle now applies without a restart."
+
+### Comment 3b — "Was making a modpack and downloaded YACL on the most recent version but when I go to configurate Runic Skills nothing happens."
+- **Status:** Fixed in 1.3.7.
+- **Affected:** Config UI (YACL screen).
+- **Root cause (confirmed):** `YaclConfigUiBuilder.buildScreen` caught only
+  `NoClassDefFoundError | RuntimeException`. "The most recent YACL" can be a build whose API has
+  drifted from the 3.5.0 version the mod compiles against (the `mods.toml` range is `[3.4.2,)`
+  with no upper bound). A version mismatch throws `LinkageError` subtypes — `NoSuchMethodError`,
+  `NoSuchFieldError`, `AbstractMethodError` — which are neither `NoClassDefFoundError` nor
+  `RuntimeException`, so they escaped the catch and the Configure button silently no-op'd. Even
+  when caught (YACL fully absent), it only logged a WARN and returned the parent screen.
+- **Fix:** Broadened the catch to `LinkageError | RuntimeException`; it now logs exactly one
+  actionable ERROR naming the installed YACL version, and returns a vanilla `YaclUnavailableScreen`
+  that tells the player to check the log instead of doing nothing. See `YaclConfigUiBuilder.buildScreen`.
+- **Suggested reply:** "Runic Skills' config screen needs YACL **v3 for Minecraft 1.20.1**
+  specifically — 'the most recent version' on CurseForge may be a build for a newer Minecraft
+  whose API doesn't match, which is why nothing happened. Grab the 1.20.1 YACL build. 1.3.7 also
+  makes this obvious: if the screen can't open you now get a message naming your YACL version and
+  a line in the log, instead of a silent no-op."
+
+---
+
 ## Reporting new issues
 
 The most reliable place to report a Runic Skills issue is the GitHub issue tracker:

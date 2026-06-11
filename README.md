@@ -151,12 +151,22 @@ All `/skills*` operator commands require OP level 2.
 
 ## Configuration
 
-Two configuration surfaces:
+Configuration surfaces (all under `config/RunicSkills/`):
 
-1. **Common config** (`config/runicskills-common.json5`) — YACL-managed, client-editable via **Mods → Runic Skills → Config**. Covers skill max-level, XP costs, UI overlays, per-integration toggles, and the lock-item list.
-2. **Client config** (`config/runicskills-client.toml`) — Forge config spec. Covers rendering toggles (critical-roll overlay, lucky-drop overlay, perk mod-name display), sort orders, and the Legendary Tabs priority.
+1. **Common config** (`config/RunicSkills/runicskills.common.json5`) — YACL-managed, editable via **Mods → Runic Skills → Config**. Covers skill max-level, XP costs, UI overlays, per-integration toggles, the disabled perk/passive/power lists, and the `enableItemLocks` master toggle.
+2. **Lock-item list** (`config/RunicSkills/runicskills.lockItems.json5`) — the per-item skill requirements. Edited directly in the file or with `/registeritem`; **not** shown in the YACL screen.
+3. **Client config** (`config/runicskills-client.toml`) — Forge config spec. Covers rendering toggles (critical-roll overlay, lucky-drop overlay, perk mod-name display), sort orders, and the Legendary Tabs priority.
 
-Title definitions and their conditions live as datapack JSON under `data/runicskills/titles/*.json`. Reload with `/skills reload`.
+Title definitions and their conditions live as datapack JSON under `data/runicskills/titles/*.json`. After editing any config file in-world, apply it with `/skillsreload` (no restart needed) — this re-reads every config file and re-syncs to clients.
+
+### Disabling item locking
+
+There are **four distinct actions** — pick the one that matches what you want:
+
+1. **Turn the whole feature off (master toggle).** Set `enableItemLocks: false` in `config/RunicSkills/runicskills.common.json5`, or untick **Enable item locks** under **Mods → Runic Skills → Config → General**. Apply by saving in the UI, running `/skillsreload`, or restarting. This disables *every* lock — config entries and integration-generated ones alike.
+2. **Disable specific locked items.** Edit `config/RunicSkills/runicskills.lockItems.json5` and remove the entries you don't want (or run `/registeritem <skill> 0` while holding the item to drop a requirement). Apply with `/skillsreload`.
+3. **Disable an integration's auto-generated locks.** Each integration has a per-lock toggle (e.g. `spartanEnableLockItems`) and a master toggle (e.g. `enableSpartanIntegration`) in the common config. Setting either off stops that integration's locks; the master toggle also disables the integration's other hooks.
+4. **Deleting `runicskills.lockItems.json5` does NOT disable locking.** On the next launch the mod **regenerates the default lock list** (an `INFO` line names the file in the log). To turn locking off, use the master toggle in action 1 — not file deletion.
 
 ---
 
