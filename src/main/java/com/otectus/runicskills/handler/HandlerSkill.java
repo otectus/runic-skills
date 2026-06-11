@@ -2,6 +2,7 @@ package com.otectus.runicskills.handler;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.model.Skills;
+import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.integration.*;
 import com.otectus.runicskills.registry.perks.ConvergencePerk;
@@ -49,7 +50,12 @@ public class HandlerSkill {
     }
 
     public static void ForceRefresh(){
-        HandlerLockItemsConfig.HANDLER.load();
+        // Reload ALL config holders from disk, not just lock items. This is what lets
+        // /skillsreload apply edits to runicskills.common.json5 (enableItemLocks, the disabled
+        // perk/passive/power lists, integration toggles, multipliers) without a restart. Before
+        // 1.3.7 only lockItems was reloaded, so the command re-synced stale common-config values.
+        // getSkill() below then reads the freshly-reloaded lockItemList + common toggles.
+        Configuration.reloadAll();
         Skills = getSkill();
         ConvergencePerk.items = null;
         TreasureHunterPerk.invalidateCache();
@@ -86,13 +92,28 @@ public class HandlerSkill {
     }
 
     private static void injectIntegrationItems(Map<String, List<Skills>> skillMap) {
-        if (SpartanIntegration.isAnyLoaded()) {
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+
+        // Master item-lock switch. When the whole feature is off, generate NO integration locks
+        // at all (satisfies "integrations stop generating locks" — not just "locks are ignored
+        // at enforcement time"). canUse() also short-circuits on this flag, so the static
+        // lockItemList is already inert; this avoids the wasted generation work + debug spam.
+        if (!cfg.enableItemLocks) return;
+
+        // Integrations that expose a master toggle (enable<Name>Integration) must respect it here,
+        // not only the finer enable<Name>LockItems toggle checked inside generateLockItems(). The
+        // master toggle's contract is "zero Runic Skills hooks into this mod", which includes its
+        // lock items. Before 1.3.7 the master toggle gated only the event-handler registration in
+        // RunicSkills.java, so disabling e.g. Spartan still injected its locks. Locks Reforged,
+        // Samurai Dynasty and More Vanilla have no master toggle and stay gated solely by their
+        // own enable<Name>LockItems flag inside generateLockItems().
+        if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded()) {
             injectGeneratedItems(skillMap, SpartanIntegration.generateLockItems());
         }
-        if (BloodMagicIntegration.isModLoaded()) {
+        if (cfg.enableBloodMagicIntegration && BloodMagicIntegration.isModLoaded()) {
             injectGeneratedItems(skillMap, BloodMagicIntegration.generateLockItems());
         }
-        if (IceAndFireIntegration.isModLoaded()) {
+        if (cfg.enableIceAndFireIntegration && IceAndFireIntegration.isModLoaded()) {
             injectGeneratedItems(skillMap, IceAndFireIntegration.generateLockItems());
         }
         if (LocksIntegration.isModLoaded()) {
@@ -104,7 +125,7 @@ public class HandlerSkill {
         if (MoreVanillaIntegration.isAnyLoaded()) {
             injectGeneratedItems(skillMap, MoreVanillaIntegration.generateLockItems());
         }
-        if (JewelcraftIntegration.isModLoaded()) {
+        if (cfg.enableJewelcraftIntegration && JewelcraftIntegration.isModLoaded()) {
             injectGeneratedItems(skillMap, JewelcraftIntegration.generateLockItems());
         }
     }
