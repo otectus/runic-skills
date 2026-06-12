@@ -1,7 +1,9 @@
 package com.otectus.runicskills.client.tooltip;
 
 import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerConfigClient;
+import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +24,18 @@ public final class PerkTooltip {
                 .append(perk.getMaxRank() > 1 ? Component.literal(" " + Utils.intToRoman(Math.max(1, currentRank))).withStyle(ChatFormatting.LIGHT_PURPLE) : Component.empty())
                 .withStyle(ChatFormatting.AQUA));
         list.add(Component.translatable("tooltip.perk.description." + (perk.canPerk() ? "on" : "off")).withStyle(perk.canPerk() ? ChatFormatting.GREEN : ChatFormatting.RED));
+
+        // Active-perk cap feedback. Only shown when a cap is actually in effect (flat maxActivePerks
+        // and/or the scaled perksPerGlobalLevel). effectivePerkCap returns 0 when unlimited.
+        SkillCapability localCap = SkillCapability.getLocal();
+        if (localCap != null) {
+            int effectiveCap = RegistryPerks.effectivePerkCap(localCap);
+            if (effectiveCap > 0) {
+                int active = RegistryPerks.countEnabledPerks(localCap);
+                list.add(Component.translatable("tooltip.perk.active_cap", active, effectiveCap)
+                        .withStyle(active >= effectiveCap ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
+            }
+        }
         list.add(Component.empty());
         if (Screen.hasShiftDown()) {
             list.add(Component.empty()

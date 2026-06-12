@@ -4867,6 +4867,18 @@ public class RegistryPerks {
         return count;
     }
 
+    /**
+     * Effective active-perk cap for a player, combining the flat {@code maxActivePerks} cap with the
+     * optional global-level-scaled {@code perksPerGlobalLevel} cap. Returns {@code 0} for unlimited.
+     * Server- and client-safe: reads the (synced) common config and the capability's global level.
+     * See {@link com.otectus.runicskills.common.util.PerkCapMath#computeEffectiveCap(int, int, float)}.
+     */
+    public static int effectivePerkCap(com.otectus.runicskills.common.capability.SkillCapability capability) {
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+        return com.otectus.runicskills.common.util.PerkCapMath.computeEffectiveCap(
+                cfg.maxActivePerks, capability.getGlobalLevel(), cfg.perksPerGlobalLevel);
+    }
+
     // Disabled-via-config support. Accepts either a bare registry path ("berserker") or a
     // full id ("runicskills:berserker"); matches both against the disabledPerks list.
     public static boolean isDisabled(String perkName) {

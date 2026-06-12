@@ -21,6 +21,7 @@ public class CommonConfigSyncCP {
 
     private final int skillFirstCostLevel;
     private final int maxActivePerks;
+    private final float perksPerGlobalLevel;
     private final List<String> disabledPerks;
     private final List<String> disabledPassives;
     private final int perkSwapCooldownTicks;
@@ -114,6 +115,7 @@ public class CommonConfigSyncCP {
     public CommonConfigSyncCP() {
         skillFirstCostLevel = HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel;
         maxActivePerks = HandlerCommonConfig.HANDLER.instance().maxActivePerks;
+        perksPerGlobalLevel = HandlerCommonConfig.HANDLER.instance().perksPerGlobalLevel;
         disabledPerks = HandlerCommonConfig.HANDLER.instance().disabledPerks;
         disabledPassives = HandlerCommonConfig.HANDLER.instance().disabledPassives;
         perkSwapCooldownTicks = HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
@@ -200,6 +202,7 @@ public class CommonConfigSyncCP {
     public CommonConfigSyncCP(FriendlyByteBuf buffer) {
         skillFirstCostLevel = buffer.readInt();
         maxActivePerks = buffer.readInt();
+        perksPerGlobalLevel = buffer.readFloat();
         disabledPerks = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
         disabledPassives = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
         perkSwapCooldownTicks = buffer.readInt();
@@ -288,6 +291,7 @@ public class CommonConfigSyncCP {
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeInt(this.skillFirstCostLevel);
         buffer.writeInt(this.maxActivePerks);
+        buffer.writeFloat(this.perksPerGlobalLevel);
         buffer.writeCollection(this.disabledPerks, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
         buffer.writeCollection(this.disabledPassives, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
         buffer.writeInt(this.perkSwapCooldownTicks);
@@ -379,6 +383,7 @@ public class CommonConfigSyncCP {
             if(localPlayer != null){
                 HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel = this.skillFirstCostLevel;
                 HandlerCommonConfig.HANDLER.instance().maxActivePerks = this.maxActivePerks;
+                HandlerCommonConfig.HANDLER.instance().perksPerGlobalLevel = this.perksPerGlobalLevel;
                 HandlerCommonConfig.HANDLER.instance().disabledPerks = this.disabledPerks;
                 HandlerCommonConfig.HANDLER.instance().disabledPassives = this.disabledPassives;
                 HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks = this.perkSwapCooldownTicks;

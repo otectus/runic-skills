@@ -22,6 +22,35 @@ Audit pass focused on config lifecycle, the YACL config screen, item locking, an
 - JUnit test suite for config round-trip/recovery, JSON5 comment stripping, and lock-evaluation gating.
 - `AUDIT.md`, `VERIFICATION.md`, and `FOLLOW_UPS.md`; a "Disabling item locking" section in the README/CurseForge description.
 
+## [1.3.8] - 2026-06-11 — Scaled perk cap, centralized lock providers, perk-coverage guard
+
+Builds on the perk audit (522 registered perks, 340 still inert at the start of this pass) and the
+config-reliability work in 1.3.7. Adds the user-requested scaled perk cap, replaces the hard-coded lock
+injection with a registry that the build enforces, broadens item-lock coverage to the mods actually in
+the Lorecraft pack (and the rest of the advertised list), and lands a guard so no registered perk can be
+silently inert again. See [`docs/PERK_AUDIT.md`](docs/PERK_AUDIT.md) and
+[`docs/INTEGRATION_MATRIX.md`](docs/INTEGRATION_MATRIX.md).
+
+### Added
+
+- **Scaled active-perk cap (`perksPerGlobalLevel`).** Optional cap = `floor(globalLevel * perksPerGlobalLevel)`, on top of the existing flat `maxActivePerks`. When both are non-zero the smaller wins; a derived cap of 0 (very low global level) never overrides the flat cap. Pure math lives in [`PerkCapMath.computeEffectiveCap`](src/main/java/com/otectus/runicskills/common/util/PerkCapMath.java) (unit-tested), wrapped by `RegistryPerks.effectivePerkCap`. Enforced server-side on the 0→1 enable transition in `TogglePerkSP`, synced to clients via `CommonConfigSyncCP`, and surfaced as an "Active perks: X / Y" line in the perk tooltip (`tooltip.perk.active_cap`).
+- **Centralized lock-provider registry.** New [`LockItemProvider`](src/main/java/com/otectus/runicskills/integration/lock/LockItemProvider.java) + [`LockProviderRegistry`](src/main/java/com/otectus/runicskills/integration/lock/LockProviderRegistry.java) replace the hard-coded chain in `HandlerSkill.injectIntegrationItems()`. The 7 curated integrations (Spartan, Blood Magic, Ice & Fire, Locks, Samurai Dynasty, More Vanilla, Jewelcraft) are wrapped as adapters with identical order/semantics (`putIfAbsent` manual-override precedence preserved).
+- **Iron's Spells item locks.** New `IronsSpellbooksLockProvider` (registry-scan, no ISS API imports so it's safe to register unconditionally) locks spellbooks, staves, scrolls, mage armor, rings/amulets and upgrade orbs by Magic/Intelligence/Endurance. Config: `enableIronsSpellbooksLockItems`, `ironsLevelMultiplier`.
+- **Registry-driven discovery for installed + advertised mods.** New `GenericNamespaceLockProvider` + [`LockGen`](src/main/java/com/otectus/runicskills/integration/lock/LockGen.java) keyword classifier add lock coverage for Epic Knights (5 namespaces incl. Japanese Armory / Dark Ages / Ice & Fire add-ons), Aquaculture, Galosphere, Undergarden, Deeper Darker, Dragonsteel, Cataclysm, Mowzie's Mobs, Farmers Delight, Siege Machines, plus the previously-uninjected README mods (Enigmatic Legacy, Fantasy Armor, Nature's Aura, Bosses of Mass Destruction, Jet & Elias, Nichirin Dynasty, Saints Dragons, Stalwart Dungeons). Shared config: `discoveredLockLevelMultiplier`, `disabledDiscoveredLockMods`. Providers no-op when their mod is absent.
+- **Perk-coverage guard + backlog.** [`PerkEffectCoverageTest`](src/test/java/com/otectus/runicskills/registry/PerkEffectCoverageTest.java) asserts every registered perk has an effect site or is in the explicit backlog ([`perk_no_effect_allowlist.txt`](src/test/resources/perk_no_effect_allowlist.txt)), that implemented perks are removed from the backlog, and that the backlog has no dead names — so the inert set is transparent and can only shrink.
+- **Build/test guards.** `checkLockProviders` Gradle task (wired into `check`) + `LockProviderRegistryTest` fail the build if an integration with `generateLockItems()` is not registered.
+
+### Fixed (perks wired)
+
+- **Deferred Strength perks** — `CLEAVE` (AoE splash to nearby enemies, reentrancy-guarded), `TITANS_GRIP` (heavy-Spartan-weapon + offhand damage bonus), `GLADIATOR` (offhand-shield melee bonus), `RUNIC_MIGHT` (runic-weapon damage bonus). `PRIMAL_FURY`/`UNSTOPPABLE_FORCE` were already implemented and verified. New config: `cleavePercent`, `cleaveRangeBlocks`, `titansGripPercent`.
+- **Constitution defensive perks** — `SEARING_RESISTANCE`, `WITHER_RESISTANCE`, `ARMOR_OF_FAITH`, `SURVIVAL_INSTINCT`, `BLOOD_SHIELD`, `RUNIC_FORTIFICATION` now reduce the appropriate damage type (additive, clamped at 80% total) via a new `onLivingHurtConstitutionDefense` handler, reusing their existing `*Percent` config fields.
+
+### Known limitations
+
+- 340 perks remain inert and are tracked in the enforced backlog (`perk_no_effect_allowlist.txt`); they are mod-gated (their optional mod is absent) or pending native implementation in later batches. The guard guarantees none are *silently* inert.
+- `TITANS_GRIP` and `GLADIATOR` approximate their lang text (Spartan two-handed bypass / shield bash) without invasive mixins into Spartan internals; see `docs/PERK_AUDIT.md`.
+- Lock providers for mods not present locally are compiled and registered but only runtime-verified when that mod is installed.
+
 ## [Unreleased] — Phase 1 dead-perk wiring
 
 Implementation of Phase 1 from the 2026-05 perk audit (`~/.claude/plans/you-are-a-senior-zazzy-thompson.md`). The audit confirmed five user-reported "active but ineffective" perks (Mowzie's Might, Sniper, Eagle Eye, Spell Quickening, Key Forge) as part of a wider pattern: 358 of 522 registered perks had zero references outside `RegistryPerks.java`. Phase 1 wires the five named perks; Phases 2-9 cover the remaining trees in subsequent commits.

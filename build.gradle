@@ -435,3 +435,51 @@ tasks.register('checkSidedImports') {
     }
 }
 tasks.named('check').configure { dependsOn 'checkSidedImports' }
+
+// Lock-provider enforcement: every integration class that exposes a `generateLockItems()` method
+// MUST be wired into LockProviderRegistry, otherwise its documented item-lock compat silently never
+// runs (the exact drift that left ISS/Ice&Fire/etc. unwired before 1.3.8). This source-level guard
+// fails the build the moment a new lock-capable integration is added without a register(...) line.
+tasks.register('checkLockProviders') {
+    group = 'verification'
+    description = 'Fails the build if an integration with generateLockItems() is not wired into LockProviderRegistry'
+
+    def integrationDir = file('src/main/java/com/otectus/runicskills/integration')
+    def registryFile = file('src/main/java/com/otectus/runicskills/integration/lock/LockProviderRegistry.java')
+
+    // Integration classes intentionally NOT registered (with a documented reason). Empty by design;
+    // add an entry here only with a justifying comment if a class has generateLockItems() but must
+    // stay out of the runtime registry.
+    def allowUnregistered = [] as Set
+
+    inputs.dir integrationDir
+    inputs.file registryFile
+
+    doLast {
+        if (!registryFile.exists()) {
+            throw new GradleException("LockProviderRegistry.java not found at ${registryFile.path}")
+        }
+        def registryText = registryFile.text
+        def lockMethod = ~/List<LockItem>\s+generateLockItems\s*\(/
+        def missing = []
+        integrationDir.eachFile { f ->
+            if (!f.isFile() || !f.name.endsWith('.java')) return
+            def className = f.name - '.java'
+            if (allowUnregistered.contains(className)) return
+            if (lockMethod.matcher(f.text).find()) {
+                // The registry must reference the class by name (e.g. `SpartanIntegration::generateLockItems`).
+                if (!registryText.contains(className)) {
+                    missing << className
+                }
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw new GradleException(
+                    "Integration class(es) expose generateLockItems() but are not registered in LockProviderRegistry " +
+                            "(documented lock compat would silently never run):\n  " + missing.sort().join('\n  ') +
+                            "\nAdd a register(adapter(...)) line in LockProviderRegistry.registerDefaults(), " +
+                            "or add the class to allowUnregistered in build.gradle with a justifying comment.")
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'checkLockProviders' }

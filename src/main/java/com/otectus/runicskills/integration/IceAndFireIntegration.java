@@ -4,6 +4,7 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.lock.LockGen;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import net.minecraft.resources.ResourceLocation;
@@ -72,8 +73,50 @@ public class IceAndFireIntegration {
         generateHippogryphItems(items, multiplier);
         generateMiscItems(items, multiplier);
 
+        // Completeness pass: scan the whole iceandfire namespace and lock any gear-like item the
+        // curated lists above missed (new/renamed dragonsteel/myrmex/hippogryph/etc. gear). Keyword
+        // classification leaves non-gear (food, scales, blood, blocks) untouched. Curated entries win
+        // because they are added first and the discovery pass skips ids already present.
+        generateDiscoveredItems(items, multiplier);
+
         RunicSkills.getLOGGER().debug("Ice and Fire Integration: Generated {} lock items", items.size());
         return items;
+    }
+
+    // --- Registry-driven discovery (completeness net over the curated lists above) ---
+
+    private static void generateDiscoveredItems(List<LockItem> items, float multiplier) {
+        java.util.Set<String> covered = new java.util.HashSet<>();
+        for (LockItem li : items) covered.add(li.Item);
+
+        int added = 0;
+        for (ResourceLocation id : LockGen.itemsInNamespace(MOD_ID)) {
+            String idStr = id.toString();
+            if (covered.contains(idStr)) continue;
+            LockItem lock = LockGen.gearLock(idStr, iceFireFamilyBase(id.getPath()), multiplier);
+            if (lock == null) continue; // not registered or not gear-like
+            items.add(lock);
+            covered.add(idStr);
+            added++;
+        }
+        if (added > 0) {
+            RunicSkills.getLOGGER().debug("Ice and Fire Integration: discovery pass locked {} additional item(s)", added);
+        }
+    }
+
+    /** Base lock level for an iceandfire item, derived from its material/creature family. */
+    private static int iceFireFamilyBase(String path) {
+        String p = path.toLowerCase(java.util.Locale.ROOT);
+        if (p.contains("dragonsteel")) return 28;
+        if (p.contains("dragonbone")) return 22;
+        if (p.contains("deathworm")) return 16;
+        if (p.contains("myrmex")) return 14;
+        if (p.contains("cockatrice") || p.contains("stymphalian") || p.contains("amphithere")
+                || p.contains("siren") || p.contains("gorgon") || p.contains("pixie")) return 14;
+        if (p.contains("troll")) return 12;
+        if (p.contains("hippogryph") || p.contains("hippocampus")) return 10;
+        if (p.contains("dragon")) return 20; // generic dragon-themed gear
+        return 12; // unknown family but gear-like -> moderate requirement
     }
 
     // --- Myrmex Equipment (Level 14-16) ---

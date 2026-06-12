@@ -100,8 +100,10 @@ public class TogglePerkSP {
                 }
 
                 // Global active-perk cap: only when enabling (going from 0 to 1+). 0 = unlimited.
+                // Combines the flat maxActivePerks cap with the optional perksPerGlobalLevel scaled
+                // cap (smaller non-zero wins) via RegistryPerks.effectivePerkCap.
                 if (currentRank == 0) {
-                    int globalCap = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().maxActivePerks;
+                    int globalCap = RegistryPerks.effectivePerkCap(capability);
                     if (globalCap > 0 && RegistryPerks.countEnabledPerks(capability) >= globalCap) {
                         SyncSkillCapabilityCP.send(player);
                         return;

@@ -75,6 +75,9 @@ public class CombatEventHandler {
     private static final Map<UUID, AttackerMemo> LAST_ATTACKER = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_STAND_ACTIVE_UNTIL = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> BLADE_STORM_ACTIVE_UNTIL = new ConcurrentHashMap<>();
+    // Reentrancy guard for CLEAVE: while a player's UUID is in this set, the splash hits it deals are
+    // skipped by the attacker handler so they neither recurse nor inherit the % damage bonuses.
+    private static final Set<UUID> CLEAVING = ConcurrentHashMap.newKeySet();
     private static final int RECENT_HITS_CAP = 16;
     private static final long PRUNE_INTERVAL_TICKS = 100L;
     private static long lastPruneTick = 0L;
@@ -287,6 +290,9 @@ public class CombatEventHandler {
         if (!(source instanceof Player player) || player.isCreative() || player instanceof FakePlayer) return;
         LivingEntity target = event.getEntity();
         if (target == null || target == player) return;
+        // CLEAVE splash hits re-enter this handler; skip them entirely so the splash damage stays
+        // "pure" (no recursive cleave, no stacking of the other % bonuses below).
+        if (CLEAVING.contains(player.getUUID())) return;
 
         float dmg = event.getAmount();
         float bonus = 0.0f;
@@ -395,6 +401,50 @@ public class CombatEventHandler {
             }
         }
 
+        // PRIMAL_FURY — bonus damage when the player's own HP fraction is below 50%.
+        // Stacks multiplicatively with Berserker (which already runs in onPlayerCriticalHit)
+        // because that one keys off crit hits; this one keys off any melee hit. Different
+        // trigger surface, intentional double-dip for desperation builds.
+        if (RegistryPerks.PRIMAL_FURY != null && RegistryPerks.PRIMAL_FURY.get().isEnabled(player)) {
+            float selfRatio = player.getHealth() / Math.max(1.0f, player.getMaxHealth());
+            if (selfRatio < 0.5f) {
+                double pct = RegistryPerks.PRIMAL_FURY.get().getActiveValue(player)[0];
+                bonus += dmg * (float) (pct / 100.0);
+            }
+        }
+
+        // SPARTANS_DISCIPLINE — bonus damage when wielding any Spartan Weaponry item.
+        // Namespace match covers all weapons in the spartanweaponry family (daggers,
+        // longswords, halberds, etc.) without enumerating individual registry names —
+        // a curated allow-list would go stale on every Spartan update.
+        if (RegistryPerks.SPARTANS_DISCIPLINE != null && RegistryPerks.SPARTANS_DISCIPLINE.get().isEnabled(player)) {
+            net.minecraft.resources.ResourceLocation itemId =
+                    ForgeRegistries.ITEMS.getKey(player.getMainHandItem().getItem());
+            if (itemId != null && "spartanweaponry".equals(itemId.getNamespace())) {
+                double pct = RegistryPerks.SPARTANS_DISCIPLINE.get().getActiveValue(player)[0];
+                bonus += dmg * (float) (pct / 100.0);
+            }
+        }
+
+        // SACRED_FIRE — set the target alight for a few seconds on hit. No damage bonus;
+        // the perk has no Value array — just a binary on/off trigger that adds fire ticks.
+        // Tooltip is intentionally short ("Your attacks set enemies ablaze").
+        if (RegistryPerks.SACRED_FIRE != null && RegistryPerks.SACRED_FIRE.get().isEnabled(player)) {
+            target.setSecondsOnFire(4);
+        }
+
+        // UNSTOPPABLE_FORCE — random chance per hit to briefly stun the target via Slowness
+        // II. The unstoppableForcePercent config is the proc chance (0-100), not a damage
+        // multiplier; matches the tooltip ("%s chance to briefly stun"). Stun lasts 30 ticks
+        // (~1.5s) — long enough to feel impactful, short enough to be tactical not cheesy.
+        if (RegistryPerks.UNSTOPPABLE_FORCE != null && RegistryPerks.UNSTOPPABLE_FORCE.get().isEnabled(player)) {
+            double procChance = RegistryPerks.UNSTOPPABLE_FORCE.get().getActiveValue(player)[0];
+            if (ThreadLocalRandom.current().nextInt(100) < procChance) {
+                target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                        net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 30, 1));
+            }
+        }
+
         // TROPHY_HUNTER — bonus % damage on "elite/boss" targets. Two-tier qualifier:
         // (a) target's entity-type namespace is in trophyHunterBossNamespaces — covers
         //     Apotheosis bosses, Ice and Fire dragons, Cataclysm bosses, Mowzies bosses,
@@ -409,7 +459,72 @@ public class CombatEventHandler {
             bonus += dmg * (float) (pct / 100.0);
         }
 
+        // GLADIATOR — bonus melee damage while a shield is held in the offhand. The lang text mentions
+        // "shield bash", a Spartan Shields / Better Combat mechanic with no vanilla event to hook;
+        // gating on an equipped shield is the non-invasive equivalent of an aggressive shield-fighter.
+        if (RegistryPerks.GLADIATOR != null && RegistryPerks.GLADIATOR.get().isEnabled(player)
+                && player.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem) {
+            double pct = RegistryPerks.GLADIATOR.get().getActiveValue(player)[0];
+            bonus += dmg * (float) (pct / 100.0);
+        }
+
+        // RUNIC_MIGHT — bonus damage when wielding a "runic"/"rune" themed weapon (id-path match),
+        // covering runic-ore weapons across mods without a brittle per-item allow-list.
+        if (RegistryPerks.RUNIC_MIGHT != null && RegistryPerks.RUNIC_MIGHT.get().isEnabled(player)) {
+            ResourceLocation wid = ForgeRegistries.ITEMS.getKey(player.getMainHandItem().getItem());
+            if (wid != null && (wid.getPath().contains("runic") || wid.getPath().contains("rune"))) {
+                double pct = RegistryPerks.RUNIC_MIGHT.get().getActiveValue(player)[0];
+                bonus += dmg * (float) (pct / 100.0);
+            }
+        }
+
+        // TITANS_GRIP — bonus damage when wielding a heavy/two-handed Spartan weapon with an occupied
+        // offhand (the "two-handed weapon alongside a shield" fantasy). Truly bypassing Spartan's own
+        // offhand restriction would require a mixin into Spartan internals and is intentionally out of
+        // scope; this rewards the described playstyle without an invasive hook. Perk only registers
+        // when Spartan is loaded (see RegistryPerks.TITANS_GRIP).
+        if (RegistryPerks.TITANS_GRIP != null && RegistryPerks.TITANS_GRIP.get().isEnabled(player)
+                && !player.getOffhandItem().isEmpty()) {
+            ResourceLocation wid = ForgeRegistries.ITEMS.getKey(player.getMainHandItem().getItem());
+            if (wid != null && "spartanweaponry".equals(wid.getNamespace()) && isHeavySpartanWeapon(wid.getPath())) {
+                double pct = HandlerCommonConfig.HANDLER.instance().titansGripPercent;
+                bonus += dmg * (float) (pct / 100.0);
+            }
+        }
+
         if (bonus > 0.0f) event.setAmount(dmg + bonus);
+
+        // CLEAVE — splash a fraction of this hit's damage to other living enemies near the struck
+        // target. Applied after the primary bonuses so the splash is based on the boosted hit. The
+        // CLEAVING guard (checked at the top of this method) keeps splash hits from recursing or
+        // inheriting the bonuses above. Runs last so a fatal primary hit still cleaves.
+        if (RegistryPerks.CLEAVE != null && RegistryPerks.CLEAVE.get().isEnabled(player)
+                && !CLEAVING.contains(player.getUUID())) {
+            HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+            float splash = event.getAmount() * (float) (cfg.cleavePercent / 100.0);
+            if (splash > 0.0f) {
+                float range = Math.max(1.0f, cfg.cleaveRangeBlocks);
+                net.minecraft.world.phys.AABB box = target.getBoundingBox().inflate(range);
+                CLEAVING.add(player.getUUID());
+                try {
+                    for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, box)) {
+                        if (other == target || other == player || !other.isAlive()) continue;
+                        if (other.isAlliedTo(player) || player.isAlliedTo(other)) continue;
+                        other.hurt(player.damageSources().playerAttack(player), splash);
+                    }
+                } finally {
+                    CLEAVING.remove(player.getUUID());
+                }
+            }
+        }
+    }
+
+    /** Heavy / two-handed Spartan Weaponry weapons that Titan's Grip applies to. */
+    private static boolean isHeavySpartanWeapon(String path) {
+        return path.contains("greatsword") || path.contains("battleaxe") || path.contains("warhammer")
+                || path.contains("battle_hammer") || path.contains("halberd") || path.contains("pike")
+                || path.contains("glaive") || path.contains("lance") || path.contains("longbow")
+                || path.contains("heavy_crossbow") || path.contains("quarterstaff") || path.contains("scythe");
     }
 
     private static boolean isTrophyTarget(LivingEntity target) {
@@ -471,6 +586,57 @@ public class CombatEventHandler {
                     }
                 }
             }
+        }
+    }
+
+    // ── Constitution defensive perks (R3 follow-up batch) ──────────────────────
+    // Percent damage reductions gated by damage type / HP. LOWEST priority so vanilla
+    // armor + resistances are already folded into event.getAmount() before we scale it.
+    // Reductions stack additively then clamp at 80% so no combination grants invulnerability;
+    // this matches the lang descriptions (none claim exclusivity). Each perk reuses its
+    // existing *Percent config field and is gated by isEnabled, so a config-disabled or
+    // unranked perk contributes nothing.
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onLivingHurtConstitutionDefense(LivingHurtEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (player.isCreative() || player instanceof FakePlayer) return;
+
+        net.minecraft.world.damagesource.DamageSource src = event.getSource();
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+        float reduction = 0.0f;
+
+        // SEARING_RESISTANCE — reduce fire / lava / burning damage.
+        if (RegistryPerks.SEARING_RESISTANCE != null && RegistryPerks.SEARING_RESISTANCE.get().isEnabled(player)
+                && src.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) {
+            reduction += cfg.searingResistancePercent / 100.0f;
+        }
+        // WITHER_RESISTANCE — reduce wither damage.
+        if (RegistryPerks.WITHER_RESISTANCE != null && RegistryPerks.WITHER_RESISTANCE.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.WITHER)) {
+            reduction += cfg.witherResistancePercent / 100.0f;
+        }
+        // ARMOR_OF_FAITH — reduce magic damage.
+        if (RegistryPerks.ARMOR_OF_FAITH != null && RegistryPerks.ARMOR_OF_FAITH.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.MAGIC)) {
+            reduction += cfg.armorOfFaithPercent / 100.0f;
+        }
+        // SURVIVAL_INSTINCT — reduce all damage while below 30% HP.
+        if (RegistryPerks.SURVIVAL_INSTINCT != null && RegistryPerks.SURVIVAL_INSTINCT.get().isEnabled(player)
+                && player.getHealth() / Math.max(1.0f, player.getMaxHealth()) < 0.30f) {
+            reduction += cfg.survivalInstinctPercent / 100.0f;
+        }
+        // BLOOD_SHIELD — flat reduction of all incoming damage.
+        if (RegistryPerks.BLOOD_SHIELD != null && RegistryPerks.BLOOD_SHIELD.get().isEnabled(player)) {
+            reduction += cfg.bloodShieldPercent / 100.0f;
+        }
+        // RUNIC_FORTIFICATION — flat reduction of all incoming damage.
+        if (RegistryPerks.RUNIC_FORTIFICATION != null && RegistryPerks.RUNIC_FORTIFICATION.get().isEnabled(player)) {
+            reduction += cfg.runicFortificationPercent / 100.0f;
+        }
+
+        if (reduction > 0.0f) {
+            reduction = Math.min(reduction, 0.80f);
+            event.setAmount(event.getAmount() * (1.0f - reduction));
         }
     }
 
@@ -560,6 +726,29 @@ public class CombatEventHandler {
                 arrow.setBaseDamage(arrowDamage);
                 if (RegistryPerks.STEALTH_MASTERY != null && RegistryPerks.STEALTH_MASTERY.get().isEnabled(player) && player.isShiftKeyDown())
                     arrow.setBaseDamage(arrowDamage + baseDamage * (RegistryPerks.STEALTH_MASTERY.get().getActiveValue(player)[2] - 1.0D));
+
+                // Sniper / Eagle Eye — distance-based bow damage bonus.
+                // Distance is arrow-impact-to-shooter; for typical bow shots the shooter
+                // hasn't moved meaningfully between release and impact, so this is a fair
+                // proxy for shot distance. The two perks compose additively: Sniper is a
+                // step bonus past the threshold; Eagle Eye is a linear ramp.
+                double impactDistance = arrow.distanceTo(player);
+                double rangedBonusFraction = 0.0D;
+                if (RegistryPerks.SNIPER != null && RegistryPerks.SNIPER.get().isEnabled(player)) {
+                    int threshold = HandlerCommonConfig.HANDLER.instance().sniperDistanceThreshold;
+                    if (impactDistance > threshold) {
+                        rangedBonusFraction += HandlerCommonConfig.HANDLER.instance().sniperPercent / 100.0D;
+                    }
+                }
+                if (RegistryPerks.EAGLE_EYE != null && RegistryPerks.EAGLE_EYE.get().isEnabled(player)) {
+                    int start = HandlerCommonConfig.HANDLER.instance().eagleEyeRampStartBlocks;
+                    int full = Math.max(start + 1, HandlerCommonConfig.HANDLER.instance().eagleEyeRampFullBlocks);
+                    double t = Math.max(0.0D, Math.min(1.0D, (impactDistance - start) / (double)(full - start)));
+                    rangedBonusFraction += t * (HandlerCommonConfig.HANDLER.instance().eagleEyePercent / 100.0D);
+                }
+                if (rangedBonusFraction > 0.0D) {
+                    arrow.setBaseDamage(arrow.getBaseDamage() + baseDamage * rangedBonusFraction);
+                }
             }
 
             entity = event.getProjectile().getOwner();

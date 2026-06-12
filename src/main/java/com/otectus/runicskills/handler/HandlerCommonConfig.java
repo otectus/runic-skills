@@ -50,6 +50,11 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 256)
     public int maxActivePerks = 0;
 
+    @SerialEntry(comment = "Optional scaled active-perk cap: derived cap = floor(player total global level * this value). 0 = disabled (default). Example: 0.05 grants roughly 1 perk slot per 20 global levels. When both this and maxActivePerks are non-zero, the smaller of the two caps is enforced. A derived cap of 0 (very low global level) is treated as 'not applicable' and never overrides maxActivePerks. Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "general")
+    @FloatField(min = 0.0f, max = 16.0f)
+    public float perksPerGlobalLevel = 0.0f;
+
     @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"fire_attunement\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
     @AutoGen(category = "common", group = "general")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
@@ -158,6 +163,21 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableJewelcraftIntegration = true;
+
+    // Registry-driven (discovered) item locks for the long tail of supported mods (Epic Knights,
+    // Aquaculture, Galosphere, Undergarden, Deeper Darker, Dragonsteel, Cataclysm, Mowzie's Mobs,
+    // Farmers Delight, Siege Machines, Enigmatic Legacy, Fantasy Armor, Nature's Aura, Bosses of Mass
+    // Destruction, Jet & Elias, Nichirin Dynasty, Saints Dragons, Stalwart Dungeons). These scan the
+    // mod's item namespace and gate gear by keyword; only applies when the mod is actually present.
+    @SerialEntry(comment = "Level multiplier applied to ALL registry-driven (discovered) integration item locks (1.0 = default, 0.5 = half requirements, 2.0 = double).")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.1f, max = 3.0f)
+    public float discoveredLockLevelMultiplier = 1.0f;
+
+    @SerialEntry(comment = "Mod ids / item namespaces to EXCLUDE from registry-driven (discovered) item locking, e.g. [\"cataclysm\", \"farmersdelight\"]. Empty = lock all supported discovered mods. Curated integrations (Spartan, Ice & Fire, Blood Magic, Iron's Spells, etc.) have their own toggles and are unaffected by this list.")
+    @AutoGen(category = "common", group = "integrations")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> disabledDiscoveredLockMods = Arrays.asList();
 
     // Spartan Weaponry integration
     @SerialEntry(comment = "Enable automatic item locking for Spartan Weaponry, Spartan Shields, Spartan Cataclysm, and Spartan Fire items")
@@ -768,6 +788,21 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int runicMightPercent = 15;
+
+    @SerialEntry(comment = "Cleave perk: percent of the primary hit's damage dealt to each additional nearby enemy")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    public int cleavePercent = 35;
+
+    @SerialEntry(comment = "Cleave perk: radius (blocks) around the struck target within which other enemies are cleaved")
+    @AutoGen(category = "common", group = "perks")
+    @FloatField(min = 1.0f, max = 8.0f)
+    public float cleaveRangeBlocks = 3.0f;
+
+    @SerialEntry(comment = "Titan's Grip perk bonus damage percent when wielding a heavy/two-handed Spartan weapon with an occupied offhand")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    public int titansGripPercent = 15;
 
     // ── Constitution new perks ──
     @SerialEntry(comment = "Second Wind perk healing amplifier")
@@ -3401,6 +3436,17 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int limitBreakerRequiredLevel = 32;
+
+    // Iron's Spells 'n Spellbooks Integration - Item Locks
+    @SerialEntry(comment = "Enable automatic item locking for Iron's Spells 'n Spellbooks items (spellbooks, staves, scrolls, mage armor, rings/amulets, upgrade orbs). Gated by Magic (and Intelligence/Endurance) skill levels. Requires enableIronsSpellbooksIntegration.")
+    @AutoGen(category = "common", group = "irons_spells")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableIronsSpellbooksLockItems = true;
+
+    @SerialEntry(comment = "Level multiplier for Iron's Spells item locks (1.0 = default, 0.5 = half requirements, 2.0 = double)")
+    @AutoGen(category = "common", group = "irons_spells")
+    @FloatField(min = 0.1f, max = 3.0f)
+    public float ironsLevelMultiplier = 1.0f;
 
     // Iron's Spells 'n Spellbooks Integration - Spell Gating
     @SerialEntry(comment = "Enable automatic spell gating by Magic skill level based on spell level")

@@ -198,8 +198,39 @@ public class SpartanIntegration {
             generateWeaponItems(items, FIRE, Source.FIRE, multiplier);
         }
 
+        // Completeness pass: scan every loaded spartan* namespace (including add-ons such as
+        // spartanundergarden, spartanweaponryaquaculture, spartantoolkit, and any future spartan* mod)
+        // and lock any gear the curated weapon/material/shield tables missed. Curated entries win
+        // because they were added above and the discovery pass skips ids already covered.
+        generateDiscoveredItems(items, multiplier);
+
         RunicSkills.getLOGGER().debug("Spartan Integration: Generated {} lock items", items.size());
         return items;
+    }
+
+    /**
+     * Registry-driven net over the curated tables. Matches by {@code spartan} namespace prefix so all
+     * Spartan add-ons are covered without enumerating their mod ids, using a moderate base level
+     * (the curated tables encode precise per-material levels; this is a floor for anything uncurated).
+     */
+    private static void generateDiscoveredItems(List<LockItem> items, float multiplier) {
+        java.util.Set<String> covered = new java.util.HashSet<>();
+        for (LockItem li : items) covered.add(li.Item);
+
+        int added = 0;
+        for (ResourceLocation id : ForgeRegistries.ITEMS.getKeys()) {
+            if (!id.getNamespace().startsWith("spartan")) continue;
+            String idStr = id.toString();
+            if (covered.contains(idStr)) continue;
+            LockItem lock = com.otectus.runicskills.integration.lock.LockGen.gearLock(idStr, 8, multiplier);
+            if (lock == null) continue;
+            items.add(lock);
+            covered.add(idStr);
+            added++;
+        }
+        if (added > 0) {
+            RunicSkills.getLOGGER().debug("Spartan Integration: discovery pass locked {} additional item(s)", added);
+        }
     }
 
     // --- Weapon Generation ---

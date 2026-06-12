@@ -5,6 +5,8 @@ import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.integration.*;
+import com.otectus.runicskills.integration.lock.LockItemProvider;
+import com.otectus.runicskills.integration.lock.LockProviderRegistry;
 import com.otectus.runicskills.registry.perks.ConvergencePerk;
 import com.otectus.runicskills.registry.perks.TreasureHunterPerk;
 import com.otectus.runicskills.registry.RegistrySkills;
@@ -100,33 +102,19 @@ public class HandlerSkill {
         // lockItemList is already inert; this avoids the wasted generation work + debug spam.
         if (!cfg.enableItemLocks) return;
 
-        // Integrations that expose a master toggle (enable<Name>Integration) must respect it here,
-        // not only the finer enable<Name>LockItems toggle checked inside generateLockItems(). The
-        // master toggle's contract is "zero Runic Skills hooks into this mod", which includes its
-        // lock items. Before 1.3.7 the master toggle gated only the event-handler registration in
-        // RunicSkills.java, so disabling e.g. Spartan still injected its locks. Locks Reforged,
-        // Samurai Dynasty and More Vanilla have no master toggle and stay gated solely by their
-        // own enable<Name>LockItems flag inside generateLockItems().
-        if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded()) {
-            injectGeneratedItems(skillMap, SpartanIntegration.generateLockItems());
-        }
-        if (cfg.enableBloodMagicIntegration && BloodMagicIntegration.isModLoaded()) {
-            injectGeneratedItems(skillMap, BloodMagicIntegration.generateLockItems());
-        }
-        if (cfg.enableIceAndFireIntegration && IceAndFireIntegration.isModLoaded()) {
-            injectGeneratedItems(skillMap, IceAndFireIntegration.generateLockItems());
-        }
-        if (LocksIntegration.isModLoaded()) {
-            injectGeneratedItems(skillMap, LocksIntegration.generateLockItems());
-        }
-        if (SamuraiDynastyIntegration.isModLoaded()) {
-            injectGeneratedItems(skillMap, SamuraiDynastyIntegration.generateLockItems());
-        }
-        if (MoreVanillaIntegration.isAnyLoaded()) {
-            injectGeneratedItems(skillMap, MoreVanillaIntegration.generateLockItems());
-        }
-        if (cfg.enableJewelcraftIntegration && JewelcraftIntegration.isModLoaded()) {
-            injectGeneratedItems(skillMap, JewelcraftIntegration.generateLockItems());
+        // Centralised provider registry (since 1.3.8). Each LockItemProvider folds the mod-loaded
+        // and master-toggle checks that used to live inline here; the build's checkLockProviders task
+        // and LockProviderRegistryTest fail if an integration with generateLockItems() is not wired
+        // into LockProviderRegistry. Iteration order preserves the historical putIfAbsent precedence,
+        // and the finer per-integration enable<Name>LockItems toggles still gate inside each
+        // provider's generateLockItems(). Manual config locks still win via putIfAbsent below.
+        for (LockItemProvider provider : LockProviderRegistry.providers()) {
+            if (!provider.isActive(cfg)) continue;
+            List<LockItem> generated = provider.generateLockItems();
+            if (generated == null || generated.isEmpty()) continue;
+            injectGeneratedItems(skillMap, generated);
+            RunicSkills.getLOGGER().debug("Lock provider '{}' contributed {} generated lock item(s)",
+                    provider.id(), generated.size());
         }
     }
 
