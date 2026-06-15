@@ -4,6 +4,7 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.quests.RunicQuestBridge;
+import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryTitles;
@@ -36,6 +37,7 @@ public class SetPlayerTitleSP {
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player == null) return;
+            if (!PacketRateLimiter.allow(player, "set_title", 5)) return;
 
             SkillCapability capability = SkillCapability.get(player);
             if (capability == null) return;

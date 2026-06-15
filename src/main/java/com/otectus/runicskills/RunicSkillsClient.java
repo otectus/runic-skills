@@ -3,6 +3,7 @@ package com.otectus.runicskills;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
 import com.otectus.runicskills.client.config.YaclConfigUiBuilder;
+import com.otectus.runicskills.client.gui.OverlayNoticeGui;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
@@ -61,6 +62,7 @@ public class RunicSkillsClient {
             // Tick subscribers remain on the Forge bus; render is now wired via RegisterGuiOverlaysEvent below.
             MinecraftForge.EVENT_BUS.register(OverlaySkillGui.INSTANCE);
             MinecraftForge.EVENT_BUS.register(OverlayTitleGui.INSTANCE);
+            MinecraftForge.EVENT_BUS.register(OverlayNoticeGui.INSTANCE);
 
             if (L2TabsIntegration.isModLoaded()) {
                 // Use a method reference to L2TabsClientIntegration#registerTab rather than an
@@ -111,6 +113,7 @@ public class RunicSkillsClient {
         public static void registerOverlays(RegisterGuiOverlaysEvent event) {
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "skill_overlay", OverlaySkillGui.INSTANCE);
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "title_overlay", OverlayTitleGui.INSTANCE);
+            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "notice_overlay", OverlayNoticeGui.INSTANCE);
         }
 
         @SubscribeEvent

@@ -40,7 +40,10 @@ public class PlayerLifecycleHandler {
             SkillCapability capability = SkillCapability.get(serverPlayer);
             if (capability == null) return;
             Title titleKey = RegistryTitles.getTitle(capability.getPlayerTitle());
-            String title = (titleKey != null) ? Component.translatable(RegistryTitles.getTitle(capability.getPlayerTitle()).getKey()).getString() : "";
+            // Reuse titleKey: the previous code re-called getTitle() and dereferenced .getKey()
+            // on the (nullable) result even though the ternary only null-checked titleKey — an NPE
+            // if the stored title id was invalid. NameFormat fires often (chat, tab list).
+            String title = (titleKey != null) ? Component.translatable(titleKey.getKey()).getString() : "";
 
             event.setDisplayname(Component.literal(String.format("[%s] %s",
                     title.isEmpty()

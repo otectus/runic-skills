@@ -20,23 +20,24 @@ public class TacZIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onGunFireEvent(GunFireEvent event) {
-        if (event.getShooter() instanceof Player player) {
-            if (HandlerCommonConfig.HANDLER.instance().logTaczGunNames) {
-                ItemStack itemStack = event.getGunItemStack();
-                ModernKineticGunItem gunItem = (ModernKineticGunItem) itemStack.getItem();
-                ResourceLocation gunResourceLocation = gunItem.getGunId(itemStack);
+        if (!(event.getShooter() instanceof Player player)) return;
 
-                player.sendSystemMessage(Component.literal(String.format("[Runic Skills] >> Gun ID: %s", gunResourceLocation)));
-            }
+        ItemStack itemStack = event.getGunItemStack();
+        // Guard the cast: TacZ fires GunFireEvent for ModernKineticGunItem firearms today, but a
+        // non-modern-kinetic gun (subclass, compat shim, future API change) would otherwise throw
+        // an uncaught ClassCastException on the event bus and crash the server.
+        if (!(itemStack.getItem() instanceof ModernKineticGunItem gunItem)) return;
+        ResourceLocation gunResourceLocation = gunItem.getGunId(itemStack);
 
-            if (!player.isCreative()) {
-                ItemStack itemStack = event.getGunItemStack();
-                ModernKineticGunItem gunItem = (ModernKineticGunItem) itemStack.getItem();
-                ResourceLocation gunResourceLocation = gunItem.getGunId(itemStack);
-                SkillCapability provider = SkillCapability.get(player);
-                if (!provider.canUseItem(player, gunResourceLocation)) {
-                    event.setCanceled(true);
-                }
+        if (HandlerCommonConfig.HANDLER.instance().logTaczGunNames) {
+            player.sendSystemMessage(Component.literal(String.format("[Runic Skills] >> Gun ID: %s", gunResourceLocation)));
+        }
+
+        if (!player.isCreative()) {
+            SkillCapability provider = SkillCapability.get(player);
+            // provider can be null (capability not yet attached); allow the shot rather than NPE.
+            if (provider != null && !provider.canUseItem(player, gunResourceLocation)) {
+                event.setCanceled(true);
             }
         }
     }

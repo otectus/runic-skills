@@ -92,20 +92,14 @@ public class RunicSkills {
             tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
         if (cfg.enableApotheosisIntegration)
             tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
-        if (cfg.enableBotaniaIntegration)
-            tryLoadIntegration("botania",          "com.otectus.runicskills.integration.BotaniaIntegration");
         if (cfg.enableFTBQuestsIntegration)
             tryLoadIntegration("ftbquests",        "com.otectus.runicskills.integration.quests.FTBQuestsIntegration");
-        // R3 batch 3 scaffolding: integration classes registered so batch 4 has live
-        // @SubscribeEvent landing sites. Each handler is a no-op until batch 4 wires
-        // its Strength-tree perks (DRACONIC_FURY / GLADIATOR / TROPHY_HUNTER for Saints'
-        // Dragons; NICHIRIN_BLADE / DRAGON_BONE_MASTERY for Nichirin; CLEAVE / TITANS_GRIP
-        // / SAMURAIS_EDGE for Samurai; ANCIENT_STRENGTH / CATACLYSMS_WRATH for Enigmatic
-        // Legacy). Reflective load keeps the JVM from resolving the upstream APIs.
+        // Integration classes with live @SubscribeEvent landing sites for mod-gated Strength-tree
+        // perks (DRACONIC_FURY for Saints' Dragons; NICHIRIN_BLADE for Nichirin; CLEAVE / TITANS_GRIP
+        // / SAMURAIS_EDGE for Samurai). Reflective load keeps the JVM from resolving the upstream APIs.
         tryLoadIntegration("saintsdragons",    "com.otectus.runicskills.integration.SaintsDragonsIntegration");
         tryLoadIntegration("nichirin_dynasty", "com.otectus.runicskills.integration.NichirinDynastyIntegration");
         tryLoadIntegration("samurai_dynasty",  "com.otectus.runicskills.integration.SamuraiDynastyIntegration");
-        tryLoadIntegration("enigmaticlegacy",  "com.otectus.runicskills.integration.EnigmaticLegacyIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation.
         if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded())
@@ -118,6 +112,8 @@ public class RunicSkills {
             MinecraftForge.EVENT_BUS.register(new MowziesMobsIntegration());
         if (FarmersDelightIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new FarmersDelightIntegration());
+        if (LocksIntegration.isModLoaded())
+            MinecraftForge.EVENT_BUS.register(new LocksIntegration());
 
         ServerNetworking.init();
 
@@ -175,7 +171,10 @@ public class RunicSkills {
             MinecraftForge.EVENT_BUS.register(instance);
             LOGGER.debug("Loaded integration {} for mod {}", className, modId);
         } catch (Exception | NoClassDefFoundError e) {
-            LOGGER.warn("Failed to load integration {} for mod {}: {}", className, modId, e.getMessage());
+            // Pass the throwable (not e.getMessage()) so the stack trace is logged — NoClassDefFoundError
+            // and NPE often have a null message, which otherwise produced "Failed to load integration …: null".
+            // This path only runs after ModList.isLoaded(modId) passed, so a failure here is a real problem.
+            LOGGER.warn("Failed to load integration {} for mod {}", className, modId, e);
         }
     }
 

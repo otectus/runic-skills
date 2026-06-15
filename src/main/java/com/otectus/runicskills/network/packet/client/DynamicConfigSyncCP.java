@@ -2,6 +2,7 @@ package com.otectus.runicskills.network.packet.client;
 
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.ServerNetworking;
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -114,6 +115,11 @@ public class DynamicConfigSyncCP {
         skillMaxLevel = buffer.readInt();
         playersMaxGlobalLevel = buffer.readInt();
         String[] allLevels = buffer.readUtf().split("-");
+        // The encoder always writes exactly 16 '-'-joined sections; reject anything shorter so a
+        // malformed/hostile packet fails as a decoder error instead of AIOOBE-crashing the client.
+        if (allLevels.length < 16) {
+            throw new DecoderException("DynamicConfigSyncCP: expected 16 passive-level sections, got " + allLevels.length);
+        }
         int[] levels;
         levels = Arrays.stream(allLevels[0].split(",")).mapToInt(Integer::parseInt).toArray();
         attackPassiveLevels = levels;

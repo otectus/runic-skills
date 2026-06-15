@@ -28,7 +28,11 @@ public class InteractionEventHandler {
         SkillCapability provider = SkillCapability.get(player);
         if (provider == null) return false;
 
-        ResourceLocation location = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item.getItem()));
+        // getKey() returns null for an unregistered/removed-mod item. requireNonNull threw an NPE
+        // mid-interaction; an unregistered item can't match any lock, so allow it (same fix as
+        // SkillCapability.canUseItem).
+        ResourceLocation location = ForgeRegistries.ITEMS.getKey(item.getItem());
+        if (location == null) return false;
         if (!provider.canUseItem(player, location)) return true;
         if (block != null && !provider.canUseBlock(player, block)) return true;
         if (target != null && !provider.canUseEntity(player, target)) return true;

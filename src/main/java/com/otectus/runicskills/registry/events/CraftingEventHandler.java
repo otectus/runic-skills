@@ -167,7 +167,13 @@ public class CraftingEventHandler {
                             }
 
                             BlockPos pos = event.getEntity().blockPosition();
+                            java.util.UUID luckyDropUuid = player.getUUID();
                             enqueueTask(event.getEntity().level(), () -> {
+                                // Re-resolve the killer one tick later: capturing the Player ref
+                                // directly risked acting on a logged-out player (stale send/lookup).
+                                ServerPlayer onlinePlayer = RunicSkills.server == null ? null
+                                        : RunicSkills.server.getPlayerList().getPlayer(luckyDropUuid);
+                                if (onlinePlayer == null) return;
                                 List<ItemEntity> dropEntities = new ArrayList<>();
                                 Iterator<Entity> var5 = event.getEntity().level().getEntities(null, new AABB((pos.getX() - 1), (pos.getY() - 1), (pos.getZ() - 1), (pos.getX() + 1), (pos.getY() + 1), (pos.getZ() + 1))).iterator();
                                 while (var5.hasNext()) {
@@ -182,8 +188,8 @@ public class CraftingEventHandler {
                                         ItemStack itemStack = dropEntity.getItem();
                                         if (!equipment.contains(itemStack)) {
                                             if (itemStack.getMaxStackSize() > 1)
-                                                itemStack.setCount(itemStack.getCount() * (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[1]);
-                                            PlayerMessagesCP.send(player, "overlay.perk.runicskills.lucky_drop", (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[1]);
+                                                itemStack.setCount(itemStack.getCount() * (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(onlinePlayer)[1]);
+                                            PlayerMessagesCP.send(onlinePlayer, "overlay.perk.runicskills.lucky_drop", (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(onlinePlayer)[1]);
                                             dropEntity.setItem(itemStack);
                                         }
                                     }

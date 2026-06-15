@@ -36,14 +36,13 @@ Most "RPG skills" mods make you grind against a separate track. Runic Skills pig
 Runic Skills is built to feel like part of your modpack rather than an island. Optional integrations light up automatically when their mods are installed:
 
 - **Ars Nouveau** — Magic scales spell damage, mana-regen passives, glyph mastery perk.
-- **Botania** — 42 rune-tiered perks spanning Wisdom and Magic. Elemental/Seasonal/Sin/Gaia tiers echo Botania's own rune progression; perks pay in and siphon from your carried Mana Tablets/Bands and nearby Mana Pools. Icons reuse Botania's own 16×16 item textures directly (no redistribution). Auto-detects Botania, zero crash risk when absent.
-- **Irons Spellbooks** — Spell echo, arcane shield, attunement perks, school bonuses, spell gating by Magic level.
-- **Apotheosis & Apothic Attributes** — Affix, gem, and socket awareness. Broader attribute pool for passives.
+- **Irons Spellbooks** — Spell echo, arcane shield, attunement perks (all nine schools), school bonuses, spell gating by Magic level.
+- **Apotheosis & Apothic Attributes** — Affix, gem, and socket awareness. Broader attribute pool for passives. Apotheosis Wisdom raises your effective enchantment cap, and gem rarity gating ties socketing a gem to a Fortune level scaled by the gem's rarity (config-toggleable).
 - **KubeJS** — Script your own skills, perks, passives, titles, and conditions. A `SKILL_LEVELUP` event is exposed.
 - **L2Tabs / Legendary Tabs** — Skills shows up as a native tab in those mods' strips instead of being drawn twice.
 - **FTB Quests** (since 1.3.0) — Six native task types (`runicskills:skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) so quest authors can gate FTB Quests on Runic Skills progression. Sticky completion by default; opt-in `"sticky": false` for live-threshold semantics. Backfills on login.
 - **Custom skill visuals** (since 1.3.0) — Override per-skill overview/detail/background art with a single datapack JSON per skill at `data/<ns>/runicskills/skill_visuals/<id>.json`. Accepts arbitrary `namespace:path` texture ids so pack authors can point at any mod's item or texture sprite without shipping copies under the runicskills namespace.
-- **Farmers Delight, Blood Magic, Ice and Fire, Cataclysm, Mowzie's Mobs, Enigmatic Legacy, Stalwart Dungeons, Bosses of Mass Destruction, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Natures Aura, More Vanilla, Fantasy Armor, Jewelcraft, Locks** — Auto-generated level-gate lock lists for each.
+- **Farmers Delight, Ice and Fire, Cataclysm, Mowzie's Mobs, Stalwart Dungeons, Bosses of Mass Destruction, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Natures Aura, More Vanilla, Fantasy Armor, Jewelcraft, Locks** — Auto-generated level-gate lock lists for each.
 - **Crayfish Gun Mod (unofficial), Scorched Guns 2, TacZ, PointBlank (Vic's)** — Gun-fire events honour Runic Skills perks and locks.
 
 **Every integration is optional.** Runic Skills detects missing mods at runtime — no silent class-not-found crashes, no hard dependencies beyond Forge and YACL.
@@ -83,7 +82,7 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 - **Every number is in a config.** Skill max level, XP curves, lock-item lists, title requirements, per-integration toggles. You can tune the whole pack from `config/RunicSkills/runicskills.common.json5` (editable via the in-game config GUI as well).
 - **Disabling item locking** has four distinct levers: the `enableItemLocks` master toggle (whole feature, in the common config / **Config → General**), removing entries from `config/RunicSkills/runicskills.lockItems.json5`, the per-integration `*EnableLockItems` / `enable*Integration` toggles, and — importantly — *not* deleting `runicskills.lockItems.json5`, which **regenerates** the default locks rather than disabling them. Apply edits with `/skillsreload`.
-- **Titles are data-driven.** Datapack JSON under `data/runicskills/titles/` — ship your own title pack by dropping files in your pack. Reload live with `/skills reload`.
+- **Titles are data-driven.** Datapack JSON under `data/runicskills/titles/` — ship your own title pack by dropping files in your pack. Reload live with `/skillsreload`.
 - **KubeJS scripting.** Register custom skills, perks, passives, titles, and condition types from server scripts. See the [`KubeJS scripting hook`](https://github.com/otectus/runic-skills#kubejs-scripting-hook) section of the README for examples.
 - **Sided-imports lint** runs at build time — no `net.minecraft.client.*` code leaks into common-side logic, so the mod is safe on dedicated servers. Repeatedly audited for packet-deserialization security (see the 0.9.2 CHANGELOG entry).
 
@@ -93,14 +92,23 @@ Works on single-player, LAN, and dedicated servers. Same jar on client and serve
 
 - `/skills <player> <skill> <level>` — set a player's skill.
 - `/skills <player> <skill> add <amount>` — nudge up or down.
-- `/skills <player> list` — print all ten skill levels.
-- `/skills respec <player>` — refund passives and perks without touching skill levels.
-- `/skills register <item-id>` — runtime-lock an item.
-- `/skills reload` — re-read the titles and lock-items datapack.
+- `/listskills <player>` — print all ten skill levels.
+- `/respec <player>` — refund passives and perks without touching skill levels.
+- `/registeritem <item-id>` — runtime-lock an item.
+- `/skillsreload` — re-read the titles and lock-items datapack.
 - `/globallimit <cap>` — cap the total-skill sum.
 - `/titles <player> <title> set true|false` — grant or revoke a title.
 
 ---
+
+## What's new in 1.5.0
+
+Roster and integration pass to match the target Runecraft pack.
+
+- **Removed all Botania, Blood Magic, and Enigmatic Legacy perks** along with their integration classes and lock providers — those mods aren't in the target pack, so the perks were dead weight. (The Iron's Spellbooks blood-*school* perks — Blood Attunement, Blood-mancer, Blood-Warded, Blood Catalyst, Blood Fury — and the generic faith/soul perks stay; they don't depend on Blood Magic.)
+- **Apotheosis fully wired.** The Apotheosis Wisdom perk now boosts your effective enchantment cap via Placebo's `GetEnchantmentLevelEvent`, and the existing 14 Apotheosis perks were audited for API drift (none found).
+- **New: Apotheosis gem rarity gating.** Socketing a gem now requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), mirroring the existing affix-item rarity gating. Toggle with `apothEnableGemRarityGating` (default on).
+- Earlier in the release line: a unified over-GUI denial-message system and roughly 49 newly-implemented perks.
 
 ## What's new in 1.3.7
 
@@ -198,7 +206,7 @@ Save-compatible with 1.2.x. No NBT, no PROTOCOL_VERSION bump, no new packets. Bo
 ## Reporting bugs and requesting features
 
 - [GitHub issues](https://github.com/otectus/runic-skills/issues) is the best place.
-- If reporting a crash, attach `logs/latest.log`, your mod list, and if config-related your `config/runicskills-common.json5`.
+- If reporting a crash, attach `logs/latest.log`, your mod list, and if config-related your `config/RunicSkills/runicskills.common.json5`.
 - Pull requests welcome — the project is Apache-2.0.
 
 ---

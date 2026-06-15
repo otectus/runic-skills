@@ -2,6 +2,7 @@ package com.otectus.runicskills.integration;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
@@ -13,8 +14,6 @@ import com.hollingsworth.arsnouveau.api.spell.SpellSchools;
 import com.hollingsworth.arsnouveau.common.spell.method.MethodProjectile;
 import com.hollingsworth.arsnouveau.common.spell.method.MethodSelf;
 import com.hollingsworth.arsnouveau.common.spell.method.MethodTouch;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -44,10 +43,9 @@ public class ArsNouveauIntegration {
                     + (glyphCount - 1) * HandlerCommonConfig.HANDLER.instance().arsSpellComplexityScaleFactor);
 
             if (magicLevel < requiredLevel) {
-                if (player instanceof ServerPlayer) {
-                    player.sendSystemMessage(Component.translatable("overlay.runicskills.ars_spell_gated",
-                            Component.translatable(magicSkill.getKey()), requiredLevel));
-                }
+                // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
+                NoticeOverlayCP.send(player, "overlay.runicskills.ars_spell_gated",
+                        magicSkill.getKey(), String.valueOf(requiredLevel));
                 event.setCanceled(true);
             }
         }
@@ -359,10 +357,9 @@ public class ArsNouveauIntegration {
         int required = HandlerCommonConfig.HANDLER.instance().arsFamiliarRequiredMagicLevel;
 
         if (magicLevel < required) {
-            if (player instanceof ServerPlayer) {
-                player.sendSystemMessage(Component.translatable("overlay.runicskills.ars_familiar_gated",
-                        Component.translatable(magicSkill.getKey()), required));
-            }
+            // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
+            NoticeOverlayCP.send(player, "overlay.runicskills.ars_familiar_gated",
+                    magicSkill.getKey(), String.valueOf(required));
             event.setCanceled(true);
         }
     }

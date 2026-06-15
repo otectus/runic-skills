@@ -73,11 +73,13 @@ public class Skill {
 
 
     public int getLevel() {
-        return SkillCapability.getLocal().getSkillLevel(this);
+        SkillCapability cap = SkillCapability.getLocal();
+        return cap == null ? 1 : cap.getSkillLevel(this);
     }
 
     public int getLevel(Player player) {
-        return SkillCapability.get(player).getSkillLevel(this);
+        SkillCapability cap = SkillCapability.get(player);
+        return cap == null ? 1 : cap.getSkillLevel(this);
     }
 
     public MutableComponent getRank(int skillLevel) {

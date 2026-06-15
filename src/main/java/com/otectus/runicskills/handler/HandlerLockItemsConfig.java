@@ -7,6 +7,7 @@ import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.ListGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HandlerLockItemsConfig {
@@ -21,7 +22,11 @@ public class HandlerLockItemsConfig {
 
     @SerialEntry(comment = "Lock item list")
     @ListGroup(controllerFactory = LockItemListGroup.class, valueFactory = LockItemListGroup.class, addEntriesToBottom = true)
-    public List<LockItem> lockItemList = List.of(
+    // new ArrayList<>(List.of(...)): the default must be MUTABLE. /registeritem calls
+    // .add()/.remove()/.set() on this list before the config file is first written to disk
+    // (after a disk round-trip Gson yields an ArrayList, but on first launch the in-memory
+    // default is used directly) — an immutable List.of(...) threw UnsupportedOperationException.
+    public List<LockItem> lockItemList = new ArrayList<>(List.of(
             new LockItem("minecraft:anvil", new LockItem.Skill("building", 12)),
             new LockItem("minecraft:chipped_anvil", new LockItem.Skill("building", 12)),
             new LockItem("minecraft:damaged_anvil", new LockItem.Skill("building", 12)),
@@ -530,5 +535,5 @@ public class HandlerLockItemsConfig {
             new LockItem("siegemachines:siege_workbench", new LockItem.Skill("building", 12), new LockItem.Skill("tinkering", 8))
 
             // Note: Locks, Samurai Dynasty, More Vanilla, and Jewelcraft items are generated programmatically
-    );
+    ));
 }

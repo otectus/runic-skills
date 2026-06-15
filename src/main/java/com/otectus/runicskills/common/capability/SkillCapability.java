@@ -392,17 +392,20 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
+        // getOrDefault (not get): a registry entry added after this cap was constructed — or a key
+        // dropped during copyFrom — would otherwise unbox null and NPE during save. Defaults mirror
+        // deserializeNBT (skill 1, passive 0, title.Requirement), matching the perk path below.
         for (Skill skill : RegistrySkills.getCachedValues()){
-            nbt.putInt("skill." + skill.getName(), this.skillLevel.get(skill.getName()));
+            nbt.putInt("skill." + skill.getName(), this.skillLevel.getOrDefault(skill.getName(), 1));
         }
         for (Passive passive : RegistryPassives.getCachedValues()){
-            nbt.putInt("passive." + passive.getName(), this.passiveLevel.get(passive.getName()));
+            nbt.putInt("passive." + passive.getName(), this.passiveLevel.getOrDefault(passive.getName(), 0));
         }
         for (Perk perk : RegistryPerks.getCachedValues()){
             nbt.putInt("perk." + perk.getName(), this.perkRank.getOrDefault(perk.getName(), 0));
         }
         for (Title title : RegistryTitles.getCachedValues()){
-            nbt.putBoolean("title." + title.getName(), this.unlockTitle.get(title.getName()));
+            nbt.putBoolean("title." + title.getName(), this.unlockTitle.getOrDefault(title.getName(), title.Requirement));
         }
         CompoundTag cooldownsTag = new CompoundTag();
         for (Map.Entry<String, Integer> entry : this.perkCooldowns.entrySet()) {
@@ -513,17 +516,19 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     public void copyFrom(SkillCapability source) {
+        // getOrDefault: tolerate a source map missing a key (e.g. registry grew across the clone)
+        // instead of storing null, which would then NPE on the next serializeNBT.
         for (Skill skill : RegistrySkills.getCachedValues()){
-            this.skillLevel.put(skill.getName(), source.skillLevel.get(skill.getName()));
+            this.skillLevel.put(skill.getName(), source.skillLevel.getOrDefault(skill.getName(), 1));
         }
         for (Passive passive : RegistryPassives.getCachedValues()){
-            this.passiveLevel.put(passive.getName(), source.passiveLevel.get(passive.getName()));
+            this.passiveLevel.put(passive.getName(), source.passiveLevel.getOrDefault(passive.getName(), 0));
         }
         for (Perk perk : RegistryPerks.getCachedValues()){
             this.perkRank.put(perk.getName(), source.perkRank.getOrDefault(perk.getName(), 0));
         }
         for (Title title : RegistryTitles.getCachedValues()){
-            this.unlockTitle.put(title.getName(), source.unlockTitle.get(title.getName()));
+            this.unlockTitle.put(title.getName(), source.unlockTitle.getOrDefault(title.getName(), title.Requirement));
         }
 
         this.perkCooldowns = new HashMap<>(source.perkCooldowns);

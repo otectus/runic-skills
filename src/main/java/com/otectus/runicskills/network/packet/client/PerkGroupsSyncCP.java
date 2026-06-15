@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.client;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.registry.perks.PerkGroup;
 import com.otectus.runicskills.registry.perks.PerkGroupManager;
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,13 +30,22 @@ public class PerkGroupsSyncCP {
         this.groups = new ArrayList<>(PerkGroupManager.all());
     }
 
+    private static final int MAX_GROUPS = 4096;
+    private static final int MAX_PERKS_PER_GROUP = 8192;
+
     public PerkGroupsSyncCP(FriendlyByteBuf buffer) {
         int count = buffer.readVarInt();
+        if (count < 0 || count > MAX_GROUPS) {
+            throw new DecoderException("PerkGroupsSyncCP: group count out of range: " + count);
+        }
         List<PerkGroup> list = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             ResourceLocation id = buffer.readResourceLocation();
             int maxActive = buffer.readVarInt();
             int perkCount = buffer.readVarInt();
+            if (perkCount < 0 || perkCount > MAX_PERKS_PER_GROUP) {
+                throw new DecoderException("PerkGroupsSyncCP: perk count out of range: " + perkCount);
+            }
             Set<String> perks = new LinkedHashSet<>(perkCount);
             for (int j = 0; j < perkCount; j++) {
                 perks.add(buffer.readUtf(Short.MAX_VALUE));

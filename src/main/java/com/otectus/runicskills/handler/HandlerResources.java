@@ -123,7 +123,6 @@ public class HandlerResources {
     public static final ResourceLocation SACRED_FIRE_PERK = create("textures/skill/strength/sacred_fire.png");
     public static final ResourceLocation BLOOD_FURY_PERK = create("textures/skill/strength/blood_fury.png");
     public static final ResourceLocation CATACLYSMS_WRATH_PERK = create("textures/skill/strength/cataclysms_wrath.png");
-    public static final ResourceLocation ANCIENT_STRENGTH_PERK = create("textures/skill/strength/ancient_strength.png");
     public static final ResourceLocation GLADIATOR_PERK = create("textures/skill/strength/gladiator.png");
     public static final ResourceLocation TROPHY_HUNTER_PERK = create("textures/skill/strength/trophy_hunter.png");
     public static final ResourceLocation DRACONIC_FURY_PERK = create("textures/skill/strength/draconic_fury.png");
@@ -148,7 +147,6 @@ public class HandlerResources {
     public static final ResourceLocation DRACONIC_CONSTITUTION_PERK = create("textures/skill/constitution/draconic_constitution.png");
     public static final ResourceLocation CULINARY_EXPERT_PERK = create("textures/skill/constitution/culinary_expert.png");
     public static final ResourceLocation ANGLERS_BOUNTY_PERK = create("textures/skill/constitution/anglers_bounty.png");
-    public static final ResourceLocation BLOOD_SACRIFICE_RECOVERY_PERK = create("textures/skill/constitution/blood_sacrifice_recovery.png");
     public static final ResourceLocation SEARING_RESISTANCE_PERK = create("textures/skill/constitution/searing_resistance.png");
     public static final ResourceLocation WITHER_RESISTANCE_PERK = create("textures/skill/constitution/wither_resistance.png");
     public static final ResourceLocation UNDYING_WILL_PERK = create("textures/skill/constitution/undying_will.png");
@@ -160,9 +158,7 @@ public class HandlerResources {
     public static final ResourceLocation BATTLE_RECOVERY_PERK = create("textures/skill/constitution/battle_recovery.png");
     public static final ResourceLocation ARMOR_OF_FAITH_PERK = create("textures/skill/constitution/armor_of_faith.png");
     public static final ResourceLocation SOUL_SUSTENANCE_PERK = create("textures/skill/constitution/soul_sustenance.png");
-    public static final ResourceLocation ENIGMATIC_VITALITY_PERK = create("textures/skill/constitution/enigmatic_vitality.png");
     public static final ResourceLocation COLONIAL_NOURISHMENT_PERK = create("textures/skill/constitution/colonial_nourishment.png");
-    public static final ResourceLocation BLOOD_SHIELD_PERK = create("textures/skill/constitution/blood_shield.png");
     public static final ResourceLocation OBSIDIAN_HEART_PERK = create("textures/skill/constitution/obsidian_heart.png");
     public static final ResourceLocation POTION_MASTERY_PERK = create("textures/skill/constitution/potion_mastery.png");
     public static final ResourceLocation PHOENIX_RISING_PERK = create("textures/skill/constitution/phoenix_rising.png");
@@ -173,7 +169,6 @@ public class HandlerResources {
     public static final ResourceLocation MYRMEX_CARAPACE_PERK = create("textures/skill/constitution/myrmex_carapace.png");
     public static final ResourceLocation ENDERIUM_RESILIENCE_PERK = create("textures/skill/constitution/enderium_resilience.png");
     public static final ResourceLocation SURVIVAL_INSTINCT_PERK = create("textures/skill/constitution/survival_instinct.png");
-    public static final ResourceLocation BLOOD_MASTERY_PERK = create("textures/skill/constitution/blood_mastery.png");
     public static final ResourceLocation MASTER_CHEF_PERK = create("textures/skill/constitution/master_chef.png");
 
     // ========== DEXTERITY Perks ==========
@@ -236,10 +231,8 @@ public class HandlerResources {
     public static final ResourceLocation THORNS_MASTERY_PERK = create("textures/skill/endurance/thorns_mastery.png");
     public static final ResourceLocation SENTINEL_PERK = create("textures/skill/endurance/sentinel.png");
     public static final ResourceLocation DRAGONHIDE_PERK = create("textures/skill/endurance/dragonhide.png");
-    public static final ResourceLocation ENIGMATIC_PROTECTION_PERK = create("textures/skill/endurance/enigmatic_protection.png");
     public static final ResourceLocation FANTASY_FORTITUDE_PERK = create("textures/skill/endurance/fantasy_fortitude.png");
     public static final ResourceLocation COLONY_GUARDIAN_PERK = create("textures/skill/endurance/colony_guardian.png");
-    public static final ResourceLocation BLOOD_WARD_PERK = create("textures/skill/endurance/blood_ward.png");
     public static final ResourceLocation FROST_ENDURANCE_PERK = create("textures/skill/endurance/frost_endurance.png");
     public static final ResourceLocation OBSIDIAN_SKIN_PERK = create("textures/skill/endurance/obsidian_skin.png");
     public static final ResourceLocation LIGHTNING_ROD_PERK = create("textures/skill/endurance/lightning_rod.png");
@@ -273,7 +266,6 @@ public class HandlerResources {
     public static final ResourceLocation DRAGON_LORE_PERK = create("textures/skill/intelligence/dragon_lore.png");
     public static final ResourceLocation SPELLCRAFT_KNOWLEDGE_PERK = create("textures/skill/intelligence/spellcraft_knowledge.png");
     public static final ResourceLocation ARCANE_SCHOLAR_PERK = create("textures/skill/intelligence/arcane_scholar.png");
-    public static final ResourceLocation BLOOD_RITUALIST_PERK = create("textures/skill/intelligence/blood_ritualist.png");
     public static final ResourceLocation COLONY_ADVISOR_PERK = create("textures/skill/intelligence/colony_advisor.png");
     public static final ResourceLocation APOTHECARY_PERK = create("textures/skill/intelligence/apothecary.png");
     public static final ResourceLocation SIEGE_ENGINEER_PERK = create("textures/skill/intelligence/siege_engineer.png");
@@ -297,7 +289,6 @@ public class HandlerResources {
     public static final ResourceLocation ALCHEMIC_TRANSMUTATION_PERK = create("textures/skill/intelligence/alchemic_transmutation.png");
     public static final ResourceLocation MYSTIC_ANALYSIS_PERK = create("textures/skill/intelligence/mystic_analysis.png");
     public static final ResourceLocation SAGES_FOCUS_PERK = create("textures/skill/intelligence/sages_focus.png");
-    public static final ResourceLocation ENIGMATIC_WISDOM_PERK = create("textures/skill/intelligence/enigmatic_wisdom.png");
     public static final ResourceLocation SPELL_ECHO_PERK = create("textures/skill/intelligence/spell_echo.png");
     public static final ResourceLocation GLYPH_MASTERY_PERK = create("textures/skill/intelligence/glyph_mastery.png");
     public static final ResourceLocation BEAST_TAMER_PERK = create("textures/skill/intelligence/beast_tamer.png");
@@ -360,17 +351,14 @@ public class HandlerResources {
     public static final ResourceLocation MYSTIC_ATTUNEMENT_PERK = create("textures/skill/wisdom/mystic_attunement.png");
     public static final ResourceLocation SOUL_BINDING_PERK = create("textures/skill/wisdom/soul_binding.png");
     public static final ResourceLocation EXPERIENCED_ENCHANTER_PERK = create("textures/skill/wisdom/experienced_enchanter.png");
-    public static final ResourceLocation BLOOD_INSCRIPTION_PERK = create("textures/skill/wisdom/blood_inscription.png");
     public static final ResourceLocation ARCANE_LINGUIST_PERK = create("textures/skill/wisdom/arcane_linguist.png");
     public static final ResourceLocation WARD_MASTER_PERK = create("textures/skill/wisdom/ward_master.png");
     public static final ResourceLocation DIMENSIONAL_WISDOM_PERK = create("textures/skill/wisdom/dimensional_wisdom.png");
     public static final ResourceLocation ANCIENT_INSCRIPTIONS_PERK = create("textures/skill/wisdom/ancient_inscriptions.png");
     public static final ResourceLocation ARS_SAVANT_PERK = create("textures/skill/wisdom/ars_savant.png");
     public static final ResourceLocation NATURE_SAGE_PERK = create("textures/skill/wisdom/nature_sage.png");
-    public static final ResourceLocation ENIGMATIC_UNDERSTANDING_PERK = create("textures/skill/wisdom/enigmatic_understanding.png");
     public static final ResourceLocation SPELL_INSCRIPTION_PERK = create("textures/skill/wisdom/spell_inscription.png");
     public static final ResourceLocation ELDER_KNOWLEDGE_PERK = create("textures/skill/wisdom/elder_knowledge.png");
-    public static final ResourceLocation SACRED_GEOMETRY_PERK = create("textures/skill/wisdom/sacred_geometry.png");
     public static final ResourceLocation BOOKCRAFT_PERK = create("textures/skill/wisdom/bookcraft.png");
     public static final ResourceLocation MYSTIC_SIGHT_PERK = create("textures/skill/wisdom/mystic_sight.png");
     public static final ResourceLocation LAPIS_CONSERVATION_PERK = create("textures/skill/wisdom/lapis_conservation.png");
@@ -382,8 +370,6 @@ public class HandlerResources {
     public static final ResourceLocation TEMPORAL_WISDOM_PERK = create("textures/skill/wisdom/temporal_wisdom.png");
     public static final ResourceLocation GRAND_SAGE_PERK = create("textures/skill/wisdom/grand_sage.png");
     public static final ResourceLocation ARCANE_WARD_PERK = create("textures/skill/wisdom/arcane_ward.png");
-    public static final ResourceLocation RITUAL_SAGE_PERK = create("textures/skill/wisdom/ritual_sage.png");
-    public static final ResourceLocation CURSE_WARD_PERK = create("textures/skill/wisdom/curse_ward.png");
     public static final ResourceLocation AURA_ATTUNEMENT_PERK = create("textures/skill/wisdom/aura_attunement.png");
 
     // ========== MAGIC Perks ==========
@@ -393,15 +379,12 @@ public class HandlerResources {
     public static final ResourceLocation MANA_REGENERATION_PERK = create("textures/skill/magic/mana_regeneration.png");
     public static final ResourceLocation SPELL_AMPLIFIER_PERK = create("textures/skill/magic/spell_amplifier.png");
     public static final ResourceLocation SOURCE_WELL_PERK = create("textures/skill/magic/source_well.png");
-    public static final ResourceLocation BLOOD_CHANNEL_PERK = create("textures/skill/magic/blood_channel.png");
     public static final ResourceLocation POTION_SPLASH_PERK = create("textures/skill/magic/potion_splash.png");
     public static final ResourceLocation TELEKINESIS_PERK = create("textures/skill/magic/telekinesis.png");
     public static final ResourceLocation ELEMENTAL_MASTER_PERK = create("textures/skill/magic/elemental_master.png");
     public static final ResourceLocation ARCANE_BARRIER_PERK = create("textures/skill/magic/arcane_barrier.png");
     public static final ResourceLocation SPELL_QUICKENING_PERK = create("textures/skill/magic/spell_quickening.png");
     public static final ResourceLocation SOURCE_ATTUNEMENT_PERK = create("textures/skill/magic/source_attunement.png");
-    public static final ResourceLocation BLOOD_EMPOWER_PERK = create("textures/skill/magic/blood_empower.png");
-    public static final ResourceLocation RITUAL_EFFICIENCY_PERK = create("textures/skill/magic/ritual_efficiency.png");
     public static final ResourceLocation SUMMONER_PERK = create("textures/skill/magic/summoner.png");
     public static final ResourceLocation MYSTIC_SHIELD_PERK = create("textures/skill/magic/mystic_shield.png");
     public static final ResourceLocation ASTRAL_PROJECTION_PERK = create("textures/skill/magic/astral_projection.png");
@@ -425,7 +408,6 @@ public class HandlerResources {
     public static final ResourceLocation EVOCATION_ATTUNEMENT_PERK = create("textures/skill/magic/evocation_attunement.png");
     public static final ResourceLocation ARCANE_EFFICIENCY_PERK = create("textures/skill/magic/arcane_efficiency.png");
     public static final ResourceLocation ARCANE_REFORGING_PERK = create("textures/skill/magic/arcane_reforging.png");
-    public static final ResourceLocation CRIMSON_BOND_PERK = create("textures/skill/magic/crimson_bond.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1a generic mana/casting perks ──
     // Textures pulled from ISS's own item sheet (verified present in 3.15.x). If
@@ -576,7 +558,6 @@ public class HandlerResources {
     public static final ResourceLocation CHAOS_ROLL_PERK = create("textures/skill/fortune/chaos_roll.png");
     public static final ResourceLocation CRITICAL_FORTUNE_PERK = create("textures/skill/fortune/critical_fortune.png");
     public static final ResourceLocation MASTER_LOOTER_PERK = create("textures/skill/fortune/master_looter.png");
-    public static final ResourceLocation ARTIFACT_HUNTER_PERK = create("textures/skill/fortune/artifact_hunter.png");
     public static final ResourceLocation BLESSING_OF_LUCK_PERK = create("textures/skill/fortune/blessing_of_luck.png");
     public static final ResourceLocation GEM_ATTUNEMENT_PERK = create("textures/skill/fortune/gem_attunement.png");
 
@@ -621,63 +602,6 @@ public class HandlerResources {
     public static final ResourceLocation BACKPACK_ENGINEER_PERK = create("textures/skill/tinkering/backpack_engineer.png");
     public static final ResourceLocation WAYSTONE_TINKER_PERK = create("textures/skill/tinkering/waystone_tinker.png");
     public static final ResourceLocation MASTER_ARTIFICER_PERK = create("textures/skill/tinkering/master_artificer.png");
-
-    // ══════════════════════════════════════════════════════════════════════════
-    //  Botania Integration — perk icons reuse Botania's own 16×16 item textures
-    //  via the botania: namespace. These paths only resolve at runtime when
-    //  Botania is loaded; every BOTANIA_* perk is null-guarded in RegistryPerks,
-    //  so a missing texture cannot be requested without Botania present.
-    // ══════════════════════════════════════════════════════════════════════════
-
-    // ── WISDOM perks ──
-    public static final ResourceLocation BOTANIA_PETAL_READER_PERK             = botaniaItem("lexicon");
-    public static final ResourceLocation BOTANIA_RESONANCE_PERK                = botaniaItem("rune_mana");
-    public static final ResourceLocation BOTANIA_SPARKLE_SENSE_PERK            = botaniaItem("third_eye_0");
-    public static final ResourceLocation BOTANIA_DOWSERS_TWIG_PERK             = botaniaItem("divining_rod");
-    public static final ResourceLocation BOTANIA_GREEN_THUMB_PERK              = botaniaItem("overgrowth_seed");
-    public static final ResourceLocation BOTANIA_LIVINGBARK_STUDENT_PERK       = botaniaItem("livingwood_twig");
-    public static final ResourceLocation BOTANIA_AGRICULTORS_EYE_PERK          = botaniaItem("infused_seeds");
-    public static final ResourceLocation BOTANIA_FORAGERS_PALATE_PERK          = botaniaItem("mana_cookie");
-    public static final ResourceLocation BOTANIA_LOOT_HUNTERS_INTUITION_PERK   = botaniaItem("itemfinder");
-    public static final ResourceLocation BOTANIA_STILL_LISTENER_PERK           = botaniaItem("third_eye_2");
-    public static final ResourceLocation BOTANIA_MANASEERS_LENS_PERK           = botaniaItem("monocle");
-    public static final ResourceLocation BOTANIA_CORPOREA_QUERY_PERK           = botaniaItem("corporea_spark");
-    public static final ResourceLocation BOTANIA_CARTOGRAPHER_PERK             = botaniaItem("sextant");
-    public static final ResourceLocation BOTANIA_FAR_REACH_PERK                = botaniaItem("reach_ring");
-    public static final ResourceLocation BOTANIA_LAZY_SWAP_PERK                = botaniaItem("swap_ring");
-    public static final ResourceLocation BOTANIA_MIRRORS_READ_PERK             = botaniaItem("mana_mirror");
-    public static final ResourceLocation BOTANIA_ELVEN_KNOWLEDGE_PERK          = botaniaItem("lexicon_elven");
-    public static final ResourceLocation BOTANIA_GAIAS_WITNESS_PERK            = botaniaItem("gaia_head");
-    public static final ResourceLocation BOTANIA_ORACLE_NINE_RUNES_PERK        = botaniaItem("twig_wand");
-
-    // ── MAGIC perks ──
-    public static final ResourceLocation BOTANIA_INNER_WELLSPRING_PERK         = botaniaItem("mana_tablet");
-    public static final ResourceLocation BOTANIA_TIDEWOVEN_PERK                = botaniaItem("rune_water");
-    public static final ResourceLocation BOTANIA_EMBERHEART_PERK               = botaniaItem("rune_fire");
-    public static final ResourceLocation BOTANIA_STONE_ROOTED_PERK             = botaniaItem("rune_earth");
-    public static final ResourceLocation BOTANIA_FEATHERSTEP_PERK              = botaniaItem("rune_air");
-    public static final ResourceLocation BOTANIA_BAND_OF_AURA_PERK             = botaniaItem("aura_ring");
-    public static final ResourceLocation BOTANIA_VERDANT_PULSE_PERK            = botaniaItem("rune_spring");
-    public static final ResourceLocation BOTANIA_SOLAR_CONDUIT_PERK            = botaniaItem("rune_summer");
-    public static final ResourceLocation BOTANIA_HARVEST_TITHE_PERK            = botaniaItem("rune_autumn");
-    public static final ResourceLocation BOTANIA_FROSTBOUND_PERK               = botaniaItem("rune_winter");
-    public static final ResourceLocation BOTANIA_LENS_VELOCITY_PERK            = botaniaItem("lens_speed");
-    public static final ResourceLocation BOTANIA_LENS_POTENCY_PERK             = botaniaItem("lens_power");
-    public static final ResourceLocation BOTANIA_PIXIE_AFFINITY_PERK           = botaniaItem("rune_lust");
-    public static final ResourceLocation BOTANIA_CAKE_COMBUSTION_PERK          = botaniaItem("rune_gluttony");
-    public static final ResourceLocation BOTANIA_MAGNETITE_PERK                = botaniaItem("magnet_ring");
-    public static final ResourceLocation BOTANIA_UNBOUND_STEP_PERK             = botaniaItem("rune_sloth");
-    public static final ResourceLocation BOTANIA_MIRRORED_WRATH_PERK           = botaniaItem("rune_envy");
-    public static final ResourceLocation BOTANIA_CROWN_OF_REACH_PERK           = botaniaItem("rune_pride");
-    public static final ResourceLocation BOTANIA_THUNDERCALL_PERK              = botaniaItem("rune_wrath");
-    public static final ResourceLocation BOTANIA_RELIC_ATTUNEMENT_PERK         = botaniaItem("king_key");
-    public static final ResourceLocation BOTANIA_TERRASTEEL_ASCENSION_PERK     = botaniaItem("terrasteel_ingot");
-    public static final ResourceLocation BOTANIA_FLUGELS_GRACE_PERK            = botaniaItem("flight_tiara");
-    public static final ResourceLocation BOTANIA_MANASTORM_PERK                = botaniaItem("lens_storm");
-
-    private static ResourceLocation botaniaItem(String name) {
-        return new ResourceLocation("botania", "textures/item/" + name + ".png");
-    }
 
     // Foreign-mod item-texture helpers. These point the perk-icon renderer at the
     // source mod's own item sprites, so perk art matches the theme without us

@@ -625,13 +625,47 @@ public class CombatEventHandler {
                 && player.getHealth() / Math.max(1.0f, player.getMaxHealth()) < 0.30f) {
             reduction += cfg.survivalInstinctPercent / 100.0f;
         }
-        // BLOOD_SHIELD — flat reduction of all incoming damage.
-        if (RegistryPerks.BLOOD_SHIELD != null && RegistryPerks.BLOOD_SHIELD.get().isEnabled(player)) {
-            reduction += cfg.bloodShieldPercent / 100.0f;
-        }
         // RUNIC_FORTIFICATION — flat reduction of all incoming damage.
         if (RegistryPerks.RUNIC_FORTIFICATION != null && RegistryPerks.RUNIC_FORTIFICATION.get().isEnabled(player)) {
             reduction += cfg.runicFortificationPercent / 100.0f;
+        }
+        // BLAST_RESISTANCE / OBSIDIAN_HEART — reduce explosion damage.
+        if (RegistryPerks.BLAST_RESISTANCE != null && RegistryPerks.BLAST_RESISTANCE.get().isEnabled(player)
+                && src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) {
+            reduction += cfg.blastResistancePercent / 100.0f;
+        }
+        if (RegistryPerks.OBSIDIAN_HEART != null && RegistryPerks.OBSIDIAN_HEART.get().isEnabled(player)
+                && src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) {
+            reduction += cfg.obsidianHeartPercent / 100.0f;
+        }
+        // FROST_ENDURANCE / FROST_WALKER_CONSTITUTION — reduce freezing damage.
+        if (RegistryPerks.FROST_ENDURANCE != null && RegistryPerks.FROST_ENDURANCE.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.FREEZE)) {
+            reduction += cfg.frostEndurancePercent / 100.0f;
+        }
+        if (RegistryPerks.FROST_WALKER_CONSTITUTION != null && RegistryPerks.FROST_WALKER_CONSTITUTION.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.FREEZE)) {
+            reduction += cfg.frostWalkerConstitutionPercent / 100.0f;
+        }
+        // LIGHTNING_ROD — reduce lightning damage.
+        if (RegistryPerks.LIGHTNING_ROD != null && RegistryPerks.LIGHTNING_ROD.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.LIGHTNING_BOLT)) {
+            reduction += cfg.lightningRodPercent / 100.0f;
+        }
+        // WARDING_RUNE — reduce magic damage.
+        if (RegistryPerks.WARDING_RUNE != null && RegistryPerks.WARDING_RUNE.get().isEnabled(player)
+                && src.is(net.minecraft.world.damagesource.DamageTypes.MAGIC)) {
+            reduction += cfg.wardingRunePercent / 100.0f;
+        }
+        // PRISMARINE_SHIELD — reduce projectile (ranged) damage.
+        if (RegistryPerks.PRISMARINE_SHIELD != null && RegistryPerks.PRISMARINE_SHIELD.get().isEnabled(player)
+                && src.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE)) {
+            reduction += cfg.prismarineShieldPercent / 100.0f;
+        }
+        // SENTINEL — reduce all damage while below 50% HP.
+        if (RegistryPerks.SENTINEL != null && RegistryPerks.SENTINEL.get().isEnabled(player)
+                && player.getHealth() / Math.max(1.0f, player.getMaxHealth()) < 0.50f) {
+            reduction += cfg.sentinelPercent / 100.0f;
         }
 
         if (reduction > 0.0f) {

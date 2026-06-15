@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.client;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.registry.powers.PowerOverrides;
 import com.otectus.runicskills.registry.powers.PowerOverridesManager;
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,14 +31,23 @@ public class PowerOverridesSyncCP {
         this.overrides = new ArrayList<>(PowerOverridesManager.all());
     }
 
+    private static final int MAX_OVERRIDES = 8192;
+    private static final int MAX_VALUES_PER_OVERRIDE = 1024;
+
     public PowerOverridesSyncCP(FriendlyByteBuf buffer) {
         int count = buffer.readVarInt();
+        if (count < 0 || count > MAX_OVERRIDES) {
+            throw new DecoderException("PowerOverridesSyncCP: override count out of range: " + count);
+        }
         List<PowerOverrides> list = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             ResourceLocation id = buffer.readResourceLocation();
             int reqLvl = buffer.readVarInt();
             int icd = buffer.readVarInt();
             int valCount = buffer.readVarInt();
+            if (valCount < 0 || valCount > MAX_VALUES_PER_OVERRIDE) {
+                throw new DecoderException("PowerOverridesSyncCP: value count out of range: " + valCount);
+            }
             Map<String, Double> values = new LinkedHashMap<>(valCount);
             for (int j = 0; j < valCount; j++) {
                 String k = buffer.readUtf(Short.MAX_VALUE);

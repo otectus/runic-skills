@@ -20,8 +20,8 @@ import javax.annotation.Nullable;
 
 /**
  * Class-load-isolated wrapper for every {@code io.redspace.ironsspellbooks.*} symbol
- * touched by the Powers dispatcher. Lives in the same package as {@link BotaniaCompat}
- * / {@link IronsSpellbooksIntegration} and follows the same rule: this is the only
+ * touched by the Powers dispatcher. Lives in the same package as
+ * {@link IronsSpellbooksIntegration} and follows the same rule: this is the only
  * file where Powers code may import ISS types. Callers guard with
  * {@link IronsSpellbooksIntegration#isModLoaded()} before invoking, so
  * {@code NoClassDefFoundError} stays quarantined here.

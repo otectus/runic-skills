@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Mod ID**: `runicskills`
 - **Package**: `com.otectus.runicskills`
-- **Version**: 1.3.8
+- **Version**: 1.5.0
 - **MC**: 1.20.1 | **Forge**: 47.3.0 | **Java**: 17
 - **Mappings**: Parchment 2023.09.03-1.20.1
 
@@ -15,7 +15,7 @@
 ## Project Structure
 ```
 src/main/java/com/otectus/runicskills/
-  ├── mixin/           — Mixins (13 total: 4 client, 9 common)
+  ├── mixin/           — Mixins (14 total: 4 client, 10 common)
   └── ...              — Skills, perks, config, commands, GUI, events
 src/main/resources/
   ├── META-INF/mods.toml

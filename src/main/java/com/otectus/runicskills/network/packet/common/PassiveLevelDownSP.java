@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.common;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.event.PassiveLevelUpEvent;
 import com.otectus.runicskills.integration.quests.RunicQuestBridge;
+import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryAttributes;
@@ -37,6 +38,7 @@ public class PassiveLevelDownSP {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
+                if (!PacketRateLimiter.allow(player, "passive_level_down", 2)) return;
                 SkillCapability capability = SkillCapability.get(player);
                 if (capability == null) return;
 

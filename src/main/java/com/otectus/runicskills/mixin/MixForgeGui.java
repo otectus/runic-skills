@@ -14,8 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-
 @Mixin({ForgeGui.class})
 public abstract class MixForgeGui extends Gui {
     @Unique
@@ -28,13 +26,17 @@ public abstract class MixForgeGui extends Gui {
     @Inject(method = {"renderAir"}, at = {@At("HEAD")}, remap = false, cancellable = true)
     private void renderAirs(int width, int height, GuiGraphics guiGraphics, CallbackInfo info) {
         info.cancel();
+        // The camera entity is not always a Player (spectator target, detached/3rd-party camera).
+        // A blind (Player) cast + requireNonNull threw CCE/NPE; skip the custom air bar instead.
+        if (!(this.minecraft.getCameraEntity() instanceof Player player)) {
+            return;
+        }
         this.minecraft.getProfiler().push("air");
-        Player player = (Player) this.minecraft.getCameraEntity();
         RenderSystem.enableBlend();
         int left = width / 2 + 91;
         int top = height - this.this$class.rightHeight;
 
-        int air = Objects.requireNonNull(player).getAirSupply();
+        int air = player.getAirSupply();
         if (player.isEyeInFluidType(ForgeMod.WATER_TYPE.get()) || air < player.getMaxAirSupply()) {
             int full = Mth.ceil((air - 2) * 10.0D / player.getMaxAirSupply());
             int partial = Mth.ceil(air * 10.0D / player.getMaxAirSupply()) - full;

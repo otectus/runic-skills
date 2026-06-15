@@ -108,7 +108,7 @@ public class ConfigHolder<T> {
             ensureParent();
             save();
         } catch (Exception e) {
-            LOGGER.warn("Failed to write defaults to {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to write defaults to {}: {}", path, e.toString());
         }
     }
 
@@ -118,7 +118,7 @@ public class ConfigHolder<T> {
             Path backup = path.resolveSibling(path.getFileName().toString() + ".invalid");
             Files.copy(path, backup, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
-            LOGGER.warn("Could not back up unparseable config {}: {}", path, e.getMessage());
+            LOGGER.warn("Could not back up unparseable config {}: {}", path, e.toString());
         }
     }
 
@@ -127,14 +127,14 @@ public class ConfigHolder<T> {
         try {
             ensureParent();
         } catch (IOException e) {
-            LOGGER.warn("Failed to create parent directory for {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to create parent directory for {}: {}", path, e.toString());
             return;
         }
         Gson gson = prettyPrint ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
         try (Writer w = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             gson.toJson(instance, w);
         } catch (IOException e) {
-            LOGGER.warn("Failed to save {}: {}", path, e.getMessage());
+            LOGGER.warn("Failed to save {}: {}", path, e.toString());
         }
     }
 

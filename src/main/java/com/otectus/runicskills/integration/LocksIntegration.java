@@ -3,19 +3,63 @@ package com.otectus.runicskills.integration;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class LocksIntegration {
 
     private static final String MOD_ID = "locks";
+    private static final ResourceLocation KEY_ITEM_ID = new ResourceLocation(MOD_ID, "key");
+    private static final ResourceLocation MASTER_KEY_ITEM_ID = new ResourceLocation(MOD_ID, "master_key");
 
     public static boolean isModLoaded() {
         return ModList.get().isLoaded(MOD_ID);
+    }
+
+    // Key Forge: when the player crafts a basic locks:key, roll keyForgePercent
+    // chance to substitute a locks:master_key of the same count. The substitution
+    // works by zeroing the just-crafted key stack and adding a master_key to the
+    // player's inventory. If the inventory has no room, the master_key drops at
+    // the player's feet — standard Forge behavior.
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
+        if (!isModLoaded()) return;
+        Player player = event.getEntity();
+        if (player == null || player instanceof FakePlayer) return;
+        if (RegistryPerks.KEY_FORGE == null || !RegistryPerks.KEY_FORGE.get().isEnabled(player)) return;
+
+        ItemStack crafted = event.getCrafting();
+        if (crafted.isEmpty()) return;
+
+        ResourceLocation craftedId = ForgeRegistries.ITEMS.getKey(crafted.getItem());
+        if (!KEY_ITEM_ID.equals(craftedId)) return;
+
+        Item masterKey = ForgeRegistries.ITEMS.getValue(MASTER_KEY_ITEM_ID);
+        if (masterKey == null) return;
+
+        int chance = HandlerCommonConfig.HANDLER.instance().keyForgePercent;
+        if (chance <= 0) return;
+        if (ThreadLocalRandom.current().nextInt(100) >= chance) return;
+
+        int count = crafted.getCount();
+        crafted.setCount(0);
+        ItemStack masterStack = new ItemStack(masterKey, count);
+        if (!player.getInventory().add(masterStack)) {
+            player.drop(masterStack, false);
+        }
     }
 
     // --- Material Tiers ---

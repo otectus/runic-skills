@@ -1,5 +1,155 @@
 # Changelog
 
+## [1.5.0] - 2026-06-15 — Over-GUI denial messaging, perk-backlog drain, mod-perk purge & proper Apotheosis
+
+Broad audit/stabilization pass, a unified over-GUI denial-message system (network protocol 5 → 6),
+the Runecraft lock-provider coverage audit, a large drain of the inert-perk backlog, removal of the
+Botania / Blood Magic / Enigmatic Legacy perk sets (mods absent from the target pack), and proper
+Apotheosis incorporation (audit, enchantment-cap perk, and gem rarity gating).
+
+### Removed — Botania / Blood Magic / Enigmatic Legacy perks (not in the Runecraft pack)
+Purged every perk tied to these three mods (identified authoritatively by each perk's
+`<Integration>.isModLoaded()` gate, not just naming), removing the bloat and config surface for mods
+the target pack doesn't ship:
+- **Botania (~40 perks):** the entire `BotaniaIntegration` perk block (all `BOTANIA_*`, the rune /
+  seasonal / sin / capstone perks) plus `BotaniaIntegration`, `BotaniaCompat`, the `botania` config
+  group (83 fields), all `perk.runicskills.botania_*` lang, the namespace texture helper, and the
+  Botania `compileOnly` build dependency.
+- **Blood Magic (12 perks):** `BLOOD_MASTERY`, `RITUAL_SAGE`, `CRIMSON_BOND`, `BLOOD_SACRIFICE_RECOVERY`,
+  `BLOOD_SHIELD`, `BLOOD_WARD`, `BLOOD_RITUALIST`, `BLOOD_INSCRIPTION`, `SACRED_GEOMETRY`,
+  `BLOOD_CHANNEL`, `BLOOD_EMPOWER`, `RITUAL_EFFICIENCY` + `BloodMagicIntegration` and its lock-item
+  provider. **Kept:** the Iron's Spellbooks *blood-school* perks (`BLOOD_ATTUNEMENT`, `BLOOD_MANCER`,
+  `BLOOD_WARDED`, `BLOOD_CATALYST` — ISS is in the pack) and `BLOOD_FURY` (generic crit life-steal,
+  re-gated to drop its Blood-Magic dependency).
+- **Enigmatic Legacy (7 perks):** `ANCIENT_STRENGTH`, `CURSE_WARD`, `ARTIFACT_HUNTER`,
+  `ENIGMATIC_VITALITY`, `ENIGMATIC_PROTECTION`, `ENIGMATIC_WISDOM`, `ENIGMATIC_UNDERSTANDING` +
+  `EnigmaticLegacyIntegration` and the `enigmaticlegacy` lock-discovery provider. **Kept:** the generic
+  perks that were merely flavored that way (`ARMOR_OF_FAITH`, `SOUL_SUSTENANCE`, `MYSTIC_ANALYSIS`,
+  `SAGES_FOCUS`) and `CATACLYSMS_WRATH` (gated on Cataclysm, which is in the pack).
+- Removed the corresponding effect sites (`BLOOD_WARD`/`BLOOD_EMPOWER` in `PerkEffectsHandler`,
+  `BLOOD_SHIELD` in `CombatEventHandler`), the integration enable-toggles and their `CommonConfigSyncCP`
+  sync, 125 config fields, 126 lang keys, 61 orphaned texture constants, and `BOTANIA_RUNIC_SKILLS_INTEGRATION.md`.
+
+### Apotheosis — proper incorporation (audit + wire inert perks)
+Audited the 14 existing Apotheosis perks against the real 7.4.8 deobf API: **zero drift** — every
+`ALObjects.Attributes.*` id, `GetItemSocketsEvent`/`ItemSocketingEvent` usage, and `AffixHelper`/
+`SocketHelper`/`DynamicHolder` call is correct. Wired the inert `APOTHEOSIS_WISDOM` via Placebo's
+`GetEnchantmentLevelEvent` (the same event Apotheosis uses to extend caps), raising present
+enchantments' effective levels by the perk's amplifier for the holder. `APOTHEOSIS_GEMS` stays
+allowlisted with a documented reason: gem rarity is rolled inside `GemLootPoolEntry` with no
+player-attributable Forge event in 7.4.8, so there is no faithful hook short of fragile loot-internal ASM.
+
+### Added — Apotheosis gem rarity gating
+Gems are not affix items, so the existing Fortune affix-rarity gating never covered them. Now gem
+**socketing** is gated by the gem's own `LootRarity` (i.e. how powerful it is), reusing the same
+per-rarity Fortune thresholds (`apothRarityUncommonLevel` … `apothRarityAncientLevel`). Implemented
+via Apotheosis's `ItemSocketingEvent.CanSocket` (`@HasResult` → `setResult(DENY)`), reading rarity
+through `GemInstance.unsocketed(stack).rarity()`, with an over-GUI denial banner. Toggle:
+`apothEnableGemRarityGating` (default on; common gems are always ungated).
+
+### Fixed — crashes & correctness
+- **P0 capability-sync NPEs.** `SyncSkillCapabilityCP.send()`/`.handle()` dereferenced the `@Nullable`
+  `SkillCapability.get()`/`getLocal()` with no guard; `send()` is reached from ~30 sites incl. player
+  world-join, so a capability-attach race could crash login. Both are now null-guarded.
+- **`/registeritem` first-launch crash.** `HandlerLockItemsConfig.lockItemList`, plus `LockItem.Skills`
+  (field default and varargs constructor) were immutable `List.of(...)`/`Stream.toList()`; the command's
+  `.add()/.remove()/.set()` threw `UnsupportedOperationException` until the config file had been written
+  once. All three are now mutable `ArrayList`s.
+- **`InteractionEventHandler` NPE** on unregistered/removed-mod items (`Objects.requireNonNull(getKey())`)
+  — now deny-safe, matching the `SkillCapability` fix.
+- **`PlayerLifecycleHandler` title NPE** — re-fetched the title and dereferenced the nullable result
+  despite null-checking a different variable (fires on every chat/tab render); reuses the checked ref.
+- **`CraftingEventHandler` LUCKY_DROP** captured a `Player` ref in a deferred `TickTask` that could be
+  offline a tick later; now captures the UUID and re-resolves.
+- **`TacZIntegration`** — guarded the unchecked `ModernKineticGunItem` cast (ClassCastException) and the
+  unchecked `SkillCapability.get()` (NPE).
+- **Capability serialization** — `serializeNBT`/`copyFrom` used unguarded `.get()` for skill/passive/title
+  maps (NPE/dataloss if a registry entry was missing); now `getOrDefault` like the perk path.
+
+### Fixed — robustness & hardening
+- Client-bound packet decoders `DynamicConfigSyncCP`, `PerkGroupsSyncCP`, `PowerOverridesSyncCP` now
+  bounds-check counts/splits (`DecoderException`) so a malformed/hostile server can't crash clients
+  (matches the existing `ConfigSyncCP` guard).
+- Rate limiters added to `PassiveLevelUpSP`/`PassiveLevelDownSP`/`SetPlayerTitleSP`/`OpenEnderChestSP`.
+- Null guards on `Perk.getToggle()`, `Skill.getLevel()`, `OverlaySkillGui`, and `MixForgeGui`'s
+  camera-entity cast (spectator/detached camera).
+- `MixTrueInvisibilityEffect` now gated on `irons_spellbooks` in the mixin plugin (no classloader WARN
+  when ISS is absent).
+- `/globallimit` and `/updateskilllevel` reject `< 1` (a non-positive `skillMaxLevel` broke the rank
+  divisor); `/updateskilllevel` now reports failure instead of success on its rejection path.
+
+### Fixed — denial messages now render over open GUIs
+- **Item-lock warning hidden behind the crafting menu.** The skill-requirement overlay
+  (`runicskills:skill_overlay`) is a Forge HUD layer, which Forge does **not** render while a container
+  `Screen` is open — so trying to craft a too-high-level item (e.g. a lockpick) fired the
+  "You can't use this item yet" warning but it never drew. `OverlaySkillGui` now also renders via a
+  `ScreenEvent.Render.Post` hook, so the warning always shows over the GUI. The HUD and screen paths are
+  mutually exclusive (no double-draw).
+- **Other denial messages were also behind/again in chat.** Spell-gating (Iron's Spellbooks
+  `school_locked`/`spell_gated`, Ars Nouveau `ars_spell_gated`/`ars_familiar_gated`) used
+  `sendSystemMessage` (chat, hidden behind screens), and the Apotheosis affix-rarity gate was sent
+  through `PlayerMessagesCP`, which never handled that key — so it **displayed nothing at all** (and
+  carried only one of its two args). All of these now route through a new `OverlayNoticeGui` /
+  `NoticeOverlayCP` over-GUI banner. The Apotheosis banner now passes both the required Fortune level
+  and the rarity name.
+- Network `PROTOCOL_VERSION` bumped `5 → 6` for the added `NoticeOverlayCP` packet.
+
+### Integration — lock-provider coverage audit (Runecraft)
+- Re-verified lock namespaces against the Runecraft item-registry dump and the mod jars' asset folders.
+  Added two previously-uncovered gear mods: **Epic Knights: Antique Legacy** (real namespace
+  `antiquelegacy`, not `epic_knights_antique_legacy`) and **Call of the Yucatan** (`call_of_yucutan`).
+- `docs/INTEGRATION_MATRIX.md` updated (1.3.9) with the audit provenance and corrected install flags.
+- Corrected stale "scaffold / lands in batch 4" javadoc + log lines on the Saints' Dragons, Nichirin
+  Dynasty, and Enigmatic Legacy integrations — their `onLivingHurt` perk effects (DRACONIC_FURY,
+  NICHIRIN_BLADE, ANCIENT_STRENGTH) are already implemented, not pending.
+
+### Docs / metadata
+- `pack.mcmeta` data-pack format 12 → 15 (1.20.1); `mod_description` filled in; dead `mapping_channel`/
+  `mapping_version` properties removed; `CLAUDE.md` mixin count corrected (14: 4 client / 10 common).
+- README/CurseForge command names (`/skillsreload`, `/registeritem`, `/respec`, `/listskills`) and config
+  paths (`config/RunicSkills/runicskills.common.json5`) corrected.
+- Removed dead `CounterAttackSP` packet class and an unused YACL group lang key.
+- Added a guard comment in `RegistryCommonEvents` explaining the deliberate static-via-annotation /
+  instance-via-manual-register split (so it isn't "deduplicated" into breakage).
+
+### Perk backlog (completion pass — ongoing)
+New `registry/events/PerkEffectsHandler` (data-driven effect tables) plus extensions to
+`CombatEventHandler`. Implemented real gameplay effects for **122** of the 340 inert perks
+(allowlist 340 → 218), each gated on `isEnabled` + its existing config field and removed from
+`perk_no_effect_allowlist.txt` (enforced by `PerkEffectCoverageTest`). Categories wired so far:
+damage-type/conditional damage reduction, knockback resistance, block-reflect, attribute modifiers
+(movement/armor/attack-speed/health/reach/luck), experience multipliers + XP-orb healing, mob & ore/
+block bonus drops, mining speed, outgoing-damage conditionals (mounted/boss/weapon-id/life-steal),
+arrow on-hit effects + recovery + ranged bonuses, absorption/regen/barrier, food (saturation/buffs/
+iron-stomach), crafting output, anvil-cost reduction, passive item repair, and potion-duration perks
+(via the `BENEFICIAL_EFFECT` attribute). Approximations are flagged with `APPROX` comments.
+
+**1.4.0 batch — +49 perks (allowlist 218 → 169).** A second drain of the backlog, all faithful
+vanilla-1.20.1 hooks gated on `isEnabled` + the perk's config field:
+- *Dodge subsystem:* `DODGE_ROLL`/`EVASION`/`SPELL_DODGE` cancel a qualifying `LivingHurtEvent` and
+  open a window consumed by `PHANTOM_STRIKE` (next-hit bonus).
+- *Survive-lethal:* `UNDYING_WILL` (chance) and `MYTHICAL_BERSERKER` (+ rage window) cancel
+  `LivingDeathEvent` to 1 HP with a 60 s lockout (not a permanent totem); `BLOODLUST` (post-kill
+  attack-speed window) and `STALWART_STRIKER` (heal on hostile-mob kill) on the killer side.
+- *Defense:* `THICK_SKIN` (flat), `SHIELD_WALL` (blocking), `SIEGE_DEFENSE` (inside any structure),
+  `DRACONIC_CONSTITUTION` (elemental), `SAMURAI_RESOLVE` (post-hit window), `ADAPTATION` (same-source
+  decay), `IMMOVABLE_OBJECT` (no knockback while blocking), `POISON_IMMUNITY`.
+- *Combat/ranged:* `CRITICAL_MASTERY` (`CriticalHitEvent`), `RAPID_FIRE`/`CROSSBOW_EXPERT` (draw
+  speed), `MULTISHOT_MASTERY` (`EntityJoinLevelEvent` fan), `RICOCHET`/`TRICK_SHOT` (arrow on-hit),
+  `CHAIN_LIGHTNING_STRIKE`, `ENCHANTED_MISSILES`, `THORNS_MASTERY`, `TRACKING` (Glowing).
+- *Attributes:* `FLEET_FOOTED`/`SWIMMERS_ENDURANCE` (move/swim speed), `WAR_TACTICIAN` (attack speed),
+  `TELEKINESIS` (block reach), and the LUCK-loot group (`TREASURE_SENSE`, `SCAVENGER`, `RARE_FIND`,
+  `MASTER_LOOTER`, `LUCKY_EXPLORER`, `LUCKY_FISHING`, `ADVENTURERS_LUCK`).
+- *Gathering/world:* `VEIN_MINER` (bounded flood-fill), `LUMBERJACK`/`TERRAFORMER` (break speed),
+  `PROSPECTOR`/`FORTUNES_FAVOR`/`SERENDIPITY` (bonus ore), `RAINBOW_LOOT` (enchanted drops),
+  `NATURES_BLESSING` (heal on natural blocks), `UNBREAKABLE`/`UNBREAKING_MASTERY` (durability),
+  `SMOKE_BOMB` (low-HP invisibility), `PHOENIX_RISING` (respawn HP).
+
+The remaining 169 inert perks and the Power backlog continue in subsequent batches; many of those
+describe effects with no faithful vanilla-1.20.1 hook (mod-pool mechanics, enchant-table internals,
+stamina/zipline/colony/dynamic-light/ore-X-ray features) that require the optional mod's API or custom
+client rendering — these stay transparently allowlisted rather than faked.
+
 ## [1.3.7] - 2026-06-10 — Configuration reliability audit
 
 Audit pass focused on config lifecycle, the YACL config screen, item locking, and integration gating. Driven by two user reports: "disabling item locking does nothing" and "the YACL config screen does nothing."

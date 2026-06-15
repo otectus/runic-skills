@@ -124,11 +124,6 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableSpartanIntegration = true;
 
-    @SerialEntry(comment = "Master toggle for the Blood Magic integration. When false, item lock generation is skipped.")
-    @AutoGen(category = "common", group = "integrations")
-    @Boolean(formatter = Boolean.Formatter.ON_OFF)
-    public boolean enableBloodMagicIntegration = true;
-
     @SerialEntry(comment = "Master toggle for the Ice and Fire integration. When false, the integration class is not registered with the Forge event bus, disabling lock-item generation and any future Ice and Fire hooks.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
@@ -148,11 +143,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableApotheosisIntegration = true;
-
-    @SerialEntry(comment = "Master toggle for the Botania integration. When false, every Botania perk (Tidewoven, Resonance, Inner Wellspring, Mana Overflow, etc.) becomes inert and the integration class is not registered.")
-    @AutoGen(category = "common", group = "integrations")
-    @Boolean(formatter = Boolean.Formatter.ON_OFF)
-    public boolean enableBotaniaIntegration = true;
 
     @SerialEntry(comment = "Master toggle for the FTB Quests integration (since 1.3.0). When false, Runic Skills task types are not registered and quest progress is not updated by skill/perk/passive/title changes. Disable for packs that ship FTB Quests but don't want Runic Skills tasks to appear in the task editor.")
     @AutoGen(category = "common", group = "integrations")
@@ -201,15 +191,6 @@ public class HandlerCommonConfig {
     public float spartanMasteryBonusPerLevel = 0.01f;
 
     // Blood Magic integration
-    @SerialEntry(comment = "Enable automatic item locking for Blood Magic items")
-    @AutoGen(category = "common", group = "blood_magic")
-    @Boolean(formatter = Boolean.Formatter.ON_OFF)
-    public boolean bloodMagicEnableLockItems = true;
-
-    @SerialEntry(comment = "Level multiplier for Blood Magic items (1.0 = default, 0.5 = half requirements, 2.0 = double)")
-    @AutoGen(category = "common", group = "blood_magic")
-    @FloatField(min = 0.1f, max = 3.0f)
-    public float bloodMagicLevelMultiplier = 1.0f;
 
     // Ice and Fire integration
     @SerialEntry(comment = "Enable automatic item locking for Ice and Fire items")
@@ -740,11 +721,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int cataclysmsWrathPercent = 20;
 
-    @SerialEntry(comment = "Ancient Strength perk bonus damage percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int ancientStrengthPercent = 15;
-
     @SerialEntry(comment = "Gladiator perk bonus damage percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -845,11 +821,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int anglersBountyPercent = 20;
 
-    @SerialEntry(comment = "Blood Sacrifice Recovery perk health recovery percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodSacrificeRecoveryPercent = 25;
-
     @SerialEntry(comment = "Searing Resistance perk fire damage reduction percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -905,20 +876,10 @@ public class HandlerCommonConfig {
     @FloatField(min = 0.0f, max = 100.0f)
     public float soulSustenanceAmplifier = 1.0f;
 
-    @SerialEntry(comment = "Enigmatic Vitality perk health bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int enigmaticVitalityPercent = 20;
-
     @SerialEntry(comment = "Colonial Nourishment perk food effect percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int colonialNourishmentPercent = 15;
-
-    @SerialEntry(comment = "Blood Shield perk damage absorption percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodShieldPercent = 15;
 
     @SerialEntry(comment = "Obsidian Heart perk damage reduction percent")
     @AutoGen(category = "common", group = "perks")
@@ -1060,7 +1021,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int parkourMasterPercent = 20;
-
 
     @SerialEntry(comment = "Sharpshooter perk headshot damage percent")
     @AutoGen(category = "common", group = "perks")
@@ -1228,11 +1188,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int dragonhidePercent = 20;
 
-    @SerialEntry(comment = "Enigmatic Protection perk curse damage reduction percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int enigmaticProtectionPercent = 20;
-
     @SerialEntry(comment = "Fantasy Fortitude perk defense bonus percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1242,11 +1197,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int colonyGuardianPercent = 15;
-
-    @SerialEntry(comment = "Blood Ward perk blood magic damage reduction percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodWardPercent = 20;
 
     @SerialEntry(comment = "Frost Endurance perk cold damage reduction percent")
     @AutoGen(category = "common", group = "perks")
@@ -1369,11 +1319,6 @@ public class HandlerCommonConfig {
     @FloatField(min = 0.0f, max = 100.0f)
     public float arcaneScholarAmplifier = 1.0f;
 
-    @SerialEntry(comment = "Blood Ritualist perk ritual efficiency percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodRitualistPercent = 15;
-
     @SerialEntry(comment = "Colony Advisor perk colony efficiency percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1488,11 +1433,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int sagesFocusPercent = 15;
-
-    @SerialEntry(comment = "Enigmatic Wisdom perk wisdom bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int enigmaticWisdomPercent = 15;
 
     // ── Building new perks ──
     @SerialEntry(comment = "Efficient Miner perk mining speed percent")
@@ -1711,11 +1651,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int experiencedEnchanterPercent = 15;
 
-    @SerialEntry(comment = "Blood Inscription perk blood inscription bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodInscriptionPercent = 15;
-
     @SerialEntry(comment = "Arcane Linguist perk arcane language bonus percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1746,11 +1681,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int natureSagePercent = 15;
 
-    @SerialEntry(comment = "Enigmatic Understanding perk enigmatic bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int enigmaticUnderstandingPercent = 20;
-
     @SerialEntry(comment = "Spell Inscription perk spell inscription percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1760,11 +1690,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int elderKnowledgePercent = 15;
-
-    @SerialEntry(comment = "Sacred Geometry perk sacred geometry bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int sacredGeometryPercent = 15;
 
     @SerialEntry(comment = "Bookcraft perk book crafting bonus percent")
     @AutoGen(category = "common", group = "perks")
@@ -1822,11 +1747,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     public int sourceWellPercent = 15;
 
-    @SerialEntry(comment = "Blood Channel perk blood magic channeling percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodChannelPercent = 15;
-
     @SerialEntry(comment = "Potion Splash perk splash potion radius percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1856,16 +1776,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int sourceAttunementPercent = 20;
-
-    @SerialEntry(comment = "Blood Empower perk blood magic damage percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int bloodEmpowerPercent = 15;
-
-    @SerialEntry(comment = "Ritual Efficiency perk ritual cost reduction percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int ritualEfficiencyPercent = 20;
 
     @SerialEntry(comment = "Summoner perk summon strength percent")
     @AutoGen(category = "common", group = "perks")
@@ -2097,11 +2007,6 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     public int masterLooterPercent = 10;
-
-    @SerialEntry(comment = "Artifact Hunter perk artifact find percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    public int artifactHunterPercent = 10;
 
     @SerialEntry(comment = "Blessing of Luck perk blessing bonus percent")
     @AutoGen(category = "common", group = "perks")
@@ -2434,9 +2339,6 @@ public class HandlerCommonConfig {
     public int cataclysmsWrathRequiredLevel = 28;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int ancientStrengthRequiredLevel = 29;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int gladiatorRequiredLevel = 30;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -2490,9 +2392,6 @@ public class HandlerCommonConfig {
     public int anglersBountyRequiredLevel = 9;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int bloodSacrificeRecoveryRequiredLevel = 20;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int searingResistanceRequiredLevel = 11;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -2526,13 +2425,7 @@ public class HandlerCommonConfig {
     public int soulSustenanceRequiredLevel = 19;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int enigmaticVitalityRequiredLevel = 21;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int colonialNourishmentRequiredLevel = 23;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int bloodShieldRequiredLevel = 26;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int obsidianHeartRequiredLevel = 25;
@@ -2720,16 +2613,10 @@ public class HandlerCommonConfig {
     public int dragonhideRequiredLevel = 26;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int enigmaticProtectionRequiredLevel = 15;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int fantasyFortitudeRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int colonyGuardianRequiredLevel = 17;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int bloodWardRequiredLevel = 24;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int frostEnduranceRequiredLevel = 18;
@@ -2809,9 +2696,6 @@ public class HandlerCommonConfig {
     public int arcaneScholarRequiredLevel = 24;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int bloodRitualistRequiredLevel = 20;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int colonyAdvisorRequiredLevel = 11;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -2879,9 +2763,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int sagesFocusRequiredLevel = 26;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int enigmaticWisdomRequiredLevel = 15;
 
     // ── Building new perk levels ──
     @SerialEntry(comment = "Required level to unlock perk")
@@ -3035,9 +2916,6 @@ public class HandlerCommonConfig {
     public int experiencedEnchanterRequiredLevel = 9;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int bloodInscriptionRequiredLevel = 24;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int arcaneLinguistRequiredLevel = 14;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3056,16 +2934,10 @@ public class HandlerCommonConfig {
     public int natureSageRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int enigmaticUnderstandingRequiredLevel = 22;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int spellInscriptionRequiredLevel = 12;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int elderKnowledgeRequiredLevel = 13;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int sacredGeometryRequiredLevel = 26;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int bookcraftRequiredLevel = 15;
@@ -3109,9 +2981,6 @@ public class HandlerCommonConfig {
     public int sourceWellRequiredLevel = 10;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
-    public int bloodChannelRequiredLevel = 14;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
     public int potionSplashRequiredLevel = 3;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3133,12 +3002,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int sourceAttunementRequiredLevel = 18;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int bloodEmpowerRequiredLevel = 22;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int ritualEfficiencyRequiredLevel = 24;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int summonerRequiredLevel = 20;
@@ -3279,9 +3142,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int masterLooterRequiredLevel = 32;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    public int artifactHunterRequiredLevel = 26;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     public int blessingOfLuckRequiredLevel = 20;
@@ -4679,6 +4539,11 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean apothEnableAffixRarityGating = true;
 
+    @SerialEntry(comment = "Enable gem rarity gating - restrict socketing of Apotheosis gems by Fortune level (uses the same per-rarity thresholds as affix items)")
+    @AutoGen(category = "common", group = "apotheosis")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean apothEnableGemRarityGating = true;
+
     @SerialEntry(comment = "Fortune level required for Uncommon affix items")
     @AutoGen(category = "common", group = "apotheosis")
     @IntField(min = 1, max = 100)
@@ -4726,35 +4591,6 @@ public class HandlerCommonConfig {
     public int apothGemBonusSlotThreshold = 28;
 
     // ── Blood Magic Integration - Perks ──
-    @SerialEntry(comment = "Blood Mastery: Reduce health cost of blood orb sacrifice by this percentage")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = 1, max = 100)
-    public int bloodMasteryPercent = 20;
-
-    @SerialEntry(comment = "Constitution level required for Blood Mastery perk (-1 to disable)")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = -1)
-    public int bloodMasteryRequiredLevel = 20;
-
-    @SerialEntry(comment = "Ritual Sage: Percentage LP cost reduction for rituals")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = 1, max = 100)
-    public int ritualSagePercent = 15;
-
-    @SerialEntry(comment = "Wisdom level required for Ritual Sage perk (-1 to disable)")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = -1)
-    public int ritualSageRequiredLevel = 24;
-
-    @SerialEntry(comment = "Crimson Bond: Probability denominator for not consuming LP when using sigils (1 in X chance)")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = 1, max = 100)
-    public int crimsonBondProbability = 6;
-
-    @SerialEntry(comment = "Magic level required for Crimson Bond perk (-1 to disable)")
-    @AutoGen(category = "common", group = "blood_magic")
-    @IntField(min = -1)
-    public int crimsonBondRequiredLevel = 28;
 
     // ── Ice and Fire Integration - Perks ──
     @SerialEntry(comment = "Dragon Slayer: Bonus damage percentage against dragons and mythical creatures")
@@ -4799,15 +4635,6 @@ public class HandlerCommonConfig {
     public int cataclysmResistanceRequiredLevel = 30;
 
     // ── Enigmatic Legacy Integration - Perks ──
-    @SerialEntry(comment = "Curse Ward: Percentage reduction of curse damage")
-    @AutoGen(category = "common", group = "enigmatic_legacy")
-    @IntField(min = 1, max = 100)
-    public int curseWardPercent = 20;
-
-    @SerialEntry(comment = "Wisdom level required for Curse Ward perk (-1 to disable)")
-    @AutoGen(category = "common", group = "enigmatic_legacy")
-    @IntField(min = -1)
-    public int curseWardRequiredLevel = 22;
 
     // ── Mowzie's Mobs Integration - Perks ──
     @SerialEntry(comment = "Boss Hunter: Bonus damage percentage against Mowzie's boss entities")
@@ -4841,431 +4668,4 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "farmers_delight")
     @IntField(min = -1)
     public int masterChefRequiredLevel = 16;
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Botania Integration — Runic Skills perks flavored around Botania's rune /
-    //  season / sin progression. Every perk has a required-level field (set to -1
-    //  to disable) plus, where applicable, a tuning value for its effect.
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    // ── WISDOM tree — Low tier (Elemental / Rune-of-Mana entry perks) ──
-    @SerialEntry(comment = "Wisdom level required for Petal-Reader perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaPetalReaderRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Wisdom level required for Rune of Mana: Resonance perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaResonanceRequiredLevel = 10;
-
-    @SerialEntry(comment = "Rune of Mana: Resonance — bonus max-mana percent on carried Tablets/Bands")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaResonancePercent = 10;
-
-    @SerialEntry(comment = "Wisdom level required for Sparkle-Sense perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaSparkleSenseRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Sparkle-Sense highlight radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 32)
-    public int botaniaSparkleSenseRadius = 12;
-
-    @SerialEntry(comment = "Wisdom level required for Dowser's Twig perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaDowsersTwigRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Dowser's Twig reveal duration (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 30)
-    public int botaniaDowsersTwigSeconds = 3;
-
-    @SerialEntry(comment = "Dowser's Twig cooldown (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 300)
-    public int botaniaDowsersTwigCooldownSeconds = 30;
-
-    @SerialEntry(comment = "Wisdom level required for Green Thumb perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaGreenThumbRequiredLevel = 8;
-
-    @SerialEntry(comment = "Green Thumb extra-drop chance denominator (1-in-N)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaGreenThumbOneInN = 8;
-
-    @SerialEntry(comment = "Wisdom level required for Livingbark Student perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaLivingbarkStudentRequiredLevel = 8;
-
-    @SerialEntry(comment = "Livingbark Student bonus-sapling chance percent")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaLivingbarkStudentPercent = 5;
-
-    // ── WISDOM tree — Mid tier (Seasonal / specialization perks) ──
-    @SerialEntry(comment = "Wisdom level required for Spring: Agricultor's Eye perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaAgricultorsEyeRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Wisdom level required for Summer: Forager's Palate perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaForagersPalateRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Summer: Forager's Palate XP gain bonus percent (while buff active)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 200)
-    public int botaniaForagersPalatePercent = 20;
-
-    @SerialEntry(comment = "Summer: Forager's Palate buff duration (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 600)
-    public int botaniaForagersPalateSeconds = 30;
-
-    @SerialEntry(comment = "Wisdom level required for Autumn: Loot-Hunter's Intuition perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaLootHuntersIntuitionRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Autumn: Loot-Hunter's Intuition scan radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 8, max = 128)
-    public int botaniaLootHuntersIntuitionRadius = 64;
-
-    @SerialEntry(comment = "Autumn: Loot-Hunter's Intuition outline duration (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 30)
-    public int botaniaLootHuntersIntuitionSeconds = 3;
-
-    @SerialEntry(comment = "Wisdom level required for Winter: Still Listener perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaStillListenerRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Winter: Still Listener hostile-detection radius while sneaking (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 4, max = 48)
-    public int botaniaStillListenerRadius = 16;
-
-    @SerialEntry(comment = "Wisdom level required for Manaseer's Lens perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaManaseersLensRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Manaseer's Lens through-wall burst-visibility radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 4, max = 48)
-    public int botaniaManaseersLensRadius = 24;
-
-    @SerialEntry(comment = "Wisdom level required for Corporea Query perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaCorporeaQueryRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Corporea Query scan radius (blocks) for /know command")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 4, max = 64)
-    public int botaniaCorporeaQueryRadius = 16;
-
-    // ── WISDOM tree — High tier (Sin / Gaia / Elven capstone perks) ──
-    @SerialEntry(comment = "Wisdom level required for Greed: Cartographer-Prospector perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaCartographerRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Greed: Cartographer-Prospector overlay duration (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 60)
-    public int botaniaCartographerSeconds = 6;
-
-    @SerialEntry(comment = "Wisdom level required for Pride: Far Reach perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaFarReachRequiredLevel = 28;
-
-    @SerialEntry(comment = "Pride: Far Reach bonus interaction range (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.5f, max = 8.0f)
-    public float botaniaFarReachBonusBlocks = 2.0f;
-
-    @SerialEntry(comment = "Wisdom level required for Sloth: Lazy Swap perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaLazySwapRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Wisdom level required for Envy: Mirror's Read perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaMirrorsReadRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Envy: Mirror's Read player-gear reveal radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 4, max = 32)
-    public int botaniaMirrorsReadRadius = 16;
-
-    @SerialEntry(comment = "Wisdom level required for Elven Knowledge perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaElvenKnowledgeRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Wisdom level required for Gaia's Witness perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaGaiasWitnessRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Wisdom level required for Oracle of the Nine Runes perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaOracleNineRunesRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    // ── MAGIC tree — Low tier (Elemental / Rune-of-Mana foundation) ──
-    @SerialEntry(comment = "Magic level required for Inner Wellspring perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaInnerWellspringRequiredLevel = 10;
-
-    @SerialEntry(comment = "Inner Wellspring mana siphoned from nearby Pool per half-second throttle tick")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 1000)
-    public int botaniaInnerWellspringManaPerTick = 40;
-
-    @SerialEntry(comment = "Magic level required for Rune of Water: Tidewoven perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaTidewovenRequiredLevel = 10;
-
-    @SerialEntry(comment = "Rune of Water: Tidewoven mana discount while wet/in-rain (additive; 0.10 = 10%)")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 1.0f)
-    public float botaniaTidewovenDiscount = 0.10f;
-
-    @SerialEntry(comment = "Magic level required for Rune of Fire: Emberheart perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaEmberheartRequiredLevel = 10;
-
-    @SerialEntry(comment = "Rune of Fire: Emberheart flat fire damage on attacks")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 20.0f)
-    public float botaniaEmberheartFireDamage = 1.0f;
-
-    @SerialEntry(comment = "Magic level required for Rune of Earth: Stone-Rooted perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaStoneRootedRequiredLevel = 10;
-
-    @SerialEntry(comment = "Rune of Earth: Stone-Rooted armor bonus on stone-family blocks")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 10.0f)
-    public float botaniaStoneRootedArmor = 1.0f;
-
-    @SerialEntry(comment = "Magic level required for Rune of Air: Featherstep perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaFeatherstepRequiredLevel = 10;
-
-    @SerialEntry(comment = "Rune of Air: Featherstep fall-damage multiplier (0.5 = halved damage)")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 1.0f)
-    public float botaniaFeatherstepMultiplier = 0.5f;
-
-    @SerialEntry(comment = "Magic level required for Band of Aura: Passive Channel perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaBandOfAuraRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Band of Aura: Passive Channel mana added per half-second tick to inventory items")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 200)
-    public int botaniaBandOfAuraManaPerTick = 10;
-
-    // ── MAGIC tree — Mid tier (Seasonal / spell-flavor branches) ──
-    @SerialEntry(comment = "Magic level required for Spring: Verdant Pulse perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaVerdantPulseRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Spring: Verdant Pulse bone-meal radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 16)
-    public int botaniaVerdantPulseRadius = 2;
-
-    @SerialEntry(comment = "Spring: Verdant Pulse cooldown (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 600)
-    public int botaniaVerdantPulseCooldownSeconds = 30;
-
-    @SerialEntry(comment = "Magic level required for Summer: Solar Conduit perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaSolarConduitRequiredLevel = 18;
-
-    @SerialEntry(comment = "Summer: Solar Conduit daytime ability-damage bonus percent")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaSolarConduitPercent = 10;
-
-    @SerialEntry(comment = "Magic level required for Autumn: Harvest Tithe perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaHarvestTitheRequiredLevel = 20;
-
-    @SerialEntry(comment = "Autumn: Harvest Tithe gem/nugget drop chance on kill (percent)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaHarvestTithePercent = 3;
-
-    @SerialEntry(comment = "Magic level required for Winter: Frostbound perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaFrostboundRequiredLevel = 20;
-
-    @SerialEntry(comment = "Winter: Frostbound cold retaliation damage on melee attackers")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 20.0f)
-    public float botaniaFrostboundDamage = 1.0f;
-
-    @SerialEntry(comment = "Winter: Frostbound slow duration on melee attackers (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 30)
-    public int botaniaFrostboundSlowSeconds = 2;
-
-    @SerialEntry(comment = "Magic level required for Lens Mastery: Velocity perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaLensVelocityRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Lens Mastery: Velocity projectile/spell speed bonus percent")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 200)
-    public int botaniaLensVelocityPercent = 25;
-
-    @SerialEntry(comment = "Magic level required for Lens Mastery: Potency perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaLensPotencyRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Lens Mastery: Potency damage multiplier on next ability per cooldown")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 1.0f, max = 10.0f)
-    public float botaniaLensPotencyMultiplier = 2.0f;
-
-    @SerialEntry(comment = "Lens Mastery: Potency cooldown (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 300)
-    public int botaniaLensPotencyCooldownSeconds = 15;
-
-    // ── MAGIC tree — High tier (Sin / Gaia / relic capstones) ──
-    @SerialEntry(comment = "Magic level required for Lust: Pixie Affinity perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaPixieAffinityRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Lust: Pixie Affinity proc chance on damage taken (percent)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaPixieAffinityPercent = 5;
-
-    @SerialEntry(comment = "Magic level required for Gluttony: Cake Combustion perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaCakeCombustionRequiredLevel = 28;
-
-    @SerialEntry(comment = "Gluttony: Cake Combustion regen duration after eating (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 300)
-    public int botaniaCakeCombustionSeconds = 30;
-
-    @SerialEntry(comment = "Magic level required for Greed: Magnetite perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaMagnetiteRequiredLevel = 30;
-
-    @SerialEntry(comment = "Greed: Magnetite item-magnet radius (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 32)
-    public int botaniaMagnetiteRadius = 6;
-
-    @SerialEntry(comment = "Magic level required for Sloth: Unbound Step perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaUnboundStepRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Magic level required for Envy: Mirrored Wrath perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaMirroredWrathRequiredLevel = 32;
-
-    @SerialEntry(comment = "Envy: Mirrored Wrath reflected-damage percent")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaMirroredWrathPercent = 20;
-
-    @SerialEntry(comment = "Magic level required for Pride: Crown of Reach perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaCrownOfReachRequiredLevel = 32;
-
-    @SerialEntry(comment = "Pride: Crown of Reach attack/interaction range bonus (blocks)")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.5f, max = 10.0f)
-    public float botaniaCrownOfReachBonusBlocks = 3.0f;
-
-    @SerialEntry(comment = "Magic level required for Wrath: Thundercall perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaThundercallRequiredLevel = 34;
-
-    @SerialEntry(comment = "Wrath: Thundercall chain-lightning proc chance on crit (percent)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 100)
-    public int botaniaThundercallPercent = 5;
-
-    @SerialEntry(comment = "Magic level required for Gaia's Gift: Relic Attunement perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaRelicAttunementRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Magic level required for Terrasteel Ascension perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaTerrasteelAscensionRequiredLevel = 40;
-
-    @SerialEntry(comment = "Terrasteel Ascension bonus max HP")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.0f, max = 20.0f)
-    public float botaniaTerrasteelAscensionMaxHp = 4.0f;
-
-    @SerialEntry(comment = "Magic level required for Flügel's Grace perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaFlugelsGraceRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Flügel's Grace mid-air jump count (set to 3 for triple jump)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 1, max = 8)
-    public int botaniaFlugelsGraceJumps = 3;
-
-    @SerialEntry(comment = "Magic level required for Manastorm perk (-1 to disable)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = -1)
-    public int botaniaManastormRequiredLevel = -1; // 1.1.0 default-disabled — effect handler is deferred to a future release
-
-    @SerialEntry(comment = "Manastorm cooldown (seconds)")
-    @AutoGen(category = "common", group = "botania")
-    @IntField(min = 30, max = 3600)
-    public int botaniaManastormCooldownSeconds = 300;
-
-    @SerialEntry(comment = "Manastorm damage multiplier from pool-fed detonation")
-    @AutoGen(category = "common", group = "botania")
-    @FloatField(min = 0.1f, max = 10.0f)
-    public float botaniaManastormDamageMultiplier = 2.0f;
 }

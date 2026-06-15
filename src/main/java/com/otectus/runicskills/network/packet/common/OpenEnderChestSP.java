@@ -1,5 +1,6 @@
 package com.otectus.runicskills.network.packet.common;
 
+import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.registry.RegistryPerks;
 
@@ -24,6 +25,7 @@ public class OpenEnderChestSP {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
+                if (!PacketRateLimiter.allow(player, "open_ender_chest", 5)) return;
                 // C6: Validate WORMHOLE_STORAGE perk exists and is enabled
                 if (RegistryPerks.WORMHOLE_STORAGE == null) return;
                 if (!RegistryPerks.WORMHOLE_STORAGE.get().isEnabled(player)) return;

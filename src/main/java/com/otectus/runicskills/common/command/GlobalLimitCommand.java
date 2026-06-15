@@ -16,7 +16,7 @@ public class GlobalLimitCommand {
         dispatcher.register((
                 Commands.literal("globallimit")
                         .requires((source) -> source.hasPermission(2))
-                        .then(Commands.argument("level", IntegerArgumentType.integer())
+                        .then(Commands.argument("level", IntegerArgumentType.integer(1))
                                 .executes(GlobalLimitCommand::execute)
                         )
         ));

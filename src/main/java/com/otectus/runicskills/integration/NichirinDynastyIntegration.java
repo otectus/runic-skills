@@ -14,10 +14,9 @@ import org.slf4j.Logger;
 /**
  * Nichirin Dynasty integration.
  *
- * <p>Scaffolded in R3 batch 3 to host event-handler code for Strength-tree perks
- * gated on this mod (NICHIRIN_BLADE, DRAGON_BONE_MASTERY — see RegistryPerks).
- * Effect code lands in R3 batch 4; the {@code onLivingHurt} stub below is the
- * intended landing site.
+ * <p>Hosts event-handler code for Strength-tree perks gated on this mod.
+ * NICHIRIN_BLADE is implemented in {@link #onLivingHurt}. DRAGON_BONE_MASTERY is
+ * gated on Ice and Fire, so its handler lives in IceAndFireIntegration.
  *
  * <p>Loaded reflectively via {@code RunicSkills.tryLoadIntegration("nichirin_dynasty", …)}
  * so the JVM never resolves Nichirin Dynasty API types when the mod is absent.
@@ -32,7 +31,7 @@ public class NichirinDynastyIntegration {
     }
 
     public NichirinDynastyIntegration() {
-        LOGGER.debug("Nichirin Dynasty integration scaffold loaded (R3 batch 3); perk effects land in batch 4.");
+        LOGGER.debug("Nichirin Dynasty integration loaded; NICHIRIN_BLADE active.");
     }
 
     /**

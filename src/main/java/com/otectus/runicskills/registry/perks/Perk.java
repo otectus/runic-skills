@@ -203,11 +203,15 @@ public class Perk {
     }
 
     public boolean getToggle() {
-        return this.requiredLevel > 0 && SkillCapability.getLocal().getSkillLevel(this.getSkill()) >= this.requiredLevel;
+        if (this.requiredLevel <= 0) return false;
+        SkillCapability cap = SkillCapability.getLocal();
+        return cap != null && cap.getSkillLevel(this.getSkill()) >= this.requiredLevel;
     }
 
     public boolean getToggle(Player player) {
-        return this.requiredLevel > 0 && SkillCapability.get(player).getSkillLevel(this.getSkill()) >= this.requiredLevel;
+        if (this.requiredLevel <= 0) return false;
+        SkillCapability cap = SkillCapability.get(player);
+        return cap != null && cap.getSkillLevel(this.getSkill()) >= this.requiredLevel;
     }
 
     public boolean isEnabled() {

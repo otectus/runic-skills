@@ -59,7 +59,7 @@ Everything below this line is runtime smoke testing that must be done by hand.
 | 4.1 | RS + Iron's Spells | | Existing perks still fire. Mana Bulwark damage→mana redirect; Arcane Reprieve cooldown / refill. |
 | 4.2 | RS + Ars Nouveau | | Form-filter perks; school perks. |
 | 4.3 | RS + Apotheosis + Apothic Attributes | | Socket Virtuoso, Affix Affinity damage cap, stat-stick reconciliation. |
-| 4.4 | RS + Botania | | The 18 implemented Botania perks (Tidewoven, Resonance, Inner Wellspring, etc) still fire. The 24 deferred perks no longer appear in the tree by default (1.1.0 default-disabled). |
+| 4.4 | RS + Apotheosis (gem rarity gating, 1.5.0) | | Socketing a gem requires a Fortune level scaled by gem rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32). `apothEnableGemRarityGating=false` removes the requirement. Botania / Blood Magic / Enigmatic Legacy perks and lock providers were removed in 1.5.0 — no longer applicable. |
 | 4.5 | RS + ISS + Ars (Schoolbridge) | | Fire Schoolbridge bleeds ISS fire_spell_power into Ars ELEMENTAL_FIRE damage. |
 | 4.6 | RS + ISS + Ars + Apotheosis (Triple Threat) | | Tick-reconciled +% modifiers active when all three mods are loaded. |
 | 4.7 | RS + ISS + Apotheosis (Affix Focus) | | `ModifySpellLevelEvent` adds spell levels per Rare+ Apothic affix item. |
@@ -89,7 +89,7 @@ Everything below this line is runtime smoke testing that must be done by hand.
 | 6.10 | Tooltip render at GUI scale 4 / 4K — no offscreen tooltip overflow on multi-rank perks (shift-hover for description) | | **1.2.0 tooltip word-wrap.** `TooltipWrap.wrap(list, 200)` clamps lines via `font.split`. |
 | 6.11 | Shift-click passive ± button → applies 5 levels; Ctrl-click → 10; Alt-click → max (subject to skill-level cap) | | **1.2.0 bulk-level.** `RunicSkillsScreen.bulkClickAmount` reads `Screen.hasShift/Ctrl/AltDown()`. |
 | 6.12 | Skills HUD overlay layer registered as `runicskills:skill_overlay` (and `:title_overlay`) — resource packs can `above`/`below` it via overlay APIs | | **1.2.0 `RegisterGuiOverlaysEvent` migration.** Replaces the prior `CustomizeGuiOverlayEvent.DebugText` piggy-back. |
-| 6.13 | Per-integration master toggle (e.g. `enableBotaniaIntegration=false`) — Botania perks remain in registry but events inert | | **1.2.0 integration toggles.** `RunicSkills.<init>` gates each `tryLoadIntegration` / direct-instantiate path. Synced via `CommonConfigSyncCP`. |
+| 6.13 | Per-integration master toggle (e.g. `enableApotheosisIntegration=false`) — that integration's perks remain in registry but events inert | | **1.2.0 integration toggles.** `RunicSkills.<init>` gates each `tryLoadIntegration` / direct-instantiate path. Synced via `CommonConfigSyncCP`. (Botania toggle removed in 1.5.0 along with the integration.) |
 
 ---
 

@@ -12,7 +12,9 @@ public class LockItem {
 
     public String Item = "minecraft:diamond";
 
-    public List<Skill> Skills = List.of(new Skill());
+    // Mutable: /registeritem calls Skills.add()/.remove() on lock entries. An immutable
+    // List.of(...) / Stream.toList() default threw UnsupportedOperationException on first launch.
+    public List<Skill> Skills = new ArrayList<>(List.of(new Skill()));
 
     public LockItem() {
     }
@@ -23,7 +25,7 @@ public class LockItem {
 
     public LockItem(String itemName, Skill... skills) {
         Item = itemName;
-        Skills = Arrays.stream(skills).toList();
+        Skills = new ArrayList<>(Arrays.asList(skills));
     }
 
     @Override

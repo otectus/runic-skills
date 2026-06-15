@@ -21,7 +21,11 @@ public class ServerNetworking {
     // were ever landed in code. The missing registration caused IllegalArgumentException:
     // "Invalid message PowerOverridesSyncCP" on player join, surfaced after the 1.3.5 title-NPE
     // hotfix.
-    private static final String PROTOCOL_VERSION = "5";
+    // 1.3.9: bumped "5" -> "6" with the addition of NoticeOverlayCP (over-GUI denial banner
+    // for spell-gating and Apotheosis affix gating). New packet => new channel registration =>
+    // protocol bump so mismatched client/server pairs are rejected cleanly rather than
+    // desyncing on an unknown message id.
+    private static final String PROTOCOL_VERSION = "6";
     public static SimpleChannel instance;
 
     /**
@@ -63,6 +67,7 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, SyncSkillCapabilityCP.class, SyncSkillCapabilityCP::toBytes, SyncSkillCapabilityCP::new, SyncSkillCapabilityCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, PlayerMessagesCP.class, PlayerMessagesCP::toBytes, PlayerMessagesCP::new, PlayerMessagesCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, SkillOverlayCP.class, SkillOverlayCP::toBytes, SkillOverlayCP::new, SkillOverlayCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, NoticeOverlayCP.class, NoticeOverlayCP::toBytes, NoticeOverlayCP::new, NoticeOverlayCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, TitleOverlayCP.class, TitleOverlayCP::toBytes, TitleOverlayCP::new, TitleOverlayCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, PerkGroupsSyncCP.class, PerkGroupsSyncCP::toBytes, PerkGroupsSyncCP::new, PerkGroupsSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
 

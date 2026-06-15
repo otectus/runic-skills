@@ -3,6 +3,7 @@ package com.otectus.runicskills.integration;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
@@ -18,7 +19,6 @@ import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -103,10 +103,9 @@ public class IronsSpellbooksIntegration {
                 String schoolName = school.getId().getPath();
                 RegistryObject<com.otectus.runicskills.registry.perks.Perk> attunementPerk = getSchoolPerkMap().get(schoolName);
                 if (attunementPerk != null && !attunementPerk.get().isEnabled(player)) {
-                    if (player instanceof ServerPlayer) {
-                        player.sendSystemMessage(Component.translatable("overlay.runicskills.school_locked",
-                                Component.translatable("school.runicskills." + schoolName)));
-                    }
+                    // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
+                    NoticeOverlayCP.send(player, "overlay.runicskills.school_locked",
+                            "school.runicskills." + schoolName);
                     event.setCanceled(true);
                     return;
                 }
@@ -122,10 +121,9 @@ public class IronsSpellbooksIntegration {
                     + (spellLevel - 1) * HandlerCommonConfig.HANDLER.instance().ironsSpellLevelScaleFactor);
 
             if (magicLevel < requiredLevel) {
-                if (player instanceof ServerPlayer) {
-                    player.sendSystemMessage(Component.translatable("overlay.runicskills.spell_gated",
-                            Component.translatable(magicSkill.getKey()), requiredLevel));
-                }
+                // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
+                NoticeOverlayCP.send(player, "overlay.runicskills.spell_gated",
+                        magicSkill.getKey(), String.valueOf(requiredLevel));
                 event.setCanceled(true);
                 return;
             }
@@ -452,8 +450,7 @@ public class IronsSpellbooksIntegration {
         if (event.phase != TickEvent.Phase.END) return;
         Player player = event.player;
         if (player.level().isClientSide) return;
-        // Throttle to every 10 ticks (0.5s). Cheap enough that we can go full
-        // rate, but keeps parity with BotaniaIntegration#onPlayerTick.
+        // Throttle to every 10 ticks (0.5s). Cheap enough that we can go full rate.
         if ((player.tickCount % 10) != 0) return;
 
         // Wellspring → MAX_MANA flat bonus

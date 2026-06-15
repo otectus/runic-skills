@@ -44,9 +44,10 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
         int dot = mixinClassName.lastIndexOf('.');
         String simple = dot >= 0 ? mixinClassName.substring(dot + 1) : mixinClassName;
         return switch (simple) {
-            case "MixTargetFinder" -> isModPresent("bettercombat");
-            case "MixGunItem"      -> isModPresent("pointblank");
-            default                -> true;
+            case "MixTargetFinder"           -> isModPresent("bettercombat");
+            case "MixGunItem"                -> isModPresent("pointblank");
+            case "MixTrueInvisibilityEffect" -> isModPresent("irons_spellbooks");
+            default                          -> true;
         };
     }
 

@@ -1165,34 +1165,6 @@ public class RegistryPerks {
             ));
 
     // Blood Magic Integration - Conditional perks
-    public static final RegistryObject<Perk> BLOOD_MASTERY =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodMasteryRequiredLevel < 0
-            ? null : PERKS.register("blood_mastery", () -> register(
-                    "blood_mastery",
-                    RegistrySkills.CONSTITUTION,
-                    HandlerCommonConfig.HANDLER.instance().bloodMasteryRequiredLevel,
-                    HandlerResources.BLOOD_MASTERY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodMasteryPercent)
-            ));
-    public static final RegistryObject<Perk> RITUAL_SAGE =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ritualSageRequiredLevel < 0
-            ? null : PERKS.register("ritual_sage", () -> register(
-                    "ritual_sage",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().ritualSageRequiredLevel,
-                    HandlerResources.RITUAL_SAGE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ritualSagePercent)
-            ));
-    public static final RegistryObject<Perk> CRIMSON_BOND =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().crimsonBondRequiredLevel < 0
-            ? null : PERKS.register("crimson_bond", () -> register(
-                    "crimson_bond",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().crimsonBondRequiredLevel,
-                    HandlerResources.CRIMSON_BOND_PERK,
-                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().crimsonBondProbability)
-            ));
-
     // Ice and Fire Integration - Conditional perks
     public static final RegistryObject<Perk> DRAGON_SLAYER =
             !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonSlayerRequiredLevel < 0
@@ -1234,16 +1206,6 @@ public class RegistryPerks {
             ));
 
     // Enigmatic Legacy Integration - Conditional perks
-    public static final RegistryObject<Perk> CURSE_WARD =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().curseWardRequiredLevel < 0
-            ? null : PERKS.register("curse_ward", () -> register(
-                    "curse_ward",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().curseWardRequiredLevel,
-                    HandlerResources.CURSE_WARD_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().curseWardPercent)
-            ));
-
     // Mowzie's Mobs Integration - Conditional perks
     public static final RegistryObject<Perk> BOSS_HUNTER =
             !MowziesMobsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bossHunterRequiredLevel < 0
@@ -1531,7 +1493,7 @@ public class RegistryPerks {
                     HandlerResources.SACRED_FIRE_PERK
             ));
     public static final RegistryObject<Perk> BLOOD_FURY =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodFuryRequiredLevel < 0
+            HandlerCommonConfig.HANDLER.instance().bloodFuryRequiredLevel < 0
             ? null : PERKS.register("blood_fury", () -> register(
                     "blood_fury",
                     RegistrySkills.STRENGTH,
@@ -1547,15 +1509,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().cataclysmsWrathRequiredLevel,
                     HandlerResources.CATACLYSMS_WRATH_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().cataclysmsWrathPercent)
-            ));
-    public static final RegistryObject<Perk> ANCIENT_STRENGTH =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ancientStrengthRequiredLevel < 0
-            ? null : PERKS.register("ancient_strength", () -> register(
-                    "ancient_strength",
-                    RegistrySkills.STRENGTH,
-                    HandlerCommonConfig.HANDLER.instance().ancientStrengthRequiredLevel,
-                    HandlerResources.ANCIENT_STRENGTH_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ancientStrengthPercent)
             ));
     public static final RegistryObject<Perk> GLADIATOR =
             HandlerCommonConfig.HANDLER.instance().gladiatorRequiredLevel < 0
@@ -1710,15 +1663,6 @@ public class RegistryPerks {
                     HandlerResources.ANGLERS_BOUNTY_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().anglersBountyPercent)
             ));
-    public static final RegistryObject<Perk> BLOOD_SACRIFICE_RECOVERY =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodSacrificeRecoveryRequiredLevel < 0
-            ? null : PERKS.register("blood_sacrifice_recovery", () -> register(
-                    "blood_sacrifice_recovery",
-                    RegistrySkills.CONSTITUTION,
-                    HandlerCommonConfig.HANDLER.instance().bloodSacrificeRecoveryRequiredLevel,
-                    HandlerResources.BLOOD_SACRIFICE_RECOVERY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodSacrificeRecoveryPercent)
-            ));
     public static final RegistryObject<Perk> SEARING_RESISTANCE =
             HandlerCommonConfig.HANDLER.instance().searingResistanceRequiredLevel < 0
             ? null : PERKS.register("searing_resistance", () -> register(
@@ -1818,15 +1762,6 @@ public class RegistryPerks {
                     HandlerResources.SOUL_SUSTENANCE_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().soulSustenanceAmplifier)
             ));
-    public static final RegistryObject<Perk> ENIGMATIC_VITALITY =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enigmaticVitalityRequiredLevel < 0
-            ? null : PERKS.register("enigmatic_vitality", () -> register(
-                    "enigmatic_vitality",
-                    RegistrySkills.CONSTITUTION,
-                    HandlerCommonConfig.HANDLER.instance().enigmaticVitalityRequiredLevel,
-                    HandlerResources.ENIGMATIC_VITALITY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enigmaticVitalityPercent)
-            ));
     public static final RegistryObject<Perk> COLONIAL_NOURISHMENT =
             HandlerCommonConfig.HANDLER.instance().colonialNourishmentRequiredLevel < 0
             ? null : PERKS.register("colonial_nourishment", () -> register(
@@ -1835,15 +1770,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().colonialNourishmentRequiredLevel,
                     HandlerResources.COLONIAL_NOURISHMENT_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonialNourishmentPercent)
-            ));
-    public static final RegistryObject<Perk> BLOOD_SHIELD =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodShieldRequiredLevel < 0
-            ? null : PERKS.register("blood_shield", () -> register(
-                    "blood_shield",
-                    RegistrySkills.CONSTITUTION,
-                    HandlerCommonConfig.HANDLER.instance().bloodShieldRequiredLevel,
-                    HandlerResources.BLOOD_SHIELD_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodShieldPercent)
             ));
     public static final RegistryObject<Perk> OBSIDIAN_HEART =
             HandlerCommonConfig.HANDLER.instance().obsidianHeartRequiredLevel < 0
@@ -2388,15 +2314,6 @@ public class RegistryPerks {
                     HandlerResources.DRAGONHIDE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonhidePercent)
             ));
-    public static final RegistryObject<Perk> ENIGMATIC_PROTECTION =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enigmaticProtectionRequiredLevel < 0
-            ? null : PERKS.register("enigmatic_protection", () -> register(
-                    "enigmatic_protection",
-                    RegistrySkills.ENDURANCE,
-                    HandlerCommonConfig.HANDLER.instance().enigmaticProtectionRequiredLevel,
-                    HandlerResources.ENIGMATIC_PROTECTION_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enigmaticProtectionPercent)
-            ));
     public static final RegistryObject<Perk> FANTASY_FORTITUDE =
             !FantasyArmorIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fantasyFortitudeRequiredLevel < 0
             ? null : PERKS.register("fantasy_fortitude", () -> register(
@@ -2414,15 +2331,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().colonyGuardianRequiredLevel,
                     HandlerResources.COLONY_GUARDIAN_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonyGuardianPercent)
-            ));
-    public static final RegistryObject<Perk> BLOOD_WARD =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodWardRequiredLevel < 0
-            ? null : PERKS.register("blood_ward", () -> register(
-                    "blood_ward",
-                    RegistrySkills.ENDURANCE,
-                    HandlerCommonConfig.HANDLER.instance().bloodWardRequiredLevel,
-                    HandlerResources.BLOOD_WARD_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodWardPercent)
             ));
     public static final RegistryObject<Perk> FROST_ENDURANCE =
             HandlerCommonConfig.HANDLER.instance().frostEnduranceRequiredLevel < 0
@@ -2650,15 +2558,6 @@ public class RegistryPerks {
                     HandlerResources.ARCANE_SCHOLAR_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().arcaneScholarAmplifier)
             ));
-    public static final RegistryObject<Perk> BLOOD_RITUALIST =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodRitualistRequiredLevel < 0
-            ? null : PERKS.register("blood_ritualist", () -> register(
-                    "blood_ritualist",
-                    RegistrySkills.INTELLIGENCE,
-                    HandlerCommonConfig.HANDLER.instance().bloodRitualistRequiredLevel,
-                    HandlerResources.BLOOD_RITUALIST_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodRitualistPercent)
-            ));
     public static final RegistryObject<Perk> COLONY_ADVISOR =
             HandlerCommonConfig.HANDLER.instance().colonyAdvisorRequiredLevel < 0
             ? null : PERKS.register("colony_advisor", () -> register(
@@ -2866,16 +2765,6 @@ public class RegistryPerks {
                     HandlerResources.SAGES_FOCUS_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sagesFocusPercent)
             ));
-    public static final RegistryObject<Perk> ENIGMATIC_WISDOM =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enigmaticWisdomRequiredLevel < 0
-            ? null : PERKS.register("enigmatic_wisdom", () -> register(
-                    "enigmatic_wisdom",
-                    RegistrySkills.INTELLIGENCE,
-                    HandlerCommonConfig.HANDLER.instance().enigmaticWisdomRequiredLevel,
-                    HandlerResources.ENIGMATIC_WISDOM_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enigmaticWisdomPercent)
-            ));
-
     // ========== NEW PERKS - BUILDING ==========
     public static final RegistryObject<Perk> EFFICIENT_MINER =
             HandlerCommonConfig.HANDLER.instance().efficientMinerRequiredLevel < 0
@@ -3314,15 +3203,6 @@ public class RegistryPerks {
                     HandlerResources.EXPERIENCED_ENCHANTER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().experiencedEnchanterPercent)
             ));
-    public static final RegistryObject<Perk> BLOOD_INSCRIPTION =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodInscriptionRequiredLevel < 0
-            ? null : PERKS.register("blood_inscription", () -> register(
-                    "blood_inscription",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().bloodInscriptionRequiredLevel,
-                    HandlerResources.BLOOD_INSCRIPTION_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodInscriptionPercent)
-            ));
     public static final RegistryObject<Perk> ARCANE_LINGUIST =
             !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneLinguistRequiredLevel < 0
             ? null : PERKS.register("arcane_linguist", () -> register(
@@ -3377,15 +3257,6 @@ public class RegistryPerks {
                     HandlerResources.NATURE_SAGE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureSagePercent)
             ));
-    public static final RegistryObject<Perk> ENIGMATIC_UNDERSTANDING =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enigmaticUnderstandingRequiredLevel < 0
-            ? null : PERKS.register("enigmatic_understanding", () -> register(
-                    "enigmatic_understanding",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().enigmaticUnderstandingRequiredLevel,
-                    HandlerResources.ENIGMATIC_UNDERSTANDING_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enigmaticUnderstandingPercent)
-            ));
     public static final RegistryObject<Perk> SPELL_INSCRIPTION =
             HandlerCommonConfig.HANDLER.instance().spellInscriptionRequiredLevel < 0
             ? null : PERKS.register("spell_inscription", () -> register(
@@ -3403,15 +3274,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().elderKnowledgeRequiredLevel,
                     HandlerResources.ELDER_KNOWLEDGE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().elderKnowledgePercent)
-            ));
-    public static final RegistryObject<Perk> SACRED_GEOMETRY =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().sacredGeometryRequiredLevel < 0
-            ? null : PERKS.register("sacred_geometry", () -> register(
-                    "sacred_geometry",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().sacredGeometryRequiredLevel,
-                    HandlerResources.SACRED_GEOMETRY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sacredGeometryPercent)
             ));
     public static final RegistryObject<Perk> BOOKCRAFT =
             HandlerCommonConfig.HANDLER.instance().bookcraftRequiredLevel < 0
@@ -3530,15 +3392,6 @@ public class RegistryPerks {
                     HandlerResources.SOURCE_WELL_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sourceWellPercent)
             ));
-    public static final RegistryObject<Perk> BLOOD_CHANNEL =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodChannelRequiredLevel < 0
-            ? null : PERKS.register("blood_channel", () -> register(
-                    "blood_channel",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().bloodChannelRequiredLevel,
-                    HandlerResources.BLOOD_CHANNEL_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodChannelPercent)
-            ));
     public static final RegistryObject<Perk> POTION_SPLASH =
             HandlerCommonConfig.HANDLER.instance().potionSplashRequiredLevel < 0
             ? null : PERKS.register("potion_splash", () -> register(
@@ -3592,24 +3445,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().sourceAttunementRequiredLevel,
                     HandlerResources.SOURCE_ATTUNEMENT_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sourceAttunementPercent)
-            ));
-    public static final RegistryObject<Perk> BLOOD_EMPOWER =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodEmpowerRequiredLevel < 0
-            ? null : PERKS.register("blood_empower", () -> register(
-                    "blood_empower",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().bloodEmpowerRequiredLevel,
-                    HandlerResources.BLOOD_EMPOWER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodEmpowerPercent)
-            ));
-    public static final RegistryObject<Perk> RITUAL_EFFICIENCY =
-            !BloodMagicIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ritualEfficiencyRequiredLevel < 0
-            ? null : PERKS.register("ritual_efficiency", () -> register(
-                    "ritual_efficiency",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().ritualEfficiencyRequiredLevel,
-                    HandlerResources.RITUAL_EFFICIENCY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ritualEfficiencyPercent)
             ));
     public static final RegistryObject<Perk> SUMMONER =
             !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().summonerRequiredLevel < 0
@@ -4027,15 +3862,6 @@ public class RegistryPerks {
                     HandlerResources.MASTER_LOOTER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterLooterPercent)
             ));
-    public static final RegistryObject<Perk> ARTIFACT_HUNTER =
-            !EnigmaticLegacyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().artifactHunterRequiredLevel < 0
-            ? null : PERKS.register("artifact_hunter", () -> register(
-                    "artifact_hunter",
-                    RegistrySkills.FORTUNE,
-                    HandlerCommonConfig.HANDLER.instance().artifactHunterRequiredLevel,
-                    HandlerResources.ARTIFACT_HUNTER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().artifactHunterPercent)
-            ));
     public static final RegistryObject<Perk> BLESSING_OF_LUCK =
             HandlerCommonConfig.HANDLER.instance().blessingOfLuckRequiredLevel < 0
             ? null : PERKS.register("blessing_of_luck", () -> register(
@@ -4379,435 +4205,6 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().masterArtificerRequiredLevel,
                     HandlerResources.MASTER_ARTIFICER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterArtificerPercent)
-            ));
-
-    // ═════════════════════════════════════════════════════════════════════════
-    //  Botania Integration — Perks (all conditionally null when Botania absent)
-    // ═════════════════════════════════════════════════════════════════════════
-
-    // ── WISDOM tree — Low tier (Elemental / Rune-of-Mana entries) ──
-    public static final RegistryObject<Perk> BOTANIA_PETAL_READER =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaPetalReaderRequiredLevel < 0
-            ? null : PERKS.register("botania_petal_reader", () -> register(
-                    "botania_petal_reader",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaPetalReaderRequiredLevel,
-                    HandlerResources.BOTANIA_PETAL_READER_PERK
-            ));
-
-    public static final RegistryObject<Perk> RUNE_OF_MANA_RESONANCE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaResonanceRequiredLevel < 0
-            ? null : PERKS.register("botania_rune_of_mana_resonance", () -> register(
-                    "botania_rune_of_mana_resonance",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaResonanceRequiredLevel,
-                    HandlerResources.BOTANIA_RESONANCE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaResonancePercent)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_SPARKLE_SENSE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRequiredLevel < 0
-            ? null : PERKS.register("botania_sparkle_sense", () -> register(
-                    "botania_sparkle_sense",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRequiredLevel,
-                    HandlerResources.BOTANIA_SPARKLE_SENSE_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaSparkleSenseRadius)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_DOWSERS_TWIG =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigRequiredLevel < 0
-            ? null : PERKS.register("botania_dowsers_twig", () -> register(
-                    "botania_dowsers_twig",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigRequiredLevel,
-                    HandlerResources.BOTANIA_DOWSERS_TWIG_PERK,
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigSeconds),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaDowsersTwigCooldownSeconds)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_GREEN_THUMB =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbRequiredLevel < 0
-            ? null : PERKS.register("botania_green_thumb", () -> register(
-                    "botania_green_thumb",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbRequiredLevel,
-                    HandlerResources.BOTANIA_GREEN_THUMB_PERK,
-                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaGreenThumbOneInN)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_LIVINGBARK_STUDENT =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentRequiredLevel < 0
-            ? null : PERKS.register("botania_livingbark_student", () -> register(
-                    "botania_livingbark_student",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentRequiredLevel,
-                    HandlerResources.BOTANIA_LIVINGBARK_STUDENT_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaLivingbarkStudentPercent)
-            ));
-
-    // ── WISDOM tree — Mid tier (Seasonal specializations) ──
-    public static final RegistryObject<Perk> BOTANIA_AGRICULTORS_EYE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaAgricultorsEyeRequiredLevel < 0
-            ? null : PERKS.register("botania_agricultors_eye", () -> register(
-                    "botania_agricultors_eye",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaAgricultorsEyeRequiredLevel,
-                    HandlerResources.BOTANIA_AGRICULTORS_EYE_PERK
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_FORAGERS_PALATE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateRequiredLevel < 0
-            ? null : PERKS.register("botania_foragers_palate", () -> register(
-                    "botania_foragers_palate",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateRequiredLevel,
-                    HandlerResources.BOTANIA_FORAGERS_PALATE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaForagersPalatePercent),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaForagersPalateSeconds)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_LOOT_HUNTERS_INTUITION =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRequiredLevel < 0
-            ? null : PERKS.register("botania_loot_hunters_intuition", () -> register(
-                    "botania_loot_hunters_intuition",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRequiredLevel,
-                    HandlerResources.BOTANIA_LOOT_HUNTERS_INTUITION_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionRadius),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaLootHuntersIntuitionSeconds)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_STILL_LISTENER =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRequiredLevel < 0
-            ? null : PERKS.register("botania_still_listener", () -> register(
-                    "botania_still_listener",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRequiredLevel,
-                    HandlerResources.BOTANIA_STILL_LISTENER_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaStillListenerRadius)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_MANASEERS_LENS =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRequiredLevel < 0
-            ? null : PERKS.register("botania_manaseers_lens", () -> register(
-                    "botania_manaseers_lens",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRequiredLevel,
-                    HandlerResources.BOTANIA_MANASEERS_LENS_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaManaseersLensRadius)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_CORPOREA_QUERY =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRequiredLevel < 0
-            ? null : PERKS.register("botania_corporea_query", () -> register(
-                    "botania_corporea_query",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRequiredLevel,
-                    HandlerResources.BOTANIA_CORPOREA_QUERY_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaCorporeaQueryRadius)
-            ));
-
-    // ── WISDOM tree — High tier (Sin / Gaia / Elven capstones) ──
-    public static final RegistryObject<Perk> BOTANIA_CARTOGRAPHER =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCartographerRequiredLevel < 0
-            ? null : PERKS.register("botania_cartographer", () -> register(
-                    "botania_cartographer",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaCartographerRequiredLevel,
-                    HandlerResources.BOTANIA_CARTOGRAPHER_PERK,
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaCartographerSeconds)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_FAR_REACH =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFarReachRequiredLevel < 0
-            ? null : PERKS.register("botania_far_reach", () -> register(
-                    "botania_far_reach",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaFarReachRequiredLevel,
-                    HandlerResources.BOTANIA_FAR_REACH_PERK,
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFarReachBonusBlocks)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_LAZY_SWAP =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLazySwapRequiredLevel < 0
-            ? null : PERKS.register("botania_lazy_swap", () -> register(
-                    "botania_lazy_swap",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaLazySwapRequiredLevel,
-                    HandlerResources.BOTANIA_LAZY_SWAP_PERK
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_MIRRORS_READ =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRequiredLevel < 0
-            ? null : PERKS.register("botania_mirrors_read", () -> register(
-                    "botania_mirrors_read",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRequiredLevel,
-                    HandlerResources.BOTANIA_MIRRORS_READ_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaMirrorsReadRadius)
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_ELVEN_KNOWLEDGE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaElvenKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("botania_elven_knowledge", () -> register(
-                    "botania_elven_knowledge",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaElvenKnowledgeRequiredLevel,
-                    HandlerResources.BOTANIA_ELVEN_KNOWLEDGE_PERK
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_GAIAS_WITNESS =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaGaiasWitnessRequiredLevel < 0
-            ? null : PERKS.register("botania_gaias_witness", () -> register(
-                    "botania_gaias_witness",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaGaiasWitnessRequiredLevel,
-                    HandlerResources.BOTANIA_GAIAS_WITNESS_PERK
-            ));
-
-    public static final RegistryObject<Perk> BOTANIA_ORACLE_NINE_RUNES =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaOracleNineRunesRequiredLevel < 0
-            ? null : PERKS.register("botania_oracle_nine_runes", () -> register(
-                    "botania_oracle_nine_runes",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().botaniaOracleNineRunesRequiredLevel,
-                    HandlerResources.BOTANIA_ORACLE_NINE_RUNES_PERK
-            ));
-
-    // ── MAGIC tree — Low tier (Elemental / Rune foundation) ──
-    public static final RegistryObject<Perk> INNER_WELLSPRING =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringRequiredLevel < 0
-            ? null : PERKS.register("botania_inner_wellspring", () -> register(
-                    "botania_inner_wellspring",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringRequiredLevel,
-                    HandlerResources.BOTANIA_INNER_WELLSPRING_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaInnerWellspringManaPerTick)
-            ));
-
-    public static final RegistryObject<Perk> RUNE_OF_WATER_TIDEWOVEN =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaTidewovenRequiredLevel < 0
-            ? null : PERKS.register("botania_tidewoven", () -> register(
-                    "botania_tidewoven",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaTidewovenRequiredLevel,
-                    HandlerResources.BOTANIA_TIDEWOVEN_PERK,
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaTidewovenDiscount)
-            ));
-
-    public static final RegistryObject<Perk> RUNE_OF_FIRE_EMBERHEART =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaEmberheartRequiredLevel < 0
-            ? null : PERKS.register("botania_emberheart", () -> register(
-                    "botania_emberheart",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaEmberheartRequiredLevel,
-                    HandlerResources.BOTANIA_EMBERHEART_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaEmberheartFireDamage)
-            ));
-
-    public static final RegistryObject<Perk> RUNE_OF_EARTH_STONE_ROOTED =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedRequiredLevel < 0
-            ? null : PERKS.register("botania_stone_rooted", () -> register(
-                    "botania_stone_rooted",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedRequiredLevel,
-                    HandlerResources.BOTANIA_STONE_ROOTED_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaStoneRootedArmor)
-            ));
-
-    public static final RegistryObject<Perk> RUNE_OF_AIR_FEATHERSTEP =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepRequiredLevel < 0
-            ? null : PERKS.register("botania_featherstep", () -> register(
-                    "botania_featherstep",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepRequiredLevel,
-                    HandlerResources.BOTANIA_FEATHERSTEP_PERK,
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFeatherstepMultiplier)
-            ));
-
-    public static final RegistryObject<Perk> BAND_OF_AURA =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraRequiredLevel < 0
-            ? null : PERKS.register("botania_band_of_aura", () -> register(
-                    "botania_band_of_aura",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraRequiredLevel,
-                    HandlerResources.BOTANIA_BAND_OF_AURA_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaBandOfAuraManaPerTick)
-            ));
-
-    // ── MAGIC tree — Mid tier (Seasonal / Lens specializations) ──
-    public static final RegistryObject<Perk> VERDANT_PULSE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRequiredLevel < 0
-            ? null : PERKS.register("botania_verdant_pulse", () -> register(
-                    "botania_verdant_pulse",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRequiredLevel,
-                    HandlerResources.BOTANIA_VERDANT_PULSE_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseRadius),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaVerdantPulseCooldownSeconds)
-            ));
-
-    public static final RegistryObject<Perk> SOLAR_CONDUIT =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitRequiredLevel < 0
-            ? null : PERKS.register("botania_solar_conduit", () -> register(
-                    "botania_solar_conduit",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitRequiredLevel,
-                    HandlerResources.BOTANIA_SOLAR_CONDUIT_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaSolarConduitPercent)
-            ));
-
-    public static final RegistryObject<Perk> HARVEST_TITHE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaHarvestTitheRequiredLevel < 0
-            ? null : PERKS.register("botania_harvest_tithe", () -> register(
-                    "botania_harvest_tithe",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaHarvestTitheRequiredLevel,
-                    HandlerResources.BOTANIA_HARVEST_TITHE_PERK,
-                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaHarvestTithePercent)
-            ));
-
-    public static final RegistryObject<Perk> FROSTBOUND =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFrostboundRequiredLevel < 0
-            ? null : PERKS.register("botania_frostbound", () -> register(
-                    "botania_frostbound",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaFrostboundRequiredLevel,
-                    HandlerResources.BOTANIA_FROSTBOUND_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFrostboundDamage),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaFrostboundSlowSeconds)
-            ));
-
-    public static final RegistryObject<Perk> LENS_VELOCITY =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityRequiredLevel < 0
-            ? null : PERKS.register("botania_lens_velocity", () -> register(
-                    "botania_lens_velocity",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityRequiredLevel,
-                    HandlerResources.BOTANIA_LENS_VELOCITY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaLensVelocityPercent)
-            ));
-
-    public static final RegistryObject<Perk> LENS_POTENCY =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyRequiredLevel < 0
-            ? null : PERKS.register("botania_lens_potency", () -> register(
-                    "botania_lens_potency",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyRequiredLevel,
-                    HandlerResources.BOTANIA_LENS_POTENCY_PERK,
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyMultiplier),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaLensPotencyCooldownSeconds)
-            ));
-
-    // ── MAGIC tree — High tier (Sin / Gaia / relic capstones) ──
-    public static final RegistryObject<Perk> PIXIE_AFFINITY =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityRequiredLevel < 0
-            ? null : PERKS.register("botania_pixie_affinity", () -> register(
-                    "botania_pixie_affinity",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityRequiredLevel,
-                    HandlerResources.BOTANIA_PIXIE_AFFINITY_PERK,
-                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaPixieAffinityPercent)
-            ));
-
-    public static final RegistryObject<Perk> CAKE_COMBUSTION =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionRequiredLevel < 0
-            ? null : PERKS.register("botania_cake_combustion", () -> register(
-                    "botania_cake_combustion",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionRequiredLevel,
-                    HandlerResources.BOTANIA_CAKE_COMBUSTION_PERK,
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaCakeCombustionSeconds)
-            ));
-
-    public static final RegistryObject<Perk> MAGNETITE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRequiredLevel < 0
-            ? null : PERKS.register("botania_magnetite", () -> register(
-                    "botania_magnetite",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRequiredLevel,
-                    HandlerResources.BOTANIA_MAGNETITE_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaMagnetiteRadius)
-            ));
-
-    public static final RegistryObject<Perk> UNBOUND_STEP =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaUnboundStepRequiredLevel < 0
-            ? null : PERKS.register("botania_unbound_step", () -> register(
-                    "botania_unbound_step",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaUnboundStepRequiredLevel,
-                    HandlerResources.BOTANIA_UNBOUND_STEP_PERK
-            ));
-
-    public static final RegistryObject<Perk> ENVY_MIRRORED_WRATH =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathRequiredLevel < 0
-            ? null : PERKS.register("botania_mirrored_wrath", () -> register(
-                    "botania_mirrored_wrath",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathRequiredLevel,
-                    HandlerResources.BOTANIA_MIRRORED_WRATH_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().botaniaMirroredWrathPercent)
-            ));
-
-    public static final RegistryObject<Perk> CROWN_OF_REACH =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachRequiredLevel < 0
-            ? null : PERKS.register("botania_crown_of_reach", () -> register(
-                    "botania_crown_of_reach",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachRequiredLevel,
-                    HandlerResources.BOTANIA_CROWN_OF_REACH_PERK,
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaCrownOfReachBonusBlocks)
-            ));
-
-    public static final RegistryObject<Perk> THUNDERCALL =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaThundercallRequiredLevel < 0
-            ? null : PERKS.register("botania_thundercall", () -> register(
-                    "botania_thundercall",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaThundercallRequiredLevel,
-                    HandlerResources.BOTANIA_THUNDERCALL_PERK,
-                    new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().botaniaThundercallPercent)
-            ));
-
-    public static final RegistryObject<Perk> RELIC_ATTUNEMENT =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaRelicAttunementRequiredLevel < 0
-            ? null : PERKS.register("botania_relic_attunement", () -> register(
-                    "botania_relic_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaRelicAttunementRequiredLevel,
-                    HandlerResources.BOTANIA_RELIC_ATTUNEMENT_PERK
-            ));
-
-    public static final RegistryObject<Perk> TERRASTEEL_ASCENSION =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionRequiredLevel < 0
-            ? null : PERKS.register("botania_terrasteel_ascension", () -> register(
-                    "botania_terrasteel_ascension",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionRequiredLevel,
-                    HandlerResources.BOTANIA_TERRASTEEL_ASCENSION_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaTerrasteelAscensionMaxHp)
-            ));
-
-    public static final RegistryObject<Perk> FLUGELS_GRACE =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceRequiredLevel < 0
-            ? null : PERKS.register("botania_flugels_grace", () -> register(
-                    "botania_flugels_grace",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceRequiredLevel,
-                    HandlerResources.BOTANIA_FLUGELS_GRACE_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().botaniaFlugelsGraceJumps)
-            ));
-
-    public static final RegistryObject<Perk> MANASTORM =
-            !BotaniaIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().botaniaManastormRequiredLevel < 0
-            ? null : PERKS.register("botania_manastorm", () -> register(
-                    "botania_manastorm",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().botaniaManastormRequiredLevel,
-                    HandlerResources.BOTANIA_MANASTORM_PERK,
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().botaniaManastormCooldownSeconds),
-                    new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().botaniaManastormDamageMultiplier)
             ));
 
     private static Perk register(String name, Supplier<Skill> skillSupplier, int requiredLvl, ResourceLocation texture, Value... configValues) {

@@ -2,7 +2,6 @@ package com.otectus.runicskills.integration.lock;
 
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
-import com.otectus.runicskills.integration.BloodMagicIntegration;
 import com.otectus.runicskills.integration.IceAndFireIntegration;
 import com.otectus.runicskills.integration.JewelcraftIntegration;
 import com.otectus.runicskills.integration.LocksIntegration;
@@ -75,9 +74,6 @@ public final class LockProviderRegistry {
         register(adapter("spartan",
                 cfg -> cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded(),
                 SpartanIntegration::generateLockItems));
-        register(adapter("bloodmagic",
-                cfg -> cfg.enableBloodMagicIntegration && BloodMagicIntegration.isModLoaded(),
-                BloodMagicIntegration::generateLockItems));
         register(adapter("iceandfire",
                 cfg -> cfg.enableIceAndFireIntegration && IceAndFireIntegration.isModLoaded(),
                 IceAndFireIntegration::generateLockItems));
@@ -102,11 +98,16 @@ public final class LockProviderRegistry {
         // Registry-driven (discovered) providers for the long tail of installed + documented mods.
         // Base level ~ gameplay weight. All gated by disabledDiscoveredLockMods + scaled by
         // discoveredLockLevelMultiplier; inactive (no-op) when the target mod is absent.
-        // -- Installed-in-Lorecraft mods that previously had no lock coverage --
+        // -- Installed-in-Runecraft mods that previously had no lock coverage --
+        // Epic Knights family. Namespaces verified against the Runecraft jars' assets/ folders:
+        // base = magistuarmory, plus the Japanese Armory (double underscore), Ice & Fire, and
+        // Antique Legacy (assets namespace is "antiquelegacy", NOT "epic_knights_antique_legacy").
         register(new GenericNamespaceLockProvider("epic_knights", 12,
                 "magistuarmory", "magistuarmoryaddon", "darkagesarmory",
-                "epic_knights__japanese_armory", "epic_knights_ice_and_fire"));
+                "epic_knights__japanese_armory", "epic_knights_ice_and_fire", "antiquelegacy"));
         register(new GenericNamespaceLockProvider("aquaculture", 10, "aquaculture"));
+        // Call of the Yucatan — flint/jade/hematite-tier spears, shields, helmets, axes.
+        register(new GenericNamespaceLockProvider("call_of_yucutan", 8, "call_of_yucutan"));
         register(new GenericNamespaceLockProvider("galosphere", 8, "galosphere"));
         register(new GenericNamespaceLockProvider("undergarden", 10, "undergarden"));
         register(new GenericNamespaceLockProvider("deeperdarker", 12, "deeperdarker"));
@@ -116,7 +117,6 @@ public final class LockProviderRegistry {
         register(new GenericNamespaceLockProvider("farmersdelight", 4, "farmersdelight"));
         register(new GenericNamespaceLockProvider("siegemachines", 12, "siegemachines"));
         // -- README-advertised mods (may be absent locally; activate when present) --
-        register(new GenericNamespaceLockProvider("enigmaticlegacy", 16, "enigmaticlegacy"));
         register(new GenericNamespaceLockProvider("fantasy_armor", 8, "fantasy_armor"));
         register(new GenericNamespaceLockProvider("naturesaura", 8, "naturesaura"));
         register(new GenericNamespaceLockProvider("bosses_of_mass_destruction", 18, "bosses_of_mass_destruction"));

@@ -16,10 +16,9 @@ import org.slf4j.Logger;
 /**
  * Saints' Dragons integration.
  *
- * <p>Scaffolded in R3 batch 3 to host event-handler code for Strength-tree perks
- * gated on this mod (DRACONIC_FURY, GLADIATOR, TROPHY_HUNTER — see RegistryPerks).
- * Effect code for those perks is wired in R3 batch 4; the {@code onLivingHurt}
- * stub below is the intended landing site.
+ * <p>Hosts event-handler code for Strength-tree perks gated on this mod.
+ * DRACONIC_FURY is implemented in {@link #onLivingHurt}. GLADIATOR and
+ * TROPHY_HUNTER are not mod-gated — they live in CombatEventHandler.
  *
  * <p>Loaded reflectively via {@code RunicSkills.tryLoadIntegration("saintsdragons", …)}
  * so the JVM never resolves Saints' Dragons API types when the mod is absent.
@@ -39,7 +38,7 @@ public class SaintsDragonsIntegration {
     }
 
     public SaintsDragonsIntegration() {
-        LOGGER.debug("Saints' Dragons integration scaffold loaded (R3 batch 3); perk effects land in batch 4.");
+        LOGGER.debug("Saints' Dragons integration loaded; DRACONIC_FURY active.");
     }
 
     /**

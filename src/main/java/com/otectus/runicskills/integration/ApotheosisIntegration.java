@@ -3,7 +3,7 @@ package com.otectus.runicskills.integration;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
-import com.otectus.runicskills.network.packet.client.PlayerMessagesCP;
+import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
@@ -11,7 +11,9 @@ import dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper;
 import dev.shadowsoffire.apotheosis.adventure.event.GetItemSocketsEvent;
 import dev.shadowsoffire.apotheosis.adventure.event.ItemSocketingEvent;
 import dev.shadowsoffire.apotheosis.adventure.loot.LootRarity;
+import dev.shadowsoffire.apotheosis.adventure.socket.gem.GemInstance;
 import dev.shadowsoffire.attributeslib.api.ALObjects;
+import dev.shadowsoffire.placebo.events.GetEnchantmentLevelEvent;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -116,17 +118,9 @@ public class ApotheosisIntegration {
      * unknown tiers (returns Integer.MAX_VALUE) so a new rarity can never be
      * silently equipped without a config update.
      */
-    private int getRequiredFortuneLevel(ItemStack stack) {
-        if (!HandlerCommonConfig.HANDLER.instance().apothEnableAffixRarityGating) return 0;
-        if (!AffixHelper.hasAffixes(stack)) return 0;
-
-        DynamicHolder<LootRarity> rarityHolder = AffixHelper.getRarity(stack);
-        if (!rarityHolder.isBound()) return 0;
-
-        ResourceLocation rarityId = rarityHolder.getId();
-        if (rarityId == null) return 0;
+    /** Shared rarity → required Fortune level mapping (used by both affix-gear and gem gating). */
+    private int rarityLevel(ResourceLocation rarityId) {
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
-
         return switch (rarityId.getPath()) {
             case "common" -> 0;
             case "uncommon" -> config.apothRarityUncommonLevel;
@@ -139,6 +133,32 @@ public class ApotheosisIntegration {
                 yield Integer.MAX_VALUE; // default-deny
             }
         };
+    }
+
+    private int getRequiredFortuneLevel(ItemStack stack) {
+        if (!HandlerCommonConfig.HANDLER.instance().apothEnableAffixRarityGating) return 0;
+        if (!AffixHelper.hasAffixes(stack)) return 0;
+
+        DynamicHolder<LootRarity> rarityHolder = AffixHelper.getRarity(stack);
+        if (!rarityHolder.isBound()) return 0;
+
+        ResourceLocation rarityId = rarityHolder.getId();
+        if (rarityId == null) return 0;
+        return rarityLevel(rarityId);
+    }
+
+    /**
+     * Required Fortune level to socket a gem, scaled by the gem's rarity (i.e. how powerful it is).
+     * Returns 0 (ungated) for non-gems, common gems, or when gem gating is disabled. Gems aren't
+     * affix items, so the affix path above never covers them — this reads the gem's own LootRarity.
+     */
+    private int getRequiredFortuneLevelForGem(ItemStack stack) {
+        if (!HandlerCommonConfig.HANDLER.instance().apothEnableGemRarityGating) return 0;
+        GemInstance gem = GemInstance.unsocketed(stack);
+        if (!gem.isValidUnsocketed()) return 0;
+        DynamicHolder<LootRarity> rarityHolder = gem.rarity();
+        if (!rarityHolder.isBound() || rarityHolder.getId() == null) return 0;
+        return rarityLevel(rarityHolder.getId());
     }
 
     /** B3 fix: canonical rarity names treated as "rare or higher" for affix-affinity counting. */
@@ -171,7 +191,10 @@ public class ApotheosisIntegration {
                 int required = getRequiredFortuneLevel(item);
                 DynamicHolder<LootRarity> rarityHolder = AffixHelper.getRarity(item);
                 String rarityName = rarityHolder.isBound() ? rarityHolder.get().toComponent().getString() : "Unknown";
-                PlayerMessagesCP.send(serverPlayer, "overlay.runicskills.affix_rarity_gated", required);
+                // Over-GUI banner (was PlayerMessagesCP, which never handled this key -> the
+                // denial silently vanished, and it only carried one arg anyway). The lang is
+                // "You need Fortune %s to use %s items!" -> required level + rarity name.
+                NoticeOverlayCP.send(serverPlayer, "overlay.runicskills.affix_rarity_gated", String.valueOf(required), rarityName);
             }
         }
     }
@@ -212,6 +235,27 @@ public class ApotheosisIntegration {
         }
     }
 
+    // ── Gem rarity gating — block socketing a gem too powerful for the player's Fortune level ──
+    // Gems aren't affix items, so the affix-rarity gating above never covers them. CanSocket is an
+    // @HasResult event consumed by Apotheosis's SocketingRecipe; setting DENY blocks the socket.
+    @SubscribeEvent
+    public void onCanSocketGem(ItemSocketingEvent.CanSocket event) {
+        Player player = resolveInteractor();
+        if (player == null || player.isRemoved() || player.isCreative() || player instanceof FakePlayer) return;
+        int required = getRequiredFortuneLevelForGem(event.getInputGem());
+        if (required <= 0) return;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap == null) return; // capability race — fail open, matching the affix-gating path
+        if (cap.getSkillLevel(RegistrySkills.FORTUNE.get()) >= required) return;
+        event.setResult(net.minecraftforge.eventbus.api.Event.Result.DENY);
+        if (player instanceof ServerPlayer serverPlayer) {
+            DynamicHolder<LootRarity> rarityHolder = GemInstance.unsocketed(event.getInputGem()).rarity();
+            String rarityName = rarityHolder.isBound() ? rarityHolder.get().toComponent().getString() : "Unknown";
+            // "You need Fortune %s to socket %s gems!" → required level + gem rarity name.
+            NoticeOverlayCP.send(serverPlayer, "overlay.runicskills.gem_rarity_gated", String.valueOf(required), rarityName);
+        }
+    }
+
     // ── Gem Socket Bonus ──
 
     @SubscribeEvent
@@ -243,6 +287,26 @@ public class ApotheosisIntegration {
             int bonus = HandlerCommonConfig.HANDLER.instance().apothicApprenticeBonus;
             if (bonus > 0) event.setSockets(event.getSockets() + bonus);
         }
+    }
+
+    // ── APOTHEOSIS_WISDOM — raise the effective enchantment cap on the holder's gear ──
+    // Apotheosis/Placebo route every effective-enchantment-level query through Placebo's
+    // GetEnchantmentLevelEvent (this is the same event Apotheosis itself uses to apply its
+    // own cap extensions). Bumping the present enchantments' levels here raises the effective
+    // cap for that query — the faithful "Apotheosis enchantment cap increased by %s." The cap
+    // mechanic itself is global, so a per-player effect has no other hook; the event carries
+    // only the stack, so we attribute via the existing recent-interactor owner lookup.
+    @SubscribeEvent
+    public void onGetEnchantmentLevel(GetEnchantmentLevelEvent event) {
+        if (RegistryPerks.APOTHEOSIS_WISDOM == null) return;
+        ItemStack stack = event.getStack();
+        if (stack.isEmpty() || event.getEnchantments().isEmpty()) return;
+        int add = Math.round(HandlerCommonConfig.HANDLER.instance().apotheosisWisdomAmplifier);
+        if (add <= 0) return;
+        Player owner = findItemOwner(stack);
+        if (owner == null || owner instanceof FakePlayer || !RegistryPerks.APOTHEOSIS_WISDOM.get().isEnabled(owner)) return;
+        // Only raise enchantments already present (lvl > 0); never introduce new ones.
+        event.getEnchantments().replaceAll((ench, lvl) -> lvl > 0 ? lvl + add : lvl);
     }
 
     // ── 1.2.0: Gem-Threaded Armor — apply transient ARMOR modifier scaling with equipped socket count ──

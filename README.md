@@ -7,7 +7,7 @@ A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through
 ![Java 17](https://img.shields.io/badge/Java-17-F89820)
 ![License Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. 1.0.1 added a 42-perk Botania integration (Wisdom + Magic trees) behind a strict optional-dependency guard. 1.0.2 was the magic-tree cross-mod expansion — 78 new perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and 9 cross-mod synergies that activate only when multiple source mods are installed together. **1.1.0 ships the dedicated-server safety refactor** (YACL is now genuinely optional on servers — pre-1.1.0 the README claimed this but the code crashed at boot), the L2Tabs class-load fix, and a triage of CurseForge user reports including the `/globallimit` command bug and the Scholar/enchantment-hiding side effect. **1.2.0** introduces a public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) so external Java mods and KubeJS scripts can hook level changes without reflection, plus four deferred-backlog perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes), eight per-integration master-toggle booleans, tooltip word-wrap at GUI scale 4, named-layer HUD overlays so resource packs can relocate them, and bulk-level passives via Shift/Ctrl/Alt-click. **1.2.1 and 1.2.2** are log-noise hotfixes after the 1.2.0 post-release smoke test surfaced a single-player WARN spam and three pre-existing log issues. **1.3.0** ships two data-driven features authors have been asking for: a custom-skill-visuals datapack layer (override per-skill overview/detail/background art via `data/<ns>/runicskills/skill_visuals/*.json` with full `namespace:path` ResourceLocation support) and an FTB Quests integration that registers six native task types (`skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) wired through an isolated quest bridge so the mod boots cleanly without FTB Quests installed; KubeJS perk/passive helpers also accept arbitrary `namespace:path` texture ids now. **1.3.1 and 1.3.2** are immediate-post-release hotfixes — 1.3.1 finishes the BetterCombat / PointBlank classloader-WARN cleanup that 1.2.1 only got halfway through (via a Mixin Config Plugin that gates the optional-mod mixins on `LoadingModList` presence), and 1.3.2 flips `Utils.FONT_COLOR` from white to black so the skill-panel header text is legible on the light gray panel. See [`CHANGELOG.md`](CHANGELOG.md) for the full breakdown.
+Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills in v0.9.1. First stable 1.0.0 release shipped the consolidated 0.9.x feature set (item-lock master toggle, perk/passive kill switches, perk-group datapacks) plus the tooltip-matches-enforcement fix. The magic tree grew across the 1.0.x and 1.2.x line — 78+ perks across Iron's Spells 'n Spellbooks (46), Apotheosis + Apothic Attributes (12), Ars Nouveau (11), and cross-mod synergies that activate only when multiple source mods are installed together. **1.1.0 ships the dedicated-server safety refactor** (YACL is now genuinely optional on servers — pre-1.1.0 the README claimed this but the code crashed at boot), the L2Tabs class-load fix, and a triage of CurseForge user reports including the `/globallimit` command bug and the Scholar/enchantment-hiding side effect. **1.2.0** introduces a public Forge event API (`SkillLevelUpEvent`, `PassiveLevelUpEvent`, `PerkToggleEvent.Pre`/`Post`, `TitleEarnedEvent`) so external Java mods and KubeJS scripts can hook level changes without reflection, plus four deferred-backlog perks (Apothic Apprentice, Gem-Threaded Armor, Spellsocket, Resonant Affixes), per-integration master-toggle booleans, tooltip word-wrap at GUI scale 4, named-layer HUD overlays so resource packs can relocate them, and bulk-level passives via Shift/Ctrl/Alt-click. **1.3.0** ships two data-driven features authors have been asking for: a custom-skill-visuals datapack layer (override per-skill overview/detail/background art via `data/<ns>/runicskills/skill_visuals/*.json` with full `namespace:path` ResourceLocation support) and an FTB Quests integration that registers six native task types (`skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) wired through an isolated quest bridge so the mod boots cleanly without FTB Quests installed; KubeJS perk/passive helpers also accept arbitrary `namespace:path` texture ids now. **1.5.0** trims the perk roster to match the target Runecraft pack — **all Botania, Blood Magic, and Enigmatic Legacy perks (and their integrations / lock providers) have been removed** — and fully wires Apotheosis: the APOTHEOSIS_WISDOM enchantment-cap perk is live, and socketing a gem now requires a Fortune level scaled by the gem's rarity (config toggle `apothEnableGemRarityGating`, default on). See [`CHANGELOG.md`](CHANGELOG.md) for the full breakdown.
 
 ---
 
@@ -86,7 +86,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.3.2.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.5.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -107,17 +107,14 @@ Runic Skills detects installed mods at runtime and enables matching content with
 |---|---|
 | **KubeJS** / Rhino | `SKILL_LEVELUP` event, plus ability to register custom skills, perks, passives, titles, and conditions from scripts |
 | **Ars Nouveau** | 11 form/school perks (Form Focus: Projectile/Touch/Self, Wild Manipulation, per-school Hedgewitch/Emberforged/Stormcaller/Geomancer/Conjurer/Abjurer/Arcane Weaver) on top of the existing spell-damage scaling, mana regen passives, glyph mastery, and familiar gating |
-| **Botania** | 42 rune-tiered perks across Wisdom + Magic: mana proficiency + discount hooks, nearby-pool trickle-charge, elemental/seasonal/sin procs; icons reuse Botania's own item textures |
-| **Irons Spellbooks** | 46 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch), summon perks (Lord of the Dead, Life Leech Bound), plus the existing Spell Echo, Arcane Shield, and school-attunement gating |
-| **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item) — last four added in 1.2.0 |
+| **Irons Spellbooks** | 46 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch — including the blood-school perks Blood Attunement / Blood-mancer / Blood-Warded / Blood Catalyst and Blood Fury), summon perks (Lord of the Dead, Life Leech Bound), plus the existing Spell Echo, Arcane Shield, and school-attunement gating |
+| **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item), Apotheosis Wisdom (enchantment-cap boost via Placebo's GetEnchantmentLevelEvent), plus gem rarity gating — socketing a gem requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), toggled by `apothEnableGemRarityGating` (default on) |
 | **Apothic Attributes** | Extended attribute pool for passives plus 10 combat perks (Apothic Critical Mastery, Vampiric Fangs, Reaper's Edge, Evasive, Arrow Mastery, Earthbreaker, Apothic Scholar, Spectral Ward, Ghostbound, Heart of the Healer) |
 | **Cross-mod synergy** | 6 Schoolbridges (Iron's school spell-power bleeds into matching Ars school damage), Unified Arcana (Ars casts refund ISS mana), Triple Threat (+% mana/regen/spell-power when Iron's + Ars + Apotheosis all loaded), Affix Focus (+ISS spell levels when 4+ Rare Apoth items equipped) |
-| **Blood Magic** | Lock items for sigils, sentient gear, orbs |
 | **Farmers Delight** | Lock items on knives and cooking gear |
 | **Ice and Fire** | Dragon-slayer perk + dragon-item lock list |
 | **Cataclysm** | Fire-dragon weapon / gear lock items |
 | **Mowzie's Mobs** | Mowzie-weapon lock list |
-| **Enigmatic Legacy** | Cursed-item lock list |
 | **More Vanilla** | Additional lock-item coverage |
 | **Fantasy Armor** | Armour-piece lock list |
 | **Jewelcraft** | Jewelry lock list |
@@ -140,10 +137,10 @@ All `/skills*` operator commands require OP level 2.
 |---|---|
 | `/skills <player> <skill> <level>` | Set a player's skill to a specific level. |
 | `/skills <player> <skill> add <amount>` | Add (or subtract, with negative) to a player's skill. |
-| `/skills <player> list` | Dump all ten skill levels for a player. |
-| `/skills reload` | Re-read the datapack-side config (lock items, titles, conditions) without a server restart. |
-| `/skills respec <player>` | Reset all passives and perks (skill levels preserved) and refund points. |
-| `/skills register <item-id>` | Register an item as level-gated at runtime (persisted to config on reload). |
+| `/listskills <player>` | Dump all ten skill levels for a player. |
+| `/skillsreload` | Re-read the datapack-side config (lock items, titles, conditions) without a server restart. |
+| `/respec <player>` | Reset all passives and perks (skill levels preserved) and refund points. |
+| `/registeritem <item-id>` | Register an item as level-gated at runtime (persisted to config on reload). |
 | `/globallimit <cap>` | Set the global-level cap. |
 | `/titles <player> <title> set true\|false` | Grant or revoke a title. |
 
@@ -195,7 +192,7 @@ KubeJS perk/passive scripts also accept namespaced texture ids since 1.3.0:
 ```js
 // Before 1.3.0: had to ship the texture inside the runicskills namespace.
 // Since 1.3.0: any mod's texture works.
-Perk.add('test_perk', 'magic', 1, 'botania:textures/item/lexicon.png', [Value.of(...)])
+Perk.add('test_perk', 'magic', 1, 'irons_spellbooks:textures/item/blank_rune.png', [Value.of(...)])
 ```
 
 The progressive 4-tier "locked icon" array on each skill (the icon that fills in as you level up) is **not** part of the override — it's a single static slot per skill. Pack authors who want progressive art can replace the underlying `runicskills:textures/skill/<name>/locked_*.png` files via a resource pack instead.
@@ -234,7 +231,7 @@ Example task SNBT / JSON:
 
 **Backfill on login.** When a player logs in (or respawns / is cloned after a death), every Runic Skills task is re-evaluated. Authors can ship FTB Quests data after players have already leveled past the threshold without leaving them with phantom-incomplete quests.
 
-**Configuration.** Disable the integration entirely via `enableFTBQuestsIntegration = false` in `runicskills-common.json5` (or **Mods → Runic Skills → Config → Integrations**). Task types are not registered when the toggle is off; quests using these types will appear as "unknown" in the editor.
+**Configuration.** Disable the integration entirely via `enableFTBQuestsIntegration = false` in `runicskills.common.json5` (or **Mods → Runic Skills → Config → Integrations**). Task types are not registered when the toggle is off; quests using these types will appear as "unknown" in the editor.
 
 ---
 
@@ -242,7 +239,7 @@ Example task SNBT / JSON:
 
 | Runic Skills | Minecraft | Forge | Java | FTB Quests Forge (optional) |
 |---|---|---|---|---|
-| 1.3.x | 1.20.1 | 47.3.0+ | 17 | `[2001.4,)` (tested against 2001.4.22) |
+| 1.5.x | 1.20.1 | 47.3.0+ | 17 | `[2001.4,)` (tested against 2001.4.22) |
 
 ---
 
@@ -302,7 +299,7 @@ ForgeEvents.onEvent('net.minecraftforge.event.entity.player.PlayerEvent$SkillLev
 ## Server / multiplayer notes
 
 - **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=5`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
-- **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills-common.json5` on the client is read for display defaults only.
+- **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills.common.json5` on the client is read for display defaults only.
 - **Title name custom display** — titles apply a display-name prefix via `setCustomName`. Set `titlesUseCustomName=false` in the common config to disable if you run a chat/nickname mod that collides.
 
 ---
@@ -310,7 +307,7 @@ ForgeEvents.onEvent('net.minecraftforge.event.entity.player.PlayerEvent$SkillLev
 ## Reporting bugs
 
 - **Bug reports and feature requests:** use the [GitHub issues](https://github.com/otectus/runic-skills/issues) tracker.
-- When reporting a crash, attach your `logs/latest.log` (or the crash report under `crash-reports/`) and your mod list (`mods.txt` output or a listing of your `mods/` directory). Include your `config/runicskills-common.json5` if the bug is config-related.
+- When reporting a crash, attach your `logs/latest.log` (or the crash report under `crash-reports/`) and your mod list (`mods.txt` output or a listing of your `mods/` directory). Include your `config/RunicSkills/runicskills.common.json5` if the bug is config-related.
 - Security issues: open a private advisory instead of a public issue.
 
 ---
