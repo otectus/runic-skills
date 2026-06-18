@@ -1,6 +1,7 @@
 package com.otectus.runicskills.common.capability;
 
 import com.otectus.runicskills.common.model.Skills;
+import com.otectus.runicskills.common.util.LockCheck;
 import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
@@ -175,6 +176,15 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         return this.skillLevel.get(skillName);
     }
 
+    // Null-safe level read for the lock-gating decision: a skill name not present in the map
+    // (e.g. an item locked against a skill from a no-longer-loaded addon) resolves to the
+    // default level 1 instead of unboxing null into an NPE mid-attack/use. Mirrors the
+    // skill-1 default used throughout (de)serializeNBT.
+    private int safeLevel(String skillName) {
+        Integer level = this.skillLevel.get(skillName);
+        return level == null ? 1 : level;
+    }
+
     public void setSkillLevel(Skill skill, int lvl) {
         this.skillLevel.put(skill.getName(), lvl);
     }
@@ -342,6 +352,18 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         return id == null || canUse(player, id);
     }
 
+    /**
+     * Same lock decision as {@link #canUseItem(Player, ItemStack)} but never sends the
+     * SkillOverlayCP "requirement not met" packet. Used by per-tick / per-hit / per-break
+     * backstops (melee damage, block breaking) so enforcement that fires many times a second
+     * does not spam the client overlay — the one-shot warning still comes from the discrete
+     * action events (attack swing, left/right-click).
+     */
+    public boolean canUseItemSilent(Player player, ItemStack item) {
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
+        return id == null || canUse(player, id.toString(), false);
+    }
+
     public boolean canUseItem(Player player, ResourceLocation resourceLocation) {
         return canUse(player, resourceLocation);
     }
@@ -361,33 +383,37 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     private boolean canUse(Player player, ResourceLocation resource) {
-        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
-        List<Skills> skill = HandlerSkill.getValue(resource.toString());
-        if (skill != null) {
-            for (Skills skills : skill) {
-                if (getSkillLevel(skills.getSkill()) < skills.getSkillLvl()) {
-                    if (player instanceof net.minecraft.server.level.ServerPlayer)
-                        SkillOverlayCP.send(player, resource.toString());
-                    return false;
-                }
-            }
-        }
-        return true;
+        return canUse(player, resource.toString(), true);
     }
 
     private boolean canUse(Player player, String restrictionID) {
+        return canUse(player, restrictionID, true);
+    }
+
+    /**
+     * Single source of truth for the lock decision. Short-circuits when item locks are disabled,
+     * looks up the item's requirements, and delegates the level comparison to the pure, unit-tested
+     * {@link LockCheck#meetsRequirements}. When {@code notify} is true and the requirement is not met,
+     * the server tells the client to show the lock overlay.
+     */
+    private boolean canUse(Player player, String restrictionID, boolean notify) {
         if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
         List<Skills> skill = HandlerSkill.getValue(restrictionID);
-        if (skill != null) {
-            for (Skills skills : skill) {
-                if (getSkillLevel(skills.getSkill()) < skills.getSkillLvl()) {
-                    if (player instanceof net.minecraft.server.level.ServerPlayer)
-                        SkillOverlayCP.send(player, restrictionID);
-                    return false;
-                }
+        if (skill == null || skill.isEmpty()) return true;
+
+        Map<String, Integer> required = new HashMap<>();
+        for (Skills skills : skill) {
+            if (skills.getSkill() != null) {
+                required.put(skills.getSkill().getName(), skills.getSkillLvl());
             }
         }
-        return true;
+
+        if (LockCheck.meetsRequirements(required, this::safeLevel)) return true;
+
+        if (notify && player instanceof net.minecraft.server.level.ServerPlayer) {
+            SkillOverlayCP.send(player, restrictionID);
+        }
+        return false;
     }
 
     public CompoundTag serializeNBT() {

@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.5.1] - 2026-06-18 — Item-gating enforcement fix ("inert in hand")
+
+Item locks were defined and shown in tooltips but not reliably enforced: a player below an
+item's skill requirement could still **wield, attack with, and mine** using a locked item
+(e.g. the iron sword at 1 Strength despite its "requires 8 Strength" tooltip). The decision
+logic was correct; enforcement was incomplete and bypassable. This release makes a locked
+item **inert in hand** — it stays in the inventory/hand but cannot attack, mine, or be used
+until its requirements are met. `dropLockedItems` remains an opt-in and is unchanged.
+
+### Fixed — gating enforcement gaps
+- **Melee attacks were bypassable.** Enforcement relied solely on `AttackEntityEvent`
+  (`CombatEventHandler.onPlayerAttackEntity`), which combat-overhaul mods such as **Better
+  Combat** never fire (they perform their own hit detection — note `MixTargetFinder`), so
+  locked weapons could still deal damage. Added a server-side `LivingAttackEvent` backstop at
+  `HIGHEST` priority that cancels the hit when the attacker's main-hand item is locked. This
+  fires before `LivingHurtEvent` and the bonus-damage handlers, so it is order-independent and
+  catches modded weapons. The original `AttackEntityEvent` cancel is kept for the client-side
+  early-out and one-shot overlay warning.
+- **Block-breaking/mining was ungated.** A locked tool could break blocks freely. Added a
+  `BlockEvent.BreakEvent` cancel and a zero-break-speed guard in `onPlayerMining` so the block
+  never visibly cracks.
+- **Wielding was effectively unenforced under default config.** With the above, holding a
+  locked item is now functionally inert without requiring `dropLockedItems`.
+
+### Changed — single source of truth + overlay anti-spam
+- Extracted the level comparison into a pure, Forge-free `common/util/LockCheck` helper
+  (unit-tested headlessly like `PerkCapMath`); `SkillCapability.canUse` now delegates to it.
+- Added `SkillCapability.canUseItemSilent` for the per-hit / per-break backstops so they do
+  not spam the `SkillOverlayCP` client overlay — the one-shot warning still comes from the
+  discrete action events (attack swing, left/right-click).
+- Closed a latent unboxing NPE in the gating path via a null-safe `safeLevel` (a skill from a
+  no-longer-loaded addon now resolves to the default level 1 instead of throwing).
+
+### Notes / out of scope
+- Gun mods: TacZ already gates server-side. Crayfish, Scorched Guns 2 and PointBlank remain
+  **client-side gated only** (bypassable by a modified client) — a server-authoritative fire
+  gate is a possible follow-up.
+- Added `LockCheckTest` (7 cases: requirement boundary, null/empty, multi-skill, unknown-skill default).
+
 ## [1.5.0] - 2026-06-15 — Over-GUI denial messaging, perk-backlog drain, mod-perk purge & proper Apotheosis
 
 Broad audit/stabilization pass, a unified over-GUI denial-message system (network protocol 5 → 6),

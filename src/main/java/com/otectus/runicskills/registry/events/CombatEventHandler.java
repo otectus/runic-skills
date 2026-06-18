@@ -25,7 +25,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
@@ -167,10 +169,60 @@ public class CombatEventHandler {
         }
     }
 
+    // ── Item-lock backstop: melee damage ───────────────────────────────────────
+    // AttackEntityEvent (onPlayerAttackEntity) only fires for the vanilla attack path; combat
+    // overhaul mods (Better Combat — note MixTargetFinder) and some modded weapons do their own
+    // hit detection and bypass it. LivingAttackEvent fires for ALL incoming damage before
+    // LivingHurtEvent and the bonus-damage handlers below, so canceling here is the universal,
+    // order-independent gate that makes a locked weapon truly inert in hand. Server-authoritative;
+    // silent (no overlay) to avoid per-hit packet spam — the one-shot warning comes from
+    // onPlayerAttackEntity / the interaction handlers.
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onLivingAttackLockGate(LivingAttackEvent event) {
+        if (event.getSource() == null) return;
+        Entity attacker = event.getSource().getDirectEntity();
+        if (!(attacker instanceof Player)) attacker = event.getSource().getEntity();
+        if (!(attacker instanceof Player player)) return;
+        if (player.isCreative() || player instanceof FakePlayer) return;
+        if (player.level().isClientSide()) return;
+        SkillCapability provider = SkillCapability.get(player);
+        if (provider != null && !provider.canUseItemSilent(player, player.getMainHandItem())) {
+            event.setCanceled(true);
+        }
+    }
+
+    // ── Item-lock backstop: block breaking ──────────────────────────────────────
+    // Mining/"use" via breaking blocks was previously ungated (onPlayerMining only scaled speed).
+    // Cancel the break server-side when the held tool is locked. Silent for the same anti-spam
+    // reason as above; the player still gets one overlay warning from InteractionEventHandler's
+    // left-click handler. onPlayerMining additionally zeroes the break speed so the cracking
+    // animation never starts.
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onBreakBlockLockGate(BlockEvent.BreakEvent event) {
+        Player player = event.getPlayer();
+        if (player == null || player.isCreative() || player instanceof FakePlayer) return;
+        if (player.level().isClientSide()) return;
+        SkillCapability provider = SkillCapability.get(player);
+        if (provider != null && !provider.canUseItemSilent(player, player.getMainHandItem())) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerMining(PlayerEvent.BreakSpeed event) {
         Player player = event.getEntity();
         if (player instanceof FakePlayer) return;
+
+        // Locked tool: zero the break speed and bail before the perk speed math so the block
+        // never visibly cracks. The authoritative cancel is onBreakBlockLockGate above.
+        if (!player.isCreative()) {
+            SkillCapability lockCap = SkillCapability.get(player);
+            if (lockCap != null && !lockCap.canUseItemSilent(player, player.getMainHandItem())) {
+                event.setNewSpeed(0.0F);
+                event.setCanceled(true);
+                return;
+            }
+        }
 
         boolean apothicHandlesBreakSpeed = ApothicAttributesIntegration.isModLoaded()
                 && HandlerCommonConfig.HANDLER.instance().apothicDelegateMiningSpeed;

@@ -24,6 +24,10 @@ import java.util.Objects;
 @Mod.EventBusSubscriber(modid = RunicSkills.MOD_ID)
 public class InteractionEventHandler {
 
+    // `item` is the acting-hand stack: PlayerInteractEvent fires once per hand and
+    // event.getItemStack() returns player.getItemInHand(event.getHand()). So off-hand use
+    // (shield raise, off-hand food, off-hand right-click) is gated by the same call — the
+    // off-hand event arrives with the off-hand stack here. No separate off-hand lookup needed.
     public static boolean shouldCancelInteraction(Player player, ItemStack item, Block block, Entity target) {
         SkillCapability provider = SkillCapability.get(player);
         if (provider == null) return false;
