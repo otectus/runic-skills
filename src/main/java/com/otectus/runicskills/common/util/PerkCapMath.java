@@ -28,7 +28,20 @@ public final class PerkCapMath {
      * "lock the player out of every perk", so it never makes the cap stricter than the flat cap alone.</p>
      */
     public static int computeEffectiveCap(int flat, int globalLevel, float perScale) {
+        return computeEffectiveCap(flat, globalLevel, perScale, 0);
+    }
+
+    /**
+     * As {@link #computeEffectiveCap(int, int, float)}, additionally clamping the scaled cap to an
+     * optional hard ceiling.
+     *
+     * @param maxScaledCap optional upper bound on the {@code perScale}-derived cap ({@code <= 0} =
+     *                     no ceiling). It bounds only the scaled cap, never relaxes the flat cap, and
+     *                     never turns an unlimited (0) result into a limited one.
+     */
+    public static int computeEffectiveCap(int flat, int globalLevel, float perScale, int maxScaledCap) {
         int scaled = perScale > 0f ? (int) Math.floor((double) globalLevel * (double) perScale) : 0;
+        if (maxScaledCap > 0 && scaled > maxScaledCap) scaled = maxScaledCap;
 
         boolean flatActive = flat > 0;
         boolean scaledActive = scaled > 0;

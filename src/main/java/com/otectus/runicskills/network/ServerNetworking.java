@@ -25,7 +25,10 @@ public class ServerNetworking {
     // for spell-gating and Apotheosis affix gating). New packet => new channel registration =>
     // protocol bump so mismatched client/server pairs are rejected cleanly rather than
     // desyncing on an unknown message id.
-    private static final String PROTOCOL_VERSION = "6";
+    // 1.5.3: bumped "6" -> "7" — CommonConfigSyncCP gained the maxPerkBudgetCap field, so a
+    // pre-1.5.3 peer would pass the handshake and then misread the config-sync buffer.
+    // Payload change => protocol bump, same rule as a new packet.
+    private static final String PROTOCOL_VERSION = "7";
     public static SimpleChannel instance;
 
     /**

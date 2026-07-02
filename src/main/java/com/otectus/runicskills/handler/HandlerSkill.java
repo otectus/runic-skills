@@ -58,6 +58,10 @@ public class HandlerSkill {
         // 1.3.7 only lockItems was reloaded, so the command re-synced stale common-config values.
         // getSkill() below then reads the freshly-reloaded lockItemList + common toggles.
         Configuration.reloadAll();
+        // reloadAll() just replaced titleList with fresh instances whose backing Title is null;
+        // without this rebind, every title is skipped as "desynced" until a restart. Also
+        // re-runs the default-merge so newly shipped built-in titles surface on reload.
+        com.otectus.runicskills.registry.RegistryTitles.rebindAfterReload();
         Skills = getSkill();
         ConvergencePerk.items = null;
         TreasureHunterPerk.invalidateCache();
@@ -88,7 +92,7 @@ public class HandlerSkill {
                 continue;
             }
 
-            skillsList.add(new Skills(skill.Skill.toString(), lockItem.Item, false, skillName, skill.Level));
+            skillsList.add(new Skills(skill.Skill.toString(), lockItem.Item, false, skillName, skill.Level, lockItem.sourceOrManual()));
         }
         return skillsList;
     }
@@ -112,14 +116,19 @@ public class HandlerSkill {
             if (!provider.isActive(cfg)) continue;
             List<LockItem> generated = provider.generateLockItems();
             if (generated == null || generated.isEmpty()) continue;
-            injectGeneratedItems(skillMap, generated);
+            injectGeneratedItems(skillMap, generated, provider.id());
             RunicSkills.getLOGGER().debug("Lock provider '{}' contributed {} generated lock item(s)",
                     provider.id(), generated.size());
         }
     }
 
-    private static void injectGeneratedItems(Map<String, List<Skills>> skillMap, List<LockItem> lockItems) {
+    private static void injectGeneratedItems(Map<String, List<Skills>> skillMap, List<LockItem> lockItems, String providerId) {
         for (LockItem lockItem : lockItems) {
+            // Stamp the generating provider as the lock source unless the provider already set one,
+            // so item-lock tooltips and audits can attribute the entry (manual vs which integration).
+            if (lockItem.Source == null || lockItem.Source.isBlank()) {
+                lockItem.Source = providerId;
+            }
             List<Skills> skillsList = buildSkillsList(lockItem, false);
             if (!skillsList.isEmpty()) {
                 skillMap.putIfAbsent(lockItem.Item, skillsList);

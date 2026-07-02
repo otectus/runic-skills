@@ -2,6 +2,7 @@ package com.otectus.runicskills.handler;
 
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.StringListGroup;
+import com.otectus.runicskills.config.storage.Clamp;
 import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.autogen.Boolean;
@@ -33,27 +34,38 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Skills Max Level")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 2, max = 1000)
+    @Clamp(min = 2, max = 1000)
     public int skillMaxLevel = 32;
 
     @SerialEntry(comment = "Global max level, the global level is calculated summing all skills level, so if this is set to 32 players will be able to only maximize 1 perk.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 32, max = 99999)
+    @Clamp(min = 32, max = 99999)
     public int playersMaxGlobalLevel = 256;
 
     @SerialEntry(comment = "First skills level cost")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 1, max = 1000)
+    @Clamp(min = 1, max = 1000)
     public int skillFirstCostLevel = 5;
 
     @SerialEntry(comment = "Maximum number of perks a player can have enabled at once. 0 = unlimited (default). Server-authoritative; clients attempting to exceed the cap are rejected. Iron's Spells school attunements are counted against this cap in addition to their own ironsMaxSchoolSelections limit.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 0, max = 256)
+    @Clamp(min = 0, max = 256)
     public int maxActivePerks = 0;
 
-    @SerialEntry(comment = "Optional scaled active-perk cap: derived cap = floor(player total global level * this value). 0 = disabled (default). Example: 0.05 grants roughly 1 perk slot per 20 global levels. When both this and maxActivePerks are non-zero, the smaller of the two caps is enforced. A derived cap of 0 (very low global level) is treated as 'not applicable' and never overrides maxActivePerks. Server-authoritative; synced to clients on join.")
+    @SerialEntry(comment = "Optional scaled active-perk cap based on EARNED global level: derived cap = floor(earnedGlobalLevel * this value). Earned global level = the player's total skill levels ABOVE the starting baseline (a fresh player is 0, not the ~number-of-skills they start with). 0 = disabled (default). Example: 0.5 grants the first perk slot after 2 earned levels and 3 slots after 6 earned levels; 0.05 grants roughly 1 slot per 20 earned levels. When both this and maxActivePerks are non-zero, the smaller of the two caps is enforced. A derived cap of 0 (low earned level) is treated as 'not applicable' and never overrides maxActivePerks. If lowering this puts a player over budget, perk activation is frozen until they respec. Server-authoritative; synced to clients on join.")
     @AutoGen(category = "common", group = "general")
     @FloatField(min = 0.0f, max = 16.0f)
+    @Clamp(min = 0, max = 16)
     public float perksPerGlobalLevel = 0.0f;
+
+    @SerialEntry(comment = "Optional hard ceiling on the perksPerGlobalLevel-derived cap (does NOT affect the flat maxActivePerks cap). 0 = no ceiling (default). Example: with perksPerGlobalLevel = 0.5 and maxPerkBudgetCap = 10, the scaled budget stops growing at 10 perks no matter how high the earned global level climbs. Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 0, max = 256)
+    @Clamp(min = 0, max = 256)
+    public int maxPerkBudgetCap = 0;
 
     @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"fire_attunement\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
     @AutoGen(category = "common", group = "general")
@@ -73,11 +85,13 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Per-player cooldown (in ticks, 20 = 1 second) between enabling perks. 0 = no cooldown (default). Applies only when going from disabled to enabled (not rank-ups, not disabling). Rejects server-side; clients attempting to enable during the cooldown are resynced.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 0, max = 72000)
+    @Clamp(min = 0, max = 72000)
     public int perkSwapCooldownTicks = 0;
 
     @SerialEntry(comment = "Multiplier applied to the vanilla XP cost of leveling up a skill. 1.0 = vanilla cost (default). 2.0 = twice as expensive. 0.5 = half price. Scales both the total XP-points cost and the experience-level threshold check, so it's a genuine difficulty knob rather than a loophole.")
     @AutoGen(category = "common", group = "general")
     @FloatField(min = 0.1f, max = 10.0f)
+    @Clamp(min = 0.1, max = 10)
     public float skillLevelUpCostMultiplier = 1.0f;
     @SerialEntry(comment = "Show potions overlay over perks")
     @AutoGen(category = "common", group = "general")
@@ -4534,7 +4548,7 @@ public class HandlerCommonConfig {
     public int arcaneReforgingRequiredLevel = 22;
 
     // ── Apotheosis Integration - Affix Rarity Gating ──
-    @SerialEntry(comment = "Enable affix rarity gating - restrict use of Apotheosis affix items by Fortune level")
+    @SerialEntry(comment = "Enable affix rarity gating - restrict use/equip of Apotheosis affix items by Fortune level, scaled by the item's affix rarity (see apothRarity*Level below). This gates ANY Apotheosis-affixed equipment, including ordinary vanilla armor/tools/weapons that happened to roll an affix - that is intended: affixed gear is rarity-based loot, not plain gear. Common/ungated rarity is never gated (no 'Fortune 0' requirement). Set false to allow all affixed gear regardless of Fortune. This is SEPARATE from gem socketing gating (apothEnableGemRarityGating).")
     @AutoGen(category = "common", group = "apotheosis")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean apothEnableAffixRarityGating = true;

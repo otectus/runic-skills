@@ -37,13 +37,23 @@ public class RegistryClientEvents {
                 SkillCapability localCap = SkillCapability.getLocal();
                 tooltips.add(Component.empty());
                 tooltips.add(Component.translatable("tooltip.skill.item_requirement").withStyle(ChatFormatting.DARK_PURPLE));
+                String source = null;
                 for (Skills skills : list) {
                     Skill skill = skills.getSkill();
                     if (skill != null) {
+                        if (source == null) source = skills.getSource();
                         int level = localCap == null ? 0 : localCap.getSkillLevel(skill);
                         ChatFormatting colour = (level >= skills.getSkillLvl()) ? ChatFormatting.GREEN : ChatFormatting.RED;
                         tooltips.add(Component.translatable("tooltip.skill.item_requirements", Component.translatable(skill.getKey()), Component.literal(String.valueOf(skills.getSkillLvl())).withStyle(colour)));
                     }
+                }
+                // Lock-source attribution: tells players whether this lock is manual config or which
+                // integration generated it (distinct from the Apotheosis affix-gate tooltip line).
+                // Friendly names are provided for known sources; unknown provider ids fall back to the
+                // raw id so newly-added integrations still attribute correctly without a lang update.
+                if (source != null) {
+                    Component sourceName = Component.translatableWithFallback("tooltip.skill.lock_source." + source, source);
+                    tooltips.add(Component.translatable("tooltip.skill.item_lock_source", sourceName).withStyle(ChatFormatting.DARK_GRAY));
                 }
             }
         }

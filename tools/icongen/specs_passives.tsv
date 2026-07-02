@@ -1,0 +1,39 @@
+# passive_id	glyph	primary	secondary	badge	badge_pal	concept
+attack_damage	sword	steel	crimson	up	steel	Bared blade — physical damage dealt
+attack_knockback	fist	steel	copper	up	copper	Heavy fist — knockback dealt
+max_health	heart	crimson	gold	plus	gold	Full heart — maximum health
+knockback_resistance	anchor	steel	copper	shieldb	steel	Braced anchor — resist knockback
+swim_speed	fish	water	prismarine	up	prismarine	Swift fish — swim speed
+movement_speed	boot	frost	steel	up	gold	Runner's boot — movement speed
+projectile_damage	arrow	steel	crimson	up	crimson	Sharp arrow — projectile damage
+armor	chestplate	steel	slate	plus	slate	Plate armor — damage nullified
+armor_toughness	helmet	steel	gold	plus	steel	Tough helm — mitigate strong attacks
+attack_speed	dual_swords	steel	copper	clockb	gold	Quick blades — hand cooldown
+entity_reach	hand	steel	frost	up	frost	Extended hand — attack reach
+block_reach	hand	wood	stone	plus	wood	Builder's hand — block reach
+break_speed	pickaxe	stone	gold	up	copper	Worn pick — block break speed
+enchanting_power	spellbook	arcane	gold	up	arcane	Charged spellbook — enchanting power
+xp_bonus	xp_orb	emerald	gold	plus	emerald	Bright orb — bonus XP
+beneficial_effect	potion	emerald	pink	clockb	emerald	Tonic — positive effects last longer
+magic_resist	round_shield	arcane	frost	downb	frost	Arcane buckler — magic damage down
+critical_damage	target	crimson	gold	up	gold	Marked target — critical damage
+fortune	clover	gold	emerald	plus	gold	Gilded clover — luck
+repair_efficiency	anvil	steel	emerald	downb	emerald	Efficient anvil — cheaper repairs
+crafting_luck	gear	gold	emerald	sparkle	gold	Lucky gear — bonus craft output
+spell_power	wand	mana	arcane	up	mana	Charged wand — spell power
+max_mana	drop	mana	diamond	plus	diamond	Brimming drop — maximum mana
+cast_time_reduction	hourglass	mana	frost	downb	frost	Draining glass — cast time down
+ars_spell_damage	sigil	emerald	arcane	up	emerald	Source sigil — Ars spell damage
+ars_flat_mana	flask	mana	emerald	plus	mana	Mana flask — Ars mana reserve
+ars_warding	round_shield	emerald	arcane	shieldb	emerald	Source ward — magical protection
+life_steal	fang	blood	crimson	dropb	crimson	Draining fangs — lifesteal
+healing_received	heart	pink	bone	up	pink	Mended heart — healing received
+draw_speed	bow	wood	gold	clockb	gold	Limber bow — draw speed
+dodge_chance	wing	bone	steel	sparkle	steel	Fleet wing — dodge chance
+experience_gained	book	gold	emerald	plus	emerald	Gilded book — experience gained
+mining_speed	pickaxe	copper	steel	up	steel	Powered pick — mining speed
+cold_damage	snowflake	ice	frost	plus	ice	Biting frost — bonus cold damage
+crit_chance	target	gold	crimson	sparkle	crimson	Lucky mark — critical chance
+fire_damage	flame	fire	crimson	plus	fire	Searing flame — bonus fire damage
+arrow_velocity	arrows3	gold	steel	up	gold	Swift volley — arrow velocity
+armor_pierce	broken_armor	crimson	gold	plus	crimson	Split plate — armor pierced

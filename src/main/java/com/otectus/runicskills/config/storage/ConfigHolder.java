@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -84,6 +85,7 @@ public class ConfigHolder<T> {
                 JsonElement element = JsonParser.parseString(stripped);
                 T loaded = new Gson().fromJson(element, type);
                 if (loaded != null) {
+                    applyClamps(loaded);
                     instance = loaded;
                     return;
                 }
@@ -112,6 +114,35 @@ public class ConfigHolder<T> {
         }
     }
 
+    /**
+     * Clamps every {@code @Clamp}-annotated numeric field of a freshly parsed config into range,
+     * logging a WARN per violation. Runs only on file loads — defaults are in-range by
+     * construction, and the client UI enforces its own (YACL) ranges.
+     */
+    private void applyClamps(T loaded) {
+        for (java.lang.reflect.Field field : type.getFields()) {
+            Clamp clamp = field.getAnnotation(Clamp.class);
+            if (clamp == null) continue;
+            try {
+                double value = ((Number) field.get(loaded)).doubleValue();
+                // NaN compares false to everything, so Math.min/max would pass it through.
+                double bounded = Double.isNaN(value)
+                        ? clamp.min()
+                        : Math.max(clamp.min(), Math.min(clamp.max(), value));
+                if (bounded == value) continue;
+                LOGGER.warn("Config {}: {} = {} is outside [{}, {}]; clamped to {}.",
+                        path.getFileName(), field.getName(), value, clamp.min(), clamp.max(), bounded);
+                Class<?> t = field.getType();
+                if (t == int.class) field.setInt(loaded, (int) bounded);
+                else if (t == long.class) field.setLong(loaded, (long) bounded);
+                else if (t == float.class) field.setFloat(loaded, (float) bounded);
+                else if (t == double.class) field.setDouble(loaded, bounded);
+            } catch (ReflectiveOperationException | ClassCastException | NullPointerException e) {
+                LOGGER.warn("Config {}: could not clamp field {}: {}", path.getFileName(), field.getName(), e.toString());
+            }
+        }
+    }
+
     /** Copies an unparseable config file to a sibling {@code <name>.invalid} before it is overwritten. */
     private void backupInvalid() {
         try {
@@ -131,10 +162,28 @@ public class ConfigHolder<T> {
             return;
         }
         Gson gson = prettyPrint ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
-        try (Writer w = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            gson.toJson(instance, w);
+        // Write to a sibling temp file, then move it into place. Writing the live file directly
+        // meant a crash / disk-full mid-write truncated it, and the next load() would back the
+        // torn file up as .invalid and silently reset the user's config to defaults.
+        Path tmp = path.resolveSibling(path.getFileName().toString() + ".tmp");
+        try {
+            try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
+                gson.toJson(instance, w);
+            }
+            try {
+                Files.move(tmp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                // Filesystem without atomic-move support (some network mounts): plain replace
+                // still never leaves a truncated file, only (worst case) the previous version.
+                Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             LOGGER.warn("Failed to save {}: {}", path, e.toString());
+            try {
+                Files.deleteIfExists(tmp);
+            } catch (IOException cleanup) {
+                LOGGER.debug("Could not remove temp config file {}: {}", tmp, cleanup.toString());
+            }
         }
     }
 

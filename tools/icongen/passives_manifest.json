@@ -1,0 +1,192 @@
+[
+ {
+  "id": "attack_damage",
+  "skill": "strength",
+  "file": "passive_attack_damage.png"
+ },
+ {
+  "id": "attack_knockback",
+  "skill": "strength",
+  "file": "passive_attack_knockback.png"
+ },
+ {
+  "id": "max_health",
+  "skill": "constitution",
+  "file": "passive_max_health.png"
+ },
+ {
+  "id": "knockback_resistance",
+  "skill": "constitution",
+  "file": "passive_knockback_resistance.png"
+ },
+ {
+  "id": "movement_speed",
+  "skill": "dexterity",
+  "file": "passive_movement_speed.png"
+ },
+ {
+  "id": "projectile_damage",
+  "skill": "dexterity",
+  "file": "passive_projectile_damage.png"
+ },
+ {
+  "id": "armor",
+  "skill": "endurance",
+  "file": "passive_armor.png"
+ },
+ {
+  "id": "armor_toughness",
+  "skill": "endurance",
+  "file": "passive_armor_toughness.png"
+ },
+ {
+  "id": "attack_speed",
+  "skill": "intelligence",
+  "file": "passive_attack_speed.png"
+ },
+ {
+  "id": "entity_reach",
+  "skill": "intelligence",
+  "file": "passive_entity_reach.png"
+ },
+ {
+  "id": "block_reach",
+  "skill": "building",
+  "file": "passive_block_reach.png"
+ },
+ {
+  "id": "break_speed",
+  "skill": "building",
+  "file": "passive_break_speed.png"
+ },
+ {
+  "id": "enchanting_power",
+  "skill": "wisdom",
+  "file": "passive_enchanting_power.png"
+ },
+ {
+  "id": "xp_bonus",
+  "skill": "wisdom",
+  "file": "passive_xp_bonus.png"
+ },
+ {
+  "id": "beneficial_effect",
+  "skill": "magic",
+  "file": "passive_beneficial_effect.png"
+ },
+ {
+  "id": "magic_resist",
+  "skill": "magic",
+  "file": "passive_magic_resist.png"
+ },
+ {
+  "id": "critical_damage",
+  "skill": "fortune",
+  "file": "passive_critical_damage.png"
+ },
+ {
+  "id": "fortune",
+  "skill": "fortune",
+  "file": "passive_luck.png"
+ },
+ {
+  "id": "swim_speed",
+  "skill": "constitution",
+  "file": "passive_swim_speed.png"
+ },
+ {
+  "id": "repair_efficiency",
+  "skill": "tinkering",
+  "file": "passive_repair_efficiency.png"
+ },
+ {
+  "id": "crafting_luck",
+  "skill": "tinkering",
+  "file": "passive_crafting_luck.png"
+ },
+ {
+  "id": "spell_power",
+  "skill": "magic",
+  "file": "passive_spell_power.png"
+ },
+ {
+  "id": "max_mana",
+  "skill": "intelligence",
+  "file": "passive_max_mana.png"
+ },
+ {
+  "id": "cast_time_reduction",
+  "skill": "wisdom",
+  "file": "passive_cast_time_reduction.png"
+ },
+ {
+  "id": "ars_spell_damage",
+  "skill": "magic",
+  "file": "passive_ars_spell_damage.png"
+ },
+ {
+  "id": "ars_flat_mana",
+  "skill": "intelligence",
+  "file": "passive_ars_mana.png"
+ },
+ {
+  "id": "ars_warding",
+  "skill": "endurance",
+  "file": "passive_ars_warding.png"
+ },
+ {
+  "id": "life_steal",
+  "skill": "strength",
+  "file": "passive_life_steal.png"
+ },
+ {
+  "id": "healing_received",
+  "skill": "constitution",
+  "file": "passive_healing_received.png"
+ },
+ {
+  "id": "draw_speed",
+  "skill": "dexterity",
+  "file": "passive_draw_speed.png"
+ },
+ {
+  "id": "dodge_chance",
+  "skill": "endurance",
+  "file": "passive_dodge_chance.png"
+ },
+ {
+  "id": "experience_gained",
+  "skill": "intelligence",
+  "file": "passive_experience_gained.png"
+ },
+ {
+  "id": "mining_speed",
+  "skill": "building",
+  "file": "passive_mining_speed.png"
+ },
+ {
+  "id": "cold_damage",
+  "skill": "magic",
+  "file": "passive_cold_damage.png"
+ },
+ {
+  "id": "crit_chance",
+  "skill": "fortune",
+  "file": "passive_crit_chance.png"
+ },
+ {
+  "id": "fire_damage",
+  "skill": "magic",
+  "file": "passive_fire_damage.png"
+ },
+ {
+  "id": "arrow_velocity",
+  "skill": "dexterity",
+  "file": "passive_arrow_velocity.png"
+ },
+ {
+  "id": "armor_pierce",
+  "skill": "strength",
+  "file": "passive_armor_pierce.png"
+ }
+]

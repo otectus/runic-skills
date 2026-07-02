@@ -86,6 +86,38 @@ public class HandlerTitlesConfig {
 
             // Thematic hybrid titles
             new TitleModel("blood_mage", List.of("skill/Magic/greater_or_equal/24", "skill/Constitution/greater_or_equal/20"), false),
-            new TitleModel("polymath", List.of("skill/Strength/greater_or_equal/16", "skill/Constitution/greater_or_equal/16", "skill/Dexterity/greater_or_equal/16", "skill/Endurance/greater_or_equal/16", "skill/Intelligence/greater_or_equal/16", "skill/Building/greater_or_equal/16", "skill/Wisdom/greater_or_equal/16", "skill/Magic/greater_or_equal/16", "skill/Fortune/greater_or_equal/16", "skill/Tinkering/greater_or_equal/16"), false)
+            new TitleModel("polymath", List.of("skill/Strength/greater_or_equal/16", "skill/Constitution/greater_or_equal/16", "skill/Dexterity/greater_or_equal/16", "skill/Endurance/greater_or_equal/16", "skill/Intelligence/greater_or_equal/16", "skill/Building/greater_or_equal/16", "skill/Wisdom/greater_or_equal/16", "skill/Magic/greater_or_equal/16", "skill/Fortune/greater_or_equal/16", "skill/Tinkering/greater_or_equal/16"), false),
+
+            // 1.5.2 modpack-themed titles -------------------------------------------------
+            // Boss kills (modded entity ids verified against the Runecraft pack jars; a title
+            // for an absent mod simply stays locked, the condition just never passes).
+            new TitleModel("gorgon_slayer", List.of("EntityKilled/iceandfire:gorgon/greater_or_equal/1"), false),
+            new TitleModel("hydra_slayer", List.of("EntityKilled/iceandfire:hydra/greater_or_equal/1"), false),
+            new TitleModel("serpent_slayer", List.of("EntityKilled/iceandfire:sea_serpent/greater_or_equal/1"), false),
+            new TitleModel("infernal_lord", List.of("EntityKilled/cataclysm:ignis/greater_or_equal/1"), false),
+            new TitleModel("void_warden", List.of("EntityKilled/cataclysm:ender_guardian/greater_or_equal/1"), false),
+            new TitleModel("lich_bane", List.of("EntityKilled/bosses_of_mass_destruction:lich/greater_or_equal/1"), false),
+            new TitleModel("obelisk_breaker", List.of("EntityKilled/bosses_of_mass_destruction:obsidilith/greater_or_equal/1"), false),
+            new TitleModel("ironbane", List.of("EntityKilled/mowziesmobs:ferrous_wroughtnaut/greater_or_equal/1"), false),
+            new TitleModel("warden_slayer", List.of("EntityKilled/minecraft:warden/greater_or_equal/1"), false),
+            new TitleModel("wither_lord", List.of("EntityKilled/minecraft:wither/greater_or_equal/5"), false),
+
+            // Spellcaster titles (Ars Nouveau / Iron's Spellbooks theme)
+            new TitleModel("spellweaver", List.of("skill/Magic/greater_or_equal/24"), false),
+            new TitleModel("summoner", List.of("skill/Magic/greater_or_equal/20", "skill/Wisdom/greater_or_equal/16"), false),
+            new TitleModel("elementalist", List.of("skill/Magic/greater_or_equal/28"), false),
+
+            // Tinkerer titles (exercises the Tinkering skill)
+            new TitleModel("artificer", List.of("skill/Tinkering/greater_or_equal/16"), false),
+            new TitleModel("master_artificer", List.of("skill/Tinkering/greater_or_equal/32"), false),
+            new TitleModel("engineer", List.of("skill/Tinkering/greater_or_equal/20", "skill/Building/greater_or_equal/20"), false),
+
+            // Martial hybrid titles
+            new TitleModel("gladiator", List.of("skill/Strength/greater_or_equal/24", "skill/Dexterity/greater_or_equal/24"), false),
+            new TitleModel("berserker", List.of("skill/Strength/greater_or_equal/28", "skill/Endurance/greater_or_equal/20"), false),
+            new TitleModel("monk", List.of("skill/Wisdom/greater_or_equal/24", "skill/Endurance/greater_or_equal/20"), false),
+
+            // Explorer title (showcases the BlockMined condition)
+            new TitleModel("spelunker", List.of("BlockMined/minecraft:ancient_debris/greater_or_equal/16"), false)
     );
 }

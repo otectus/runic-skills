@@ -81,6 +81,22 @@ public class PerkEffectsHandler {
     private static final java.util.Map<java.util.UUID, String> ADAPT_SOURCE = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.Map<java.util.UUID, Integer> ADAPT_COUNT = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /**
+     * Frees all per-player combat memory. Called from PlayerLifecycleHandler on logout — without
+     * this, every player who ever fought leaves permanent entries in the maps above for the
+     * lifetime of the server process.
+     */
+    public static void clearPlayer(java.util.UUID id) {
+        if (id == null) return;
+        LAST_HURT_TICK.remove(id);
+        LAST_DODGE_TICK.remove(id);
+        LAST_KILL_TICK.remove(id);
+        BERSERK_UNTIL.remove(id);
+        SURVIVE_COOLDOWN.remove(id);
+        ADAPT_SOURCE.remove(id);
+        ADAPT_COUNT.remove(id);
+    }
+
     /** True while a player is inside BLOODLUST's post-kill attack-speed window. */
     private static boolean inKillWindow(Player p) {
         return p.tickCount - LAST_KILL_TICK.getOrDefault(p.getUUID(), -1000) < 100;
@@ -230,6 +246,19 @@ public class PerkEffectsHandler {
                         java.util.function.Predicate<Player> when) {}
 
     private static final java.util.function.Predicate<Player> ALWAYS = p -> true;
+
+    /**
+     * Stable per-perk modifier UUID, cached. nameUUIDFromBytes is an MD5 hash + allocations;
+     * computing it for ~40 entries per player every second showed up as pure waste — the id
+     * never changes for a given perk.
+     */
+    private static final java.util.Map<String, java.util.UUID> MODIFIER_IDS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static java.util.UUID modifierId(String perkId) {
+        return MODIFIER_IDS.computeIfAbsent(perkId,
+                k -> java.util.UUID.nameUUIDFromBytes(("runicskills.perkattr." + k).getBytes()));
+    }
+
     private static java.util.List<Attr> ATTRS;
     private static java.util.List<Attr> attrs() {
         if (ATTRS == null) {
@@ -301,14 +330,18 @@ public class PerkEffectsHandler {
             if (a.perk() == null || a.attribute() == null) continue;
             net.minecraft.world.entity.ai.attributes.AttributeInstance inst = player.getAttribute(a.attribute());
             if (inst == null) continue;
-            java.util.UUID id = java.util.UUID.nameUUIDFromBytes(("runicskills.perkattr." + a.perk().getId()).getBytes());
+            java.util.UUID id = modifierId(String.valueOf(a.perk().getId()));
             net.minecraft.world.entity.ai.attributes.AttributeModifier existing = inst.getModifier(id);
+            double amount = (on(a.perk(), player) && a.when().test(player))
+                    ? a.value().applyAsDouble(c) * a.scale() : 0.0;
+            // Idempotent reconcile: leave a matching modifier in place. Unconditionally
+            // removing and re-adding churned every tracked attribute (including MAX_HEALTH)
+            // each second, forcing recomputes even when nothing changed. The op never varies
+            // for a given id, so comparing the amount suffices.
+            if (existing != null && existing.getAmount() == amount) continue;
             if (existing != null) inst.removeModifier(existing);
-            if (on(a.perk(), player) && a.when().test(player)) {
-                double amount = a.value().applyAsDouble(c) * a.scale();
-                if (amount != 0.0) inst.addTransientModifier(
-                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(id, "runicskills.perk", amount, a.op()));
-            }
+            if (amount != 0.0) inst.addTransientModifier(
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(id, "runicskills.perk", amount, a.op()));
         }
         // ── regen / barrier perks (re-evaluated ~once per second) ──
         if (on(RegistryPerks.NATURAL_RECOVERY, player) && player.getHealth() < player.getMaxHealth()

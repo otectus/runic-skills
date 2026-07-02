@@ -50,6 +50,16 @@ public class SkillLevelUpSP {
 
                 int skillLevel = capability.getSkillLevel(skillPlayer);
 
+                // At skillMaxLevel the storage clamp makes addSkillLevel a no-op, but without
+                // this check the packet still consumed XP, fired SkillLevelUpEvent, and notified
+                // the quest bridge for a level-up that never happened. Same cap the admin
+                // command path enforces via its argument range.
+                if (!com.otectus.runicskills.common.util.SkillLevelUpMath.canLevelUp(
+                        skillLevel, HandlerCommonConfig.HANDLER.instance().skillMaxLevel)) {
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
+
                 boolean canLevelUpSkill = (player.isCreative()
                         || SkillLevelUpSP.requiredPoints(skillLevel) <= player.totalExperience
                         || SkillLevelUpSP.requiredExperienceLevels(skillLevel) <= player.experienceLevel);

@@ -90,8 +90,14 @@ public class RunicSkills {
             tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
         if (cfg.enableArsNouveauIntegration)
             tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
-        if (cfg.enableApotheosisIntegration)
+        if (cfg.enableApotheosisIntegration) {
             tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
+            // The attributeslib-typed perks load as their own class so an AttributesLib version
+            // mismatch (NoClassDefFoundError during class init) degrades only these ten attribute
+            // perks instead of also killing affix-rarity and gem gating above.
+            if (ApothicAttributesIntegration.isModLoaded())
+                tryLoadIntegration("apotheosis",   "com.otectus.runicskills.integration.ApothicAttributesPerksIntegration");
+        }
         if (cfg.enableFTBQuestsIntegration)
             tryLoadIntegration("ftbquests",        "com.otectus.runicskills.integration.quests.FTBQuestsIntegration");
         // Integration classes with live @SubscribeEvent landing sites for mod-gated Strength-tree

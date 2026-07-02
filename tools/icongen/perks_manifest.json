@@ -1,0 +1,4151 @@
+[
+ {
+  "id": "one_handed",
+  "skill": "strength",
+  "texture_const": "ONE_HANDED_PERK",
+  "texture": "runicskills:textures/skill/strength/one_handed.png",
+  "gate": "config:oneHandedRequiredLevel",
+  "name": "One Handed",
+  "desc": "Weapon damage will increase by %s if you only use one hand."
+ },
+ {
+  "id": "fighting_spirit",
+  "skill": "strength",
+  "texture_const": "FIGHTING_SPIRIT_PERK",
+  "texture": "runicskills:textures/skill/strength/fighting_spirit.png",
+  "gate": "config:HandedRequiredLevel",
+  "name": "Fighting Spirit",
+  "desc": "When you kill an enemy you will gain Strength %s for %s."
+ },
+ {
+  "id": "berserker",
+  "skill": "strength",
+  "texture_const": "BERSERKER_PERK",
+  "texture": "runicskills:textures/skill/strength/berserker.png",
+  "gate": "config:berserkerRequiredLevel",
+  "name": "Berserker",
+  "desc": "If you have less than or equal to %s of your maximum health, all your attacks will become critical damage."
+ },
+ {
+  "id": "athletics",
+  "skill": "constitution",
+  "texture_const": "ATHLETICS_PERK",
+  "texture": "runicskills:textures/skill/constitution/athletics.png",
+  "gate": "config:berserkerRequiredLevel",
+  "name": "Athletics",
+  "desc": "Your breathing will increase by %s, now you will be able to breathe underwater longer."
+ },
+ {
+  "id": "turtle_shield",
+  "skill": "constitution",
+  "texture_const": "TURTLE_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/constitution/turtle_shield.png",
+  "gate": "config:athleticsRequiredLevel",
+  "name": "Turtle Shield",
+  "desc": "Shulker projectiles will no longer affect you with the levitation effect."
+ },
+ {
+  "id": "lion_heart",
+  "skill": "constitution",
+  "texture_const": "LION_HEART_PERK",
+  "texture": "runicskills:textures/skill/constitution/lion_heart.png",
+  "gate": "config:turtleShieldRequiredLevel",
+  "name": "Lion Heart",
+  "desc": "Reduces the time of all negative effects by %s. This will only apply to effects applied to you by enemies."
+ },
+ {
+  "id": "quick_reposition",
+  "skill": "dexterity",
+  "texture_const": "QUICK_REPOSITION_PERK",
+  "texture": "runicskills:textures/skill/dexterity/quick_reposition.png",
+  "gate": "config:eartRequiredLevel",
+  "name": "Quick Reposition",
+  "desc": "Damaging an enemy with an arrow will cause you to gain Speed %s for %s."
+ },
+ {
+  "id": "stealth_mastery",
+  "skill": "dexterity",
+  "texture_const": "STEALTH_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/dexterity/stealth_mastery.png",
+  "gate": "config:stealthMasteryRequiredLevel",
+  "name": "Stealth Mastery",
+  "desc": "Now you can hide from your enemies, the vision is reduced by %s, crouching will reduce it further to %s. Shooting arrows while crouching will increase their damage by %s."
+ },
+ {
+  "id": "cat_eyes",
+  "skill": "dexterity",
+  "texture_const": "CAT_EYES_PERK",
+  "texture": "runicskills:textures/skill/dexterity/cat_eyes.png",
+  "gate": "config:catEyesRequiredLevel",
+  "name": "Cat Eyes",
+  "desc": "Now you have permanent Night Vision, the darkness is nothing to you anymore."
+ },
+ {
+  "id": "snow_walker",
+  "skill": "endurance",
+  "texture_const": "SNOW_WALKER_PERK",
+  "texture": "runicskills:textures/skill/endurance/snow_walker.png",
+  "gate": "config:catEyesRequiredLevel",
+  "name": "Snow Walker",
+  "desc": "Walk over Powder Snow without falling."
+ },
+ {
+  "id": "counter_attack",
+  "skill": "endurance",
+  "texture_const": "COUNTER_ATTACK_PERK",
+  "texture": "runicskills:textures/skill/endurance/counter_attack.png",
+  "gate": "config:snowWalkerRequiredLevel",
+  "name": "Counter Attack",
+  "desc": "When an enemy damages you, for %s your next attack will increase by %s of the enemy's damage taken."
+ },
+ {
+  "id": "diamond_skin",
+  "skill": "endurance",
+  "texture_const": "DIAMOND_SKIN_PERK",
+  "texture": "runicskills:textures/skill/endurance/diamond_skin.png",
+  "gate": "config:diamondSkinRequiredLevel",
+  "name": "Diamond Skin",
+  "desc": "Now you have permanent Resistance %s, crouching will give you %s extra armor."
+ },
+ {
+  "id": "scholar",
+  "skill": "intelligence",
+  "texture_const": "SCHOLAR_PERK",
+  "texture": "runicskills:textures/skill/intelligence/scholar.png",
+  "gate": "config:scholarRequiredLevel",
+  "name": "Scholar",
+  "desc": "You can now read the enchantments of the ancient inhabitants of this world. You wonder how these enchantments were created..."
+ },
+ {
+  "id": "haggler",
+  "skill": "intelligence",
+  "texture_const": "HAGGLER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/haggler.png",
+  "gate": "config:scholarRequiredLevel",
+  "name": "Haggler",
+  "desc": "Haggling is an art that you now possess, the villagers will give you a %s discount on all their trades."
+ },
+ {
+  "id": "alchemy_manipulation",
+  "skill": "intelligence",
+  "texture_const": "ALCHEMY_MANIPULATION_PERK",
+  "texture": "runicskills:textures/skill/intelligence/alchemy_manipulation.png",
+  "gate": "config:hagglerRequiredLevel",
+  "name": "Alchemy Manipulation",
+  "desc": "The power of alchemy is now in your hands, all the potions you drink will amplifier their power by %s."
+ },
+ {
+  "id": "obsidian_smasher",
+  "skill": "building",
+  "texture_const": "OBSIDIAN_SMASHER_PERK",
+  "texture": "runicskills:textures/skill/building/obsidian_smasher.png",
+  "gate": "config:obsidianSmasherRequiredLevel",
+  "name": "Obsidian Smasher",
+  "desc": "Even the hardest block now does not compare to your mining ability, now you will be %s times faster when crushing obsidian."
+ },
+ {
+  "id": "treasure_hunter",
+  "skill": "building",
+  "texture_const": "TREASURE_HUNTER_PERK",
+  "texture": "runicskills:textures/skill/building/treasure_hunter.png",
+  "gate": "config:treasureHunterRequiredLevel",
+  "name": "Treasure Hunter",
+  "desc": "Find buried treasure, the probability is %s when dig in any type of dirt."
+ },
+ {
+  "id": "convergence",
+  "skill": "building",
+  "texture_const": "CONVERGENCE_PERK",
+  "texture": "runicskills:textures/skill/building/convergence.png",
+  "gate": "config:convergenceRequiredLevel",
+  "name": "Convergence",
+  "desc": "Crafting some items will return part of the materials spent, the probability is %s"
+ },
+ {
+  "id": "locksmith",
+  "skill": "tinkering",
+  "texture_const": "LOCKSMITH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/locksmith.png",
+  "gate": "config:locksmithRequiredLevel",
+  "name": "Locksmith",
+  "desc": "Your tinkering skill grants a 1 in %s chance for lock picks to not break."
+ },
+ {
+  "id": "safe_cracker",
+  "skill": "tinkering",
+  "texture_const": "SAFE_CRACKER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/safe_cracker.png",
+  "gate": "config:locksmithRequiredLevel",
+  "name": "Safe Cracker",
+  "desc": "Your expertise reduces lock Complexity enchantment effectiveness by %s levels."
+ },
+ {
+  "id": "master_tinkerer",
+  "skill": "tinkering",
+  "texture_const": "MASTER_TINKERER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/master_tinkerer.png",
+  "gate": "config:redLevel",
+  "name": "Master Tinkerer",
+  "desc": "Items you craft gain %s bonus durability from your tinkering mastery."
+ },
+ {
+  "id": "enchanters_insight",
+  "skill": "wisdom",
+  "texture_const": "ENCHANTERS_INSIGHT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/enchanters_insight.png",
+  "gate": "config:enchantersInsightRequiredLevel",
+  "name": "Enchanter's Insight",
+  "desc": "Your deep understanding of enchantments reduces the XP cost of enchanting by %s."
+ },
+ {
+  "id": "lore_mastery",
+  "skill": "wisdom",
+  "texture_const": "LORE_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/wisdom/lore_mastery.png",
+  "gate": "config:loreMasteryRequiredLevel",
+  "name": "Lore Mastery",
+  "desc": "Your mastery of arcane lore causes the grindstone to return %s times more XP."
+ },
+ {
+  "id": "safe_port",
+  "skill": "magic",
+  "texture_const": "SAFE_PORT_PERK",
+  "texture": "runicskills:textures/skill/magic/safe_port.png",
+  "gate": "config:loreMasteryRequiredLevel",
+  "name": "Safe Port",
+  "desc": "Teleporting with a Ender Pearl will no longer hurt you."
+ },
+ {
+  "id": "life_eater",
+  "skill": "magic",
+  "texture_const": "LIFE_EATER_PERK",
+  "texture": "runicskills:textures/skill/magic/life_eater.png",
+  "gate": "config:safePortRequiredLevel",
+  "name": "Life Eater",
+  "desc": "Killing an entity causes you to absorb part of its health, you will gain %s half heart."
+ },
+ {
+  "id": "wormhole_storage",
+  "skill": "magic",
+  "texture_const": "WORMHOLE_STORAGE_PERK",
+  "texture": "runicskills:textures/skill/magic/wormhole_storage.png",
+  "gate": "config:ifeEaterRequiredLevel",
+  "name": "Wormhole Storage",
+  "desc": "You can access to ender chest from inventory."
+ },
+ {
+  "id": "critical_roll",
+  "skill": "fortune",
+  "texture_const": "CRITICAL_ROLL_PERK",
+  "texture": "runicskills:textures/skill/fortune/critical_roll.png",
+  "gate": "config:wormholeStorageRequiredLevel",
+  "name": "Critical Roll Dice",
+  "desc": "When you make a critical attack you will roll a dice, rolling a 6 will increase your critical damage by %s, rolling a 1 will decrease your critical damage by %s."
+ },
+ {
+  "id": "lucky_drop",
+  "skill": "fortune",
+  "texture_const": "LUCKY_DROP_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_drop.png",
+  "gate": "config:luckyDropRequiredLevel",
+  "name": "Lucky Drop",
+  "desc": "You have a %s chance of getting %s mob drops every time you kill a mob."
+ },
+ {
+  "id": "limit_breaker",
+  "skill": "fortune",
+  "texture_const": "LIMIT_BREAKER_PERK",
+  "texture": "runicskills:textures/skill/fortune/limit_breaker.png",
+  "gate": "config:limitBreakerRequiredLevel",
+  "name": "Limit Breaker",
+  "desc": "You have a %s chance to deals %s when you attack a entity."
+ },
+ {
+  "id": "mana_efficiency",
+  "skill": "magic",
+  "texture_const": "MANA_EFFICIENCY_PERK",
+  "texture": "runicskills:textures/skill/magic/mana_efficiency.png",
+  "gate": "config:manaEfficiencyRequiredLevel",
+  "name": "Mana Efficiency",
+  "desc": "Your mastery of mana allows more efficient spellcasting. Spells cost %s less mana."
+ },
+ {
+  "id": "spell_echo",
+  "skill": "intelligence",
+  "texture_const": "SPELL_ECHO_PERK",
+  "texture": "runicskills:textures/skill/intelligence/spell_echo.png",
+  "gate": "config:spellEchoRequiredLevel",
+  "name": "Spell Echo",
+  "desc": "You have a %s chance to refund half of a spell's mana cost when casting."
+ },
+ {
+  "id": "arcane_shield",
+  "skill": "endurance",
+  "texture_const": "ARCANE_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/endurance/arcane_shield.png",
+  "gate": "config:arcaneShieldRequiredLevel",
+  "name": "Arcane Shield",
+  "desc": "Your endurance protects you from arcane forces, reducing incoming spell damage by %s."
+ },
+ {
+  "id": "fire_attunement",
+  "skill": "magic",
+  "texture_const": "FIRE_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/fire_attunement.png",
+  "gate": "config:fireAttunementRequiredLevel",
+  "name": "Fire Attunement",
+  "desc": "Attune to the Fire school, allowing you to cast Fire spells."
+ },
+ {
+  "id": "ice_attunement",
+  "skill": "magic",
+  "texture_const": "ICE_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/ice_attunement.png",
+  "gate": "config:fireAttunementRequiredLevel",
+  "name": "Ice Attunement",
+  "desc": "Attune to the Ice school, allowing you to cast Ice spells."
+ },
+ {
+  "id": "lightning_attunement",
+  "skill": "magic",
+  "texture_const": "LIGHTNING_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/lightning_attunement.png",
+  "gate": "config:iceAttunementRequiredLevel",
+  "name": "Lightning Attunement",
+  "desc": "Attune to the Lightning school, allowing you to cast Lightning spells."
+ },
+ {
+  "id": "holy_attunement",
+  "skill": "magic",
+  "texture_const": "HOLY_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/holy_attunement.png",
+  "gate": "config:lightningAttunementRequiredLevel",
+  "name": "Holy Attunement",
+  "desc": "Attune to the Holy school, allowing you to cast Holy spells."
+ },
+ {
+  "id": "nature_attunement",
+  "skill": "magic",
+  "texture_const": "NATURE_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/nature_attunement.png",
+  "gate": "config:holyAttunementRequiredLevel",
+  "name": "Nature Attunement",
+  "desc": "Attune to the Nature school, allowing you to cast Nature spells."
+ },
+ {
+  "id": "blood_attunement",
+  "skill": "magic",
+  "texture_const": "BLOOD_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/blood_attunement.png",
+  "gate": "config:natureAttunementRequiredLevel",
+  "name": "Blood Attunement",
+  "desc": "Attune to the Blood school, allowing you to cast Blood spells."
+ },
+ {
+  "id": "ender_attunement",
+  "skill": "magic",
+  "texture_const": "ENDER_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/ender_attunement.png",
+  "gate": "config:bloodAttunementRequiredLevel",
+  "name": "Ender Attunement",
+  "desc": "Attune to the Ender school, allowing you to cast Ender spells."
+ },
+ {
+  "id": "evocation_attunement",
+  "skill": "magic",
+  "texture_const": "EVOCATION_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/evocation_attunement.png",
+  "gate": "config:enderAttunementRequiredLevel",
+  "name": "Evocation Attunement",
+  "desc": "Attune to the Evocation school, allowing you to cast Evocation spells."
+ },
+ {
+  "id": "wellspring",
+  "skill": "magic",
+  "texture_const": "ISS_WELLSPRING_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_mana.png",
+  "gate": "config:wellspringRequiredLevel",
+  "name": "Wellspring",
+  "desc": "Your arcane reserves deepen. Gain %s maximum mana."
+ },
+ {
+  "id": "quickening",
+  "skill": "magic",
+  "texture_const": "ISS_QUICKENING_PERK",
+  "texture": "irons_spellbooks:textures/item/cast_time_ring.png",
+  "gate": "config:quickeningRequiredLevel",
+  "name": "Quickening",
+  "desc": "Your spells leap from your fingers. Cast times reduced by %s."
+ },
+ {
+  "id": "reservoir",
+  "skill": "magic",
+  "texture_const": "ISS_RESERVOIR_PERK",
+  "texture": "irons_spellbooks:textures/item/mana_ring.png",
+  "gate": "config:reservoirRequiredLevel",
+  "name": "Reservoir",
+  "desc": "Mana flows more freely. Regeneration rate increased by %s."
+ },
+ {
+  "id": "tempo",
+  "skill": "magic",
+  "texture_const": "ISS_TEMPO_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_cooldown.png",
+  "gate": "config:tempoRequiredLevel",
+  "name": "Tempo",
+  "desc": "The arcane rhythm answers you. Spell cooldowns reduced by %s."
+ },
+ {
+  "id": "arcane_recovery",
+  "skill": "magic",
+  "texture_const": "ISS_ARCANE_RECOVERY_PERK",
+  "texture": "irons_spellbooks:textures/item/blood_vial.png",
+  "gate": "config:arcaneRecoveryRequiredLevel",
+  "name": "Arcane Recovery",
+  "desc": "Draw mana from the dying. Killing a foe restores mana equal to %s of their maximum health, up to %s."
+ },
+ {
+  "id": "focus",
+  "skill": "wisdom",
+  "texture_const": "ISS_FOCUS_PERK",
+  "texture": "irons_spellbooks:textures/item/concentration_amulet.png",
+  "gate": "config:focusRequiredLevel",
+  "name": "Focus",
+  "desc": "Your concentration is iron. Taking damage during a long or charged cast has a %s chance to not interrupt you."
+ },
+ {
+  "id": "mana_bulwark",
+  "skill": "endurance",
+  "texture_const": "ISS_MANA_BULWARK_PERK",
+  "texture": "irons_spellbooks:textures/item/enchanted_ward_amulet.png",
+  "gate": "config:manaBulwarkRequiredLevel",
+  "name": "Mana Bulwark",
+  "desc": "Weave a shield of pure mana. Redirect %s of incoming damage to your mana pool at a rate of %s mana per HP."
+ },
+ {
+  "id": "arcane_reprieve",
+  "skill": "magic",
+  "texture_const": "ISS_ARCANE_REPRIEVE_PERK",
+  "texture": "irons_spellbooks:textures/item/greater_healing_potion.png",
+  "gate": "config:arcaneReprieveRequiredLevel",
+  "name": "Arcane Reprieve",
+  "desc": "When your mana runs dry, the arcane surges back. Hitting zero mana instantly restores %s of your max mana. %s cooldown."
+ },
+ {
+  "id": "mana_surge",
+  "skill": "magic",
+  "texture_const": "ISS_MANA_SURGE_PERK",
+  "texture": "irons_spellbooks:textures/item/cinder_essence.png",
+  "gate": "config:manaSurgeRequiredLevel",
+  "name": "Mana Surge",
+  "desc": "Desperation fuels the arcane. Below %s HP, your spell power and mana regeneration rise by %s and %s respectively."
+ },
+ {
+  "id": "spellweaver",
+  "skill": "intelligence",
+  "texture_const": "ISS_SPELLWEAVER_PERK",
+  "texture": "irons_spellbooks:textures/item/blank_rune.png",
+  "gate": "config:spellweaverRequiredLevel",
+  "name": "Spellweaver",
+  "desc": "Chain your casts into a rhythm. Every %s consecutive cast within %s costs zero mana."
+ },
+ {
+  "id": "resonant_casting",
+  "skill": "magic",
+  "texture_const": "ISS_RESONANT_CASTING_PERK",
+  "texture": "irons_spellbooks:textures/item/chronicle.png",
+  "gate": "config:resonantCastingRequiredLevel",
+  "name": "Resonant Casting",
+  "desc": "Overflowing mana sharpens your spells. While above %s mana, gain %s bonus spell damage."
+ },
+ {
+  "id": "imbued_focus",
+  "skill": "wisdom",
+  "texture_const": "ISS_IMBUED_FOCUS_PERK",
+  "texture": "irons_spellbooks:textures/item/arcane_rune.png",
+  "gate": "config:imbuedFocusRequiredLevel",
+  "name": "Imbued Focus",
+  "desc": "Channel deeper arcane pathways. All your spells cast at +%s effective level."
+ },
+ {
+  "id": "quickcast",
+  "skill": "magic",
+  "texture_const": "ISS_QUICKCAST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll.png",
+  "gate": "config:quickcastRequiredLevel",
+  "name": "Quickcast",
+  "desc": "Your instant spells flow in rapid succession. Instant-type spells have their cooldowns reduced by %s."
+ },
+ {
+  "id": "long_channel",
+  "skill": "magic",
+  "texture_const": "ISS_LONG_CHANNEL_PERK",
+  "texture": "irons_spellbooks:textures/item/chronicle_old.png",
+  "gate": "config:longChannelRequiredLevel",
+  "name": "Long Channel",
+  "desc": "Pour your focus into extended rituals. Long-cast spells deal %s more damage."
+ },
+ {
+  "id": "continuous_flow",
+  "skill": "intelligence",
+  "texture_const": "ISS_CONTINUOUS_FLOW_PERK",
+  "texture": "irons_spellbooks:textures/item/arcane_essence.png",
+  "gate": "config:continuousFlowRequiredLevel",
+  "name": "Continuous Flow",
+  "desc": "Sustain the arcane stream with less strain. Continuous-cast spells drain %s less mana per tick."
+ },
+ {
+  "id": "charge_mastery",
+  "skill": "magic",
+  "texture_const": "ISS_CHARGE_MASTERY_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_swirl.png",
+  "gate": "config:chargeMasteryRequiredLevel",
+  "name": "Charge Mastery",
+  "desc": "Master the charge. Iron's Spells held-cast (Long) spells deal %s more damage, modelling a fully-released charge regardless of how briefly held."
+ },
+ {
+  "id": "eldritch_attunement",
+  "skill": "magic",
+  "texture_const": "ISS_ELDRITCH_ATTUNEMENT_PERK",
+  "texture": "irons_spellbooks:textures/item/affinity_ring_eldritch.png",
+  "gate": "config:eldritchAttunementRequiredLevel",
+  "name": "Eldritch Attunement",
+  "desc": "Attune to the Eldritch school, allowing you to cast Eldritch spells."
+ },
+ {
+  "id": "fire_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_FIRE_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_fire.png",
+  "gate": "config:eldritchAttunementRequiredLevel",
+  "name": "Pyromancer",
+  "desc": "You hurl flame with practiced ease. Fire spell damage increased by %s."
+ },
+ {
+  "id": "fire_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_FIRE_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/fire_rune.png",
+  "gate": "config:fireMancerRequiredLevel",
+  "name": "Fire Warded",
+  "desc": "Embers fail to find your skin. Incoming fire magic damage reduced by %s."
+ },
+ {
+  "id": "fire_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_FIRE_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_fire.png",
+  "gate": "config:fireWardedRequiredLevel",
+  "name": "Fire Catalyst",
+  "desc": "Your fire spells carry lingering fury. %s chance to set victims alight (Immolate) for %s."
+ },
+ {
+  "id": "ice_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_ICE_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_ice.png",
+  "gate": "config:iceMancerRequiredLevel",
+  "name": "Cryomancer",
+  "desc": "The chill bends to your will. Ice spell damage increased by %s."
+ },
+ {
+  "id": "ice_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_ICE_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/ice_rune.png",
+  "gate": "config:iceMancerRequiredLevel",
+  "name": "Ice Warded",
+  "desc": "Frost cannot bite you. Incoming ice magic damage reduced by %s."
+ },
+ {
+  "id": "ice_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_ICE_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_ice.png",
+  "gate": "config:iceWardedRequiredLevel",
+  "name": "Ice Catalyst",
+  "desc": "Your ice spells shudder through muscle. %s chance to Chill victims for %s."
+ },
+ {
+  "id": "lightning_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_LIGHTNING_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_lightning.png",
+  "gate": "config:lightningMancerRequiredLevel",
+  "name": "Stormwrought",
+  "desc": "Thunder answers your call. Lightning spell damage increased by %s."
+ },
+ {
+  "id": "lightning_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_LIGHTNING_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/lightning_rune.png",
+  "gate": "config:lightningWardedRequiredLevel",
+  "name": "Lightning Warded",
+  "desc": "The storm passes around you. Incoming lightning magic damage reduced by %s."
+ },
+ {
+  "id": "lightning_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_LIGHTNING_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_lightning.png",
+  "gate": "config:lightningCatalystRequiredLevel",
+  "name": "Lightning Catalyst",
+  "desc": "Your casts crackle with latent voltage. %s chance to gain Charged for %s when you cast."
+ },
+ {
+  "id": "holy_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_HOLY_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_holy.png",
+  "gate": "config:holyMancerRequiredLevel",
+  "name": "Holy Specialist",
+  "desc": "Divine light flows through you. Holy spell damage and healing increased by %s."
+ },
+ {
+  "id": "holy_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_HOLY_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/holy_rune.png",
+  "gate": "config:holyMancerRequiredLevel",
+  "name": "Holy Warded",
+  "desc": "Sacred light shields you. Incoming holy magic damage reduced by %s."
+ },
+ {
+  "id": "holy_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_HOLY_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_holy.png",
+  "gate": "config:holyWardedRequiredLevel",
+  "name": "Holy Catalyst",
+  "desc": "Each incantation steels your soul. %s chance to gain Fortify for %s when you cast."
+ },
+ {
+  "id": "ender_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_ENDER_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_ender.png",
+  "gate": "config:enderMancerRequiredLevel",
+  "name": "Ender Specialist",
+  "desc": "The Void listens when you speak. Ender spell damage increased by %s."
+ },
+ {
+  "id": "ender_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_ENDER_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/ender_rune.png",
+  "gate": "config:enderMancerRequiredLevel",
+  "name": "Ender Warded",
+  "desc": "The Void turns aside its own. Incoming ender magic damage reduced by %s."
+ },
+ {
+  "id": "ender_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_ENDER_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_ender.png",
+  "gate": "config:rWardedRequiredLevel",
+  "name": "Ender Catalyst",
+  "desc": "Casting opens a tear in perception. %s chance to gain Planar Sight for %s when you cast."
+ },
+ {
+  "id": "blood_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_BLOOD_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_blood.png",
+  "gate": "config:bloodMancerRequiredLevel",
+  "name": "Hemomancer",
+  "desc": "Blood is your ink. Blood spell damage increased by %s."
+ },
+ {
+  "id": "blood_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_BLOOD_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/blood_rune.png",
+  "gate": "config:bloodMancerRequiredLevel",
+  "name": "Blood Warded",
+  "desc": "The crimson ward holds. Incoming blood magic damage reduced by %s."
+ },
+ {
+  "id": "blood_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_BLOOD_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_blood.png",
+  "gate": "config:dWardedRequiredLevel",
+  "name": "Blood Catalyst",
+  "desc": "Your blood spells tear open wounds. %s chance to apply Rend to victims for %s."
+ },
+ {
+  "id": "evocation_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_EVOCATION_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_evocation.png",
+  "gate": "config:evocationMancerRequiredLevel",
+  "name": "Evoker Specialist",
+  "desc": "You command arcane threads with precision. Evocation spell damage increased by %s."
+ },
+ {
+  "id": "evocation_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_EVOCATION_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/evocation_rune.png",
+  "gate": "config:evocationWardedRequiredLevel",
+  "name": "Evocation Warded",
+  "desc": "Evoked forces slide off your guard. Incoming evocation magic damage reduced by %s."
+ },
+ {
+  "id": "evocation_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_EVOCATION_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_evocation.png",
+  "gate": "config:evocationCatalystRequiredLevel",
+  "name": "Evocation Catalyst",
+  "desc": "Your evoker's touch echoes through your blows. %s chance to gain Echoing Strikes for %s when you cast."
+ },
+ {
+  "id": "nature_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_NATURE_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_nature.png",
+  "gate": "config:natureMancerRequiredLevel",
+  "name": "Druid",
+  "desc": "Roots and thorns answer you. Nature spell damage increased by %s."
+ },
+ {
+  "id": "nature_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_NATURE_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/nature_rune.png",
+  "gate": "config:reMancerRequiredLevel",
+  "name": "Nature Warded",
+  "desc": "The wild spares its kin. Incoming nature magic damage reduced by %s."
+ },
+ {
+  "id": "nature_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_NATURE_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_nature.png",
+  "gate": "config:RequiredLevel",
+  "name": "Nature Catalyst",
+  "desc": "Casting grows a protective bark across your skin. %s chance to gain Oakskin for %s when you cast."
+ },
+ {
+  "id": "eldritch_mancer",
+  "skill": "magic",
+  "texture_const": "ISS_ELDRITCH_MANCER_PERK",
+  "texture": "irons_spellbooks:textures/item/eldritch_manuscript.png",
+  "gate": "config:eldritchMancerRequiredLevel",
+  "name": "Eldritch Scholar",
+  "desc": "Unknowable glyphs bend at your reading. Eldritch spell damage increased by %s."
+ },
+ {
+  "id": "eldritch_warded",
+  "skill": "endurance",
+  "texture_const": "ISS_ELDRITCH_WARDED_PERK",
+  "texture": "irons_spellbooks:textures/item/netherward_tincture.png",
+  "gate": "config:edLevel",
+  "name": "Eldritch Warded",
+  "desc": "You have seen what should not be, and remain. Incoming eldritch magic damage reduced by %s."
+ },
+ {
+  "id": "eldritch_catalyst",
+  "skill": "magic",
+  "texture_const": "ISS_ELDRITCH_CATALYST_PERK",
+  "texture": "irons_spellbooks:textures/item/scroll_eldritch.png",
+  "gate": "config:eldritchCatalystRequiredLevel",
+  "name": "Eldritch Catalyst",
+  "desc": "Each incantation veils you in unreality. %s chance to gain Abyssal Shroud for %s ticks when you cast."
+ },
+ {
+  "id": "lord_of_the_dead",
+  "skill": "magic",
+  "texture_const": "ISS_LORD_OF_THE_DEAD_PERK",
+  "texture": "irons_spellbooks:textures/item/necronomicon_spell_book.png",
+  "gate": "config:lordOfTheDeadRequiredLevel",
+  "name": "Lord of the Dead",
+  "desc": "Your summons hit harder and hold longer. Summon damage +%s and summon max health +%s."
+ },
+ {
+  "id": "life_leech_bound",
+  "skill": "magic",
+  "texture_const": "ISS_LIFE_LEECH_BOUND_PERK",
+  "texture": "irons_spellbooks:textures/item/blood_rune.png",
+  "gate": "config:lifeLeechBoundRequiredLevel",
+  "name": "Life Leech Bound",
+  "desc": "Your minions pay tribute in mana. %s of damage your summons deal returns to you as mana."
+ },
+ {
+  "id": "socket_virtuoso",
+  "skill": "fortune",
+  "texture_const": "APOTH_SOCKET_VIRTUOSO_PERK",
+  "texture": "apotheosis:textures/items/gem_fused_slate.png",
+  "gate": "config:socketVirtuosoRequiredLevel",
+  "name": "Socket Virtuoso",
+  "desc": "Your eye finds every flaw. Equipped items gain +%s effective socket."
+ },
+ {
+  "id": "affix_affinity",
+  "skill": "fortune",
+  "texture_const": "APOTH_AFFIX_AFFINITY_PERK",
+  "texture": "apotheosis:textures/items/mythic_material.png",
+  "gate": "config:affixAffinityRequiredLevel",
+  "name": "Affix Affinity",
+  "desc": "Enchanted gear answers to your bloodline. Each Rare-or-better affix item equipped grants %s damage and %s damage reduction."
+ },
+ {
+  "id": "apothic_apprentice",
+  "skill": "fortune",
+  "texture_const": "APOTH_APPRENTICE_PERK",
+  "texture": "apotheosis:textures/items/gem_dust.png",
+  "gate": "config:apothicApprenticeRequiredLevel",
+  "name": "Apothic Apprentice",
+  "desc": "Mastery of the lapidary's art. Equipped items gain +%s effective socket on top of Socket Virtuoso."
+ },
+ {
+  "id": "gem_threaded_armor",
+  "skill": "endurance",
+  "texture_const": "APOTH_GEM_THREADED_PERK",
+  "texture": "apotheosis:textures/items/sigil_of_socketing.png",
+  "gate": "config:gemThreadedArmorRequiredLevel",
+  "name": "Gem-Threaded Armor",
+  "desc": "Your gems shore up your guard. +%s armor per equipped socket across all affixed gear."
+ },
+ {
+  "id": "spellsocket",
+  "skill": "magic",
+  "texture_const": "APOTH_SPELLSOCKET_PERK",
+  "texture": "apotheosis:textures/items/vial_of_expulsion.png",
+  "gate": "config:spellsocketRequiredLevel",
+  "name": "Spellsocket",
+  "desc": "Channel resonates through every facet. Every %s equipped sockets grants +1 effective spell level (capped at +%s)."
+ },
+ {
+  "id": "resonant_affixes",
+  "skill": "magic",
+  "texture_const": "APOTH_RESONANT_AFFIXES_PERK",
+  "texture": "apotheosis:textures/items/vial_of_extraction.png",
+  "gate": "config:resonantAffixesRequiredLevel",
+  "name": "Resonant Affixes",
+  "desc": "Mythic threads amplify the weave. Each Rare-or-better affix item equipped grants +%s spell damage."
+ },
+ {
+  "id": "apothic_critical_mastery",
+  "skill": "dexterity",
+  "texture_const": "APOTH_CRITICAL_MASTERY_PERK",
+  "texture": "apotheosis:textures/items/broadhead_arrow.png",
+  "gate": "config:apothCriticalMasteryRequiredLevel",
+  "name": "Critical Mastery",
+  "desc": "You see the opening before it's shown. +%s critical strike chance and +%s critical damage."
+ },
+ {
+  "id": "vampiric_fangs",
+  "skill": "strength",
+  "texture_const": "APOTH_VAMPIRIC_FANGS_PERK",
+  "texture": "apotheosis:textures/items/warden_tendril.png",
+  "gate": "config:vampiricFangsRequiredLevel",
+  "name": "Vampiric Fangs",
+  "desc": "Every wound feeds you back. %s of physical damage dealt is restored as health."
+ },
+ {
+  "id": "reapers_edge",
+  "skill": "strength",
+  "texture_const": "APOTH_REAPERS_EDGE_PERK",
+  "texture": "apotheosis:textures/items/hammer.png",
+  "gate": "config:reapersEdgeRequiredLevel",
+  "name": "Reaper's Edge",
+  "desc": "Even giants bleed. Fully-charged strikes also deal %s of the target's current HP as armor-piercing damage."
+ },
+ {
+  "id": "evasive",
+  "skill": "dexterity",
+  "texture_const": "APOTH_EVASIVE_PERK",
+  "texture": "apotheosis:textures/items/infused_breath.png",
+  "gate": "config:vel",
+  "name": "Evasive",
+  "desc": "Blades pass by empty air. +%s dodge chance against melee and projectile attacks."
+ },
+ {
+  "id": "arrow_mastery",
+  "skill": "dexterity",
+  "texture_const": "APOTH_ARROW_MASTERY_PERK",
+  "texture": "apotheosis:textures/items/explosive_arrow.png",
+  "gate": "config:eRequiredLevel",
+  "name": "Arrow Mastery",
+  "desc": "Your shafts fly true and fast. +%s arrow damage and +%s arrow velocity."
+ },
+ {
+  "id": "earthbreaker",
+  "skill": "building",
+  "texture_const": "APOTH_EARTHBREAKER_PERK",
+  "texture": "apotheosis:textures/items/iron_mining_arrow.png",
+  "gate": "config:earthbreakerRequiredLevel",
+  "name": "Earthbreaker",
+  "desc": "Stone parts before you. +%s mining speed."
+ },
+ {
+  "id": "apothic_scholar",
+  "skill": "intelligence",
+  "texture_const": "APOTH_SCHOLAR_PERK",
+  "texture": "apotheosis:textures/items/book.png",
+  "gate": "config:apothScholarRequiredLevel",
+  "name": "Apothic Scholar",
+  "desc": "Knowledge compounds with every triumph. +%s experience gained from all sources."
+ },
+ {
+  "id": "spectral_ward",
+  "skill": "strength",
+  "texture_const": "APOTH_SPECTRAL_WARD_PERK",
+  "texture": "apotheosis:textures/items/obsidian_arrow.png",
+  "gate": "config:spectralWardRequiredLevel",
+  "name": "Spectral Ward",
+  "desc": "Your blows ignore the trappings of defense. +%s protection pierce and +%s protection shred."
+ },
+ {
+  "id": "ghostbound",
+  "skill": "constitution",
+  "texture_const": "APOTH_GHOSTBOUND_PERK",
+  "texture": "apotheosis:textures/items/prismatic_web.png",
+  "gate": "config:ghostboundRequiredLevel",
+  "name": "Ghostbound",
+  "desc": "A spirit-layer clings to your frame. +%s ghost health."
+ },
+ {
+  "id": "heart_of_the_healer",
+  "skill": "constitution",
+  "texture_const": "APOTH_HEART_HEALER_PERK",
+  "texture": "apotheosis:textures/items/potion_charm.png",
+  "gate": "config:heartHealerRequiredLevel",
+  "name": "Heart of the Healer",
+  "desc": "Mend yourself faster than the world can cut you. +%s healing received and +%s overheal."
+ },
+ {
+  "id": "ars_form_projectile",
+  "skill": "magic",
+  "texture_const": "ARS_FORM_PROJECTILE_PERK",
+  "texture": "ars_nouveau:textures/item/projectile.png",
+  "gate": "config:arsFormProjectileRequiredLevel",
+  "name": "Form Focus: Projectile",
+  "desc": "The arrow of will costs you less. Projectile-form glyph spells cost %s less mana."
+ },
+ {
+  "id": "ars_form_touch",
+  "skill": "magic",
+  "texture_const": "ARS_FORM_TOUCH_PERK",
+  "texture": "ars_nouveau:textures/item/touch.png",
+  "gate": "config:arsFormTouchRequiredLevel",
+  "name": "Form Focus: Touch",
+  "desc": "At arm's reach you strike truest. Touch-form glyph spells deal %s more damage."
+ },
+ {
+  "id": "ars_form_self",
+  "skill": "magic",
+  "texture_const": "ARS_FORM_SELF_PERK",
+  "texture": "ars_nouveau:textures/item/self.png",
+  "gate": "config:arsFormSelfRequiredLevel",
+  "name": "Form Focus: Self",
+  "desc": "Inward-cast spells flow easily. Self-form glyph spells cost %s less mana."
+ },
+ {
+  "id": "ars_wild_manipulation",
+  "skill": "magic",
+  "texture_const": "ARS_WILD_MANIPULATION_PERK",
+  "texture": "ars_nouveau:textures/item/manipulation_essence.png",
+  "gate": "config:arsWildManipulationRequiredLevel",
+  "name": "Wild Manipulation",
+  "desc": "Manipulation glyphs answer your pull. Manipulation-school glyph spells cost %s less mana."
+ },
+ {
+  "id": "ars_hedgewitch",
+  "skill": "magic",
+  "texture_const": "ARS_HEDGEWITCH_PERK",
+  "texture": "ars_nouveau:textures/item/water_essence.png",
+  "gate": "config:arsHedgewitchRequiredLevel",
+  "name": "Hedgewitch: Water",
+  "desc": "Tides run through your casting. Water-school glyphs cost %s less and deal %s more damage."
+ },
+ {
+  "id": "ars_emberforged",
+  "skill": "magic",
+  "texture_const": "ARS_EMBERFORGED_PERK",
+  "texture": "ars_nouveau:textures/item/fire_essence.png",
+  "gate": "config:arsEmberforgedRequiredLevel",
+  "name": "Emberforged: Fire",
+  "desc": "Flame shapes to your will. Fire-school glyphs deal %s more damage."
+ },
+ {
+  "id": "ars_stormcaller",
+  "skill": "magic",
+  "texture_const": "ARS_STORMCALLER_PERK",
+  "texture": "ars_nouveau:textures/item/air_essence.png",
+  "gate": "config:arsStormcallerRequiredLevel",
+  "name": "Stormcaller: Air",
+  "desc": "The wind speaks your name. Air-school glyphs deal %s more damage."
+ },
+ {
+  "id": "ars_geomancer",
+  "skill": "magic",
+  "texture_const": "ARS_GEOMANCER_PERK",
+  "texture": "ars_nouveau:textures/item/earth_essence.png",
+  "gate": "config:arsGeomancerRequiredLevel",
+  "name": "Geomancer: Earth",
+  "desc": "The ground moves for you. Earth-school glyphs deal %s more damage."
+ },
+ {
+  "id": "ars_conjurer",
+  "skill": "magic",
+  "texture_const": "ARS_CONJURER_PERK",
+  "texture": "ars_nouveau:textures/item/conjuration_essence.png",
+  "gate": "config:arsConjurerRequiredLevel",
+  "name": "Conjurer",
+  "desc": "Your summons come at reduced toll. Conjuration-school glyphs cost %s less mana."
+ },
+ {
+  "id": "ars_abjurer",
+  "skill": "magic",
+  "texture_const": "ARS_ABJURER_PERK",
+  "texture": "ars_nouveau:textures/item/abjuration_essence.png",
+  "gate": "config:Level",
+  "name": "Abjurer",
+  "desc": "Protection and healing both answer louder. Abjuration-school glyphs are %s stronger."
+ },
+ {
+  "id": "ars_arcane_weaver",
+  "skill": "magic",
+  "texture_const": "ARS_ARCANE_WEAVER_PERK",
+  "texture": "ars_nouveau:textures/item/manipulation_essence.png",
+  "gate": "config:arsArcaneWeaverRequiredLevel",
+  "name": "Arcane Weaver",
+  "desc": "Manipulation bends further under your weave. Manipulation-school glyphs deal %s more damage."
+ },
+ {
+  "id": "schoolbridge_fire",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_FIRE_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_fire.png",
+  "gate": "config:xSchoolbridgeFireRequiredLevel",
+  "name": "Schoolbridge: Fire",
+  "desc": "Your two flames are one. Ars Fire glyphs scale with %s of your Iron's fire spell power."
+ },
+ {
+  "id": "schoolbridge_water",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_WATER_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_ice.png",
+  "gate": "config:xSchoolbridgeWaterRequiredLevel",
+  "name": "Schoolbridge: Ice \u2192 Water",
+  "desc": "Frost answers the tide. Ars Water glyphs scale with %s of your Iron's ice spell power."
+ },
+ {
+  "id": "schoolbridge_air",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_AIR_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_lightning.png",
+  "gate": "config:xSchoolbridgeAirRequiredLevel",
+  "name": "Schoolbridge: Air \u2192 Lightning",
+  "desc": "Every storm is yours to conduct. Ars Air glyphs scale with %s of your Iron's lightning spell power."
+ },
+ {
+  "id": "schoolbridge_earth",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_EARTH_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_nature.png",
+  "gate": "config:xSchoolbridgeEarthRequiredLevel",
+  "name": "Schoolbridge: Earth \u2192 Nature",
+  "desc": "Stone and root grow from the same seed. Ars Earth glyphs scale with %s of your Iron's nature spell power."
+ },
+ {
+  "id": "schoolbridge_abjuration",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_ABJ_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_holy.png",
+  "gate": "config:xSchoolbridgeAbjRequiredLevel",
+  "name": "Schoolbridge: Abjuration \u2192 Holy",
+  "desc": "Sacred words protect both worlds. Ars Abjuration glyphs scale with %s of your Iron's holy spell power."
+ },
+ {
+  "id": "schoolbridge_manipulation",
+  "skill": "magic",
+  "texture_const": "X_SCHOOLBRIDGE_MANIP_PERK",
+  "texture": "irons_spellbooks:textures/item/upgrade_orb_ender.png",
+  "gate": "config:xSchoolbridgeManipRequiredLevel",
+  "name": "Schoolbridge: Manipulation \u2192 Ender",
+  "desc": "The Void obeys a shared grammar. Ars Manipulation glyphs scale with %s of your Iron's ender spell power."
+ },
+ {
+  "id": "unified_arcana",
+  "skill": "magic",
+  "texture_const": "X_UNIFIED_ARCANA_PERK",
+  "texture": "ars_nouveau:textures/item/mundane_belt.png",
+  "gate": "config:xUnifiedArcanaRequiredLevel",
+  "name": "Unified Arcana",
+  "desc": "Cross-caster backflow. %s of the Source cost of a successful Ars cast is refunded to your Iron's mana pool."
+ },
+ {
+  "id": "triple_threat",
+  "skill": "magic",
+  "texture_const": "X_TRIPLE_THREAT_PERK",
+  "texture": "apotheosis:textures/items/star_cube.png",
+  "gate": "config:xTripleThreatRequiredLevel",
+  "name": "Triple Threat",
+  "desc": "You wield three traditions in concert. While Iron's, Ars, and Apotheosis are all loaded, gain %s to max mana, mana regen, and spell power."
+ },
+ {
+  "id": "affix_focus",
+  "skill": "magic",
+  "texture_const": "X_AFFIX_FOCUS_PERK",
+  "texture": "apotheosis:textures/items/mythic_material.png",
+  "gate": "config:xAffixFocusRequiredLevel",
+  "name": "Affix Focus",
+  "desc": "Rare gear attunes to your casting. Equipping %s or more Rare-or-better Apotheosis items grants +%s effective spell level to all Iron's casts."
+ },
+ {
+  "id": "arcane_efficiency",
+  "skill": "magic",
+  "texture_const": "ARCANE_EFFICIENCY_PERK",
+  "texture": "runicskills:textures/skill/magic/arcane_efficiency.png",
+  "gate": "config:arsArcaneEfficiencyRequiredLevel",
+  "name": "Arcane Efficiency",
+  "desc": "Your mastery of source manipulation allows more efficient spellcasting. Ars Nouveau spells cost %s less mana."
+ },
+ {
+  "id": "glyph_mastery",
+  "skill": "intelligence",
+  "texture_const": "GLYPH_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/intelligence/glyph_mastery.png",
+  "gate": "config:arsGlyphMasteryRequiredLevel",
+  "name": "Glyph Mastery",
+  "desc": "Your deep understanding of glyphs adds %s amplification to all spell effects."
+ },
+ {
+  "id": "arcane_ward",
+  "skill": "wisdom",
+  "texture_const": "ARCANE_WARD_PERK",
+  "texture": "runicskills:textures/skill/wisdom/arcane_ward.png",
+  "gate": "config:arsArcaneWardRequiredLevel",
+  "name": "Arcane Ward",
+  "desc": "Your knowledge of arcane constructs provides protection, reducing incoming Ars Nouveau spell damage by %s."
+ },
+ {
+  "id": "dragon_slayer",
+  "skill": "strength",
+  "texture_const": "DRAGON_SLAYER_PERK",
+  "texture": "runicskills:textures/skill/strength/dragon_slayer.png",
+  "gate": "config:dragonSlayerRequiredLevel",
+  "name": "Dragon Slayer",
+  "desc": "Your strength allows you to deal %s bonus damage to dragons and mythical creatures."
+ },
+ {
+  "id": "beast_tamer",
+  "skill": "intelligence",
+  "texture_const": "BEAST_TAMER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/beast_tamer.png",
+  "gate": "config:beastTamerRequiredLevel",
+  "name": "Beast Tamer",
+  "desc": "Your intelligence aids in taming mythical creatures, granting a 1 in %s chance for easier taming."
+ },
+ {
+  "id": "mythic_fortitude",
+  "skill": "endurance",
+  "texture_const": "MYTHIC_FORTITUDE_PERK",
+  "texture": "runicskills:textures/skill/endurance/mythic_fortitude.png",
+  "gate": "config:mythicFortitudeRequiredLevel",
+  "name": "Mythic Fortitude",
+  "desc": "Your endurance shields you from dragon elemental attacks, reducing fire, ice, and lightning breath damage by %s."
+ },
+ {
+  "id": "cataclysm_resistance",
+  "skill": "endurance",
+  "texture_const": "CATACLYSM_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/endurance/cataclysm_resistance.png",
+  "gate": "config:cataclysmResistanceRequiredLevel",
+  "name": "Cataclysm Resistance",
+  "desc": "Your endurance hardens you against cataclysmic forces, reducing boss damage by %s."
+ },
+ {
+  "id": "boss_hunter",
+  "skill": "strength",
+  "texture_const": "BOSS_HUNTER_PERK",
+  "texture": "runicskills:textures/skill/strength/boss_hunter.png",
+  "gate": "config:bossHunterRequiredLevel",
+  "name": "Boss Hunter",
+  "desc": "Your strength gives you an edge against powerful bosses, dealing %s bonus damage."
+ },
+ {
+  "id": "aura_attunement",
+  "skill": "wisdom",
+  "texture_const": "AURA_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/aura_attunement.png",
+  "gate": "config:auraAttunementRequiredLevel",
+  "name": "Aura Attunement",
+  "desc": "Your attunement to nature increases the efficiency of aura effects near you by %s."
+ },
+ {
+  "id": "master_chef",
+  "skill": "constitution",
+  "texture_const": "MASTER_CHEF_PERK",
+  "texture": "runicskills:textures/skill/constitution/master_chef.png",
+  "gate": "config:masterChefRequiredLevel",
+  "name": "Master Chef",
+  "desc": "Your constitution allows you to extract more from food, increasing effect durations by %s."
+ },
+ {
+  "id": "runic_salvager",
+  "skill": "building",
+  "texture_const": "RUNIC_SALVAGER_PERK",
+  "texture": "runicskills:textures/skill/building/runic_salvager.png",
+  "gate": "config:runicSalvagerRequiredLevel",
+  "name": "Runic Salvager",
+  "desc": "Chance for bonus materials when salvaging items at the Apotheosis Salvaging Table."
+ },
+ {
+  "id": "gem_attunement",
+  "skill": "fortune",
+  "texture_const": "GEM_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/fortune/gem_attunement.png",
+  "gate": "config:gemAttunementRequiredLevel",
+  "name": "Gem Attunement",
+  "desc": "Chance that a gem is not consumed when socketing into equipment."
+ },
+ {
+  "id": "arcane_reforging",
+  "skill": "magic",
+  "texture_const": "ARCANE_REFORGING_PERK",
+  "texture": "runicskills:textures/skill/magic/arcane_reforging.png",
+  "gate": "config:arcaneReforgingRequiredLevel",
+  "name": "Arcane Reforging",
+  "desc": "Chance for the reforging result rarity to be upgraded by one tier."
+ },
+ {
+  "id": "armor_piercing",
+  "skill": "strength",
+  "texture_const": "ARMOR_PIERCING_PERK",
+  "texture": "runicskills:textures/skill/strength/armor_piercing.png",
+  "gate": "config:armorPiercingRequiredLevel",
+  "name": "Armor Piercing",
+  "desc": "Your strikes find the weak points in armor, ignoring %s of the enemy's armor."
+ },
+ {
+  "id": "heavy_strikes",
+  "skill": "strength",
+  "texture_const": "HEAVY_STRIKES_PERK",
+  "texture": "runicskills:textures/skill/strength/heavy_strikes.png",
+  "gate": "config:redLevel",
+  "name": "Heavy Strikes",
+  "desc": "Your powerful blows deal %s bonus damage to enemies who are blocking with a shield."
+ },
+ {
+  "id": "cleave",
+  "skill": "strength",
+  "texture_const": "CLEAVE_PERK",
+  "texture": "runicskills:textures/skill/strength/cleave.png",
+  "gate": "config:heavyStrikesRequiredLevel",
+  "name": "Cleave",
+  "desc": "Your melee attacks cleave through enemies, hitting additional nearby targets."
+ },
+ {
+  "id": "titans_grip",
+  "skill": "strength",
+  "texture_const": "TITANS_GRIP_PERK",
+  "texture": "runicskills:textures/skill/strength/titans_grip.png",
+  "gate": "config:cleaveRequiredLevel",
+  "name": "Titan's Grip",
+  "desc": "Your immense strength allows you to wield two-handed weapons alongside a shield."
+ },
+ {
+  "id": "samurais_edge",
+  "skill": "strength",
+  "texture_const": "SAMURAIS_EDGE_PERK",
+  "texture": "runicskills:textures/skill/strength/samurais_edge.png",
+  "gate": "config:titansGripRequiredLevel",
+  "name": "Samurai's Edge",
+  "desc": "Your training with the katana grants %s bonus damage with katana weapons."
+ },
+ {
+  "id": "brutal_swing",
+  "skill": "strength",
+  "texture_const": "BRUTAL_SWING_PERK",
+  "texture": "runicskills:textures/skill/strength/brutal_swing.png",
+  "gate": "config:brutalSwingRequiredLevel",
+  "name": "Brutal Swing",
+  "desc": "Two-handed weapons deal %s bonus damage in your powerful hands."
+ },
+ {
+  "id": "polearm_mastery",
+  "skill": "strength",
+  "texture_const": "POLEARM_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/strength/polearm_mastery.png",
+  "gate": "config:polearmMasteryRequiredLevel",
+  "name": "Polearm Mastery",
+  "desc": "Your mastery of polearms grants %s bonus damage with halberds and lances."
+ },
+ {
+  "id": "warmonger",
+  "skill": "strength",
+  "texture_const": "WARMONGER_PERK",
+  "texture": "runicskills:textures/skill/strength/warmonger.png",
+  "gate": "config:uiredLevel",
+  "name": "Warmonger",
+  "desc": "You deal %s bonus damage to enemies wearing armor."
+ },
+ {
+  "id": "execute",
+  "skill": "strength",
+  "texture_const": "EXECUTE_PERK",
+  "texture": "runicskills:textures/skill/strength/execute.png",
+  "gate": "config:warmongerRequiredLevel",
+  "name": "Execute",
+  "desc": "Deal %s bonus damage to enemies below 25%% health."
+ },
+ {
+  "id": "bloodlust",
+  "skill": "strength",
+  "texture_const": "BLOODLUST_PERK",
+  "texture": "runicskills:textures/skill/strength/bloodlust.png",
+  "gate": "config:executeRequiredLevel",
+  "name": "Bloodlust",
+  "desc": "Each kill grants you %s bonus attack speed for a short duration."
+ },
+ {
+  "id": "dragon_bone_mastery",
+  "skill": "strength",
+  "texture_const": "DRAGON_BONE_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/strength/dragon_bone_mastery.png",
+  "gate": "config:dragonBoneMasteryRequiredLevel",
+  "name": "Dragon Bone Mastery",
+  "desc": "Your knowledge of dragon bone weapons grants %s bonus damage when wielding them."
+ },
+ {
+  "id": "nichirin_blade",
+  "skill": "strength",
+  "texture_const": "NICHIRIN_BLADE_PERK",
+  "texture": "runicskills:textures/skill/strength/nichirin_blade.png",
+  "gate": "config:nichirinBladeRequiredLevel",
+  "name": "Nichirin Blade",
+  "desc": "Nichirin katanas deal %s bonus damage in your skilled hands."
+ },
+ {
+  "id": "siege_breaker",
+  "skill": "strength",
+  "texture_const": "SIEGE_BREAKER_PERK",
+  "texture": "runicskills:textures/skill/strength/siege_breaker.png",
+  "gate": "config:siegeBreakerRequiredLevel",
+  "name": "Siege Breaker",
+  "desc": "Your strength lets you deal %s bonus damage to boss entities."
+ },
+ {
+  "id": "mowzies_might",
+  "skill": "strength",
+  "texture_const": "MOWZIES_MIGHT_PERK",
+  "texture": "runicskills:textures/skill/strength/mowzies_might.png",
+  "gate": "config:mowziesMightRequiredLevel",
+  "name": "Mowzie's Might",
+  "desc": "Mowzie's Mobs weapon abilities deal %s more damage."
+ },
+ {
+  "id": "spartans_discipline",
+  "skill": "strength",
+  "texture_const": "SPARTANS_DISCIPLINE_PERK",
+  "texture": "runicskills:textures/skill/strength/spartans_discipline.png",
+  "gate": "config:spartansDisciplineRequiredLevel",
+  "name": "Spartan's Discipline",
+  "desc": "Your mastery of Spartan weapons grants %s bonus damage with all Spartan weaponry."
+ },
+ {
+  "id": "power_attack",
+  "skill": "strength",
+  "texture_const": "POWER_ATTACK_PERK",
+  "texture": "runicskills:textures/skill/strength/power_attack.png",
+  "gate": "config:powerAttackRequiredLevel",
+  "name": "Power Attack",
+  "desc": "Your critical hits deal an additional %s bonus damage."
+ },
+ {
+  "id": "unstoppable_force",
+  "skill": "strength",
+  "texture_const": "UNSTOPPABLE_FORCE_PERK",
+  "texture": "runicskills:textures/skill/strength/unstoppable_force.png",
+  "gate": "config:uiredLevel",
+  "name": "Unstoppable Force",
+  "desc": "Your strikes have a %s chance to briefly stun enemies."
+ },
+ {
+  "id": "primal_fury",
+  "skill": "strength",
+  "texture_const": "PRIMAL_FURY_PERK",
+  "texture": "runicskills:textures/skill/strength/primal_fury.png",
+  "gate": "config:primalFuryRequiredLevel",
+  "name": "Primal Fury",
+  "desc": "When below 50%% health, your desperation grants %s bonus attack damage."
+ },
+ {
+  "id": "vengeance",
+  "skill": "strength",
+  "texture_const": "VENGEANCE_PERK",
+  "texture": "runicskills:textures/skill/strength/vengeance.png",
+  "gate": "config:primalFuryRequiredLevel",
+  "name": "Vengeance",
+  "desc": "Deal %s bonus damage to the last entity that struck you."
+ },
+ {
+  "id": "last_stand",
+  "skill": "strength",
+  "texture_const": "LAST_STAND_PERK",
+  "texture": "runicskills:textures/skill/strength/last_stand.png",
+  "gate": "config:vengeanceRequiredLevel",
+  "name": "Last Stand",
+  "desc": "At 1 HP, gain brief invulnerability and %s bonus damage."
+ },
+ {
+  "id": "warlords_presence",
+  "skill": "strength",
+  "texture_const": "WARLORDS_PRESENCE_PERK",
+  "texture": "runicskills:textures/skill/strength/warlords_presence.png",
+  "gate": "config:stStandRequiredLevel",
+  "name": "Warlord's Presence",
+  "desc": "Nearby allies deal %s bonus damage inspired by your presence."
+ },
+ {
+  "id": "chain_lightning_strike",
+  "skill": "strength",
+  "texture_const": "CHAIN_LIGHTNING_STRIKE_PERK",
+  "texture": "runicskills:textures/skill/strength/chain_lightning_strike.png",
+  "gate": "config:chainLightningStrikeRequiredLevel",
+  "name": "Chain Lightning Strike",
+  "desc": "Your melee attacks have a %s chance to chain lightning to nearby enemies."
+ },
+ {
+  "id": "blade_storm",
+  "skill": "strength",
+  "texture_const": "BLADE_STORM_PERK",
+  "texture": "runicskills:textures/skill/strength/blade_storm.png",
+  "gate": "config:bladeStormRequiredLevel",
+  "name": "Blade Storm",
+  "desc": "Attack speed increases by %s when striking multiple enemies."
+ },
+ {
+  "id": "devastating_blow",
+  "skill": "strength",
+  "texture_const": "DEVASTATING_BLOW_PERK",
+  "texture": "runicskills:textures/skill/strength/devastating_blow.png",
+  "gate": "config:tormRequiredLevel",
+  "name": "Devastating Blow",
+  "desc": "Attacks against enemies at full health deal %s bonus damage."
+ },
+ {
+  "id": "sacred_fire",
+  "skill": "strength",
+  "texture_const": "SACRED_FIRE_PERK",
+  "texture": "runicskills:textures/skill/strength/sacred_fire.png",
+  "gate": "config:el",
+  "name": "Sacred Fire",
+  "desc": "Your attacks set enemies ablaze with sacred flame."
+ },
+ {
+  "id": "blood_fury",
+  "skill": "strength",
+  "texture_const": "BLOOD_FURY_PERK",
+  "texture": "runicskills:textures/skill/strength/blood_fury.png",
+  "gate": "config:sacredFireRequiredLevel",
+  "name": "Blood Fury",
+  "desc": "Critical hits steal %s of the damage dealt as health."
+ },
+ {
+  "id": "cataclysms_wrath",
+  "skill": "strength",
+  "texture_const": "CATACLYSMS_WRATH_PERK",
+  "texture": "runicskills:textures/skill/strength/cataclysms_wrath.png",
+  "gate": "config:cataclysmsWrathRequiredLevel",
+  "name": "Cataclysm's Wrath",
+  "desc": "Cataclysm weapons deal %s bonus damage in your hands."
+ },
+ {
+  "id": "gladiator",
+  "skill": "strength",
+  "texture_const": "GLADIATOR_PERK",
+  "texture": "runicskills:textures/skill/strength/gladiator.png",
+  "gate": "config:Level",
+  "name": "Gladiator",
+  "desc": "Your shield bash damage is increased by %s."
+ },
+ {
+  "id": "trophy_hunter",
+  "skill": "strength",
+  "texture_const": "TROPHY_HUNTER_PERK",
+  "texture": "runicskills:textures/skill/strength/trophy_hunter.png",
+  "gate": "config:gladiatorRequiredLevel",
+  "name": "Trophy Hunter",
+  "desc": "Deal %s bonus damage to elite and boss mobs."
+ },
+ {
+  "id": "draconic_fury",
+  "skill": "strength",
+  "texture_const": "DRACONIC_FURY_PERK",
+  "texture": "runicskills:textures/skill/strength/draconic_fury.png",
+  "gate": "config:draconicFuryRequiredLevel",
+  "name": "Draconic Fury",
+  "desc": "Dragon-type weapon attacks gain %s bonus fire damage."
+ },
+ {
+  "id": "mythical_berserker",
+  "skill": "strength",
+  "texture_const": "MYTHICAL_BERSERKER_PERK",
+  "texture": "runicskills:textures/skill/strength/mythical_berserker.png",
+  "gate": "config:mythicalBerserkerRequiredLevel",
+  "name": "Mythical Berserker",
+  "desc": "Survive a killing blow at 1 HP and gain %s bonus damage for a short time."
+ },
+ {
+  "id": "stalwart_striker",
+  "skill": "strength",
+  "texture_const": "STALWART_STRIKER_PERK",
+  "texture": "runicskills:textures/skill/strength/stalwart_striker.png",
+  "gate": "config:stalwartStrikerRequiredLevel",
+  "name": "Stalwart Striker",
+  "desc": "Killing dungeon mobs restores %s health."
+ },
+ {
+  "id": "weapon_master",
+  "skill": "strength",
+  "texture_const": "WEAPON_MASTER_PERK",
+  "texture": "runicskills:textures/skill/strength/weapon_master.png",
+  "gate": "config:weaponMasterRequiredLevel",
+  "name": "Weapon Master",
+  "desc": "All weapon types deal %s bonus damage."
+ },
+ {
+  "id": "runic_might",
+  "skill": "strength",
+  "texture_const": "RUNIC_MIGHT_PERK",
+  "texture": "runicskills:textures/skill/strength/runic_might.png",
+  "gate": "config:sterRequiredLevel",
+  "name": "Runic Might",
+  "desc": "Runic ore weapons deal %s bonus damage."
+ },
+ {
+  "id": "iron_stomach",
+  "skill": "constitution",
+  "texture_const": "IRON_STOMACH_PERK",
+  "texture": "runicskills:textures/skill/constitution/iron_stomach.png",
+  "gate": "config:ironStomachRequiredLevel",
+  "name": "Iron Stomach",
+  "desc": "Your hardened constitution renders you immune to food poisoning."
+ },
+ {
+  "id": "second_wind",
+  "skill": "constitution",
+  "texture_const": "SECOND_WIND_PERK",
+  "texture": "runicskills:textures/skill/constitution/second_wind.png",
+  "gate": "config:ironStomachRequiredLevel",
+  "name": "Second Wind",
+  "desc": "When dropping below 25%% health, regenerate %s HP."
+ },
+ {
+  "id": "vitality",
+  "skill": "constitution",
+  "texture_const": "VITALITY_PERK",
+  "texture": "runicskills:textures/skill/constitution/vitality.png",
+  "gate": "config:secondWindRequiredLevel",
+  "name": "Vitality",
+  "desc": "Your maximum health increases by %s hearts."
+ },
+ {
+  "id": "natural_recovery",
+  "skill": "constitution",
+  "texture_const": "NATURAL_RECOVERY_PERK",
+  "texture": "runicskills:textures/skill/constitution/natural_recovery.png",
+  "gate": "config:vitalityRequiredLevel",
+  "name": "Natural Recovery",
+  "desc": "Your natural health regeneration is increased by %s."
+ },
+ {
+  "id": "thick_skin",
+  "skill": "constitution",
+  "texture_const": "THICK_SKIN_PERK",
+  "texture": "runicskills:textures/skill/constitution/thick_skin.png",
+  "gate": "config:thickSkinRequiredLevel",
+  "name": "Thick Skin",
+  "desc": "Your toughened body reduces all physical damage by %s flat points."
+ },
+ {
+  "id": "poison_immunity",
+  "skill": "constitution",
+  "texture_const": "POISON_IMMUNITY_PERK",
+  "texture": "runicskills:textures/skill/constitution/poison_immunity.png",
+  "gate": "config:kinRequiredLevel",
+  "name": "Poison Immunity",
+  "desc": "Your body is completely immune to poison damage."
+ },
+ {
+  "id": "fire_resistance",
+  "skill": "constitution",
+  "texture_const": "FIRE_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/fire_resistance.png",
+  "gate": "config:poisonImmunityRequiredLevel",
+  "name": "Fire Resistance",
+  "desc": "Your constitution reduces fire damage taken by %s."
+ },
+ {
+  "id": "draconic_constitution",
+  "skill": "constitution",
+  "texture_const": "DRACONIC_CONSTITUTION_PERK",
+  "texture": "runicskills:textures/skill/constitution/draconic_constitution.png",
+  "gate": "config:draconicConstitutionRequiredLevel",
+  "name": "Draconic Constitution",
+  "desc": "Dragon blood flowing through you grants %s resistance to elemental damage."
+ },
+ {
+  "id": "culinary_expert",
+  "skill": "constitution",
+  "texture_const": "CULINARY_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/constitution/culinary_expert.png",
+  "gate": "config:culinaryExpertRequiredLevel",
+  "name": "Culinary Expert",
+  "desc": "Farmer's Delight food provides %s bonus saturation."
+ },
+ {
+  "id": "anglers_bounty",
+  "skill": "constitution",
+  "texture_const": "ANGLERS_BOUNTY_PERK",
+  "texture": "runicskills:textures/skill/constitution/anglers_bounty.png",
+  "gate": "config:anglersBountyRequiredLevel",
+  "name": "Angler's Bounty",
+  "desc": "Fish you consume provide %s more nourishment."
+ },
+ {
+  "id": "searing_resistance",
+  "skill": "constitution",
+  "texture_const": "SEARING_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/searing_resistance.png",
+  "gate": "config:searingResistanceRequiredLevel",
+  "name": "Searing Resistance",
+  "desc": "Reduce lava and magma damage by %s."
+ },
+ {
+  "id": "wither_resistance",
+  "skill": "constitution",
+  "texture_const": "WITHER_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/wither_resistance.png",
+  "gate": "config:witherResistanceRequiredLevel",
+  "name": "Wither Resistance",
+  "desc": "Reduce wither damage by %s."
+ },
+ {
+  "id": "undying_will",
+  "skill": "constitution",
+  "texture_const": "UNDYING_WILL_PERK",
+  "texture": "runicskills:textures/skill/constitution/undying_will.png",
+  "gate": "config:undyingWillRequiredLevel",
+  "name": "Undying Will",
+  "desc": "You have a %s chance to survive a killing blow at 1 HP."
+ },
+ {
+  "id": "hearty_feast",
+  "skill": "constitution",
+  "texture_const": "HEARTY_FEAST_PERK",
+  "texture": "runicskills:textures/skill/constitution/hearty_feast.png",
+  "gate": "config:heartyFeastRequiredLevel",
+  "name": "Hearty Feast",
+  "desc": "Food effects last %s longer."
+ },
+ {
+  "id": "dragon_heart",
+  "skill": "constitution",
+  "texture_const": "DRAGON_HEART_PERK",
+  "texture": "runicskills:textures/skill/constitution/dragon_heart.png",
+  "gate": "config:dragonHeartRequiredLevel",
+  "name": "Dragon Heart",
+  "desc": "Dragon hearts restore %s additional HP when consumed."
+ },
+ {
+  "id": "swimmers_endurance",
+  "skill": "constitution",
+  "texture_const": "SWIMMERS_ENDURANCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/swimmers_endurance.png",
+  "gate": "config:swimmersEnduranceRequiredLevel",
+  "name": "Swimmer's Endurance",
+  "desc": "Your swimming speed is increased by %s."
+ },
+ {
+  "id": "explorers_vigor",
+  "skill": "constitution",
+  "texture_const": "EXPLORERS_VIGOR_PERK",
+  "texture": "runicskills:textures/skill/constitution/explorers_vigor.png",
+  "gate": "config:explorersVigorRequiredLevel",
+  "name": "Explorer's Vigor",
+  "desc": "Take %s less damage while inside dungeons."
+ },
+ {
+  "id": "aura_of_vitality",
+  "skill": "constitution",
+  "texture_const": "AURA_OF_VITALITY_PERK",
+  "texture": "runicskills:textures/skill/constitution/aura_of_vitality.png",
+  "gate": "config:auraOfVitalityRequiredLevel",
+  "name": "Aura of Vitality",
+  "desc": "Nature's Aura healing effects are %s stronger near you."
+ },
+ {
+  "id": "battle_recovery",
+  "skill": "constitution",
+  "texture_const": "BATTLE_RECOVERY_PERK",
+  "texture": "runicskills:textures/skill/constitution/battle_recovery.png",
+  "gate": "config:battleRecoveryRequiredLevel",
+  "name": "Battle Recovery",
+  "desc": "After 5 seconds without taking damage, regenerate %s HP per second."
+ },
+ {
+  "id": "armor_of_faith",
+  "skill": "constitution",
+  "texture_const": "ARMOR_OF_FAITH_PERK",
+  "texture": "runicskills:textures/skill/constitution/armor_of_faith.png",
+  "gate": "config:armorOfFaithRequiredLevel",
+  "name": "Armor of Faith",
+  "desc": "When below %s health, gain Resistance I."
+ },
+ {
+  "id": "soul_sustenance",
+  "skill": "constitution",
+  "texture_const": "SOUL_SUSTENANCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/soul_sustenance.png",
+  "gate": "config:el",
+  "name": "Soul Sustenance",
+  "desc": "XP orbs restore %s HP when collected."
+ },
+ {
+  "id": "colonial_nourishment",
+  "skill": "constitution",
+  "texture_const": "COLONIAL_NOURISHMENT_PERK",
+  "texture": "runicskills:textures/skill/constitution/colonial_nourishment.png",
+  "gate": "config:colonialNourishmentRequiredLevel",
+  "name": "Colonial Nourishment",
+  "desc": "Colony food items provide %s bonus effects."
+ },
+ {
+  "id": "obsidian_heart",
+  "skill": "constitution",
+  "texture_const": "OBSIDIAN_HEART_PERK",
+  "texture": "runicskills:textures/skill/constitution/obsidian_heart.png",
+  "gate": "config:obsidianHeartRequiredLevel",
+  "name": "Obsidian Heart",
+  "desc": "Explosion damage is reduced by %s."
+ },
+ {
+  "id": "potion_mastery",
+  "skill": "constitution",
+  "texture_const": "POTION_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/constitution/potion_mastery.png",
+  "gate": "config:el",
+  "name": "Potion Mastery",
+  "desc": "Dave's Potioneering effects last %s longer."
+ },
+ {
+  "id": "phoenix_rising",
+  "skill": "constitution",
+  "texture_const": "PHOENIX_RISING_PERK",
+  "texture": "runicskills:textures/skill/constitution/phoenix_rising.png",
+  "gate": "config:el",
+  "name": "Phoenix Rising",
+  "desc": "Respawn with %s HP instead of the default amount."
+ },
+ {
+  "id": "natures_blessing",
+  "skill": "constitution",
+  "texture_const": "NATURES_BLESSING_PERK",
+  "texture": "runicskills:textures/skill/constitution/natures_blessing.png",
+  "gate": "config:naturesBlessingRequiredLevel",
+  "name": "Nature's Blessing",
+  "desc": "Standing on natural blocks heals %s HP per second."
+ },
+ {
+  "id": "runic_fortification",
+  "skill": "constitution",
+  "texture_const": "RUNIC_FORTIFICATION_PERK",
+  "texture": "runicskills:textures/skill/constitution/runic_fortification.png",
+  "gate": "config:runicFortificationRequiredLevel",
+  "name": "Runic Fortification",
+  "desc": "Runic ore armor provides %s additional max health."
+ },
+ {
+  "id": "gourmet",
+  "skill": "constitution",
+  "texture_const": "GOURMET_PERK",
+  "texture": "runicskills:textures/skill/constitution/gourmet.png",
+  "gate": "config:gourmetRequiredLevel",
+  "name": "Gourmet",
+  "desc": "Cooked meals restore %s more hunger."
+ },
+ {
+  "id": "frost_walker_constitution",
+  "skill": "constitution",
+  "texture_const": "FROST_WALKER_CONSTITUTION_PERK",
+  "texture": "runicskills:textures/skill/constitution/frost_walker_constitution.png",
+  "gate": "config:tRequiredLevel",
+  "name": "Frost Walker Constitution",
+  "desc": "Cold and freezing damage is reduced by %s."
+ },
+ {
+  "id": "myrmex_carapace",
+  "skill": "constitution",
+  "texture_const": "MYRMEX_CARAPACE_PERK",
+  "texture": "runicskills:textures/skill/constitution/myrmex_carapace.png",
+  "gate": "config:myrmexCarapaceRequiredLevel",
+  "name": "Myrmex Carapace",
+  "desc": "Myrmex armor provides %s bonus poison resistance."
+ },
+ {
+  "id": "enderium_resilience",
+  "skill": "constitution",
+  "texture_const": "ENDERIUM_RESILIENCE_PERK",
+  "texture": "runicskills:textures/skill/constitution/enderium_resilience.png",
+  "gate": "config:enderiumResilienceRequiredLevel",
+  "name": "Enderium Resilience",
+  "desc": "Enderium items grant %s magic resistance."
+ },
+ {
+  "id": "survival_instinct",
+  "skill": "constitution",
+  "texture_const": "SURVIVAL_INSTINCT_PERK",
+  "texture": "runicskills:textures/skill/constitution/survival_instinct.png",
+  "gate": "config:survivalInstinctRequiredLevel",
+  "name": "Survival Instinct",
+  "desc": "Gain %s movement speed when below 30%% health."
+ },
+ {
+  "id": "eagle_eye",
+  "skill": "dexterity",
+  "texture_const": "EAGLE_EYE_PERK",
+  "texture": "runicskills:textures/skill/dexterity/eagle_eye.png",
+  "gate": "config:eagleEyeRequiredLevel",
+  "name": "Eagle Eye",
+  "desc": "Arrow damage at long range increased by %s."
+ },
+ {
+  "id": "rapid_fire",
+  "skill": "dexterity",
+  "texture_const": "RAPID_FIRE_PERK",
+  "texture": "runicskills:textures/skill/dexterity/rapid_fire.png",
+  "gate": "config:eagleEyeRequiredLevel",
+  "name": "Rapid Fire",
+  "desc": "Bow draw speed increased by %s."
+ },
+ {
+  "id": "multishot_mastery",
+  "skill": "dexterity",
+  "texture_const": "MULTISHOT_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/dexterity/multishot_mastery.png",
+  "gate": "config:idFireRequiredLevel",
+  "name": "Multishot Mastery",
+  "desc": "You have a %s chance to fire an additional arrow."
+ },
+ {
+  "id": "arrow_recovery",
+  "skill": "dexterity",
+  "texture_const": "ARROW_RECOVERY_PERK",
+  "texture": "runicskills:textures/skill/dexterity/arrow_recovery.png",
+  "gate": "config:arrowRecoveryRequiredLevel",
+  "name": "Arrow Recovery",
+  "desc": "You have a %s chance to recover arrows from killed mobs."
+ },
+ {
+  "id": "acrobat",
+  "skill": "dexterity",
+  "texture_const": "ACROBAT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/acrobat.png",
+  "gate": "config:overyRequiredLevel",
+  "name": "Acrobat",
+  "desc": "Fall damage reduced by %s."
+ },
+ {
+  "id": "dodge_roll",
+  "skill": "dexterity",
+  "texture_const": "DODGE_ROLL_PERK",
+  "texture": "runicskills:textures/skill/dexterity/dodge_roll.png",
+  "gate": "config:acrobatRequiredLevel",
+  "name": "Dodge Roll",
+  "desc": "You have a %s chance to dodge incoming melee attacks."
+ },
+ {
+  "id": "sprint_master",
+  "skill": "dexterity",
+  "texture_const": "SPRINT_MASTER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/sprint_master.png",
+  "gate": "config:dodgeRollRequiredLevel",
+  "name": "Sprint Master",
+  "desc": "Sprint speed increased by %s."
+ },
+ {
+  "id": "silent_step",
+  "skill": "dexterity",
+  "texture_const": "SILENT_STEP_PERK",
+  "texture": "runicskills:textures/skill/dexterity/silent_step.png",
+  "gate": "config:terRequiredLevel",
+  "name": "Silent Step",
+  "desc": "Mob detection range reduced by %s when sneaking."
+ },
+ {
+  "id": "precision_shot",
+  "skill": "dexterity",
+  "texture_const": "PRECISION_SHOT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/precision_shot.png",
+  "gate": "config:entStepRequiredLevel",
+  "name": "Precision Shot",
+  "desc": "Critical bow shots deal %s more damage."
+ },
+ {
+  "id": "archery_expansion",
+  "skill": "dexterity",
+  "texture_const": "ARCHERY_EXPANSION_PERK",
+  "texture": "runicskills:textures/skill/dexterity/archery_expansion.png",
+  "gate": "config:archeryExpansionRequiredLevel",
+  "name": "Archery Expansion",
+  "desc": "Advanced bows deal %s bonus damage."
+ },
+ {
+  "id": "crossbow_expert",
+  "skill": "dexterity",
+  "texture_const": "CROSSBOW_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/crossbow_expert.png",
+  "gate": "config:crossbowExpertRequiredLevel",
+  "name": "Crossbow Expert",
+  "desc": "Crossbow reload speed increased by %s."
+ },
+ {
+  "id": "spartan_marksmanship",
+  "skill": "dexterity",
+  "texture_const": "SPARTAN_MARKSMANSHIP_PERK",
+  "texture": "runicskills:textures/skill/dexterity/spartan_marksmanship.png",
+  "gate": "config:spartanMarksmanshipRequiredLevel",
+  "name": "Spartan Marksmanship",
+  "desc": "Spartan throwing weapons deal %s more damage."
+ },
+ {
+  "id": "poison_arrow",
+  "skill": "dexterity",
+  "texture_const": "POISON_ARROW_PERK",
+  "texture": "runicskills:textures/skill/dexterity/poison_arrow.png",
+  "gate": "config:poisonArrowRequiredLevel",
+  "name": "Poison Arrow",
+  "desc": "Your arrows have a %s chance to poison targets."
+ },
+ {
+  "id": "wind_runner",
+  "skill": "dexterity",
+  "texture_const": "WIND_RUNNER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/wind_runner.png",
+  "gate": "config:sonArrowRequiredLevel",
+  "name": "Wind Runner",
+  "desc": "Movement speed on paths increased by %s."
+ },
+ {
+  "id": "ninja_training",
+  "skill": "dexterity",
+  "texture_const": "NINJA_TRAINING_PERK",
+  "texture": "runicskills:textures/skill/dexterity/ninja_training.png",
+  "gate": "config:ninjaTrainingRequiredLevel",
+  "name": "Ninja Training",
+  "desc": "Ninja armor provides %s more stealth effectiveness."
+ },
+ {
+  "id": "parkour_master",
+  "skill": "dexterity",
+  "texture_const": "PARKOUR_MASTER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/parkour_master.png",
+  "gate": "config:Level",
+  "name": "Parkour Master",
+  "desc": "Parkour moves cost %s less stamina."
+ },
+ {
+  "id": "sharpshooter",
+  "skill": "dexterity",
+  "texture_const": "SHARPSHOOTER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/sharpshooter.png",
+  "gate": "config:edLevel",
+  "name": "Sharpshooter",
+  "desc": "Headshots deal %s bonus damage."
+ },
+ {
+  "id": "evasion",
+  "skill": "dexterity",
+  "texture_const": "EVASION_PERK",
+  "texture": "runicskills:textures/skill/dexterity/evasion.png",
+  "gate": "config:sharpshooterRequiredLevel",
+  "name": "Evasion",
+  "desc": "Dodge chance increased by %s when not wearing heavy armor."
+ },
+ {
+  "id": "fleet_footed",
+  "skill": "dexterity",
+  "texture_const": "FLEET_FOOTED_PERK",
+  "texture": "runicskills:textures/skill/dexterity/fleet_footed.png",
+  "gate": "config:evasionRequiredLevel",
+  "name": "Fleet Footed",
+  "desc": "Walking speed in water increased by %s."
+ },
+ {
+  "id": "ambush",
+  "skill": "dexterity",
+  "texture_const": "AMBUSH_PERK",
+  "texture": "runicskills:textures/skill/dexterity/ambush.png",
+  "gate": "config:fleetFootedRequiredLevel",
+  "name": "Ambush",
+  "desc": "First attack from stealth deals %s bonus damage."
+ },
+ {
+  "id": "quick_draw",
+  "skill": "dexterity",
+  "texture_const": "QUICK_DRAW_PERK",
+  "texture": "runicskills:textures/skill/dexterity/quick_draw.png",
+  "gate": "config:ambushRequiredLevel",
+  "name": "Quick Draw",
+  "desc": "Weapon switch speed increased by %s."
+ },
+ {
+  "id": "ricochet",
+  "skill": "dexterity",
+  "texture_const": "RICOCHET_PERK",
+  "texture": "runicskills:textures/skill/dexterity/ricochet.png",
+  "gate": "config:quickDrawRequiredLevel",
+  "name": "Ricochet",
+  "desc": "Arrows have a %s chance to bounce to a nearby target."
+ },
+ {
+  "id": "phantom_strike",
+  "skill": "dexterity",
+  "texture_const": "PHANTOM_STRIKE_PERK",
+  "texture": "runicskills:textures/skill/dexterity/phantom_strike.png",
+  "gate": "config:ricochetRequiredLevel",
+  "name": "Phantom Strike",
+  "desc": "After dodging, your next attack deals %s bonus damage."
+ },
+ {
+  "id": "dragon_rider",
+  "skill": "dexterity",
+  "texture_const": "DRAGON_RIDER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/dragon_rider.png",
+  "gate": "config:dragonRiderRequiredLevel",
+  "name": "Dragon Rider",
+  "desc": "Mount speed increased by %s."
+ },
+ {
+  "id": "ice_arrows",
+  "skill": "dexterity",
+  "texture_const": "ICE_ARROWS_PERK",
+  "texture": "runicskills:textures/skill/dexterity/ice_arrows.png",
+  "gate": "config:ragonRiderRequiredLevel",
+  "name": "Ice Arrows",
+  "desc": "Arrows have a %s chance to slow targets."
+ },
+ {
+  "id": "spell_dodge",
+  "skill": "dexterity",
+  "texture_const": "SPELL_DODGE_PERK",
+  "texture": "runicskills:textures/skill/dexterity/spell_dodge.png",
+  "gate": "config:spellDodgeRequiredLevel",
+  "name": "Spell Dodge",
+  "desc": "You have a %s chance to dodge incoming spells."
+ },
+ {
+  "id": "zipline_expert",
+  "skill": "dexterity",
+  "texture_const": "ZIPLINE_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/zipline_expert.png",
+  "gate": "config:llDodgeRequiredLevel",
+  "name": "Zipline Expert",
+  "desc": "Zipline travel speed increased by %s."
+ },
+ {
+  "id": "sniper",
+  "skill": "dexterity",
+  "texture_const": "SNIPER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/sniper.png",
+  "gate": "config:eExpertRequiredLevel",
+  "name": "Sniper",
+  "desc": "Bow damage increased by %s beyond 30 blocks."
+ },
+ {
+  "id": "smoke_bomb",
+  "skill": "dexterity",
+  "texture_const": "SMOKE_BOMB_PERK",
+  "texture": "runicskills:textures/skill/dexterity/smoke_bomb.png",
+  "gate": "config:sniperRequiredLevel",
+  "name": "Smoke Bomb",
+  "desc": "When hit below %s health, gain brief invisibility."
+ },
+ {
+  "id": "mounted_combat",
+  "skill": "dexterity",
+  "texture_const": "MOUNTED_COMBAT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/mounted_combat.png",
+  "gate": "config:smokeBombRequiredLevel",
+  "name": "Mounted Combat",
+  "desc": "Damage dealt while mounted increased by %s."
+ },
+ {
+  "id": "tracking",
+  "skill": "dexterity",
+  "texture_const": "TRACKING_PERK",
+  "texture": "runicskills:textures/skill/dexterity/tracking.png",
+  "gate": "config:batRequiredLevel",
+  "name": "Tracking",
+  "desc": "Damaged enemies glow briefly, revealing their position."
+ },
+ {
+  "id": "wind_walker",
+  "skill": "dexterity",
+  "texture_const": "WIND_WALKER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/wind_walker.png",
+  "gate": "config:trackingRequiredLevel",
+  "name": "Wind Walker",
+  "desc": "Air movement speed increased by %s."
+ },
+ {
+  "id": "trick_shot",
+  "skill": "dexterity",
+  "texture_const": "TRICK_SHOT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/trick_shot.png",
+  "gate": "config:windWalkerRequiredLevel",
+  "name": "Trick Shot",
+  "desc": "Arrows that pass through fire gain fire damage."
+ },
+ {
+  "id": "blade_dancer",
+  "skill": "dexterity",
+  "texture_const": "BLADE_DANCER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/blade_dancer.png",
+  "gate": "config:trickShotRequiredLevel",
+  "name": "Blade Dancer",
+  "desc": "Sword attack speed increased by %s."
+ },
+ {
+  "id": "silent_kill",
+  "skill": "dexterity",
+  "texture_const": "SILENT_KILL_PERK",
+  "texture": "runicskills:textures/skill/dexterity/silent_kill.png",
+  "gate": "config:deDancerRequiredLevel",
+  "name": "Silent Kill",
+  "desc": "Stealth kills have a %s chance to not alert nearby mobs."
+ },
+ {
+  "id": "agile_climber",
+  "skill": "dexterity",
+  "texture_const": "AGILE_CLIMBER_PERK",
+  "texture": "runicskills:textures/skill/dexterity/agile_climber.png",
+  "gate": "config:ilentKillRequiredLevel",
+  "name": "Agile Climber",
+  "desc": "Climbing speed on ladders and vines increased by %s."
+ },
+ {
+  "id": "shield_wall",
+  "skill": "endurance",
+  "texture_const": "SHIELD_WALL_PERK",
+  "texture": "runicskills:textures/skill/endurance/shield_wall.png",
+  "gate": "config:shieldWallRequiredLevel",
+  "name": "Shield Wall",
+  "desc": "Shield blocking reduces %s more incoming damage."
+ },
+ {
+  "id": "heavy_armor_mastery",
+  "skill": "endurance",
+  "texture_const": "HEAVY_ARMOR_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/endurance/heavy_armor_mastery.png",
+  "gate": "config:quiredLevel",
+  "name": "Heavy Armor Mastery",
+  "desc": "Heavy armor provides %s additional armor points."
+ },
+ {
+  "id": "steadfast",
+  "skill": "endurance",
+  "texture_const": "STEADFAST_PERK",
+  "texture": "runicskills:textures/skill/endurance/steadfast.png",
+  "gate": "config:steadfastRequiredLevel",
+  "name": "Steadfast",
+  "desc": "Knockback received reduced by %s."
+ },
+ {
+  "id": "toughened_hide",
+  "skill": "endurance",
+  "texture_const": "TOUGHENED_HIDE_PERK",
+  "texture": "runicskills:textures/skill/endurance/toughened_hide.png",
+  "gate": "config:steadfastRequiredLevel",
+  "name": "Toughened Hide",
+  "desc": "Armor toughness increased by %s."
+ },
+ {
+  "id": "fire_proof",
+  "skill": "endurance",
+  "texture_const": "FIRE_PROOF_PERK",
+  "texture": "runicskills:textures/skill/endurance/fire_proof.png",
+  "gate": "config:iredLevel",
+  "name": "Fire Proof",
+  "desc": "Fire duration reduced by %s."
+ },
+ {
+  "id": "blast_resistance",
+  "skill": "endurance",
+  "texture_const": "BLAST_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/endurance/blast_resistance.png",
+  "gate": "config:ireProofRequiredLevel",
+  "name": "Blast Resistance",
+  "desc": "Explosion damage reduced by %s."
+ },
+ {
+  "id": "warding_rune",
+  "skill": "endurance",
+  "texture_const": "WARDING_RUNE_PERK",
+  "texture": "runicskills:textures/skill/endurance/warding_rune.png",
+  "gate": "config:wardingRuneRequiredLevel",
+  "name": "Warding Rune",
+  "desc": "Magic damage reduced by %s."
+ },
+ {
+  "id": "dragon_scale_armor",
+  "skill": "endurance",
+  "texture_const": "DRAGON_SCALE_ARMOR_PERK",
+  "texture": "runicskills:textures/skill/endurance/dragon_scale_armor.png",
+  "gate": "config:dragonScaleArmorRequiredLevel",
+  "name": "Dragon Scale Armor",
+  "desc": "Dragon scale armor provides %s additional protection."
+ },
+ {
+  "id": "bulwark",
+  "skill": "endurance",
+  "texture_const": "BULWARK_PERK",
+  "texture": "runicskills:textures/skill/endurance/bulwark.png",
+  "gate": "config:bulwarkRequiredLevel",
+  "name": "Bulwark",
+  "desc": "While blocking, reflect %s of damage back to attackers."
+ },
+ {
+  "id": "stoneflesh",
+  "skill": "endurance",
+  "texture_const": "STONEFLESH_PERK",
+  "texture": "runicskills:textures/skill/endurance/stoneflesh.png",
+  "gate": "config:bulwarkRequiredLevel",
+  "name": "Stoneflesh",
+  "desc": "Standing still grants %s damage reduction."
+ },
+ {
+  "id": "poison_resistance",
+  "skill": "endurance",
+  "texture_const": "POISON_RESISTANCE_PERK",
+  "texture": "runicskills:textures/skill/endurance/poison_resistance.png",
+  "gate": "config:leshRequiredLevel",
+  "name": "Poison Resistance",
+  "desc": "Poison damage reduced by %s."
+ },
+ {
+  "id": "thorns_mastery",
+  "skill": "endurance",
+  "texture_const": "THORNS_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/endurance/thorns_mastery.png",
+  "gate": "config:thornsMasteryRequiredLevel",
+  "name": "Thorns Mastery",
+  "desc": "Thorns enchantment deals %s more damage."
+ },
+ {
+  "id": "sentinel",
+  "skill": "endurance",
+  "texture_const": "SENTINEL_PERK",
+  "texture": "runicskills:textures/skill/endurance/sentinel.png",
+  "gate": "config:eryRequiredLevel",
+  "name": "Sentinel",
+  "desc": "Gain %s damage reduction when below 50%% health."
+ },
+ {
+  "id": "dragonhide",
+  "skill": "endurance",
+  "texture_const": "DRAGONHIDE_PERK",
+  "texture": "runicskills:textures/skill/endurance/dragonhide.png",
+  "gate": "config:dragonhideRequiredLevel",
+  "name": "Dragonhide",
+  "desc": "Dragonsteel armor provides %s additional fire and ice resistance."
+ },
+ {
+  "id": "fantasy_fortitude",
+  "skill": "endurance",
+  "texture_const": "FANTASY_FORTITUDE_PERK",
+  "texture": "runicskills:textures/skill/endurance/fantasy_fortitude.png",
+  "gate": "config:fantasyFortitudeRequiredLevel",
+  "name": "Fantasy Fortitude",
+  "desc": "Fantasy armor sets provide %s bonus protection."
+ },
+ {
+  "id": "colony_guardian",
+  "skill": "endurance",
+  "texture_const": "COLONY_GUARDIAN_PERK",
+  "texture": "runicskills:textures/skill/endurance/colony_guardian.png",
+  "gate": "config:colonyGuardianRequiredLevel",
+  "name": "Colony Guardian",
+  "desc": "Take %s less damage while in colony territories."
+ },
+ {
+  "id": "frost_endurance",
+  "skill": "endurance",
+  "texture_const": "FROST_ENDURANCE_PERK",
+  "texture": "runicskills:textures/skill/endurance/frost_endurance.png",
+  "gate": "config:frostEnduranceRequiredLevel",
+  "name": "Frost Endurance",
+  "desc": "Cold and freezing damage reduced by %s."
+ },
+ {
+  "id": "obsidian_skin",
+  "skill": "endurance",
+  "texture_const": "OBSIDIAN_SKIN_PERK",
+  "texture": "runicskills:textures/skill/endurance/obsidian_skin.png",
+  "gate": "config:el",
+  "name": "Obsidian Skin",
+  "desc": "Obsidian armor provides %s bonus damage reduction."
+ },
+ {
+  "id": "lightning_rod",
+  "skill": "endurance",
+  "texture_const": "LIGHTNING_ROD_PERK",
+  "texture": "runicskills:textures/skill/endurance/lightning_rod.png",
+  "gate": "config:equiredLevel",
+  "name": "Lightning Rod",
+  "desc": "Lightning damage reduced by %s."
+ },
+ {
+  "id": "samurai_resolve",
+  "skill": "endurance",
+  "texture_const": "SAMURAI_RESOLVE_PERK",
+  "texture": "runicskills:textures/skill/endurance/samurai_resolve.png",
+  "gate": "config:samuraiResolveRequiredLevel",
+  "name": "Samurai Resolve",
+  "desc": "After taking damage, gain %s damage reduction briefly."
+ },
+ {
+  "id": "dungeon_resilience",
+  "skill": "endurance",
+  "texture_const": "DUNGEON_RESILIENCE_PERK",
+  "texture": "runicskills:textures/skill/endurance/dungeon_resilience.png",
+  "gate": "config:dungeonResilienceRequiredLevel",
+  "name": "Dungeon Resilience",
+  "desc": "Dungeon trap damage reduced by %s."
+ },
+ {
+  "id": "prismarine_shield",
+  "skill": "endurance",
+  "texture_const": "PRISMARINE_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/endurance/prismarine_shield.png",
+  "gate": "config:prismarineShieldRequiredLevel",
+  "name": "Prismarine Shield",
+  "desc": "Prismarine armor provides %s bonus ranged damage reduction."
+ },
+ {
+  "id": "aura_shield",
+  "skill": "endurance",
+  "texture_const": "AURA_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/endurance/aura_shield.png",
+  "gate": "config:auraShieldRequiredLevel",
+  "name": "Aura Shield",
+  "desc": "Nearby aura reduces incoming damage by %s."
+ },
+ {
+  "id": "pain_suppression",
+  "skill": "endurance",
+  "texture_const": "PAIN_SUPPRESSION_PERK",
+  "texture": "runicskills:textures/skill/endurance/pain_suppression.png",
+  "gate": "config:eldRequiredLevel",
+  "name": "Pain Suppression",
+  "desc": "Damage over time effects deal %s less damage."
+ },
+ {
+  "id": "spell_shield",
+  "skill": "endurance",
+  "texture_const": "SPELL_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/endurance/spell_shield.png",
+  "gate": "config:spellShieldRequiredLevel",
+  "name": "Spell Shield",
+  "desc": "Ars Nouveau spell damage reduced by %s."
+ },
+ {
+  "id": "unbreakable",
+  "skill": "endurance",
+  "texture_const": "UNBREAKABLE_PERK",
+  "texture": "runicskills:textures/skill/endurance/unbreakable.png",
+  "gate": "config:lShieldRequiredLevel",
+  "name": "Unbreakable",
+  "desc": "Armor durability loss reduced by %s."
+ },
+ {
+  "id": "dragon_breath_shield",
+  "skill": "endurance",
+  "texture_const": "DRAGON_BREATH_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/endurance/dragon_breath_shield.png",
+  "gate": "config:dragonBreathShieldRequiredLevel",
+  "name": "Dragon Breath Shield",
+  "desc": "Dragon breath attacks deal %s less damage."
+ },
+ {
+  "id": "siege_defense",
+  "skill": "endurance",
+  "texture_const": "SIEGE_DEFENSE_PERK",
+  "texture": "runicskills:textures/skill/endurance/siege_defense.png",
+  "gate": "config:siegeDefenseRequiredLevel",
+  "name": "Siege Defense",
+  "desc": "While in a structure, gain %s damage reduction."
+ },
+ {
+  "id": "ancient_guardian",
+  "skill": "endurance",
+  "texture_const": "ANCIENT_GUARDIAN_PERK",
+  "texture": "runicskills:textures/skill/endurance/ancient_guardian.png",
+  "gate": "config:dLevel",
+  "name": "Ancient Guardian",
+  "desc": "Boss attacks deal %s less damage to you."
+ },
+ {
+  "id": "runic_ward",
+  "skill": "endurance",
+  "texture_const": "RUNIC_WARD_PERK",
+  "texture": "runicskills:textures/skill/endurance/runic_ward.png",
+  "gate": "config:vel",
+  "name": "Runic Ward",
+  "desc": "Runic ore armor provides %s bonus magic resistance."
+ },
+ {
+  "id": "adaptation",
+  "skill": "endurance",
+  "texture_const": "ADAPTATION_PERK",
+  "texture": "runicskills:textures/skill/endurance/adaptation.png",
+  "gate": "config:runicWardRequiredLevel",
+  "name": "Adaptation",
+  "desc": "Consecutive hits from the same source deal %s less damage."
+ },
+ {
+  "id": "immovable_object",
+  "skill": "endurance",
+  "texture_const": "IMMOVABLE_OBJECT_PERK",
+  "texture": "runicskills:textures/skill/endurance/immovable_object.png",
+  "gate": "config:tationRequiredLevel",
+  "name": "Immovable Object",
+  "desc": "You cannot be knocked back while blocking."
+ },
+ {
+  "id": "bookworm",
+  "skill": "intelligence",
+  "texture_const": "BOOKWORM_PERK",
+  "texture": "runicskills:textures/skill/intelligence/bookworm.png",
+  "gate": "config:immovableObjectRequiredLevel",
+  "name": "Bookworm",
+  "desc": "XP gain from all sources increased by %s."
+ },
+ {
+  "id": "quick_learner",
+  "skill": "intelligence",
+  "texture_const": "QUICK_LEARNER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/quick_learner.png",
+  "gate": "config:bookwormRequiredLevel",
+  "name": "Quick Learner",
+  "desc": "Skill XP gain increased by %s."
+ },
+ {
+  "id": "linguist",
+  "skill": "intelligence",
+  "texture_const": "LINGUIST_PERK",
+  "texture": "runicskills:textures/skill/intelligence/linguist.png",
+  "gate": "config:arnerRequiredLevel",
+  "name": "Linguist",
+  "desc": "Villager trade options increased by %s."
+ },
+ {
+  "id": "cartographer",
+  "skill": "intelligence",
+  "texture_const": "CARTOGRAPHER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/cartographer.png",
+  "gate": "config:linguistRequiredLevel",
+  "name": "Cartographer",
+  "desc": "Maps reveal %s more of the surrounding area."
+ },
+ {
+  "id": "potion_brewing_expert",
+  "skill": "intelligence",
+  "texture_const": "POTION_BREWING_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/intelligence/potion_brewing_expert.png",
+  "gate": "config:potionBrewingExpertRequiredLevel",
+  "name": "Potion Brewing Expert",
+  "desc": "Brewed potions are %s levels stronger."
+ },
+ {
+  "id": "lore_keeper",
+  "skill": "intelligence",
+  "texture_const": "LORE_KEEPER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/lore_keeper.png",
+  "gate": "config:loreKeeperRequiredLevel",
+  "name": "Lore Keeper",
+  "desc": "Patchouli guide books provide %s bonus XP."
+ },
+ {
+  "id": "dragon_lore",
+  "skill": "intelligence",
+  "texture_const": "DRAGON_LORE_PERK",
+  "texture": "runicskills:textures/skill/intelligence/dragon_lore.png",
+  "gate": "config:dragonLoreRequiredLevel",
+  "name": "Dragon Lore",
+  "desc": "Your knowledge increases dragon taming success by %s."
+ },
+ {
+  "id": "spellcraft_knowledge",
+  "skill": "intelligence",
+  "texture_const": "SPELLCRAFT_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/intelligence/spellcraft_knowledge.png",
+  "gate": "config:spellcraftKnowledgeRequiredLevel",
+  "name": "Spellcraft Knowledge",
+  "desc": "Spell casting speed increased by %s."
+ },
+ {
+  "id": "arcane_scholar",
+  "skill": "intelligence",
+  "texture_const": "ARCANE_SCHOLAR_PERK",
+  "texture": "runicskills:textures/skill/intelligence/arcane_scholar.png",
+  "gate": "config:arcaneScholarRequiredLevel",
+  "name": "Arcane Scholar",
+  "desc": "Ars Nouveau spell complexity limit increased by %s."
+ },
+ {
+  "id": "colony_advisor",
+  "skill": "intelligence",
+  "texture_const": "COLONY_ADVISOR_PERK",
+  "texture": "runicskills:textures/skill/intelligence/colony_advisor.png",
+  "gate": "config:colonyAdvisorRequiredLevel",
+  "name": "Colony Advisor",
+  "desc": "Colony buildings work %s faster."
+ },
+ {
+  "id": "apothecary",
+  "skill": "intelligence",
+  "texture_const": "APOTHECARY_PERK",
+  "texture": "runicskills:textures/skill/intelligence/apothecary.png",
+  "gate": "config:iredLevel",
+  "name": "Apothecary",
+  "desc": "Dave's Potioneering effects amplified by %s levels."
+ },
+ {
+  "id": "siege_engineer",
+  "skill": "intelligence",
+  "texture_const": "SIEGE_ENGINEER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/siege_engineer.png",
+  "gate": "config:aryRequiredLevel",
+  "name": "Siege Engineer",
+  "desc": "Siege machine damage increased by %s."
+ },
+ {
+  "id": "monster_compendium",
+  "skill": "intelligence",
+  "texture_const": "MONSTER_COMPENDIUM_PERK",
+  "texture": "runicskills:textures/skill/intelligence/monster_compendium.png",
+  "gate": "config:monsterCompendiumRequiredLevel",
+  "name": "Monster Compendium",
+  "desc": "Studied mobs take %s more damage."
+ },
+ {
+  "id": "tactical_genius",
+  "skill": "intelligence",
+  "texture_const": "TACTICAL_GENIUS_PERK",
+  "texture": "runicskills:textures/skill/intelligence/tactical_genius.png",
+  "gate": "config:tacticalGeniusRequiredLevel",
+  "name": "Tactical Genius",
+  "desc": "Nearby allies gain %s bonus damage."
+ },
+ {
+  "id": "natures_wisdom",
+  "skill": "intelligence",
+  "texture_const": "NATURES_WISDOM_PERK",
+  "texture": "runicskills:textures/skill/intelligence/natures_wisdom.png",
+  "gate": "config:naturesWisdomRequiredLevel",
+  "name": "Nature's Wisdom",
+  "desc": "Nature's Aura generation increased by %s."
+ },
+ {
+  "id": "enchantment_insight",
+  "skill": "intelligence",
+  "texture_const": "ENCHANTMENT_INSIGHT_PERK",
+  "texture": "runicskills:textures/skill/intelligence/enchantment_insight.png",
+  "gate": "config:enchantmentInsightRequiredLevel",
+  "name": "Enchantment Insight",
+  "desc": "Enchanting table shows %s extra enchantment options."
+ },
+ {
+  "id": "efficient_crafting",
+  "skill": "intelligence",
+  "texture_const": "EFFICIENT_CRAFTING_PERK",
+  "texture": "runicskills:textures/skill/intelligence/efficient_crafting.png",
+  "gate": "config:efficientCraftingRequiredLevel",
+  "name": "Efficient Crafting",
+  "desc": "Crafting has a %s chance to not consume materials."
+ },
+ {
+  "id": "runecrafter",
+  "skill": "intelligence",
+  "texture_const": "RUNECRAFTER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/runecrafter.png",
+  "gate": "config:runecrafterRequiredLevel",
+  "name": "Runecrafter",
+  "desc": "Runic items gain %s bonus stats."
+ },
+ {
+  "id": "aquatic_knowledge",
+  "skill": "intelligence",
+  "texture_const": "AQUATIC_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/intelligence/aquatic_knowledge.png",
+  "gate": "config:iredLevel",
+  "name": "Aquatic Knowledge",
+  "desc": "Fish provide %s more nourishment and unique buffs."
+ },
+ {
+  "id": "progressive_mastery",
+  "skill": "intelligence",
+  "texture_const": "PROGRESSIVE_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/intelligence/progressive_mastery.png",
+  "gate": "config:progressiveMasteryRequiredLevel",
+  "name": "Progressive Mastery",
+  "desc": "Each difficulty level grants %s more XP."
+ },
+ {
+  "id": "scroll_mastery",
+  "skill": "intelligence",
+  "texture_const": "SCROLL_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/intelligence/scroll_mastery.png",
+  "gate": "config:scrollMasteryRequiredLevel",
+  "name": "Scroll Mastery",
+  "desc": "Scrolls have a %s chance to not be consumed."
+ },
+ {
+  "id": "familiar_bond",
+  "skill": "intelligence",
+  "texture_const": "FAMILIAR_BOND_PERK",
+  "texture": "runicskills:textures/skill/intelligence/familiar_bond.png",
+  "gate": "config:familiarBondRequiredLevel",
+  "name": "Familiar Bond",
+  "desc": "Familiar and pet damage increased by %s."
+ },
+ {
+  "id": "strategic_mind",
+  "skill": "intelligence",
+  "texture_const": "STRATEGIC_MIND_PERK",
+  "texture": "runicskills:textures/skill/intelligence/strategic_mind.png",
+  "gate": "config:edLevel",
+  "name": "Strategic Mind",
+  "desc": "Discover enemy weaknesses, dealing %s bonus damage."
+ },
+ {
+  "id": "brewing_innovation",
+  "skill": "intelligence",
+  "texture_const": "BREWING_INNOVATION_PERK",
+  "texture": "runicskills:textures/skill/intelligence/brewing_innovation.png",
+  "gate": "config:brewingInnovationRequiredLevel",
+  "name": "Brewing Innovation",
+  "desc": "Potions can stack %s additional effects."
+ },
+ {
+  "id": "ancient_languages",
+  "skill": "intelligence",
+  "texture_const": "ANCIENT_LANGUAGES_PERK",
+  "texture": "runicskills:textures/skill/intelligence/ancient_languages.png",
+  "gate": "config:ancientLanguagesRequiredLevel",
+  "name": "Ancient Languages",
+  "desc": "Reading ancient texts grants %s bonus XP."
+ },
+ {
+  "id": "master_researcher",
+  "skill": "intelligence",
+  "texture_const": "MASTER_RESEARCHER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/master_researcher.png",
+  "gate": "config:masterResearcherRequiredLevel",
+  "name": "Master Researcher",
+  "desc": "Recipe discovery rate increased by %s."
+ },
+ {
+  "id": "golem_commander",
+  "skill": "intelligence",
+  "texture_const": "GOLEM_COMMANDER_PERK",
+  "texture": "runicskills:textures/skill/intelligence/golem_commander.png",
+  "gate": "config:golemCommanderRequiredLevel",
+  "name": "Golem Commander",
+  "desc": "Golem familiars deal %s more damage."
+ },
+ {
+  "id": "dimensional_scholar",
+  "skill": "intelligence",
+  "texture_const": "DIMENSIONAL_SCHOLAR_PERK",
+  "texture": "runicskills:textures/skill/intelligence/dimensional_scholar.png",
+  "gate": "config:dimensionalScholarRequiredLevel",
+  "name": "Dimensional Scholar",
+  "desc": "XP gained in other dimensions increased by %s."
+ },
+ {
+  "id": "war_tactician",
+  "skill": "intelligence",
+  "texture_const": "WAR_TACTICIAN_PERK",
+  "texture": "runicskills:textures/skill/intelligence/war_tactician.png",
+  "gate": "config:warTacticianRequiredLevel",
+  "name": "War Tactician",
+  "desc": "Allies in range gain %s bonus attack speed."
+ },
+ {
+  "id": "alchemic_transmutation",
+  "skill": "intelligence",
+  "texture_const": "ALCHEMIC_TRANSMUTATION_PERK",
+  "texture": "runicskills:textures/skill/intelligence/alchemic_transmutation.png",
+  "gate": "config:alchemicTransmutationRequiredLevel",
+  "name": "Alchemic Transmutation",
+  "desc": "Brewing yields %s bonus ingredients."
+ },
+ {
+  "id": "mystic_analysis",
+  "skill": "intelligence",
+  "texture_const": "MYSTIC_ANALYSIS_PERK",
+  "texture": "runicskills:textures/skill/intelligence/mystic_analysis.png",
+  "gate": "config:mysticAnalysisRequiredLevel",
+  "name": "Mystic Analysis",
+  "desc": "Identify enemy weaknesses for %s bonus type damage."
+ },
+ {
+  "id": "sages_focus",
+  "skill": "intelligence",
+  "texture_const": "SAGES_FOCUS_PERK",
+  "texture": "runicskills:textures/skill/intelligence/sages_focus.png",
+  "gate": "config:vel",
+  "name": "Sage's Focus",
+  "desc": "Channeled abilities are %s faster."
+ },
+ {
+  "id": "efficient_miner",
+  "skill": "building",
+  "texture_const": "EFFICIENT_MINER_PERK",
+  "texture": "runicskills:textures/skill/building/efficient_miner.png",
+  "gate": "config:efficientMinerRequiredLevel",
+  "name": "Efficient Miner",
+  "desc": "Mining speed increased by %s."
+ },
+ {
+  "id": "vein_miner",
+  "skill": "building",
+  "texture_const": "VEIN_MINER_PERK",
+  "texture": "runicskills:textures/skill/building/vein_miner.png",
+  "gate": "config:iredLevel",
+  "name": "Vein Miner",
+  "desc": "Mine entire veins of connected ore at once."
+ },
+ {
+  "id": "silk_touch_mastery",
+  "skill": "building",
+  "texture_const": "SILK_TOUCH_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/building/silk_touch_mastery.png",
+  "gate": "config:veinMinerRequiredLevel",
+  "name": "Silk Touch Mastery",
+  "desc": "You have a %s chance for silk touch drops without the enchantment."
+ },
+ {
+  "id": "fortune_miner",
+  "skill": "building",
+  "texture_const": "FORTUNE_MINER_PERK",
+  "texture": "runicskills:textures/skill/building/fortune_miner.png",
+  "gate": "config:fortuneMinerRequiredLevel",
+  "name": "Fortune Miner",
+  "desc": "Mining has a %s chance for bonus ore drops."
+ },
+ {
+  "id": "architect",
+  "skill": "building",
+  "texture_const": "ARCHITECT_PERK",
+  "texture": "runicskills:textures/skill/building/architect.png",
+  "gate": "config:neMinerRequiredLevel",
+  "name": "Architect",
+  "desc": "Placed blocks gain %s bonus hardness."
+ },
+ {
+  "id": "master_mason",
+  "skill": "building",
+  "texture_const": "MASTER_MASON_PERK",
+  "texture": "runicskills:textures/skill/building/master_mason.png",
+  "gate": "config:architectRequiredLevel",
+  "name": "Master Mason",
+  "desc": "Stone blocks are placed %s faster."
+ },
+ {
+  "id": "lumberjack",
+  "skill": "building",
+  "texture_const": "LUMBERJACK_PERK",
+  "texture": "runicskills:textures/skill/building/lumberjack.png",
+  "gate": "config:asterMasonRequiredLevel",
+  "name": "Lumberjack",
+  "desc": "Tree chopping speed increased by %s."
+ },
+ {
+  "id": "smelter",
+  "skill": "building",
+  "texture_const": "SMELTER_PERK",
+  "texture": "runicskills:textures/skill/building/smelter.png",
+  "gate": "config:lumberjackRequiredLevel",
+  "name": "Smelter",
+  "desc": "Smelting speed increased by %s."
+ },
+ {
+  "id": "quarry_master",
+  "skill": "building",
+  "texture_const": "QUARRY_MASTER_PERK",
+  "texture": "runicskills:textures/skill/building/quarry_master.png",
+  "gate": "config:smelterRequiredLevel",
+  "name": "Quarry Master",
+  "desc": "Mining in deep layers yields %s more drops."
+ },
+ {
+  "id": "colony_builder",
+  "skill": "building",
+  "texture_const": "COLONY_BUILDER_PERK",
+  "texture": "runicskills:textures/skill/building/colony_builder.png",
+  "gate": "config:quiredLevel",
+  "name": "Colony Builder",
+  "desc": "Colony build speed increased by %s."
+ },
+ {
+  "id": "resource_efficiency",
+  "skill": "building",
+  "texture_const": "RESOURCE_EFFICIENCY_PERK",
+  "texture": "runicskills:textures/skill/building/resource_efficiency.png",
+  "gate": "config:resourceEfficiencyRequiredLevel",
+  "name": "Resource Efficiency",
+  "desc": "Breaking crafting blocks returns %s of materials."
+ },
+ {
+  "id": "reinforced_construction",
+  "skill": "building",
+  "texture_const": "REINFORCED_CONSTRUCTION_PERK",
+  "texture": "runicskills:textures/skill/building/reinforced_construction.png",
+  "gate": "config:reinforcedConstructionRequiredLevel",
+  "name": "Reinforced Construction",
+  "desc": "Buildings take %s less explosion damage."
+ },
+ {
+  "id": "terraformer",
+  "skill": "building",
+  "texture_const": "TERRAFORMER_PERK",
+  "texture": "runicskills:textures/skill/building/terraformer.png",
+  "gate": "config:terraformerRequiredLevel",
+  "name": "Terraformer",
+  "desc": "Shovel and hoe speed increased by %s."
+ },
+ {
+  "id": "ore_detector",
+  "skill": "building",
+  "texture_const": "ORE_DETECTOR_PERK",
+  "texture": "runicskills:textures/skill/building/ore_detector.png",
+  "gate": "config:erraformerRequiredLevel",
+  "name": "Ore Detector",
+  "desc": "Nearby ores glow through walls, revealing their location."
+ },
+ {
+  "id": "blast_mining",
+  "skill": "building",
+  "texture_const": "BLAST_MINING_PERK",
+  "texture": "runicskills:textures/skill/building/blast_mining.png",
+  "gate": "config:oreDetectorRequiredLevel",
+  "name": "Blast Mining",
+  "desc": "TNT mining yields %s more drops."
+ },
+ {
+  "id": "stone_cutter_efficiency",
+  "skill": "building",
+  "texture_const": "STONE_CUTTER_EFFICIENCY_PERK",
+  "texture": "runicskills:textures/skill/building/stone_cutter_efficiency.png",
+  "gate": "config:stoneCutterEfficiencyRequiredLevel",
+  "name": "Stone Cutter Efficiency",
+  "desc": "Stonecutter recipes yield %s bonus output."
+ },
+ {
+  "id": "master_woodworker",
+  "skill": "building",
+  "texture_const": "MASTER_WOODWORKER_PERK",
+  "texture": "runicskills:textures/skill/building/master_woodworker.png",
+  "gate": "config:masterWoodworkerRequiredLevel",
+  "name": "Master Woodworker",
+  "desc": "Wood planks yield %s more from logs."
+ },
+ {
+  "id": "scaffold_master",
+  "skill": "building",
+  "texture_const": "SCAFFOLD_MASTER_PERK",
+  "texture": "runicskills:textures/skill/building/scaffold_master.png",
+  "gate": "config:scaffoldMasterRequiredLevel",
+  "name": "Scaffold Master",
+  "desc": "Scaffolding placement speed increased by %s."
+ },
+ {
+  "id": "deep_core_mining",
+  "skill": "building",
+  "texture_const": "DEEP_CORE_MINING_PERK",
+  "texture": "runicskills:textures/skill/building/deep_core_mining.png",
+  "gate": "config:deepCoreMiningRequiredLevel",
+  "name": "Deep Core Mining",
+  "desc": "Mining below Y=0 yields %s more resources."
+ },
+ {
+  "id": "bridge_builder",
+  "skill": "building",
+  "texture_const": "BRIDGE_BUILDER_PERK",
+  "texture": "runicskills:textures/skill/building/bridge_builder.png",
+  "gate": "config:bridgeBuilderRequiredLevel",
+  "name": "Bridge Builder",
+  "desc": "Block placement reach increased by %s blocks."
+ },
+ {
+  "id": "runic_mining",
+  "skill": "building",
+  "texture_const": "RUNIC_MINING_PERK",
+  "texture": "runicskills:textures/skill/building/runic_mining.png",
+  "gate": "config:dLevel",
+  "name": "Runic Mining",
+  "desc": "Runic ore drops increased by %s."
+ },
+ {
+  "id": "medieval_architecture",
+  "skill": "building",
+  "texture_const": "MEDIEVAL_ARCHITECTURE_PERK",
+  "texture": "runicskills:textures/skill/building/medieval_architecture.png",
+  "gate": "config:el",
+  "name": "Medieval Architecture",
+  "desc": "Medieval building blocks crafted yield %s bonus."
+ },
+ {
+  "id": "explosive_expert",
+  "skill": "building",
+  "texture_const": "EXPLOSIVE_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/building/explosive_expert.png",
+  "gate": "config:explosiveExpertRequiredLevel",
+  "name": "Explosive Expert",
+  "desc": "Your controlled explosions deal no terrain damage."
+ },
+ {
+  "id": "foundation_layer",
+  "skill": "building",
+  "texture_const": "FOUNDATION_LAYER_PERK",
+  "texture": "runicskills:textures/skill/building/foundation_layer.png",
+  "gate": "config:explosiveExpertRequiredLevel",
+  "name": "Foundation Layer",
+  "desc": "Blocks placed on bedrock level gain %s hardness."
+ },
+ {
+  "id": "structural_engineer",
+  "skill": "building",
+  "texture_const": "STRUCTURAL_ENGINEER_PERK",
+  "texture": "runicskills:textures/skill/building/structural_engineer.png",
+  "gate": "config:structuralEngineerRequiredLevel",
+  "name": "Structural Engineer",
+  "desc": "Multi-block structures build %s faster."
+ },
+ {
+  "id": "farmers_hand",
+  "skill": "building",
+  "texture_const": "FARMERS_HAND_PERK",
+  "texture": "runicskills:textures/skill/building/farmers_hand.png",
+  "gate": "config:farmersHandRequiredLevel",
+  "name": "Farmer's Hand",
+  "desc": "Crop growth speed increased by %s."
+ },
+ {
+  "id": "irrigation_expert",
+  "skill": "building",
+  "texture_const": "IRRIGATION_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/building/irrigation_expert.png",
+  "gate": "config:uiredLevel",
+  "name": "Irrigation Expert",
+  "desc": "Water-adjacent crops grow %s faster."
+ },
+ {
+  "id": "dimensional_builder",
+  "skill": "building",
+  "texture_const": "DIMENSIONAL_BUILDER_PERK",
+  "texture": "runicskills:textures/skill/building/dimensional_builder.png",
+  "gate": "config:dimensionalBuilderRequiredLevel",
+  "name": "Dimensional Builder",
+  "desc": "Building in other dimensions is %s faster."
+ },
+ {
+  "id": "master_breaker",
+  "skill": "building",
+  "texture_const": "MASTER_BREAKER_PERK",
+  "texture": "runicskills:textures/skill/building/master_breaker.png",
+  "gate": "config:masterBreakerRequiredLevel",
+  "name": "Master Breaker",
+  "desc": "All block breaking speed increased by %s."
+ },
+ {
+  "id": "glowstone_sight",
+  "skill": "building",
+  "texture_const": "GLOWSTONE_SIGHT_PERK",
+  "texture": "runicskills:textures/skill/building/glowstone_sight.png",
+  "gate": "config:evel",
+  "name": "Glowstone Sight",
+  "desc": "Mining generates temporary light around you."
+ },
+ {
+  "id": "salvage_expert",
+  "skill": "building",
+  "texture_const": "SALVAGE_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/building/salvage_expert.png",
+  "gate": "config:glowstoneSightRequiredLevel",
+  "name": "Salvage Expert",
+  "desc": "Breaking crafted blocks returns %s of materials."
+ },
+ {
+  "id": "prospector",
+  "skill": "building",
+  "texture_const": "PROSPECTOR_PERK",
+  "texture": "runicskills:textures/skill/building/prospector.png",
+  "gate": "config:RequiredLevel",
+  "name": "Prospector",
+  "desc": "You have a %s chance to find bonus minerals while mining."
+ },
+ {
+  "id": "construction_haste",
+  "skill": "building",
+  "texture_const": "CONSTRUCTION_HASTE_PERK",
+  "texture": "runicskills:textures/skill/building/construction_haste.png",
+  "gate": "config:torRequiredLevel",
+  "name": "Construction Haste",
+  "desc": "Block placement speed increased by %s."
+ },
+ {
+  "id": "underground_explorer",
+  "skill": "building",
+  "texture_const": "UNDERGROUND_EXPLORER_PERK",
+  "texture": "runicskills:textures/skill/building/underground_explorer.png",
+  "gate": "config:undergroundExplorerRequiredLevel",
+  "name": "Underground Explorer",
+  "desc": "Move %s faster in caves below Y=30."
+ },
+ {
+  "id": "mass_production",
+  "skill": "building",
+  "texture_const": "MASS_PRODUCTION_PERK",
+  "texture": "runicskills:textures/skill/building/mass_production.png",
+  "gate": "config:massProductionRequiredLevel",
+  "name": "Mass Production",
+  "desc": "Bulk crafting operations are %s more efficient."
+ },
+ {
+  "id": "heritage_builder",
+  "skill": "building",
+  "texture_const": "HERITAGE_BUILDER_PERK",
+  "texture": "runicskills:textures/skill/building/heritage_builder.png",
+  "gate": "config:heritageBuilderRequiredLevel",
+  "name": "Heritage Builder",
+  "desc": "Colony structures gain %s bonus durability."
+ },
+ {
+  "id": "enchantment_preservation",
+  "skill": "wisdom",
+  "texture_const": "ENCHANTMENT_PRESERVATION_PERK",
+  "texture": "runicskills:textures/skill/wisdom/enchantment_preservation.png",
+  "gate": "config:enchantmentPreservationRequiredLevel",
+  "name": "Enchantment Preservation",
+  "desc": "You have a %s chance for enchantments to be kept on death."
+ },
+ {
+  "id": "disenchant_mastery",
+  "skill": "wisdom",
+  "texture_const": "DISENCHANT_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/wisdom/disenchant_mastery.png",
+  "gate": "config:disenchantMasteryRequiredLevel",
+  "name": "Disenchant Mastery",
+  "desc": "The grindstone returns %s more XP."
+ },
+ {
+  "id": "mending_boost",
+  "skill": "wisdom",
+  "texture_const": "MENDING_BOOST_PERK",
+  "texture": "runicskills:textures/skill/wisdom/mending_boost.png",
+  "gate": "config:mendingBoostRequiredLevel",
+  "name": "Mending Boost",
+  "desc": "Mending repair rate increased by %s."
+ },
+ {
+  "id": "unbreaking_mastery",
+  "skill": "wisdom",
+  "texture_const": "UNBREAKING_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/wisdom/unbreaking_mastery.png",
+  "gate": "config:Level",
+  "name": "Unbreaking Mastery",
+  "desc": "Unbreaking enchantment chance increased by %s."
+ },
+ {
+  "id": "enchantment_stacking",
+  "skill": "wisdom",
+  "texture_const": "ENCHANTMENT_STACKING_PERK",
+  "texture": "runicskills:textures/skill/wisdom/enchantment_stacking.png",
+  "gate": "config:enchantmentStackingRequiredLevel",
+  "name": "Enchantment Stacking",
+  "desc": "You have a %s chance to add an additional enchantment."
+ },
+ {
+  "id": "wisdom_of_ages",
+  "skill": "wisdom",
+  "texture_const": "WISDOM_OF_AGES_PERK",
+  "texture": "runicskills:textures/skill/wisdom/wisdom_of_ages.png",
+  "gate": "config:wisdomOfAgesRequiredLevel",
+  "name": "Wisdom of Ages",
+  "desc": "Anvil repair cost reduced by %s."
+ },
+ {
+  "id": "tome_of_knowledge",
+  "skill": "wisdom",
+  "texture_const": "TOME_OF_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/tome_of_knowledge.png",
+  "gate": "config:Level",
+  "name": "Tome of Knowledge",
+  "desc": "Books store %s more enchantment levels."
+ },
+ {
+  "id": "runic_enchantment",
+  "skill": "wisdom",
+  "texture_const": "RUNIC_ENCHANTMENT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/runic_enchantment.png",
+  "gate": "config:runicEnchantmentRequiredLevel",
+  "name": "Runic Enchantment",
+  "desc": "Enchantments on runic gear are %s stronger."
+ },
+ {
+  "id": "apotheosis_wisdom",
+  "skill": "wisdom",
+  "texture_const": "APOTHEOSIS_WISDOM_PERK",
+  "texture": "runicskills:textures/skill/wisdom/apotheosis_wisdom.png",
+  "gate": "config:apotheosisWisdomRequiredLevel",
+  "name": "Apotheosis Wisdom",
+  "desc": "Apotheosis enchantment cap increased by %s."
+ },
+ {
+  "id": "scroll_scribe",
+  "skill": "wisdom",
+  "texture_const": "SCROLL_SCRIBE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/scroll_scribe.png",
+  "gate": "config:scrollScribeRequiredLevel",
+  "name": "Scroll Scribe",
+  "desc": "You can create scrolls that replicate enchantments."
+ },
+ {
+  "id": "mystic_attunement",
+  "skill": "wisdom",
+  "texture_const": "MYSTIC_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/mystic_attunement.png",
+  "gate": "config:scrollScribeRequiredLevel",
+  "name": "Mystic Attunement",
+  "desc": "All magical items gain %s effectiveness."
+ },
+ {
+  "id": "soul_binding",
+  "skill": "wisdom",
+  "texture_const": "SOUL_BINDING_PERK",
+  "texture": "runicskills:textures/skill/wisdom/soul_binding.png",
+  "gate": "config:soulBindingRequiredLevel",
+  "name": "Soul Binding",
+  "desc": "Items with Soul Bound enchantment never drop on death."
+ },
+ {
+  "id": "experienced_enchanter",
+  "skill": "wisdom",
+  "texture_const": "EXPERIENCED_ENCHANTER_PERK",
+  "texture": "runicskills:textures/skill/wisdom/experienced_enchanter.png",
+  "gate": "config:soulBindingRequiredLevel",
+  "name": "Experienced Enchanter",
+  "desc": "Enchanting costs %s less XP."
+ },
+ {
+  "id": "arcane_linguist",
+  "skill": "wisdom",
+  "texture_const": "ARCANE_LINGUIST_PERK",
+  "texture": "runicskills:textures/skill/wisdom/arcane_linguist.png",
+  "gate": "config:arcaneLinguistRequiredLevel",
+  "name": "Arcane Linguist",
+  "desc": "Reading spell types grants %s bonus effectiveness."
+ },
+ {
+  "id": "ward_master",
+  "skill": "wisdom",
+  "texture_const": "WARD_MASTER_PERK",
+  "texture": "runicskills:textures/skill/wisdom/ward_master.png",
+  "gate": "config:wardMasterRequiredLevel",
+  "name": "Ward Master",
+  "desc": "Protective wards last %s longer."
+ },
+ {
+  "id": "dimensional_wisdom",
+  "skill": "wisdom",
+  "texture_const": "DIMENSIONAL_WISDOM_PERK",
+  "texture": "runicskills:textures/skill/wisdom/dimensional_wisdom.png",
+  "gate": "config:erRequiredLevel",
+  "name": "Dimensional Wisdom",
+  "desc": "Enchantments work %s better in other dimensions."
+ },
+ {
+  "id": "ancient_inscriptions",
+  "skill": "wisdom",
+  "texture_const": "ANCIENT_INSCRIPTIONS_PERK",
+  "texture": "runicskills:textures/skill/wisdom/ancient_inscriptions.png",
+  "gate": "config:ancientInscriptionsRequiredLevel",
+  "name": "Ancient Inscriptions",
+  "desc": "Ancient artifacts provide %s bonus effects."
+ },
+ {
+  "id": "ars_savant",
+  "skill": "wisdom",
+  "texture_const": "ARS_SAVANT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/ars_savant.png",
+  "gate": "config:arsSavantRequiredLevel",
+  "name": "Ars Savant",
+  "desc": "Ars Nouveau familiar abilities improved by %s."
+ },
+ {
+  "id": "nature_sage",
+  "skill": "wisdom",
+  "texture_const": "NATURE_SAGE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/nature_sage.png",
+  "gate": "config:natureSageRequiredLevel",
+  "name": "Nature Sage",
+  "desc": "Nature's Aura infusions last %s longer."
+ },
+ {
+  "id": "spell_inscription",
+  "skill": "wisdom",
+  "texture_const": "SPELL_INSCRIPTION_PERK",
+  "texture": "runicskills:textures/skill/wisdom/spell_inscription.png",
+  "gate": "config:SageRequiredLevel",
+  "name": "Spell Inscription",
+  "desc": "Inscribed spells cost %s less mana."
+ },
+ {
+  "id": "elder_knowledge",
+  "skill": "wisdom",
+  "texture_const": "ELDER_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/elder_knowledge.png",
+  "gate": "config:elderKnowledgeRequiredLevel",
+  "name": "Elder Knowledge",
+  "desc": "XP from enchanting is returned by %s on completion."
+ },
+ {
+  "id": "bookcraft",
+  "skill": "wisdom",
+  "texture_const": "BOOKCRAFT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/bookcraft.png",
+  "gate": "config:equiredLevel",
+  "name": "Bookcraft",
+  "desc": "Enchanted books sell for %s more to villagers."
+ },
+ {
+  "id": "mystic_sight",
+  "skill": "wisdom",
+  "texture_const": "MYSTIC_SIGHT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/mystic_sight.png",
+  "gate": "config:bookcraftRequiredLevel",
+  "name": "Mystic Sight",
+  "desc": "You can see enchantments on items within a short radius."
+ },
+ {
+  "id": "lapis_conservation",
+  "skill": "wisdom",
+  "texture_const": "LAPIS_CONSERVATION_PERK",
+  "texture": "runicskills:textures/skill/wisdom/lapis_conservation.png",
+  "gate": "config:mysticSightRequiredLevel",
+  "name": "Lapis Conservation",
+  "desc": "Lapis has a %s chance to not be consumed when enchanting."
+ },
+ {
+  "id": "enlightenment",
+  "skill": "wisdom",
+  "texture_const": "ENLIGHTENMENT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/enlightenment.png",
+  "gate": "config:enlightenmentRequiredLevel",
+  "name": "Enlightenment",
+  "desc": "All skill XP gain increased by %s."
+ },
+ {
+  "id": "curse_breaker",
+  "skill": "wisdom",
+  "texture_const": "CURSE_BREAKER_PERK",
+  "texture": "runicskills:textures/skill/wisdom/curse_breaker.png",
+  "gate": "config:RequiredLevel",
+  "name": "Curse Breaker",
+  "desc": "You can remove curses from items at the grindstone."
+ },
+ {
+  "id": "enchantment_amplifier",
+  "skill": "wisdom",
+  "texture_const": "ENCHANTMENT_AMPLIFIER_PERK",
+  "texture": "runicskills:textures/skill/wisdom/enchantment_amplifier.png",
+  "gate": "config:curseBreakerRequiredLevel",
+  "name": "Enchantment Amplifier",
+  "desc": "Anvil enchantments have a %s chance for a bonus level."
+ },
+ {
+  "id": "rune_mastery",
+  "skill": "wisdom",
+  "texture_const": "RUNE_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/wisdom/rune_mastery.png",
+  "gate": "config:runeMasteryRequiredLevel",
+  "name": "Rune Mastery",
+  "desc": "Rune-based enchantments are %s more effective."
+ },
+ {
+  "id": "druidic_knowledge",
+  "skill": "wisdom",
+  "texture_const": "DRUIDIC_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/druidic_knowledge.png",
+  "gate": "config:equiredLevel",
+  "name": "Druidic Knowledge",
+  "desc": "Nature enchantments are %s stronger."
+ },
+ {
+  "id": "temporal_wisdom",
+  "skill": "wisdom",
+  "texture_const": "TEMPORAL_WISDOM_PERK",
+  "texture": "runicskills:textures/skill/wisdom/temporal_wisdom.png",
+  "gate": "config:temporalWisdomRequiredLevel",
+  "name": "Temporal Wisdom",
+  "desc": "Enchantment effects last %s longer in combat."
+ },
+ {
+  "id": "grand_sage",
+  "skill": "wisdom",
+  "texture_const": "GRAND_SAGE_PERK",
+  "texture": "runicskills:textures/skill/wisdom/grand_sage.png",
+  "gate": "config:quiredLevel",
+  "name": "Grand Sage",
+  "desc": "All wisdom-based bonuses are amplified by %s."
+ },
+ {
+  "id": "mana_regeneration",
+  "skill": "magic",
+  "texture_const": "MANA_REGENERATION_PERK",
+  "texture": "runicskills:textures/skill/magic/mana_regeneration.png",
+  "gate": "config:manaRegenerationRequiredLevel",
+  "name": "Mana Regeneration",
+  "desc": "Mana regeneration rate increased by %s."
+ },
+ {
+  "id": "spell_amplifier",
+  "skill": "magic",
+  "texture_const": "SPELL_AMPLIFIER_PERK",
+  "texture": "runicskills:textures/skill/magic/spell_amplifier.png",
+  "gate": "config:spellAmplifierRequiredLevel",
+  "name": "Spell Amplifier",
+  "desc": "All spell damage increased by %s."
+ },
+ {
+  "id": "source_well",
+  "skill": "magic",
+  "texture_const": "SOURCE_WELL_PERK",
+  "texture": "runicskills:textures/skill/magic/source_well.png",
+  "gate": "config:sourceWellRequiredLevel",
+  "name": "Source Well",
+  "desc": "Ars Nouveau source generation increased by %s."
+ },
+ {
+  "id": "potion_splash",
+  "skill": "magic",
+  "texture_const": "POTION_SPLASH_PERK",
+  "texture": "runicskills:textures/skill/magic/potion_splash.png",
+  "gate": "config:sourceWellRequiredLevel",
+  "name": "Potion Splash",
+  "desc": "Splash and lingering potion area increased by %s."
+ },
+ {
+  "id": "telekinesis",
+  "skill": "magic",
+  "texture_const": "TELEKINESIS_PERK",
+  "texture": "runicskills:textures/skill/magic/telekinesis.png",
+  "gate": "config:SplashRequiredLevel",
+  "name": "Telekinesis",
+  "desc": "Interact with blocks at a range of %s blocks."
+ },
+ {
+  "id": "elemental_master",
+  "skill": "magic",
+  "texture_const": "ELEMENTAL_MASTER_PERK",
+  "texture": "runicskills:textures/skill/magic/elemental_master.png",
+  "gate": "config:elementalMasterRequiredLevel",
+  "name": "Elemental Master",
+  "desc": "Elemental spell damage increased by %s."
+ },
+ {
+  "id": "arcane_barrier",
+  "skill": "magic",
+  "texture_const": "ARCANE_BARRIER_PERK",
+  "texture": "runicskills:textures/skill/magic/arcane_barrier.png",
+  "gate": "config:arcaneBarrierRequiredLevel",
+  "name": "Arcane Barrier",
+  "desc": "Create a magical barrier that absorbs %s damage."
+ },
+ {
+  "id": "spell_quickening",
+  "skill": "magic",
+  "texture_const": "SPELL_QUICKENING_PERK",
+  "texture": "runicskills:textures/skill/magic/spell_quickening.png",
+  "gate": "config:spellQuickeningRequiredLevel",
+  "name": "Spell Quickening",
+  "desc": "Spell cast time reduced by %s."
+ },
+ {
+  "id": "source_attunement",
+  "skill": "magic",
+  "texture_const": "SOURCE_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/magic/source_attunement.png",
+  "gate": "config:sourceAttunementRequiredLevel",
+  "name": "Source Attunement",
+  "desc": "Ars Nouveau source pool increased by %s."
+ },
+ {
+  "id": "summoner",
+  "skill": "magic",
+  "texture_const": "SUMMONER_PERK",
+  "texture": "runicskills:textures/skill/magic/summoner.png",
+  "gate": "config:summonerRequiredLevel",
+  "name": "Summoner",
+  "desc": "Summoned creatures are %s stronger."
+ },
+ {
+  "id": "mystic_shield",
+  "skill": "magic",
+  "texture_const": "MYSTIC_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/magic/mystic_shield.png",
+  "gate": "config:summonerRequiredLevel",
+  "name": "Mystic Shield",
+  "desc": "Magical projectiles deal %s less damage to you."
+ },
+ {
+  "id": "astral_projection",
+  "skill": "magic",
+  "texture_const": "ASTRAL_PROJECTION_PERK",
+  "texture": "runicskills:textures/skill/magic/astral_projection.png",
+  "gate": "config:redLevel",
+  "name": "Astral Projection",
+  "desc": "View the area around you in a %s block radius."
+ },
+ {
+  "id": "philosophers_stone",
+  "skill": "magic",
+  "texture_const": "PHILOSOPHERS_STONE_PERK",
+  "texture": "runicskills:textures/skill/magic/philosophers_stone.png",
+  "gate": "config:philosophersStoneRequiredLevel",
+  "name": "Philosopher's Stone",
+  "desc": "Killed mobs have a %s chance to drop transmuted items."
+ },
+ {
+  "id": "mana_shield",
+  "skill": "magic",
+  "texture_const": "MANA_SHIELD_PERK",
+  "texture": "runicskills:textures/skill/magic/mana_shield.png",
+  "gate": "config:manaShieldRequiredLevel",
+  "name": "Mana Shield",
+  "desc": "%s of damage taken is absorbed by mana instead of health."
+ },
+ {
+  "id": "dragon_magic",
+  "skill": "magic",
+  "texture_const": "DRAGON_MAGIC_PERK",
+  "texture": "runicskills:textures/skill/magic/dragon_magic.png",
+  "gate": "config:dragonMagicRequiredLevel",
+  "name": "Dragon Magic",
+  "desc": "Dragon-based magical items are %s stronger."
+ },
+ {
+  "id": "eldritch_power",
+  "skill": "magic",
+  "texture_const": "ELDRITCH_POWER_PERK",
+  "texture": "runicskills:textures/skill/magic/eldritch_power.png",
+  "gate": "config:eldritchPowerRequiredLevel",
+  "name": "Eldritch Power",
+  "desc": "Eldritch spells deal %s more damage."
+ },
+ {
+  "id": "soul_magic",
+  "skill": "magic",
+  "texture_const": "SOUL_MAGIC_PERK",
+  "texture": "runicskills:textures/skill/magic/soul_magic.png",
+  "gate": "config:owerRequiredLevel",
+  "name": "Soul Magic",
+  "desc": "Soul-based abilities are %s more effective."
+ },
+ {
+  "id": "dual_casting",
+  "skill": "magic",
+  "texture_const": "DUAL_CASTING_PERK",
+  "texture": "runicskills:textures/skill/magic/dual_casting.png",
+  "gate": "config:soulMagicRequiredLevel",
+  "name": "Dual Casting",
+  "desc": "You have a %s chance to cast a spell twice."
+ },
+ {
+  "id": "enchanted_missiles",
+  "skill": "magic",
+  "texture_const": "ENCHANTED_MISSILES_PERK",
+  "texture": "runicskills:textures/skill/magic/enchanted_missiles.png",
+  "gate": "config:quiredLevel",
+  "name": "Enchanted Missiles",
+  "desc": "Magic missile damage increased by %s."
+ },
+ {
+  "id": "aura_manipulation",
+  "skill": "magic",
+  "texture_const": "AURA_MANIPULATION_PERK",
+  "texture": "runicskills:textures/skill/magic/aura_manipulation.png",
+  "gate": "config:auraManipulationRequiredLevel",
+  "name": "Aura Manipulation",
+  "desc": "Nature's Aura effects are %s stronger."
+ },
+ {
+  "id": "void_magic",
+  "skill": "magic",
+  "texture_const": "VOID_MAGIC_PERK",
+  "texture": "runicskills:textures/skill/magic/void_magic.png",
+  "gate": "config:el",
+  "name": "Void Magic",
+  "desc": "Ender-based damage increased by %s."
+ },
+ {
+  "id": "treasure_sense",
+  "skill": "fortune",
+  "texture_const": "TREASURE_SENSE_PERK",
+  "texture": "runicskills:textures/skill/fortune/treasure_sense.png",
+  "gate": "config:treasureSenseRequiredLevel",
+  "name": "Treasure Sense",
+  "desc": "Chance for rare loot increased by %s."
+ },
+ {
+  "id": "double_down",
+  "skill": "fortune",
+  "texture_const": "DOUBLE_DOWN_PERK",
+  "texture": "runicskills:textures/skill/fortune/double_down.png",
+  "gate": "config:RequiredLevel",
+  "name": "Double Down",
+  "desc": "You have a %s chance for double drops from all sources."
+ },
+ {
+  "id": "golden_touch",
+  "skill": "fortune",
+  "texture_const": "GOLDEN_TOUCH_PERK",
+  "texture": "runicskills:textures/skill/fortune/golden_touch.png",
+  "gate": "config:doubleDownRequiredLevel",
+  "name": "Golden Touch",
+  "desc": "You have a %s chance for gold drops from any mob."
+ },
+ {
+  "id": "fortunes_favor",
+  "skill": "fortune",
+  "texture_const": "FORTUNES_FAVOR_PERK",
+  "texture": "runicskills:textures/skill/fortune/fortunes_favor.png",
+  "gate": "config:ouchRequiredLevel",
+  "name": "Fortune's Favor",
+  "desc": "Fortune enchantment effectiveness increased by %s."
+ },
+ {
+  "id": "lucky_fishing",
+  "skill": "fortune",
+  "texture_const": "LUCKY_FISHING_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_fishing.png",
+  "gate": "config:iredLevel",
+  "name": "Lucky Fishing",
+  "desc": "Fishing treasure rate increased by %s."
+ },
+ {
+  "id": "prospectors_luck",
+  "skill": "fortune",
+  "texture_const": "PROSPECTORS_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/prospectors_luck.png",
+  "gate": "config:redLevel",
+  "name": "Prospector's Luck",
+  "desc": "Ore mining yields %s more drops."
+ },
+ {
+  "id": "scavenger",
+  "skill": "fortune",
+  "texture_const": "SCAVENGER_PERK",
+  "texture": "runicskills:textures/skill/fortune/scavenger.png",
+  "gate": "config:dLevel",
+  "name": "Scavenger",
+  "desc": "You have a %s chance to find extra items in loot chests."
+ },
+ {
+  "id": "critical_mastery",
+  "skill": "fortune",
+  "texture_const": "CRITICAL_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/fortune/critical_mastery.png",
+  "gate": "config:scavengerRequiredLevel",
+  "name": "Critical Mastery",
+  "desc": "Critical hit chance increased by %s."
+ },
+ {
+  "id": "looter",
+  "skill": "fortune",
+  "texture_const": "LOOTER_PERK",
+  "texture": "runicskills:textures/skill/fortune/looter.png",
+  "gate": "config:equiredLevel",
+  "name": "Looter",
+  "desc": "Boss mob drops increased by %s items."
+ },
+ {
+  "id": "jackpot",
+  "skill": "fortune",
+  "texture_const": "JACKPOT_PERK",
+  "texture": "runicskills:textures/skill/fortune/jackpot.png",
+  "gate": "config:looterRequiredLevel",
+  "name": "Jackpot",
+  "desc": "You have a %s chance for triple loot from chests."
+ },
+ {
+  "id": "enchanted_fortune",
+  "skill": "fortune",
+  "texture_const": "ENCHANTED_FORTUNE_PERK",
+  "texture": "runicskills:textures/skill/fortune/enchanted_fortune.png",
+  "gate": "config:jackpotRequiredLevel",
+  "name": "Enchanted Fortune",
+  "desc": "Enchanted mob drops increased by %s."
+ },
+ {
+  "id": "dragon_hoard",
+  "skill": "fortune",
+  "texture_const": "DRAGON_HOARD_PERK",
+  "texture": "runicskills:textures/skill/fortune/dragon_hoard.png",
+  "gate": "config:dragonHoardRequiredLevel",
+  "name": "Dragon Hoard",
+  "desc": "Dragon loot tables yield %s more."
+ },
+ {
+  "id": "cataclysm_spoils",
+  "skill": "fortune",
+  "texture_const": "CATACLYSM_SPOILS_PERK",
+  "texture": "runicskills:textures/skill/fortune/cataclysm_spoils.png",
+  "gate": "config:cataclysmSpoilsRequiredLevel",
+  "name": "Cataclysm Spoils",
+  "desc": "Cataclysm boss drops yield %s more loot."
+ },
+ {
+  "id": "runic_fortune",
+  "skill": "fortune",
+  "texture_const": "RUNIC_FORTUNE_PERK",
+  "texture": "runicskills:textures/skill/fortune/runic_fortune.png",
+  "gate": "config:runicFortuneRequiredLevel",
+  "name": "Runic Fortune",
+  "desc": "Runic ore drops increased by %s."
+ },
+ {
+  "id": "apotheosis_gems",
+  "skill": "fortune",
+  "texture_const": "APOTHEOSIS_GEMS_PERK",
+  "texture": "runicskills:textures/skill/fortune/apotheosis_gems.png",
+  "gate": "config:apotheosisGemsRequiredLevel",
+  "name": "Apotheosis Gems",
+  "desc": "Apotheosis gem quality chance increased by %s."
+ },
+ {
+  "id": "lucky_charm",
+  "skill": "fortune",
+  "texture_const": "LUCKY_CHARM_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_charm.png",
+  "gate": "config:redLevel",
+  "name": "Lucky Charm",
+  "desc": "All negative effects have %s shorter duration."
+ },
+ {
+  "id": "coin_flip",
+  "skill": "fortune",
+  "texture_const": "COIN_FLIP_PERK",
+  "texture": "runicskills:textures/skill/fortune/coin_flip.png",
+  "gate": "config:luckyCharmRequiredLevel",
+  "name": "Coin Flip",
+  "desc": "Attacked mobs have a %s chance to drop bonus XP."
+ },
+ {
+  "id": "salvage_luck",
+  "skill": "fortune",
+  "texture_const": "SALVAGE_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/salvage_luck.png",
+  "gate": "config:coinFlipRequiredLevel",
+  "name": "Salvage Luck",
+  "desc": "Salvaging items yields %s more materials."
+ },
+ {
+  "id": "adventurers_luck",
+  "skill": "fortune",
+  "texture_const": "ADVENTURERS_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/adventurers_luck.png",
+  "gate": "config:adventurersLuckRequiredLevel",
+  "name": "Adventurer's Luck",
+  "desc": "Dungeon loot quality increased by %s."
+ },
+ {
+  "id": "midas_touch",
+  "skill": "fortune",
+  "texture_const": "MIDAS_TOUCH_PERK",
+  "texture": "runicskills:textures/skill/fortune/midas_touch.png",
+  "gate": "config:vel",
+  "name": "Midas Touch",
+  "desc": "Mob drops have a %s chance to become gold variants."
+ },
+ {
+  "id": "lucky_break",
+  "skill": "fortune",
+  "texture_const": "LUCKY_BREAK_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_break.png",
+  "gate": "config:midasTouchRequiredLevel",
+  "name": "Lucky Break",
+  "desc": "Tool durability loss has a %s chance to be ignored."
+ },
+ {
+  "id": "jewelers_eye",
+  "skill": "fortune",
+  "texture_const": "JEWELERS_EYE_PERK",
+  "texture": "runicskills:textures/skill/fortune/jewelers_eye.png",
+  "gate": "config:luckyBreakRequiredLevel",
+  "name": "Jeweler's Eye",
+  "desc": "Jewelry crafting has a %s chance for a bonus gem."
+ },
+ {
+  "id": "fortune_cookie",
+  "skill": "fortune",
+  "texture_const": "FORTUNE_COOKIE_PERK",
+  "texture": "runicskills:textures/skill/fortune/fortune_cookie.png",
+  "gate": "config:fortuneCookieRequiredLevel",
+  "name": "Fortune Cookie",
+  "desc": "Food has a %s chance to give a random buff."
+ },
+ {
+  "id": "ethereal_luck",
+  "skill": "fortune",
+  "texture_const": "ETHEREAL_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/ethereal_luck.png",
+  "gate": "config:iredLevel",
+  "name": "Ethereal Luck",
+  "desc": "Magical loot sources yield %s more."
+ },
+ {
+  "id": "rare_find",
+  "skill": "fortune",
+  "texture_const": "RARE_FIND_PERK",
+  "texture": "runicskills:textures/skill/fortune/rare_find.png",
+  "gate": "config:erealLuckRequiredLevel",
+  "name": "Rare Find",
+  "desc": "Chance for rare and epic drops increased by %s."
+ },
+ {
+  "id": "lucky_star",
+  "skill": "fortune",
+  "texture_const": "LUCKY_STAR_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_star.png",
+  "gate": "config:rareFindRequiredLevel",
+  "name": "Lucky Star",
+  "desc": "At nighttime, all luck bonuses increased by %s."
+ },
+ {
+  "id": "serendipity",
+  "skill": "fortune",
+  "texture_const": "SERENDIPITY_PERK",
+  "texture": "runicskills:textures/skill/fortune/serendipity.png",
+  "gate": "config:luckyStarRequiredLevel",
+  "name": "Serendipity",
+  "desc": "You have a %s chance to find rare items while mining."
+ },
+ {
+  "id": "greed",
+  "skill": "fortune",
+  "texture_const": "GREED_PERK",
+  "texture": "runicskills:textures/skill/fortune/greed.png",
+  "gate": "config:serendipityRequiredLevel",
+  "name": "Greed",
+  "desc": "Gold drops from all sources increased by %s."
+ },
+ {
+  "id": "rainbow_loot",
+  "skill": "fortune",
+  "texture_const": "RAINBOW_LOOT_PERK",
+  "texture": "runicskills:textures/skill/fortune/rainbow_loot.png",
+  "gate": "config:greedRequiredLevel",
+  "name": "Rainbow Loot",
+  "desc": "Mob drops have a %s chance to be enchanted."
+ },
+ {
+  "id": "fishermans_luck",
+  "skill": "fortune",
+  "texture_const": "FISHERMANS_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/fishermans_luck.png",
+  "gate": "config:otRequiredLevel",
+  "name": "Fisherman's Luck",
+  "desc": "Aquaculture fish drops increased by %s."
+ },
+ {
+  "id": "lucky_explorer",
+  "skill": "fortune",
+  "texture_const": "LUCKY_EXPLORER_PERK",
+  "texture": "runicskills:textures/skill/fortune/lucky_explorer.png",
+  "gate": "config:el",
+  "name": "Lucky Explorer",
+  "desc": "Structure chest loot is %s better."
+ },
+ {
+  "id": "chaos_roll",
+  "skill": "fortune",
+  "texture_const": "CHAOS_ROLL_PERK",
+  "texture": "runicskills:textures/skill/fortune/chaos_roll.png",
+  "gate": "config:erRequiredLevel",
+  "name": "Chaos Roll",
+  "desc": "Any action has a %s chance for a bonus effect."
+ },
+ {
+  "id": "critical_fortune",
+  "skill": "fortune",
+  "texture_const": "CRITICAL_FORTUNE_PERK",
+  "texture": "runicskills:textures/skill/fortune/critical_fortune.png",
+  "gate": "config:chaosRollRequiredLevel",
+  "name": "Critical Fortune",
+  "desc": "Critical kills yield %s more drops."
+ },
+ {
+  "id": "master_looter",
+  "skill": "fortune",
+  "texture_const": "MASTER_LOOTER_PERK",
+  "texture": "runicskills:textures/skill/fortune/master_looter.png",
+  "gate": "config:masterLooterRequiredLevel",
+  "name": "Master Looter",
+  "desc": "All loot tables have %s increased quality."
+ },
+ {
+  "id": "blessing_of_luck",
+  "skill": "fortune",
+  "texture_const": "BLESSING_OF_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/blessing_of_luck.png",
+  "gate": "config:iredLevel",
+  "name": "Blessing of Luck",
+  "desc": "Lucky effect duration increased by %s."
+ },
+ {
+  "id": "repair_expert",
+  "skill": "tinkering",
+  "texture_const": "REPAIR_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/repair_expert.png",
+  "gate": "config:repairExpertRequiredLevel",
+  "name": "Repair Expert",
+  "desc": "Anvil repair costs %s less materials."
+ },
+ {
+  "id": "disassembler",
+  "skill": "tinkering",
+  "texture_const": "DISASSEMBLER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/disassembler.png",
+  "gate": "config:RequiredLevel",
+  "name": "Disassembler",
+  "desc": "You have a %s chance to recover components from items."
+ },
+ {
+  "id": "auto_repair",
+  "skill": "tinkering",
+  "texture_const": "AUTO_REPAIR_PERK",
+  "texture": "runicskills:textures/skill/tinkering/auto_repair.png",
+  "gate": "config:emblerRequiredLevel",
+  "name": "Auto-Repair",
+  "desc": "Equipped items passively repair at %s rate."
+ },
+ {
+  "id": "gadgeteer",
+  "skill": "tinkering",
+  "texture_const": "GADGETEER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/gadgeteer.png",
+  "gate": "config:autoRepairRequiredLevel",
+  "name": "Gadgeteer",
+  "desc": "Mechanical items are %s more effective."
+ },
+ {
+  "id": "trap_maker",
+  "skill": "tinkering",
+  "texture_const": "TRAP_MAKER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/trap_maker.png",
+  "gate": "config:gadgeteerRequiredLevel",
+  "name": "Trap Maker",
+  "desc": "Placed traps deal %s more damage."
+ },
+ {
+  "id": "lock_expert",
+  "skill": "tinkering",
+  "texture_const": "LOCK_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/lock_expert.png",
+  "gate": "config:trapMakerRequiredLevel",
+  "name": "Lock Expert",
+  "desc": "All locks take %s less time to pick."
+ },
+ {
+  "id": "key_forge",
+  "skill": "tinkering",
+  "texture_const": "KEY_FORGE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/key_forge.png",
+  "gate": "config:lockExpertRequiredLevel",
+  "name": "Key Forge",
+  "desc": "Crafted keys have a %s chance to be master keys."
+ },
+ {
+  "id": "mechanical_knowledge",
+  "skill": "tinkering",
+  "texture_const": "MECHANICAL_KNOWLEDGE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/mechanical_knowledge.png",
+  "gate": "config:ForgeRequiredLevel",
+  "name": "Mechanical Knowledge",
+  "desc": "Redstone devices work %s faster."
+ },
+ {
+  "id": "siege_mechanic",
+  "skill": "tinkering",
+  "texture_const": "SIEGE_MECHANIC_PERK",
+  "texture": "runicskills:textures/skill/tinkering/siege_mechanic.png",
+  "gate": "config:siegeMechanicRequiredLevel",
+  "name": "Siege Mechanic",
+  "desc": "Siege machines reload %s faster."
+ },
+ {
+  "id": "weapon_smith",
+  "skill": "tinkering",
+  "texture_const": "WEAPON_SMITH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/weapon_smith.png",
+  "gate": "config:iredLevel",
+  "name": "Weapon Smith",
+  "desc": "Repaired weapons gain %s bonus damage."
+ },
+ {
+  "id": "armor_smith",
+  "skill": "tinkering",
+  "texture_const": "ARMOR_SMITH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/armor_smith.png",
+  "gate": "config:ponSmithRequiredLevel",
+  "name": "Armor Smith",
+  "desc": "Repaired armor gains %s bonus protection."
+ },
+ {
+  "id": "tool_smith",
+  "skill": "tinkering",
+  "texture_const": "TOOL_SMITH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tool_smith.png",
+  "gate": "config:armorSmithRequiredLevel",
+  "name": "Tool Smith",
+  "desc": "Repaired tools gain %s bonus efficiency."
+ },
+ {
+  "id": "salvage_master",
+  "skill": "tinkering",
+  "texture_const": "SALVAGE_MASTER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/salvage_master.png",
+  "gate": "config:toolSmithRequiredLevel",
+  "name": "Salvage Master",
+  "desc": "Salvaging items yields %s more materials."
+ },
+ {
+  "id": "enchantment_transfer",
+  "skill": "tinkering",
+  "texture_const": "ENCHANTMENT_TRANSFER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/enchantment_transfer.png",
+  "gate": "config:enchantmentTransferRequiredLevel",
+  "name": "Enchantment Transfer",
+  "desc": "You have a %s chance to transfer enchantments between items."
+ },
+ {
+  "id": "gadget_upgrade",
+  "skill": "tinkering",
+  "texture_const": "GADGET_UPGRADE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/gadget_upgrade.png",
+  "gate": "config:gadgetUpgradeRequiredLevel",
+  "name": "Gadget Upgrade",
+  "desc": "Backpack upgrades are %s more effective."
+ },
+ {
+  "id": "overclock",
+  "skill": "tinkering",
+  "texture_const": "OVERCLOCK_PERK",
+  "texture": "runicskills:textures/skill/tinkering/overclock.png",
+  "gate": "config:eRequiredLevel",
+  "name": "Overclock",
+  "desc": "All crafting stations work %s faster."
+ },
+ {
+  "id": "runic_engineering",
+  "skill": "tinkering",
+  "texture_const": "RUNIC_ENGINEERING_PERK",
+  "texture": "runicskills:textures/skill/tinkering/runic_engineering.png",
+  "gate": "config:overclockRequiredLevel",
+  "name": "Runic Engineering",
+  "desc": "Runic items gain %s bonus effects when repaired."
+ },
+ {
+  "id": "brewing_apparatus",
+  "skill": "tinkering",
+  "texture_const": "BREWING_APPARATUS_PERK",
+  "texture": "runicskills:textures/skill/tinkering/brewing_apparatus.png",
+  "gate": "config:brewingApparatusRequiredLevel",
+  "name": "Brewing Apparatus",
+  "desc": "Brewing stand speed increased by %s."
+ },
+ {
+  "id": "mechanical_arm",
+  "skill": "tinkering",
+  "texture_const": "MECHANICAL_ARM_PERK",
+  "texture": "runicskills:textures/skill/tinkering/mechanical_arm.png",
+  "gate": "config:mechanicalArmRequiredLevel",
+  "name": "Mechanical Arm",
+  "desc": "Block interaction range increased by %s blocks."
+ },
+ {
+  "id": "precision_tools",
+  "skill": "tinkering",
+  "texture_const": "PRECISION_TOOLS_PERK",
+  "texture": "runicskills:textures/skill/tinkering/precision_tools.png",
+  "gate": "config:precisionToolsRequiredLevel",
+  "name": "Precision Tools",
+  "desc": "Tool durability increased by %s."
+ },
+ {
+  "id": "assembly_line",
+  "skill": "tinkering",
+  "texture_const": "ASSEMBLY_LINE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/assembly_line.png",
+  "gate": "config:el",
+  "name": "Assembly Line",
+  "desc": "Batch crafting produces %s more items."
+ },
+ {
+  "id": "explosive_ordinance",
+  "skill": "tinkering",
+  "texture_const": "EXPLOSIVE_ORDINANCE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/explosive_ordinance.png",
+  "gate": "config:explosiveOrdinanceRequiredLevel",
+  "name": "Explosive Ordinance",
+  "desc": "TNT blast radius increased by %s."
+ },
+ {
+  "id": "circuit_breaker",
+  "skill": "tinkering",
+  "texture_const": "CIRCUIT_BREAKER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/circuit_breaker.png",
+  "gate": "config:circuitBreakerRequiredLevel",
+  "name": "Circuit Breaker",
+  "desc": "Redstone signal range increased by %s blocks."
+ },
+ {
+  "id": "modular_equipment",
+  "skill": "tinkering",
+  "texture_const": "MODULAR_EQUIPMENT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/modular_equipment.png",
+  "gate": "config:modularEquipmentRequiredLevel",
+  "name": "Modular Equipment",
+  "desc": "Equipment modification slots increased by %s."
+ },
+ {
+  "id": "clockwork_mastery",
+  "skill": "tinkering",
+  "texture_const": "CLOCKWORK_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/tinkering/clockwork_mastery.png",
+  "gate": "config:clockworkMasteryRequiredLevel",
+  "name": "Clockwork Mastery",
+  "desc": "Timed mechanisms are %s more accurate."
+ },
+ {
+  "id": "forge_master",
+  "skill": "tinkering",
+  "texture_const": "FORGE_MASTER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/forge_master.png",
+  "gate": "config:forgeMasterRequiredLevel",
+  "name": "Forge Master",
+  "desc": "Smelting yields %s more output."
+ },
+ {
+  "id": "inventor",
+  "skill": "tinkering",
+  "texture_const": "INVENTOR_PERK",
+  "texture": "runicskills:textures/skill/tinkering/inventor.png",
+  "gate": "config:forgeMasterRequiredLevel",
+  "name": "Inventor",
+  "desc": "You have a %s chance to discover improved recipe variants."
+ },
+ {
+  "id": "spring_loaded",
+  "skill": "tinkering",
+  "texture_const": "SPRING_LOADED_PERK",
+  "texture": "runicskills:textures/skill/tinkering/spring_loaded.png",
+  "gate": "config:inventorRequiredLevel",
+  "name": "Spring Loaded",
+  "desc": "Jump boost from tinker items increased by %s."
+ },
+ {
+  "id": "ballistic_expert",
+  "skill": "tinkering",
+  "texture_const": "BALLISTIC_EXPERT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/ballistic_expert.png",
+  "gate": "config:dLevel",
+  "name": "Ballistic Expert",
+  "desc": "Ranged mechanical weapons deal %s more damage."
+ },
+ {
+  "id": "safe_builder",
+  "skill": "tinkering",
+  "texture_const": "SAFE_BUILDER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/safe_builder.png",
+  "gate": "config:safeBuilderRequiredLevel",
+  "name": "Safe Builder",
+  "desc": "Built locks are %s more secure."
+ },
+ {
+  "id": "tinkers_touch",
+  "skill": "tinkering",
+  "texture_const": "TINKERS_TOUCH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tinkers_touch.png",
+  "gate": "config:lderRequiredLevel",
+  "name": "Tinker's Touch",
+  "desc": "Items you craft gain %s bonus durability."
+ },
+ {
+  "id": "alloy_master",
+  "skill": "tinkering",
+  "texture_const": "ALLOY_MASTER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/alloy_master.png",
+  "gate": "config:hRequiredLevel",
+  "name": "Alloy Master",
+  "desc": "Alloying produces %s more ingots."
+ },
+ {
+  "id": "mechanism_mastery",
+  "skill": "tinkering",
+  "texture_const": "MECHANISM_MASTERY_PERK",
+  "texture": "runicskills:textures/skill/tinkering/mechanism_mastery.png",
+  "gate": "config:iredLevel",
+  "name": "Mechanism Mastery",
+  "desc": "Complex mechanisms activate %s faster."
+ },
+ {
+  "id": "power_tools",
+  "skill": "tinkering",
+  "texture_const": "POWER_TOOLS_PERK",
+  "texture": "runicskills:textures/skill/tinkering/power_tools.png",
+  "gate": "config:powerToolsRequiredLevel",
+  "name": "Power Tools",
+  "desc": "Tool efficiency enchantment level effectively increased by %s."
+ },
+ {
+  "id": "backpack_engineer",
+  "skill": "tinkering",
+  "texture_const": "BACKPACK_ENGINEER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/backpack_engineer.png",
+  "gate": "config:uiredLevel",
+  "name": "Backpack Engineer",
+  "desc": "Backpack capacity increased by %s slots."
+ },
+ {
+  "id": "waystone_tinker",
+  "skill": "tinkering",
+  "texture_const": "WAYSTONE_TINKER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/waystone_tinker.png",
+  "gate": "config:waystoneTinkerRequiredLevel",
+  "name": "Waystone Tinker",
+  "desc": "Waystone teleportation cost reduced by %s."
+ },
+ {
+  "id": "master_artificer",
+  "skill": "tinkering",
+  "texture_const": "MASTER_ARTIFICER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/master_artificer.png",
+  "gate": "config:masterArtificerRequiredLevel",
+  "name": "Master Artificer",
+  "desc": "Crafted items have a %s chance for a bonus enchantment."
+ }
+]

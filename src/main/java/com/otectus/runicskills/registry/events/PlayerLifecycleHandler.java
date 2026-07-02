@@ -70,6 +70,7 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerLoggedOutEvent event) {
         PacketRateLimiter.clearPlayer(event.getEntity().getUUID());
+        PerkEffectsHandler.clearPlayer(event.getEntity().getUUID());
     }
 
     @SubscribeEvent

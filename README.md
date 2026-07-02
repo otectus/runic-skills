@@ -86,7 +86,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.5.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-1.5.4.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -94,7 +94,7 @@ No client-side-only nor server-side-only variants; one jar on both sides.
 
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=5`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=7`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---

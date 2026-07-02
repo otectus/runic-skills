@@ -158,28 +158,50 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         setCooldown(COOLDOWN_COUNTER_ATTACK_TIMER, timer);
     }
 
+    /**
+     * Per-thread single-entry memo for {@link #get(Player)}. A single melee hit runs hundreds of
+     * perk checks across eight LivingHurtEvent handlers, each re-resolving the capability through
+     * the Forge dispatcher; within one (player, tick) the result cannot change, so consecutive
+     * lookups hit this memo instead. Null results are deliberately NOT memoized — the capability
+     * attaches during entity construction at tickCount 0, so caching an early null would poison
+     * every read until the first tick (including login-time capability sync).
+     * ThreadLocal keeps client and server threads of an integrated server independent.
+     */
+    private static final ThreadLocal<Object[]> GET_MEMO = ThreadLocal.withInitial(() -> new Object[3]);
+
     @Nullable
     public static SkillCapability get(Player player) {
+        if (player == null) return null;
+        Object[] memo = GET_MEMO.get();
+        if (memo[0] == player && memo[1] instanceof Integer tick && tick == player.tickCount) {
+            return (SkillCapability) memo[2];
+        }
         LazyOptional<SkillCapability> capability = player.getCapability(RegistryCapabilities.SKILL);
-        if(capability.isPresent() && capability.resolve().isPresent()){
-            return capability.resolve().get();
+        if (capability.isPresent() && capability.resolve().isPresent()) {
+            SkillCapability resolved = capability.resolve().get();
+            memo[0] = player;
+            memo[1] = player.tickCount;
+            memo[2] = resolved;
+            return resolved;
         }
 
         return null;
     }
 
     public int getSkillLevel(Skill skill) {
-        return this.skillLevel.get(skill.getName());
+        return safeLevel(skill.getName());
     }
 
     public int getSkillLevel(String skillName) {
-        return this.skillLevel.get(skillName);
+        return safeLevel(skillName);
     }
 
-    // Null-safe level read for the lock-gating decision: a skill name not present in the map
-    // (e.g. an item locked against a skill from a no-longer-loaded addon) resolves to the
-    // default level 1 instead of unboxing null into an NPE mid-attack/use. Mirrors the
-    // skill-1 default used throughout (de)serializeNBT.
+    // Null-safe level read: a skill name not present in the map (e.g. an item locked against a
+    // skill from a no-longer-loaded addon, or a skill registered after this capability was
+    // built) resolves to the default level 1 instead of unboxing null into an NPE mid-attack/use.
+    // Mirrors the skill-1 default used throughout (de)serializeNBT. Both getSkillLevel overloads
+    // delegate here — mapSkills() seeds every registered skill, so present keys behave
+    // identically; only the previously-NPE absent-key case changes.
     private int safeLevel(String skillName) {
         Integer level = this.skillLevel.get(skillName);
         return level == null ? 1 : level;
@@ -191,6 +213,27 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
     public int getGlobalLevel(){
         return this.skillLevel.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    /**
+     * The starting global level of a fresh player: the sum of every skill's starting level.
+     * Each skill seeds at level 1 (see {@link #mapSkills()}), so this equals the number of
+     * registered skills today. Derived (not hardcoded) so it tracks the skill registry, and used
+     * only to normalise the perk-budget scaling — {@link #getGlobalLevel()} itself is unchanged.
+     */
+    public static int baselineGlobalLevel() {
+        return RegistrySkills.getCachedValues().size();
+    }
+
+    /**
+     * Global level a player has <em>earned</em> above the starting baseline, i.e.
+     * {@code max(0, getGlobalLevel() - baselineGlobalLevel())}. A brand-new player is 0. This is the
+     * value the {@code perksPerGlobalLevel} budget scales from, so {@code 0.5} grants the first perk
+     * slot after 2 earned levels and 3 slots after 6, instead of granting slots for the baseline a
+     * fresh player already has.
+     */
+    public int getEarnedGlobalLevelForPerkBudget() {
+        return Math.max(0, getGlobalLevel() - baselineGlobalLevel());
     }
 
     public void addSkillLevel(Skill skill, int addLvl) {

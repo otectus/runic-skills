@@ -1,0 +1,472 @@
+# perk_id	glyph	primary	secondary	badge	badge_pal	concept
+# ===== BUILDING =====
+architect	house	steel	gold	shieldb	steel	Reinforced house — placed blocks gain hardness
+blast_mining	tnt	redstone	bone	coinb	gold	TNT with loot badge — TNT mining yields more drops
+bridge_builder	bridge	stone	wood	up	emerald	Bridge with reach-up arrow — placement reach
+colony_builder	house	wood	sand	clockb	storm	Timber house with clock — colony build speed
+construction_haste	hammer	steel	wood	up	gold	Builder's hammer speeding up placement
+convergence	gear	wood	emerald	sparkle	emerald	Crafting gear refunding materials
+deep_core_mining	pickaxe	obsidian	wood	coinb	gold	Dark deepslate pick with bonus drops
+dimensional_builder	house	ender	obsidian	clockb	arcane	Ender-hued house — faster building in other dimensions
+earthbreaker	pickaxe	slate	wood	up	storm	Stone-parting pick — bonus mining speed
+efficient_miner	pickaxe	steel	wood	up	gold	Classic pick with speed-up arrow
+explosive_expert	bomb	redstone	gold	no	crimson	Bomb with no-terrain-damage mark
+farmers_hand	wheat	gold	nature	up	nature	Golden wheat growing faster
+fortune_miner	ore_block	stone	gold	sparkle	gold	Gold-flecked ore with lucky sparkle
+foundation_layer	wall	obsidian	stone	shieldb	steel	Bedrock-dark wall hardened
+glowstone_sight	torch	gold	wood	sunb	gold	Radiant torch — mining light aura
+heritage_builder	tower	sand	wood	shieldb	gold	Sandstone tower with durability shield
+irrigation_expert	wheat	nature	water	dropb	water	Watered crops with droplet
+lumberjack	axe	steel	wood	up	nature	Felling axe with speed arrow
+mass_production	gear	steel	copper	plus	gold	Industrial gear with bonus
+master_breaker	warhammer	crimson	wood	up	gold	Heavy maul breaking all blocks faster
+master_mason	wall	stone	sand	up	gold	Stone wall placed faster
+master_woodworker	planks	wood	sand	plus	gold	Planks with bonus yield
+medieval_architecture	tower	stone	wood	plus	gold	Castle tower with bonus yield
+obsidian_smasher	warhammer	obsidian	wood	up	arcane	Obsidian-crushing maul
+ore_detector	ore_block	slate	gold	eyeb	gold	Ore with watchful eye — ores glow through walls
+prospector	pickaxe	copper	wood	sparkle	gold	Copper pick finding bonus minerals
+quarry_master	pickaxe	stone	steel	coinb	gold	Quarry pick with deep-layer drops
+reinforced_construction	wall	steel	stone	shieldb	gold	Steel-braced wall vs explosions
+resource_efficiency	planks	wood	emerald	coinb	emerald	Planks returning materials
+runic_mining	ore_block	arcane	stone	plus	arcane	Runic ore with bonus drops
+runic_salvager	anvil	arcane	gold	sparkle	gold	Arcane salvaging anvil with bonus chance
+salvage_expert	grindstone	wood	stone	coinb	gold	Grindstone returning materials
+scaffold_master	scaffold	wood	gold	up	gold	Scaffolding placed faster
+silk_touch_mastery	hand	bone	gold	sparkle	frost	Gentle hand — silk-touch chance
+smelter	furnace	stone	fire	up	fire	Furnace smelting faster
+stone_cutter_efficiency	grindstone	stone	steel	plus	gold	Stonecutter wheel with bonus output
+structural_engineer	blueprint	lapis	bone	up	gold	Blueprint — multiblock builds faster
+terraformer	shovel	steel	wood	up	nature	Shovel/hoe working faster
+treasure_hunter	chest	wood	gold	sparkle	gold	Buried chest with lucky sparkle
+underground_explorer	boot	leather	copper	moonb	slate	Cave boot under a dark moon — faster below Y=30
+vein_miner	ore_block	copper	stone	plus	copper	Connected ore vein mined at once
+# ===== CONSTITUTION =====
+anglers_bounty	fish	prismarine	copper	plus	gold	Hearty fish — more nourishment
+armor_of_faith	chestplate	holy	gold	shieldb	holy	Blessed armor — low-health resistance
+athletics	bubble	water	frost	up	water	Air bubbles — longer breath underwater
+aura_of_vitality	heart	nature	gold	leafb	nature	Nature-touched heart — aura healing stronger
+battle_recovery	heart	crimson	steel	clockb	gold	Heart regenerating after combat lull
+colonial_nourishment	drumstick	wood	gold	plus	emerald	Colony meal with bonus effects
+culinary_expert	drumstick	copper	wood	plus	gold	Roast with bonus saturation
+draconic_constitution	dragon	crimson	gold	shieldb	fire	Dragon-blood ward vs elements
+dragon_heart	heart	fire	gold	plus	fire	Fiery dragon heart restoring HP
+enderium_resilience	chestplate	prismarine	steel	shieldb	arcane	Enderium plate with magic ward
+explorers_vigor	map	leather	gold	shieldb	slate	Dungeon map with damage ward
+fire_resistance	flame	fire	ember	downb	crimson	Flame with damage-down mark
+frost_walker_constitution	snowflake	ice	frost	downb	ice	Snowflake with cold-damage-down
+ghostbound	ghost	frost	bone	heartb	frost	Spirit layer granting ghost health
+gourmet	drumstick	gold	crimson	up	gold	Gourmet roast restoring more hunger
+heart_of_the_healer	heart	pink	gold	plus	pink	Radiant heart — healing received and overheal
+hearty_feast	cauldron	copper	gold	clockb	gold	Feast pot — food effects last longer
+iron_stomach	apple	iron	steel	no	emerald	Iron apple — immune to food poisoning
+lion_heart	heart	gold	crimson	downb	arcane	Lion-gold heart shrugging off debuffs
+master_chef	cauldron	steel	fire	clockb	emerald	Chef's pot extending effect durations
+myrmex_carapace	turtle_shell	sand	copper	shieldb	nature	Chitin carapace vs poison
+natural_recovery	heart	nature	moss	plus	nature	Verdant heart with natural regen
+natures_blessing	leaf	nature	gold	heartb	nature	Blessed leaf healing on natural ground
+obsidian_heart	heart	obsidian	slate	shieldb	crimson	Obsidian heart vs explosions
+phoenix_rising	phoenix	fire	gold	heartb	fire	Phoenix rising with respawn health
+poison_immunity	drop	nature	moss	no	nature	Venom drop crossed out — poison immune
+potion_mastery	potion	amethyst	pink	clockb	arcane	Potion with extended duration
+runic_fortification	chestplate	arcane	steel	heartb	arcane	Runic armor granting max health
+searing_resistance	drop	ember	fire	downb	fire	Lava drop with damage-down
+second_wind	wing	frost	bone	heartb	crimson	Wing of second wind — regen when low
+soul_sustenance	xp_orb	emerald	nature	heartb	emerald	XP orb restoring health
+survival_instinct	boot	crimson	leather	up	crimson	Adrenaline boot — speed when hurt
+swimmers_endurance	fish	water	frost	up	water	Swift fish — swim speed
+thick_skin	chestplate	leather	copper	downb	steel	Leathered hide — flat damage reduction
+turtle_shield	turtle_shell	prismarine	nature	no	ender	Shell negating levitation bolts
+undying_will	skull	bone	gold	sparkle	crimson	Defiant skull — chance to survive death
+vitality	heart	crimson	pink	plus	crimson	Big heart with extra hearts
+wither_resistance	skull	shadow	slate	downb	shadow	Wither skull with damage-down
+# ===== DEXTERITY =====
+acrobat	feather	bone	gold	downb	steel	Feather-fall — less fall damage
+agile_climber	ladder	wood	nature	up	nature	Ladder climbed faster
+ambush	dagger	shadow	crimson	starb	crimson	Shadow dagger — stealth opener crit
+apothic_critical_mastery	target	crimson	gold	starb	gold	Bullseye — crit chance and damage
+archery_expansion	bow	copper	gold	plus	gold	Advanced bow with bonus damage
+arrow_mastery	arrow	gold	crimson	up	gold	Gilded arrow — damage and velocity
+arrow_recovery	arrow	wood	bone	sparkle	emerald	Recovered arrow — retrieval chance
+blade_dancer	dual_swords	steel	gold	up	storm	Dancing blades — sword attack speed
+cat_eyes	eye	gold	nature	moonb	gold	Cat eye under the moon — night vision
+crossbow_expert	crossbow	wood	steel	up	gold	Crossbow reloaded faster
+dodge_roll	boot	steel	frost	sparkle	frost	Rolling boot — melee dodge chance
+dragon_rider	horse	crimson	gold	up	fire	Crimson mount — ride speed
+eagle_eye	eye	frost	gold	up	gold	Eagle eye — long-range arrow damage
+evasion	wing	frost	steel	sparkle	frost	Light wing — dodge unarmored
+evasive	wing	bone	frost	sparkle	arcane	Spectral wing — apothic dodge
+fleet_footed	boot	water	frost	up	water	Water-striding boot
+ice_arrows	arrow	ice	frost	snowb	ice	Frost arrow slowing targets
+mounted_combat	horse	leather	steel	up	crimson	Warhorse — mounted damage
+multishot_mastery	arrows3	steel	wood	sparkle	gold	Arrow fan — extra arrow chance
+ninja_training	mask	shadow	slate	up	arcane	Ninja mask — stealth gear stronger
+parkour_master	boot	copper	gold	downb	gold	Free-runner boot — less stamina
+phantom_strike	dagger	frost	arcane	starb	arcane	Phantom blade — post-dodge strike
+poison_arrow	arrow	nature	moss	dropb	nature	Venom-tipped arrow
+precision_shot	target	gold	steel	up	crimson	Steady aim — crit bow damage
+quick_draw	dagger	steel	gold	up	gold	Fast-swap blade
+quick_reposition	boot	storm	gold	boltb	storm	Charged boot — speed on arrow hit
+rapid_fire	bow	steel	gold	up	storm	Bow drawn faster
+ricochet	arrow	copper	steel	sparkle	copper	Bouncing arrow
+sharpshooter	target	crimson	steel	eyeb	gold	Headshot reticle
+silent_kill	dagger	shadow	bone	no	bone	Silenced blade — no alert
+silent_step	boot	shadow	slate	downb	shadow	Muffled boot — detection reduced
+smoke_bomb	smoke	slate	shadow	sparkle	frost	Smoke puff — emergency invisibility
+sniper	target	slate	frost	up	frost	Long-range scope reticle
+spartan_marksmanship	polearm	crimson	wood	up	crimson	Thrown spear — spartan weapons
+spell_dodge	wing	arcane	frost	sparkle	arcane	Arcane wing — dodge spells
+sprint_master	boot	gold	copper	up	storm	Golden sprinter boot
+stealth_mastery	mask	night	slate	eyeb	shadow	Night mask — reduced visibility
+tracking	paw	copper	crimson	eyeb	gold	Tracked pawprint — marked prey glows
+trick_shot	arrow	fire	ember	flameb	fire	Arrow igniting through fire
+wind_runner	boot	frost	bone	up	frost	Wind boot — path speed
+wind_walker	wing	storm	frost	up	frost	Storm wing — air speed
+zipline_expert	link	steel	wood	up	storm	Zipline pulley speeding travel
+# ===== ENDURANCE =====
+adaptation	shield	copper	steel	downb	copper	Adaptive shield — repeat hits weaker
+ancient_guardian	tower	stone	moss	skullb	slate	Ancient bastion vs bosses
+arcane_shield	shield	arcane	amethyst	downb	arcane	Arcane shield — spell damage down
+aura_shield	round_shield	nature	gold	leafb	nature	Aura buckler — ambient damage reduction
+blast_resistance	bomb	slate	steel	downb	steel	Dud bomb — explosion damage down
+blood_warded	round_shield	blood	crimson	dropb	blood	Crimson ward vs blood magic
+bulwark	shield	steel	gold	starb	crimson	Bulwark reflecting damage
+cataclysm_resistance	shield	obsidian	crimson	skullb	crimson	Obsidian shield vs cataclysm bosses
+colony_guardian	house	steel	sand	shieldb	emerald	Guarded homestead — safe in colonies
+counter_attack	dual_swords	crimson	steel	shieldb	crimson	Riposte blades
+diamond_skin	gem	diamond	frost	shieldb	diamond	Diamond facet skin — permanent resistance
+dragon_breath_shield	dragon	ender	arcane	shieldb	ender	Ward vs dragon breath
+dragon_scale_armor	chestplate	crimson	gold	shieldb	fire	Dragon-scale plate protection
+dragonhide	dragon	frost	fire	shieldb	frost	Dragonsteel hide vs fire and ice
+dungeon_resilience	wall	slate	shadow	downb	slate	Dungeon wall — trap damage down
+eldritch_warded	round_shield	eldritch	void	eyeb	eldritch	Unblinking ward vs eldritch magic
+ender_warded	round_shield	ender	void	pearlb	ender	Void ward vs ender magic
+evocation_warded	round_shield	amethyst	arcane	starb	amethyst	Sigil ward vs evocation
+fantasy_fortitude	chestplate	amethyst	gold	shieldb	amethyst	Fantasy armor bonus protection
+fire_proof	flame	ember	crimson	clockb	fire	Snuffed flame — burn time reduced
+fire_warded	round_shield	fire	ember	flameb	fire	Ember ward vs fire magic
+frost_endurance	snowflake	frost	ice	shieldb	frost	Hardened frost — cold protection
+gem_threaded_armor	gem_socket	steel	gold	shieldb	gold	Socketed plating — armor per gem
+heavy_armor_mastery	chestplate	steel	iron	plus	steel	Heavy plate with bonus armor
+holy_warded	round_shield	holy	gold	sunb	holy	Sacred ward vs holy magic
+ice_warded	round_shield	ice	frost	snowb	ice	Frost ward vs ice magic
+immovable_object	anchor	steel	slate	no	steel	Anchored — cannot be knocked back
+lightning_rod	bolt	storm	gold	downb	storm	Grounded bolt — lightning damage down
+lightning_warded	round_shield	storm	gold	boltb	storm	Storm ward vs lightning magic
+mana_bulwark	shield	mana	arcane	dropb	mana	Mana shield absorbing damage
+mythic_fortitude	dragon	gold	crimson	downb	frost	Gilded scales vs dragon breath elements
+nature_warded	round_shield	moss	nature	leafb	nature	Wild ward vs nature magic
+obsidian_skin	chestplate	obsidian	void	shieldb	obsidian	Obsidian armor damage reduction
+pain_suppression	heart_crack	slate	bone	downb	slate	Numbed heart — DoT reduced
+poison_resistance	drop	moss	nature	downb	nature	Venom drop weakened
+prismarine_shield	round_shield	prismarine	diamond	shieldb	prismarine	Prismarine ward vs ranged
+runic_ward	sigil	arcane	steel	shieldb	arcane	Runic armor magic resistance
+samurai_resolve	katana	crimson	steel	shieldb	slate	Tempered resolve after taking a hit
+sentinel	shield	slate	steel	heartb	crimson	Sentinel shield when bloodied
+shield_wall	shield	wood	steel	plus	steel	Braced shield blocking more
+siege_defense	tower	steel	stone	shieldb	steel	Fortified keep — safe in structures
+snow_walker	boot	frost	ice	snowb	frost	Snowshoe over powder snow
+spell_shield	round_shield	arcane	mana	shieldb	arcane	Ward vs Ars spell damage
+steadfast	anchor	copper	steel	downb	steel	Braced anchor — knockback reduced
+stoneflesh	wall	stone	slate	shieldb	stone	Stone skin while standing still
+thorns_mastery	thorns	nature	moss	up	crimson	Sharpened thorns strike back harder
+toughened_hide	chestplate	leather	wood	plus	copper	Toughened hide — armor toughness
+unbreakable	chestplate	iron	steel	no	gold	Unbreaking armor — durability protected
+warding_rune	sigil	mana	arcane	downb	arcane	Warding rune — magic damage down
+# ===== FORTUNE =====
+adventurers_luck	map	gold	leather	coinb	gold	Treasure map — better dungeon loot
+affix_affinity	gem_socket	crimson	gold	up	crimson	Affix gear resonance — damage and DR
+apotheosis_gems	gem	amethyst	pink	up	amethyst	Purer gems from Apotheosis
+apothic_apprentice	gem_socket	amethyst	gold	plus	amethyst	Lapidary socket — extra effective socket
+blessing_of_luck	clover	gold	nature	clockb	gold	Blessed clover — luck lasts longer
+cataclysm_spoils	skull	crimson	gold	coinb	gold	Boss skull yielding spoils
+chaos_roll	dice	arcane	pink	sparkle	arcane	Chaos die — random bonus effects
+coin_flip	coin	gold	copper	sparkle	emerald	Flipped coin — bonus XP chance
+critical_fortune	target	gold	crimson	coinb	gold	Lucky crit — kills drop more
+critical_mastery	target	steel	crimson	starb	crimson	Honed aim — crit chance
+critical_roll	dice	bone	crimson	starb	gold	Crit dice gamble
+double_down	dice	gold	emerald	coinb	gold	Doubled die — double drops
+dragon_hoard	chest	crimson	gold	coinb	crimson	Dragon's hoard chest
+enchanted_fortune	book	arcane	gold	coinb	arcane	Enchanted drops increased
+ethereal_luck	ghost	arcane	frost	coinb	arcane	Spirit luck — magical loot
+fishermans_luck	fish	copper	gold	coinb	gold	Prize catch — more fish drops
+fortune_cookie	cookie	sand	gold	sparkle	pink	Fortune cookie — random food buff
+fortunes_favor	clover	emerald	gold	up	emerald	Fortune enchant favored
+gem_attunement	gem_socket	prismarine	amethyst	sparkle	amethyst	Gem kept when socketing
+golden_touch	hand	gold	sand	coinb	gold	Gilded hand — gold from any kill
+greed	coins	gold	copper	up	gold	Coin stack — more gold everywhere
+jackpot	chest	gold	emerald	starb	gold	Jackpot chest — triple loot
+jewelers_eye	gem	diamond	gold	eyeb	gold	Jeweler's appraisal — bonus gems
+limit_breaker	burst	crimson	gold	starb	crimson	Limit break burst damage
+looter	skull	gold	slate	coinb	steel	Trophy skull — boss drops
+lucky_break	pickaxe	gold	steel	no	gold	Charmed tool — durability spared
+lucky_charm	horseshoe	gold	copper	downb	arcane	Lucky horseshoe — debuffs shortened
+lucky_drop	clover	nature	gold	coinb	gold	Clover — bonus mob drops
+lucky_explorer	compass	gold	crimson	coinb	emerald	Explorer compass — richer chests
+lucky_fishing	fish	gold	water	sparkle	gold	Golden fish — treasure bites
+lucky_star	star4	gold	night	moonb	gold	Night star — luck after dark
+master_looter	chest	steel	gold	up	gold	Master's chest — loot quality up
+midas_touch	hand	gold	fire	sparkle	gold	Midas hand — drops turn gold
+prospectors_luck	ore_block	gold	stone	coinb	copper	Rich vein — more ore drops
+rainbow_loot	star4	pink	arcane	sparkle	amethyst	Prismatic star — enchanted drops
+rare_find	gem	arcane	amethyst	sparkle	arcane	Rare gem discovery
+runic_fortune	sigil	gold	arcane	coinb	arcane	Runic luck — runic ore drops
+salvage_luck	grindstone	copper	gold	coinb	copper	Lucky salvage — extra materials
+scavenger	backpack	leather	gold	sparkle	emerald	Scavenger pack — extra chest finds
+serendipity	pickaxe	amethyst	gold	sparkle	pink	Serendipitous strike while mining
+socket_virtuoso	gem_socket	gold	diamond	plus	gold	Virtuoso socket — extra effective socket
+treasure_sense	compass	copper	gold	eyeb	emerald	Treasure sense — rare loot nearby
+# ===== INTELLIGENCE =====
+alchemic_transmutation	flask	emerald	gold	plus	emerald	Transmuting flask — bonus ingredients
+alchemy_manipulation	potion	crimson	arcane	up	arcane	Amplified potion effects
+ancient_languages	scroll	sand	gold	plus	emerald	Ancient script — bonus XP
+apothecary	potion	nature	emerald	up	emerald	Herbal potion amplification
+apothic_scholar	book	gold	crimson	up	emerald	Scholar's tome — XP gained
+aquatic_knowledge	fish	frost	prismarine	plus	prismarine	Studied fish — nourishment and buffs
+arcane_scholar	spellbook	arcane	mana	plus	arcane	Spell complexity expanded
+beast_tamer	paw	leather	gold	heartb	pink	Tamed paw — easier taming
+bookworm	book	lapis	gold	up	gold	Bookworm — XP gain up
+brewing_innovation	cauldron	arcane	pink	plus	arcane	Innovative brew — extra effects
+cartographer	map	sand	crimson	plus	gold	Wider map reveal
+colony_advisor	house	gold	sand	up	emerald	Advised colony works faster
+continuous_flow	drop	mana	arcane	downb	mana	Steady mana stream — less drain
+dimensional_scholar	portal	ender	arcane	up	emerald	Otherworld study — dimension XP
+dragon_lore	dragon	nature	gold	plus	gold	Dragon lore — taming success
+efficient_crafting	gear	emerald	steel	sparkle	emerald	Efficient craft — materials spared
+enchantment_insight	glasses	arcane	gold	plus	arcane	Insight lenses — extra enchant options
+familiar_bond	paw	arcane	pink	up	arcane	Bonded familiar damage
+glyph_mastery	sigil	amethyst	arcane	up	amethyst	Mastered glyph amplification
+golem_commander	gear	stone	copper	up	crimson	Golem core — construct damage
+haggler	emerald	emerald	gold	downb	gold	Haggled emerald — trade discount
+linguist	scroll	bone	lapis	plus	lapis	Polyglot scroll — more trades
+lore_keeper	open_book	wood	gold	plus	emerald	Guidebook lore XP
+master_researcher	blueprint	bone	lapis	sparkle	gold	Research sheet — recipe discovery
+monster_compendium	skull	slate	bone	up	crimson	Studied monster weak points
+mystic_analysis	eye	arcane	amethyst	up	crimson	Analytic eye — typed bonus damage
+natures_wisdom	leaf	moss	nature	up	nature	Aura generation increased
+potion_brewing_expert	flask	pink	arcane	up	pink	Stronger brewed potions
+progressive_mastery	star4	crimson	gold	up	emerald	Difficulty star — scaling XP
+quick_learner	xp_orb	nature	emerald	up	emerald	Fast-learning XP orb
+runecrafter	sigil	copper	gold	plus	copper	Crafted rune — runic item stats
+sages_focus	hourglass	arcane	gold	up	arcane	Focused channel — faster abilities
+scholar	glasses	gold	lapis	eyeb	arcane	Scholar's lenses — read ancient enchants
+scroll_mastery	scroll	arcane	gold	sparkle	arcane	Scroll preserved on use
+siege_engineer	tower	copper	steel	up	crimson	Siege works — machine damage
+spell_echo	wand	arcane	mana	sparkle	mana	Echoing cast — mana refund chance
+spellcraft_knowledge	wand	mana	gold	up	storm	Practiced wand — cast speed
+spellweaver	link	arcane	mana	sparkle	arcane	Woven casts — combo free spell
+strategic_mind	map	lapis	crimson	up	crimson	Battle plan — exploit weaknesses
+tactical_genius	banner	crimson	gold	up	gold	Rally banner — ally damage
+war_tactician	banner	steel	crimson	up	storm	War banner — ally attack speed
+# ===== MAGIC =====
+fire_attunement	rune_stone	fire	ember	flameb	fire	Fire school runestone
+ice_attunement	rune_stone	ice	frost	snowb	ice	Ice school runestone
+lightning_attunement	rune_stone	storm	gold	boltb	storm	Lightning school runestone
+holy_attunement	rune_stone	holy	gold	sunb	holy	Holy school runestone
+nature_attunement	rune_stone	nature	moss	leafb	nature	Nature school runestone
+blood_attunement	rune_stone	blood	crimson	dropb	blood	Blood school runestone
+ender_attunement	rune_stone	ender	void	pearlb	ender	Ender school runestone
+evocation_attunement	rune_stone	amethyst	arcane	starb	amethyst	Evocation school runestone
+eldritch_attunement	rune_stone	eldritch	void	eyeb	eldritch	Eldritch school runestone
+fire_mancer	flame	fire	gold	up	fire	Pyromancer flame — fire spell damage
+ice_mancer	snowflake	ice	diamond	up	ice	Cryomancer crystal — ice spell damage
+lightning_mancer	bolt	storm	bone	up	storm	Stormwrought bolt — lightning damage
+holy_mancer	sun	holy	gold	up	holy	Divine radiance — holy power
+ender_mancer	pearl	ender	void	up	ender	Void pearl — ender spell damage
+blood_mancer	drop	blood	crimson	up	blood	Hemomancer drop — blood damage
+evocation_mancer	star4	amethyst	bone	up	amethyst	Evoker star — evocation damage
+nature_mancer	leaf	nature	wood	up	moss	Druid leaf — nature damage
+eldritch_mancer	eldritch_eye	eldritch	void	up	eldritch	Unknowable eye — eldritch damage
+fire_catalyst	flame	ember	gold	sparkle	fire	Immolating proc flame
+ice_catalyst	snowflake	frost	ice	sparkle	ice	Chilling proc crystal
+lightning_catalyst	bolt	gold	storm	sparkle	storm	Charged proc bolt
+holy_catalyst	sun	gold	holy	sparkle	holy	Fortifying proc light
+ender_catalyst	pearl	void	ender	sparkle	ender	Planar proc pearl
+blood_catalyst	drop	crimson	blood	sparkle	blood	Rending proc drop
+evocation_catalyst	star4	arcane	amethyst	sparkle	amethyst	Echoing proc star
+nature_catalyst	leaf	moss	gold	sparkle	nature	Oakskin proc leaf
+eldritch_catalyst	eldritch_eye	void	eldritch	sparkle	eldritch	Shrouding proc eye
+schoolbridge_fire	link	fire	ember	flameb	fire	Bridged flames — Ars fire scales with Iron's
+schoolbridge_water	link	water	ice	snowb	water	Frost-tide bridge — water from ice power
+schoolbridge_air	link	storm	frost	boltb	storm	Storm bridge — air from lightning power
+schoolbridge_earth	link	nature	wood	leafb	moss	Root bridge — earth from nature power
+schoolbridge_abjuration	link	holy	gold	sunb	holy	Sacred bridge — abjuration from holy
+schoolbridge_manipulation	link	ender	arcane	pearlb	ender	Void bridge — manipulation from ender
+ars_form_projectile	arrow	arcane	mana	downb	mana	Spell arrow — projectile cost down
+ars_form_touch	hand	arcane	amethyst	up	arcane	Touch focus — contact spells stronger
+ars_form_self	xp_orb	arcane	mana	downb	arcane	Inward focus — self spells cheaper
+ars_wild_manipulation	portal	amethyst	pink	downb	arcane	Wild weave — manipulation cost down
+ars_hedgewitch	drop	water	frost	up	water	Tidal drop — water glyphs stronger
+ars_emberforged	flame	crimson	fire	up	ember	Emberforged flame — fire glyphs
+ars_stormcaller	bolt	frost	storm	up	frost	Stormcaller bolt — air glyphs
+ars_geomancer	ore_block	moss	stone	up	moss	Geomancer stone — earth glyphs
+ars_conjurer	ghost	arcane	amethyst	downb	amethyst	Conjured spirit — summon cost down
+ars_abjurer	round_shield	gold	holy	up	holy	Abjurer ward — protection stronger
+ars_arcane_weaver	portal	arcane	ender	up	arcane	Woven manipulation damage
+affix_focus	gem_socket	arcane	crimson	up	arcane	Rare gear attunes casting
+arcane_barrier	round_shield	mana	arcane	plus	mana	Conjured barrier absorbing damage
+arcane_efficiency	sigil	mana	gold	downb	mana	Efficient sigil — Ars mana cost down
+arcane_recovery	skull	arcane	mana	dropb	mana	Mana drawn from the dying
+arcane_reforging	anvil	arcane	amethyst	sparkle	arcane	Reforge rarity upgrade chance
+arcane_reprieve	potion	mana	arcane	heartb	mana	Emergency mana surge
+astral_projection	eye	ender	arcane	moonb	arcane	Astral eye — remote viewing
+aura_manipulation	leaf	gold	nature	up	gold	Amplified nature aura
+charge_mastery	hourglass	fire	gold	up	crimson	Full charge — held casts hit harder
+dragon_magic	dragon	arcane	ender	up	arcane	Dragon magic items stronger
+dual_casting	wand	arcane	amethyst	sparkle	amethyst	Twin cast chance
+eldritch_power	eldritch_eye	void	arcane	up	void	Eldritch spells empowered
+elemental_master	burst	fire	ice	up	storm	Tri-element burst damage
+enchanted_missiles	arrows3	arcane	mana	up	arcane	Missile volley damage
+life_eater	heart_crack	crimson	shadow	plus	crimson	Stolen life on kill
+life_leech_bound	ghost	blood	crimson	dropb	crimson	Minions tithe mana
+long_channel	staff	arcane	gold	clockb	arcane	Extended ritual — long casts stronger
+lord_of_the_dead	skull	void	ender	up	ender	Undead lord — summons empowered
+mana_efficiency	drop	mana	frost	downb	arcane	Lean mana drop — spells cost less
+mana_regeneration	drop	frost	mana	up	mana	Mana regen up
+mana_shield	shield	frost	mana	dropb	frost	Mana absorbing damage
+mana_surge	flame	mana	arcane	up	mana	Blue surge — desperate power
+mystic_shield	round_shield	amethyst	mana	downb	amethyst	Ward vs magic projectiles
+philosophers_stone	gem	gold	crimson	sparkle	fire	Transmutation stone drops
+potion_splash	potion	pink	amethyst	up	pink	Wider splash radius
+quickcast	wand	storm	arcane	clockb	storm	Instant spells cycle faster
+quickening	hourglass	storm	gold	downb	storm	Cast time reduced
+reservoir	cauldron	mana	frost	up	mana	Deep mana reservoir regen
+resonant_affixes	gem_socket	pink	arcane	up	pink	Affix resonance — spell damage
+resonant_casting	xp_orb	mana	arcane	up	mana	Overflow resonance — bonus damage
+safe_port	pearl	frost	ender	no	ender	Painless pearl teleport
+soul_magic	ghost	void	arcane	up	arcane	Soul abilities empowered
+source_attunement	xp_orb	emerald	mana	plus	mana	Expanded source pool
+source_well	cauldron	emerald	mana	up	emerald	Source generation up
+spell_amplifier	burst	arcane	amethyst	up	amethyst	All spell damage amplified
+spell_quickening	hourglass	mana	arcane	downb	mana	Spell cast time down
+spellsocket	gem_socket	mana	amethyst	plus	mana	Sockets grant spell level
+summoner	ghost	amethyst	arcane	plus	amethyst	Strengthened summons
+telekinesis	hand	amethyst	arcane	pearlb	arcane	Telekinetic reach
+tempo	clock	arcane	gold	downb	arcane	Spell cooldowns reduced
+triple_threat	star4	gold	arcane	plus	arcane	Three traditions in concert
+unified_arcana	link	emerald	mana	dropb	emerald	Source refunds Iron's mana
+void_magic	portal	void	ender	up	void	Void-charged ender damage
+wellspring	drop	diamond	mana	plus	mana	Deepened mana wellspring
+wormhole_storage	chest	ender	void	pearlb	arcane	Wormhole ender chest access
+# ===== STRENGTH =====
+armor_piercing	broken_armor	steel	crimson	downb	crimson	Pierced plate — armor ignored
+berserker	axe	crimson	blood	starb	crimson	Berserk axe — low-health crits
+blade_storm	dual_swords	storm	steel	up	storm	Whirling blades vs crowds
+blood_fury	drop	crimson	gold	heartb	crimson	Crit lifesteal drop
+bloodlust	fang	crimson	blood	up	storm	Bloodied fangs — kill frenzy speed
+boss_hunter	crown	gold	crimson	skullb	crimson	Crowned prey — boss damage
+brutal_swing	warhammer	steel	wood	up	crimson	Two-handed brutal swing
+cataclysms_wrath	sword	obsidian	crimson	skullb	gold	Cataclysm blade empowered
+chain_lightning_strike	bolt	storm	steel	sparkle	storm	Melee chains lightning
+cleave	dual_swords	crimson	gold	up	crimson	Cleaving strike hits nearby foes
+devastating_blow	warhammer	crimson	gold	starb	gold	Opening blow vs full health
+draconic_fury	dragon	fire	ember	flameb	fire	Dragon weapon fire damage
+dragon_bone_mastery	bone	bone	crimson	up	crimson	Dragon bone weapon damage
+dragon_slayer	dragon	steel	crimson	skullb	steel	Slayer's edge vs dragons
+execute	skull	crimson	shadow	downb	crimson	Execution — finish the weakened
+fighting_spirit	fist	crimson	gold	up	crimson	Kill-fueled strength
+gladiator	shield_bang	steel	gold	up	crimson	Shield bash damage
+heavy_strikes	warhammer	gold	steel	up	steel	Guard-crushing strikes
+last_stand	banner	crimson	shadow	heartb	crimson	Last banner at 1 HP
+mowzies_might	fist	orange	gold	up	orange	Mowzie ability might
+mythical_berserker	skull	gold	crimson	heartb	gold	Deathless rage
+nichirin_blade	katana	crimson	gold	up	crimson	Nichirin katana damage
+one_handed	sword	steel	gold	up	gold	One-handed finesse damage
+polearm_mastery	polearm	steel	wood	up	gold	Halberd and lance mastery
+power_attack	burst	crimson	fire	starb	fire	Crit power surge
+primal_fury	paw	crimson	fire	up	fire	Primal fury when wounded
+reapers_edge	sword	shadow	blood	skullb	blood	Reaper's cut — current-HP damage
+runic_might	sword	arcane	gold	up	arcane	Runic weapon damage
+sacred_fire	flame	holy	gold	flameb	holy	Sacred flame ignites foes
+samurais_edge	katana	steel	crimson	up	crimson	Katana training damage
+siege_breaker	warhammer	copper	steel	skullb	crimson	Siege maul vs bosses
+spartans_discipline	round_shield	crimson	gold	up	crimson	Spartan weapon discipline
+spectral_ward	ghost	bone	arcane	downb	slate	Blows ignore defenses
+stalwart_striker	sword	slate	crimson	heartb	crimson	Dungeon kills restore health
+titans_grip	fist	steel	gold	plus	steel	Titan grip — 2H with shield
+trophy_hunter	crown	crimson	gold	up	gold	Elite trophy damage
+unstoppable_force	burst	steel	storm	sparkle	storm	Stunning impact chance
+vampiric_fangs	fang	blood	crimson	heartb	blood	Vampiric lifesteal fangs
+vengeance	dagger	crimson	blood	up	blood	Vengeful strike at your attacker
+warlords_presence	banner	gold	crimson	plus	crimson	Warlord banner — allies inspired
+warmonger	broken_armor	crimson	steel	up	crimson	Armor-breaker damage
+weapon_master	dual_swords	gold	steel	plus	gold	All-weapon mastery
+# ===== TINKERING =====
+alloy_master	furnace	copper	gold	plus	copper	Alloy furnace — extra ingots
+armor_smith	chestplate	copper	steel	plus	gold	Smithed armor bonus protection
+assembly_line	gear	copper	steel	plus	copper	Assembly gear — batch output
+auto_repair	wrench	emerald	steel	heartb	emerald	Self-repairing gear
+backpack_engineer	backpack	leather	copper	plus	gold	Expanded backpack slots
+ballistic_expert	crossbow	steel	copper	up	crimson	Mechanical ranged damage
+brewing_apparatus	flask	copper	fire	up	fire	Tuned brewing stand speed
+circuit_breaker	redstone_torch	redstone	wood	up	redstone	Extended redstone signal
+clockwork_mastery	clock	gold	copper	up	gold	Precise clockwork timing
+disassembler	gear	slate	copper	coinb	copper	Disassembled component recovery
+enchantment_transfer	book	amethyst	gold	sparkle	amethyst	Enchant transfer chance
+explosive_ordinance	tnt	redstone	gold	up	crimson	Bigger TNT blast radius
+forge_master	anvil	fire	steel	plus	fire	Forge yields more output
+gadget_upgrade	backpack	copper	gold	up	copper	Upgraded pack modules
+gadgeteer	gear	gold	copper	up	storm	Gadgets more effective
+inventor	blueprint	gold	lapis	sparkle	emerald	Inventive recipe variants
+key_forge	key	gold	copper	sparkle	gold	Forged master key chance
+lock_expert	lock_open	steel	gold	downb	gold	Locks picked faster
+locksmith	key	steel	gold	no	steel	Lockpicks spared from breaking
+master_artificer	anvil	amethyst	gold	starb	amethyst	Artificer bonus enchantment
+master_tinkerer	wrench	gold	steel	plus	steel	Tinkered durability bonus
+mechanical_arm	hand	copper	steel	up	copper	Extended interaction reach
+mechanical_knowledge	redstone_torch	redstone	slate	up	storm	Faster redstone devices
+mechanism_mastery	piston	wood	slate	up	gold	Mechanisms trigger faster
+modular_equipment	gem_socket	copper	steel	plus	copper	Extra modification slots
+overclock	clock	redstone	gold	up	redstone	Overclocked crafting stations
+power_tools	pickaxe	redstone	steel	up	redstone	Powered tool efficiency
+precision_tools	wrench	steel	gold	plus	gold	Precision-built tool durability
+repair_expert	anvil	steel	gold	downb	gold	Cheaper anvil repairs
+runic_engineering	gear	arcane	gold	plus	arcane	Runic repair bonus effects
+safe_builder	lock	steel	gold	shieldb	gold	Hardened built locks
+safe_cracker	lock_open	gold	steel	sparkle	gold	Cracked lock complexity
+salvage_master	grindstone	steel	copper	coinb	steel	Master salvage yields
+siege_mechanic	tower	wood	copper	clockb	storm	Siege engines reload faster
+spring_loaded	spring	steel	copper	up	emerald	Spring-boosted jumps
+tinkers_touch	hammer	copper	gold	plus	copper	Tinker's crafted durability
+tool_smith	pickaxe	wood	gold	plus	gold	Repaired tool efficiency
+trap_maker	trap	steel	crimson	up	crimson	Deadlier placed traps
+waystone_tinker	portal	prismarine	arcane	downb	prismarine	Cheaper waystone travel
+weapon_smith	sword	copper	gold	plus	copper	Repaired weapon damage
+# ===== WISDOM =====
+ancient_inscriptions	rune_stone	sand	gold	plus	gold	Ancient artifact inscriptions
+apotheosis_wisdom	tome	amethyst	gold	up	amethyst	Raised enchantment cap
+arcane_linguist	scroll	arcane	amethyst	up	arcane	Spell text fluency
+arcane_ward	round_shield	void	arcane	downb	arcane	Ward vs Ars constructs
+ars_savant	paw	amethyst	arcane	up	amethyst	Savant familiar abilities
+aura_attunement	leaf	prismarine	nature	up	prismarine	Attuned aura efficiency
+bookcraft	book	emerald	gold	coinb	emerald	Enchanted books sell higher
+curse_breaker	grindstone	arcane	bone	no	crimson	Curses ground away
+dimensional_wisdom	portal	arcane	gold	up	ender	Enchants stronger off-world
+disenchant_mastery	grindstone	emerald	steel	up	emerald	Grindstone returns more XP
+druidic_knowledge	leaf	wood	moss	up	moss	Nature enchantments stronger
+elder_knowledge	tome	prismarine	gold	up	emerald	Enchanting XP returned
+enchanters_insight	spellbook	lapis	gold	downb	emerald	Cheaper enchanting XP
+enchantment_amplifier	spellbook	gold	arcane	up	gold	Anvil bonus level chance
+enchantment_preservation	spellbook	holy	gold	shieldb	gold	Enchants kept on death
+enchantment_stacking	spellbook	amethyst	lapis	plus	amethyst	Additional enchantment chance
+enlightenment	sun	gold	holy	up	emerald	Enlightened skill XP
+experienced_enchanter	xp_orb	lapis	emerald	downb	emerald	Enchanting costs less XP
+focus	eye	mana	frost	shieldb	mana	Iron concentration — casts uninterrupted
+grand_sage	staff	gold	arcane	up	gold	Grand sage amplification
+imbued_focus	staff	mana	arcane	plus	mana	Spells cast at higher level
+lapis_conservation	gem	lapis	mana	sparkle	lapis	Lapis spared when enchanting
+lore_mastery	open_book	gold	arcane	up	gold	Lore-mastered grindstone XP
+mending_boost	wrench	arcane	emerald	up	emerald	Faster mending repair
+mystic_attunement	sigil	frost	arcane	up	frost	Magical items attuned
+mystic_sight	glasses	amethyst	arcane	eyeb	amethyst	See enchantments at a glance
+nature_sage	tree	nature	wood	clockb	nature	Longer aura infusions
+rune_mastery	sigil	gold	amethyst	up	gold	Rune enchantments effective
+runic_enchantment	sigil	arcane	gold	up	arcane	Runic gear enchants stronger
+scroll_scribe	quill	bone	lapis	plus	arcane	Scribe enchantment scrolls
+soul_binding	link	void	arcane	no	bone	Soulbound items never drop
+spell_inscription	quill	arcane	mana	downb	mana	Inscribed spells cost less
+temporal_wisdom	hourglass	gold	arcane	clockb	gold	Enchant effects linger in combat
+tome_of_knowledge	tome	lapis	gold	plus	lapis	Books hold more levels
+unbreaking_mastery	pickaxe	iron	gold	shieldb	gold	Unbreaking chance improved
+ward_master	round_shield	frost	arcane	clockb	arcane	Wards last longer
+wisdom_of_ages	anvil	gold	lapis	downb	gold	Aged wisdom — cheap repairs

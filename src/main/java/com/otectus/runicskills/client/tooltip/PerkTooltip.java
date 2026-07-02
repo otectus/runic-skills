@@ -26,7 +26,8 @@ public final class PerkTooltip {
         list.add(Component.translatable("tooltip.perk.description." + (perk.canPerk() ? "on" : "off")).withStyle(perk.canPerk() ? ChatFormatting.GREEN : ChatFormatting.RED));
 
         // Active-perk cap feedback. Only shown when a cap is actually in effect (flat maxActivePerks
-        // and/or the scaled perksPerGlobalLevel). effectivePerkCap returns 0 when unlimited.
+        // and/or the scaled perksPerGlobalLevel, scaled by EARNED global level). effectivePerkCap
+        // returns 0 when unlimited.
         SkillCapability localCap = SkillCapability.getLocal();
         if (localCap != null) {
             int effectiveCap = RegistryPerks.effectivePerkCap(localCap);
@@ -34,6 +35,23 @@ public final class PerkTooltip {
                 int active = RegistryPerks.countEnabledPerks(localCap);
                 list.add(Component.translatable("tooltip.perk.active_cap", active, effectiveCap)
                         .withStyle(active >= effectiveCap ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
+                if (active > effectiveCap) {
+                    // Over budget (e.g. config lowered): perk activation is frozen until respec.
+                    list.add(Component.translatable("tooltip.perk.over_budget").withStyle(ChatFormatting.RED));
+                } else {
+                    // When the EARNED-global-level scaled cap is the binding, still-growing constraint,
+                    // show the earned global level that unlocks the next perk slot.
+                    com.otectus.runicskills.handler.HandlerCommonConfig cfg =
+                            com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance();
+                    float ratio = cfg.perksPerGlobalLevel;
+                    boolean flatBinds = cfg.maxActivePerks > 0 && effectiveCap >= cfg.maxActivePerks;
+                    boolean ceilingBinds = cfg.maxPerkBudgetCap > 0 && effectiveCap >= cfg.maxPerkBudgetCap;
+                    if (ratio > 0f && !flatBinds && !ceilingBinds) {
+                        int nextThreshold = (int) Math.ceil((effectiveCap + 1) / (double) ratio);
+                        list.add(Component.translatable("tooltip.perk.next_slot", nextThreshold)
+                                .withStyle(ChatFormatting.DARK_GRAY));
+                    }
+                }
             }
         }
         list.add(Component.empty());

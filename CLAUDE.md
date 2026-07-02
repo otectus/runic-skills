@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Mod ID**: `runicskills`
 - **Package**: `com.otectus.runicskills`
-- **Version**: 1.5.1
+- **Version**: 1.5.4
 - **MC**: 1.20.1 | **Forge**: 47.3.0 | **Java**: 17
 - **Mappings**: Parchment 2023.09.03-1.20.1
 

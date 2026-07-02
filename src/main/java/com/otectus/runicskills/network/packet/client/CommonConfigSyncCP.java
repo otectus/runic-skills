@@ -3,6 +3,7 @@ package com.otectus.runicskills.network.packet.client;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerConvergenceItemsConfig;
 import com.otectus.runicskills.network.ServerNetworking;
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -19,9 +20,28 @@ import java.util.function.Supplier;
  */
 public class CommonConfigSyncCP {
 
+    /**
+     * Cap on each synced string-list's entry count. Generous for real configs (namespace-discovered
+     * lock lists run in the low thousands) while bounding the {@code readVarInt}-driven allocation
+     * a corrupt or hostile server could otherwise force. Same defense as PerkGroupsSyncCP.
+     */
+    private static final int MAX_LIST_ENTRIES = 65536;
+
+    /** Wire-compatible with {@code readList(readUtf)} (varint count + entries), but count-capped. */
+    private static List<String> readCappedStringList(FriendlyByteBuf buffer, String field) {
+        int count = buffer.readVarInt();
+        if (!com.otectus.runicskills.common.util.PacketBounds.isCountValid(count, MAX_LIST_ENTRIES)) {
+            throw new DecoderException("CommonConfigSyncCP: " + field + " count out of range: " + count);
+        }
+        List<String> list = new java.util.ArrayList<>(count);
+        for (int i = 0; i < count; i++) list.add(buffer.readUtf(Short.MAX_VALUE));
+        return list;
+    }
+
     private final int skillFirstCostLevel;
     private final int maxActivePerks;
     private final float perksPerGlobalLevel;
+    private final int maxPerkBudgetCap;
     private final List<String> disabledPerks;
     private final List<String> disabledPassives;
     private final int perkSwapCooldownTicks;
@@ -114,6 +134,7 @@ public class CommonConfigSyncCP {
         skillFirstCostLevel = HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel;
         maxActivePerks = HandlerCommonConfig.HANDLER.instance().maxActivePerks;
         perksPerGlobalLevel = HandlerCommonConfig.HANDLER.instance().perksPerGlobalLevel;
+        maxPerkBudgetCap = HandlerCommonConfig.HANDLER.instance().maxPerkBudgetCap;
         disabledPerks = HandlerCommonConfig.HANDLER.instance().disabledPerks;
         disabledPassives = HandlerCommonConfig.HANDLER.instance().disabledPassives;
         perkSwapCooldownTicks = HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
@@ -199,8 +220,9 @@ public class CommonConfigSyncCP {
         skillFirstCostLevel = buffer.readInt();
         maxActivePerks = buffer.readInt();
         perksPerGlobalLevel = buffer.readFloat();
-        disabledPerks = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
-        disabledPassives = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
+        maxPerkBudgetCap = buffer.readInt();
+        disabledPerks = readCappedStringList(buffer, "disabledPerks");
+        disabledPassives = readCappedStringList(buffer, "disabledPassives");
         perkSwapCooldownTicks = buffer.readInt();
         skillLevelUpCostMultiplier = buffer.readFloat();
         enableItemLocks = buffer.readBoolean();
@@ -249,10 +271,10 @@ public class CommonConfigSyncCP {
         obsidianSmasherModifier = buffer.readFloat();
 
         treasureHunterProbability = buffer.readInt();
-        treasureHunterItemList = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
+        treasureHunterItemList = readCappedStringList(buffer, "treasureHunterItemList");
 
         convergenceProbability = buffer.readInt();
-        convergenceItemList = buffer.readList(buf -> buf.readUtf(Short.MAX_VALUE));
+        convergenceItemList = readCappedStringList(buffer, "convergenceItemList");
 
         lifeEaterModifier = buffer.readFloat();
         criticalRoll6Modifier = buffer.readFloat();
@@ -286,6 +308,7 @@ public class CommonConfigSyncCP {
         buffer.writeInt(this.skillFirstCostLevel);
         buffer.writeInt(this.maxActivePerks);
         buffer.writeFloat(this.perksPerGlobalLevel);
+        buffer.writeInt(this.maxPerkBudgetCap);
         buffer.writeCollection(this.disabledPerks, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
         buffer.writeCollection(this.disabledPassives, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
         buffer.writeInt(this.perkSwapCooldownTicks);
@@ -376,6 +399,7 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel = this.skillFirstCostLevel;
                 HandlerCommonConfig.HANDLER.instance().maxActivePerks = this.maxActivePerks;
                 HandlerCommonConfig.HANDLER.instance().perksPerGlobalLevel = this.perksPerGlobalLevel;
+                HandlerCommonConfig.HANDLER.instance().maxPerkBudgetCap = this.maxPerkBudgetCap;
                 HandlerCommonConfig.HANDLER.instance().disabledPerks = this.disabledPerks;
                 HandlerCommonConfig.HANDLER.instance().disabledPassives = this.disabledPassives;
                 HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks = this.perkSwapCooldownTicks;

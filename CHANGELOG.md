@@ -1,5 +1,187 @@
 # Changelog
 
+## [1.5.4] - 2026-07-02 — Original perk icon set
+
+### Changed — every perk icon replaced with an original generated texture
+All 461 registered perk icons were replaced with original 16x16 pixel-art textures in a
+consistent visual style (shared outline, 3-tone shading, themed palettes, corner badges
+encoding the effect modifier). The 82 perks that previously borrowed Iron's Spellbooks /
+Ars Nouveau / Apotheosis item sprites now ship their own icons under
+`assets/runicskills/textures/skill/<skill>/<perk_id>.png`, so integration perks no longer
+render as missing textures when the perk-icon path changes upstream. The
+`ironsItem`/`arsItem`/`apothItem` helpers in `HandlerResources` were removed accordingly.
+
+- 21 orphaned PNGs from removed perk sets (old Blood Magic / Enigmatic Legacy era, plus two
+  stale `passive_*` duplicates under `wisdom/`) were deleted; passive, locked and null icons
+  are untouched.
+- New `PerkTextureResolutionTest` asserts every referenced texture resolves on disk, that no
+  perk constant points at a foreign namespace, and that every registered perk id has a
+  matching `textures/skill/<skill>/<id>.png`.
+- All 38 Passive attribute icons (`passive_*.png`) — shown as the first row of each
+  skill page — were regenerated in the same style, replacing the remaining old
+  16x16/20x20 item-style art (including the icons with the baked-in "S" badge).
+- Full per-perk and per-passive tracking tables: `docs/PERK_ICON_AUDIT.md`.
+
+## [1.5.3] - 2026-06-21 — Apotheosis "Fortune 0" fix, earned-level perk budget, lock source metadata
+
+### Fixed — bogus "You need Fortune 0" denial on Apotheosis-affixed gear
+Equipping armor that carried Apotheosis affix data could be blocked with the nonsensical
+message *"You need Fortune 0 to use … items!"*, with no matching config entry to be found.
+
+Root cause: in `ApotheosisIntegration.onEquipAffixItem`, the item was dropped and
+`item.setCount(0)` **emptied the stack first**, and only *then* did the code recompute the
+required Fortune level and rarity for the message — on a now-empty stack, which returns `0` /
+"Unknown". The real requirement was lost and surfaced as "Fortune 0". An item whose rarity was
+not present in the `apothRarity*Level` config (default-deny → `Integer.MAX_VALUE`) hit the same
+path and also displayed as `0`.
+
+Fixes:
+- The required level and rarity are now captured **before** the stack is mutated, and a required
+  level of `0` (common/ungated rarity, no affixes, or gating disabled) **never** blocks or
+  messages. The denial now reads *"Requires Fortune X to use <Rarity> Apotheosis-affixed gear."*
+- Unmapped rarities are reported distinctly (*"…rarity isn't configured — ask an admin to set the
+  apothRarity\*Level options."*) instead of as a meaningless numeric level.
+- Items with an active affix gate now show an **"Apotheosis Affix Gate: Requires Fortune X"**
+  tooltip line, distinct from manual/integration item-lock attribution.
+- The decision logic is extracted to the pure, unit-tested `ApothGateMath`.
+- Affix-rarity gating stays **on by default** (affixed gear is rarity-based loot, intended RPG
+  progression). The `apothEnableAffixRarityGating` config comment now explains that it gates *any*
+  Apotheosis-affixed equipment (including vanilla armor/tools that rolled an affix), that it is
+  **separate** from gem-socket gating, and how to disable it. Gem-rarity gating already only
+  affected gem socketing and is unchanged.
+
+### Added — perk budget scaled from *earned* global level
+The optional `perksPerGlobalLevel` cap now scales from a player's **earned** global level
+(`max(0, totalSkillLevels − startingBaseline)`) instead of the raw skill-level sum. A fresh
+player is earned-level 0, so `0.5` grants the first perk slot after 2 earned levels and 3 slots
+after 6 — matching the intuitive "0.5 perks per level" request. `getGlobalLevel()` itself is
+**unchanged** (commands, FTB Quests, docs still see the raw sum). Legacy behavior is preserved:
+the default `perksPerGlobalLevel = 0` disables the scaled cap entirely.
+
+- New optional `maxPerkBudgetCap` (default 0 = none) clamps the scaled budget to a hard ceiling
+  without affecting the flat `maxActivePerks` cap. Synced to clients and re-applied by
+  `/skillsreload`.
+- **Over-budget = frozen until respec.** If a config reload, skill-level loss, or a lowered
+  `perksPerGlobalLevel` leaves a player above budget, perk activation is frozen (existing perks
+  are **not** disabled or lost) and the player is told to respec. Disabling perks remains allowed.
+- Perk tooltips now show the active/cap count, the **earned global level that unlocks the next
+  slot**, and an over-budget warning.
+
+### Added — item-lock source metadata
+`LockItem` gained an optional `Source` field (backwards-compatible; legacy `lockItems.json5`
+without it loads unchanged and a null source is never written). Every integration-generated lock
+is stamped with its provider id, and locked-item tooltips now show **"Locked by: …"** so players
+can tell whether a lock came from manual config, Ice and Fire, Iron's Spells, Spartan, etc. —
+distinct from the Apotheosis affix gate, which is a runtime check rather than an item lock.
+
+### Integration compatibility audit
+All advertised integration toggles default **on** (`enableIceAndFireIntegration`,
+`iceFireEnableLockItems`, `enableSpartanIntegration`, `spartanEnableLockItems`,
+`enableIronsSpellbooksIntegration`, `enableIronsSpellbooksLockItems`). Ice and Fire and Iron's
+Spells both register lock providers that scan their whole namespace and tier gear by keyword
+(`LockGen`), in addition to curated lists. Exact per-item coverage is best confirmed in a loaded
+dev client; the new "Locked by:" tooltip makes that verification straightforward.
+
+| Integration | Perks / passives | Item locks | Event hooks |
+| --- | --- | --- | --- |
+| Apotheosis / Apothic Attributes | ✅ (gem/affix perks, 10 attribute perks) | ⚠️ affix-rarity gate (runtime, not item-lock entries) + gem-socket gate | ✅ |
+| Ice and Fire (`iceandfire`) | ✅ (Dragon Slayer, Mythic Fortitude) | ✅ curated + namespace discovery | ✅ |
+| Spartan Weaponry / Shields / Fire | — | ✅ curated + discovery (incl. `spartanfire`) | — |
+| Iron's Spells (`irons_spellbooks`) | ✅ (schools, many built-ins) | ✅ namespace discovery (gear tiers; ingredients/ink intentionally unlocked) | ✅ |
+| Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft | — | ✅ curated | some |
+| Epic Knights, Aquaculture, Cataclysm, Mowzie's, Undergarden, … | varies | ✅ generic namespace discovery | varies |
+| TacZ, CGM, Scorched Guns, Curios, FTB Quests, KubeJS, Ars Nouveau | ✅ / hooks | — (no item-lock entries) | ✅ |
+
+"Has perks" does **not** imply "has item-lock coverage" — the two are tracked separately, which
+was the source of earlier confusion.
+
+### Changed — network protocol bump `6` → `7`
+`CommonConfigSyncCP` gained the `maxPerkBudgetCap` field, changing the packet payload. Mixed
+1.5.3 / pre-1.5.3 client-server pairs are now rejected cleanly at the connection screen instead
+of passing the handshake and desyncing on a misread config-sync buffer. **Both sides must run
+1.5.3+.**
+
+### Removed — stale `botania` optional dependency in mods.toml
+All Botania integration was removed in 1.5.0; the leftover optional-dependency declaration (and
+its version-range enforcement) is now gone too.
+
+### Build — version-consistency guard
+`./gradlew check` now fails if `VERSION`, `gradle.properties` `mod_version`, and the top
+CHANGELOG entry disagree — the stale-`VERSION` drift that showed users false "new version
+available" banners can no longer reach a release build.
+
+### Fixed — full security/stability review remediation
+A complete codebase review (security, stability, performance, build) landed these fixes:
+
+- **`/skillsreload` title desync**: reloading replaced every title's registry binding with null,
+  so ALL titles silently stopped being evaluated (with per-scan "desync" warnings) until a
+  restart. Reload now re-binds titles to the frozen registry, re-runs the default-merge (newly
+  shipped built-in titles appear without a restart), and reports config titles added after
+  startup as restart-required.
+- **Memory leaks on long-running servers**: per-player combat memory (`PerkEffectsHandler`'s
+  seven UUID-keyed maps), Power runtime target tags, and the Barrage/Long Note/Pyroclasm
+  dispatcher state are now all purged on logout.
+- **Atomic config saves**: `ConfigHolder.save()` writes a `.tmp` sibling and moves it into
+  place, so a crash or full disk mid-write can no longer truncate a config and silently reset
+  it to defaults on the next boot.
+- **Load-time config validation**: core progression fields (`skillMaxLevel`,
+  `perksPerGlobalLevel`, `maxActivePerks`, `maxPerkBudgetCap`, …) are clamped into their
+  documented ranges when read from disk, with a WARN naming the field and both values — the
+  YACL UI ranges previously only applied inside the config screen.
+- **At-cap level-up packets**: a level-up request at `skillMaxLevel` consumed XP, fired
+  `SkillLevelUpEvent`, and pinged the quest bridge even though the level couldn't change.
+  Now rejected up front (creative included — creative bypasses the cost, never the cap).
+- **Client decode hardening**: `NoticeOverlayCP` and `CommonConfigSyncCP` now bound their
+  list/array counts before allocating (matching `PerkGroupsSyncCP`), so a corrupt or hostile
+  server can't crash the client decode thread or force huge allocations.
+- **NPE-proof skill lookups**: `getSkillLevel` now resolves unknown skill names to the default
+  level 1 instead of unboxing null (e.g. a lock referencing a skill from a removed addon).
+- **AttributesLib isolation**: the ten Apothic Attributes perks moved to their own
+  reflectively-loaded `ApothicAttributesPerksIntegration`, so an AttributesLib version mismatch
+  degrades only those perks instead of also killing affix-rarity and gem gating.
+- **Combat/tick performance**: capability lookups are memoized per player-tick (a melee hit
+  previously re-resolved the capability hundreds of times across eight handlers); per-perk
+  attribute-modifier UUIDs are precomputed (was ~40 MD5 hashes per player per second); attribute
+  modifiers (incl. MAX_HEALTH) are only touched when their value actually changes; title
+  conditions are parsed once per config load instead of re-split on every 10-second scan.
+- **Clean-checkout build**: the Gradle wrapper jar and the two compile-only stub jars in
+  `libs/` were blanket-ignored by `.gitignore`'s `*.jar` rule, so a fresh clone could not
+  build. They are now tracked via targeted ignore exceptions.
+
+## [1.5.2] - 2026-06-18 — Legacy config-read fix + 20 new titles
+
+### Fixed — legacy snake_case configs silently mis-parsed
+Config files written before the 1.1.0 `ConfigHolder` refactor were serialized by the old
+YACL serializer, which named **nested-POJO** fields in `snake_case` (`title_id`,
+`hide_requirements`, `item`, `skill`, `level`). The current loader uses plain Gson with
+IDENTITY field naming, so none of those keys matched the Pascal-case Java fields. Gson
+constructed each object via its no-arg constructor and overrode nothing:
+
+- **Titles:** every entry in a legacy `titles.json5` collapsed to the constructor default
+  (`rookie`). After the registry's dedup-by-id, only **Rookie** survived — so the Title tab
+  showed just Rookie + the two system titles (Administrator, Titleless) instead of the full
+  list. This was the reported "only three titles" bug.
+- **Item locks:** every entry in a legacy `lockItems.json5` collapsed to the default
+  (`minecraft:diamond` / Strength 2), silently breaking configured item gating.
+
+Fixed by adding Gson `@SerializedName(value = "<Pascal>", alternate = {"<snake>"})` to the
+nested model fields (`TitleModel`, `LockItem`, `LockItem.Skill`). Both legacy snake_case and
+current Pascal-case files now load correctly; new writes stay Pascal. Top-level `@SerialEntry`
+fields (`common.json5`) were written verbatim camelCase and were never affected.
+
+### Added — title default-merge on load
+`ConfigHolder` loads an existing file as-is with no merge, so titles added to the built-in
+defaults never reached players who already had a config. `RegistryTitles.load()` now unions
+any built-in title whose id is missing from the loaded list (preserving existing entries and
+custom tunings) and saves — which also rewrites a legacy snake_case file in Pascal-case.
+
+### Added — 20 modpack-themed titles
+Boss kills (Ice & Fire gorgon/hydra/sea serpent, Cataclysm ignis/ender guardian, Bosses of
+Mass Destruction night lich/obsidilith, Mowzie's ferrous wroughtnaut, vanilla warden/wither),
+spellcaster titles (spellweaver/summoner/elementalist), Tinkering titles
+(artificer/master artificer/engineer), martial hybrids (gladiator/berserker/monk), and a
+spelunker title (mine ancient debris).
+
 ## [1.5.1] - 2026-06-18 — Item-gating enforcement fix ("inert in hand")
 
 Item locks were defined and shown in tooltips but not reliably enforced: a player below an

@@ -4266,14 +4266,28 @@ public class RegistryPerks {
 
     /**
      * Effective active-perk cap for a player, combining the flat {@code maxActivePerks} cap with the
-     * optional global-level-scaled {@code perksPerGlobalLevel} cap. Returns {@code 0} for unlimited.
-     * Server- and client-safe: reads the (synced) common config and the capability's global level.
-     * See {@link com.otectus.runicskills.common.util.PerkCapMath#computeEffectiveCap(int, int, float)}.
+     * optional {@code perksPerGlobalLevel} cap scaled by the player's <em>earned</em> global level
+     * (total skill levels above the starting baseline), clamped to the optional {@code maxPerkBudgetCap}
+     * ceiling. Returns {@code 0} for unlimited. Server- and client-safe: reads the (synced) common
+     * config and the capability's earned global level.
+     * See {@link com.otectus.runicskills.common.util.PerkCapMath#computeEffectiveCap(int, int, float, int)}.
      */
     public static int effectivePerkCap(com.otectus.runicskills.common.capability.SkillCapability capability) {
         HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
         return com.otectus.runicskills.common.util.PerkCapMath.computeEffectiveCap(
-                cfg.maxActivePerks, capability.getGlobalLevel(), cfg.perksPerGlobalLevel);
+                cfg.maxActivePerks, capability.getEarnedGlobalLevelForPerkBudget(),
+                cfg.perksPerGlobalLevel, cfg.maxPerkBudgetCap);
+    }
+
+    /**
+     * True when the player currently has more active perks than {@link #effectivePerkCap} allows
+     * (cap {@code > 0}). This can happen after a config reload, skill-level loss, or a budget
+     * decrease. While over budget, {@code TogglePerkSP} freezes perk activation until the player
+     * respecs ({@code /skillsrespec}), so no perk data is lost or silently disabled.
+     */
+    public static boolean isOverPerkBudget(com.otectus.runicskills.common.capability.SkillCapability capability) {
+        int cap = effectivePerkCap(capability);
+        return cap > 0 && countEnabledPerks(capability) > cap;
     }
 
     // Disabled-via-config support. Accepts either a bare registry path ("berserker") or a

@@ -2,6 +2,7 @@ package com.otectus.runicskills.network.packet.client;
 
 import com.otectus.runicskills.client.gui.OverlayNoticeGui;
 import com.otectus.runicskills.network.ServerNetworking;
+import io.netty.handler.codec.DecoderException;
 
 import java.util.function.Supplier;
 
@@ -22,6 +23,9 @@ import net.minecraftforge.network.NetworkEvent;
  * localization client-side without serializing whole {@link Component} trees.
  */
 public class NoticeOverlayCP {
+    /** Real notices carry 0-2 args; a count beyond this is a corrupt or hostile packet. */
+    private static final int MAX_ARGS = 16;
+
     private final String key;
     private final String[] args;
 
@@ -33,6 +37,9 @@ public class NoticeOverlayCP {
     public NoticeOverlayCP(FriendlyByteBuf buffer) {
         this.key = buffer.readUtf();
         int n = buffer.readVarInt();
+        if (!com.otectus.runicskills.common.util.PacketBounds.isCountValid(n, MAX_ARGS)) {
+            throw new DecoderException("NoticeOverlayCP: arg count out of range: " + n);
+        }
         this.args = new String[n];
         for (int i = 0; i < n; i++) this.args[i] = buffer.readUtf();
     }

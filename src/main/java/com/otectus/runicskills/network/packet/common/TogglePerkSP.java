@@ -4,6 +4,7 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.event.PerkToggleEvent;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
@@ -66,6 +67,18 @@ public class TogglePerkSP {
                     }
                     capability.setPerkRank(perk, 0);
                     MinecraftForge.EVENT_BUS.post(new PerkToggleEvent.Post(player, perk, prevRank, 0, prevRank > 0, false));
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
+
+                // Over-budget freeze (force-respec): if the player already holds more active perks
+                // than the effective cap allows (e.g. after a config reload, skill-level loss, or a
+                // perksPerGlobalLevel decrease), freeze ALL perk enable/rank-up until they respec.
+                // Disabling is handled above and stays allowed; no perk data is altered or lost here.
+                if (RegistryPerks.isOverPerkBudget(capability)) {
+                    NoticeOverlayCP.send(player, "overlay.runicskills.perk_over_budget",
+                            String.valueOf(RegistryPerks.countEnabledPerks(capability)),
+                            String.valueOf(RegistryPerks.effectivePerkCap(capability)));
                     SyncSkillCapabilityCP.send(player);
                     return;
                 }

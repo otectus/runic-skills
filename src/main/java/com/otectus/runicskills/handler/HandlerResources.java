@@ -410,115 +410,111 @@ public class HandlerResources {
     public static final ResourceLocation ARCANE_REFORGING_PERK = create("textures/skill/magic/arcane_reforging.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1a generic mana/casting perks ──
-    // Textures pulled from ISS's own item sheet (verified present in 3.15.x). If
-    // a path doesn't resolve at runtime the sprite falls back to missing-texture,
-    // which is harmless — the perk still functions.
-    public static final ResourceLocation ISS_WELLSPRING_PERK        = ironsItem("upgrade_orb_mana");
-    public static final ResourceLocation ISS_QUICKENING_PERK        = ironsItem("cast_time_ring");
-    public static final ResourceLocation ISS_RESERVOIR_PERK         = ironsItem("mana_ring");
-    public static final ResourceLocation ISS_TEMPO_PERK             = ironsItem("upgrade_orb_cooldown");
-    public static final ResourceLocation ISS_ARCANE_RECOVERY_PERK   = ironsItem("blood_vial");
-    public static final ResourceLocation ISS_FOCUS_PERK             = ironsItem("concentration_amulet");
-    public static final ResourceLocation ISS_MANA_BULWARK_PERK      = ironsItem("enchanted_ward_amulet");
-    public static final ResourceLocation ISS_ARCANE_REPRIEVE_PERK   = ironsItem("greater_healing_potion");
-    public static final ResourceLocation ISS_MANA_SURGE_PERK        = ironsItem("cinder_essence");
-    public static final ResourceLocation ISS_SPELLWEAVER_PERK       = ironsItem("blank_rune");
-    public static final ResourceLocation ISS_RESONANT_CASTING_PERK  = ironsItem("chronicle");
-    public static final ResourceLocation ISS_IMBUED_FOCUS_PERK      = ironsItem("arcane_rune");
-    public static final ResourceLocation ISS_QUICKCAST_PERK         = ironsItem("scroll");
-    public static final ResourceLocation ISS_LONG_CHANNEL_PERK      = ironsItem("chronicle_old");
-    public static final ResourceLocation ISS_CONTINUOUS_FLOW_PERK   = ironsItem("arcane_essence");
-    public static final ResourceLocation ISS_CHARGE_MASTERY_PERK    = ironsItem("upgrade_orb_swirl");
+    // Original Runic Skills icons (since 1.5.x); previously borrowed from ISS's
+    // item sheet. Filed under each perk's owning skill directory.
+    public static final ResourceLocation ISS_WELLSPRING_PERK = create("textures/skill/magic/wellspring.png");
+    public static final ResourceLocation ISS_QUICKENING_PERK = create("textures/skill/magic/quickening.png");
+    public static final ResourceLocation ISS_RESERVOIR_PERK = create("textures/skill/magic/reservoir.png");
+    public static final ResourceLocation ISS_TEMPO_PERK = create("textures/skill/magic/tempo.png");
+    public static final ResourceLocation ISS_ARCANE_RECOVERY_PERK = create("textures/skill/magic/arcane_recovery.png");
+    public static final ResourceLocation ISS_FOCUS_PERK = create("textures/skill/wisdom/focus.png");
+    public static final ResourceLocation ISS_MANA_BULWARK_PERK = create("textures/skill/endurance/mana_bulwark.png");
+    public static final ResourceLocation ISS_ARCANE_REPRIEVE_PERK = create("textures/skill/magic/arcane_reprieve.png");
+    public static final ResourceLocation ISS_MANA_SURGE_PERK = create("textures/skill/magic/mana_surge.png");
+    public static final ResourceLocation ISS_SPELLWEAVER_PERK = create("textures/skill/intelligence/spellweaver.png");
+    public static final ResourceLocation ISS_RESONANT_CASTING_PERK = create("textures/skill/magic/resonant_casting.png");
+    public static final ResourceLocation ISS_IMBUED_FOCUS_PERK = create("textures/skill/wisdom/imbued_focus.png");
+    public static final ResourceLocation ISS_QUICKCAST_PERK = create("textures/skill/magic/quickcast.png");
+    public static final ResourceLocation ISS_LONG_CHANNEL_PERK = create("textures/skill/magic/long_channel.png");
+    public static final ResourceLocation ISS_CONTINUOUS_FLOW_PERK = create("textures/skill/intelligence/continuous_flow.png");
+    public static final ResourceLocation ISS_CHARGE_MASTERY_PERK = create("textures/skill/magic/charge_mastery.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1b school specialist triplets ──
     // Per-school X-mancer (power) / X-Warded (resist) / X-Catalyst (signature effect).
-    // Textures: upgrade_orb_<school> for mancer, <school>_rune for warded,
-    // scroll_<school> for catalyst — all confirmed present in 3.15.x. Eldritch
-    // school has no upgrade_orb_eldritch, so it uses eldritch_manuscript /
-    // netherward_tincture / scroll_eldritch instead.
-    public static final ResourceLocation ISS_FIRE_MANCER_PERK       = ironsItem("upgrade_orb_fire");
-    public static final ResourceLocation ISS_FIRE_WARDED_PERK       = ironsItem("fire_rune");
-    public static final ResourceLocation ISS_FIRE_CATALYST_PERK     = ironsItem("scroll_fire");
-    public static final ResourceLocation ISS_ICE_MANCER_PERK        = ironsItem("upgrade_orb_ice");
-    public static final ResourceLocation ISS_ICE_WARDED_PERK        = ironsItem("ice_rune");
-    public static final ResourceLocation ISS_ICE_CATALYST_PERK      = ironsItem("scroll_ice");
-    public static final ResourceLocation ISS_LIGHTNING_MANCER_PERK  = ironsItem("upgrade_orb_lightning");
-    public static final ResourceLocation ISS_LIGHTNING_WARDED_PERK  = ironsItem("lightning_rune");
-    public static final ResourceLocation ISS_LIGHTNING_CATALYST_PERK= ironsItem("scroll_lightning");
-    public static final ResourceLocation ISS_HOLY_MANCER_PERK       = ironsItem("upgrade_orb_holy");
-    public static final ResourceLocation ISS_HOLY_WARDED_PERK       = ironsItem("holy_rune");
-    public static final ResourceLocation ISS_HOLY_CATALYST_PERK     = ironsItem("scroll_holy");
-    public static final ResourceLocation ISS_ENDER_MANCER_PERK      = ironsItem("upgrade_orb_ender");
-    public static final ResourceLocation ISS_ENDER_WARDED_PERK      = ironsItem("ender_rune");
-    public static final ResourceLocation ISS_ENDER_CATALYST_PERK    = ironsItem("scroll_ender");
-    public static final ResourceLocation ISS_BLOOD_MANCER_PERK      = ironsItem("upgrade_orb_blood");
-    public static final ResourceLocation ISS_BLOOD_WARDED_PERK      = ironsItem("blood_rune");
-    public static final ResourceLocation ISS_BLOOD_CATALYST_PERK    = ironsItem("scroll_blood");
-    public static final ResourceLocation ISS_EVOCATION_MANCER_PERK  = ironsItem("upgrade_orb_evocation");
-    public static final ResourceLocation ISS_EVOCATION_WARDED_PERK  = ironsItem("evocation_rune");
-    public static final ResourceLocation ISS_EVOCATION_CATALYST_PERK= ironsItem("scroll_evocation");
-    public static final ResourceLocation ISS_NATURE_MANCER_PERK     = ironsItem("upgrade_orb_nature");
-    public static final ResourceLocation ISS_NATURE_WARDED_PERK     = ironsItem("nature_rune");
-    public static final ResourceLocation ISS_NATURE_CATALYST_PERK   = ironsItem("scroll_nature");
-    public static final ResourceLocation ISS_ELDRITCH_MANCER_PERK   = ironsItem("eldritch_manuscript");
-    public static final ResourceLocation ISS_ELDRITCH_WARDED_PERK   = ironsItem("netherward_tincture");
-    public static final ResourceLocation ISS_ELDRITCH_CATALYST_PERK = ironsItem("scroll_eldritch");
-    public static final ResourceLocation ISS_ELDRITCH_ATTUNEMENT_PERK = ironsItem("affinity_ring_eldritch");
+    // Each uses an original icon in its school's palette: the school symbol for
+    // mancers/catalysts and a warded round shield for the resist perks.
+    public static final ResourceLocation ISS_FIRE_MANCER_PERK = create("textures/skill/magic/fire_mancer.png");
+    public static final ResourceLocation ISS_FIRE_WARDED_PERK = create("textures/skill/endurance/fire_warded.png");
+    public static final ResourceLocation ISS_FIRE_CATALYST_PERK = create("textures/skill/magic/fire_catalyst.png");
+    public static final ResourceLocation ISS_ICE_MANCER_PERK = create("textures/skill/magic/ice_mancer.png");
+    public static final ResourceLocation ISS_ICE_WARDED_PERK = create("textures/skill/endurance/ice_warded.png");
+    public static final ResourceLocation ISS_ICE_CATALYST_PERK = create("textures/skill/magic/ice_catalyst.png");
+    public static final ResourceLocation ISS_LIGHTNING_MANCER_PERK = create("textures/skill/magic/lightning_mancer.png");
+    public static final ResourceLocation ISS_LIGHTNING_WARDED_PERK = create("textures/skill/endurance/lightning_warded.png");
+    public static final ResourceLocation ISS_LIGHTNING_CATALYST_PERK = create("textures/skill/magic/lightning_catalyst.png");
+    public static final ResourceLocation ISS_HOLY_MANCER_PERK = create("textures/skill/magic/holy_mancer.png");
+    public static final ResourceLocation ISS_HOLY_WARDED_PERK = create("textures/skill/endurance/holy_warded.png");
+    public static final ResourceLocation ISS_HOLY_CATALYST_PERK = create("textures/skill/magic/holy_catalyst.png");
+    public static final ResourceLocation ISS_ENDER_MANCER_PERK = create("textures/skill/magic/ender_mancer.png");
+    public static final ResourceLocation ISS_ENDER_WARDED_PERK = create("textures/skill/endurance/ender_warded.png");
+    public static final ResourceLocation ISS_ENDER_CATALYST_PERK = create("textures/skill/magic/ender_catalyst.png");
+    public static final ResourceLocation ISS_BLOOD_MANCER_PERK = create("textures/skill/magic/blood_mancer.png");
+    public static final ResourceLocation ISS_BLOOD_WARDED_PERK = create("textures/skill/endurance/blood_warded.png");
+    public static final ResourceLocation ISS_BLOOD_CATALYST_PERK = create("textures/skill/magic/blood_catalyst.png");
+    public static final ResourceLocation ISS_EVOCATION_MANCER_PERK = create("textures/skill/magic/evocation_mancer.png");
+    public static final ResourceLocation ISS_EVOCATION_WARDED_PERK = create("textures/skill/endurance/evocation_warded.png");
+    public static final ResourceLocation ISS_EVOCATION_CATALYST_PERK = create("textures/skill/magic/evocation_catalyst.png");
+    public static final ResourceLocation ISS_NATURE_MANCER_PERK = create("textures/skill/magic/nature_mancer.png");
+    public static final ResourceLocation ISS_NATURE_WARDED_PERK = create("textures/skill/endurance/nature_warded.png");
+    public static final ResourceLocation ISS_NATURE_CATALYST_PERK = create("textures/skill/magic/nature_catalyst.png");
+    public static final ResourceLocation ISS_ELDRITCH_MANCER_PERK = create("textures/skill/magic/eldritch_mancer.png");
+    public static final ResourceLocation ISS_ELDRITCH_WARDED_PERK = create("textures/skill/endurance/eldritch_warded.png");
+    public static final ResourceLocation ISS_ELDRITCH_CATALYST_PERK = create("textures/skill/magic/eldritch_catalyst.png");
+    public static final ResourceLocation ISS_ELDRITCH_ATTUNEMENT_PERK = create("textures/skill/magic/eldritch_attunement.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1c summon/utility perks ──
-    public static final ResourceLocation ISS_LORD_OF_THE_DEAD_PERK  = ironsItem("necronomicon_spell_book");
-    public static final ResourceLocation ISS_LIFE_LEECH_BOUND_PERK  = ironsItem("blood_rune");
+    public static final ResourceLocation ISS_LORD_OF_THE_DEAD_PERK = create("textures/skill/magic/lord_of_the_dead.png");
+    public static final ResourceLocation ISS_LIFE_LEECH_BOUND_PERK = create("textures/skill/magic/life_leech_bound.png");
 
     // ── Apothic Attributes — Phase 2a combat perks ──
-    // Icons pulled from Apotheosis's items sheet (the library itself has no
-    // item textures). Fallback is missing-texture at runtime if Apotheosis
-    // isn't installed, which is safe because the perks are null-registered.
-    public static final ResourceLocation APOTH_SOCKET_VIRTUOSO_PERK   = apothItem("gem_fused_slate");
-    public static final ResourceLocation APOTH_AFFIX_AFFINITY_PERK    = apothItem("mythic_material");
-    public static final ResourceLocation APOTH_CRITICAL_MASTERY_PERK  = apothItem("broadhead_arrow");
-    public static final ResourceLocation APOTH_VAMPIRIC_FANGS_PERK    = apothItem("warden_tendril");
-    public static final ResourceLocation APOTH_REAPERS_EDGE_PERK      = apothItem("hammer");
-    public static final ResourceLocation APOTH_EVASIVE_PERK           = apothItem("infused_breath");
-    public static final ResourceLocation APOTH_ARROW_MASTERY_PERK     = apothItem("explosive_arrow");
-    public static final ResourceLocation APOTH_EARTHBREAKER_PERK      = apothItem("iron_mining_arrow");
-    public static final ResourceLocation APOTH_SCHOLAR_PERK           = apothItem("book");
-    public static final ResourceLocation APOTH_SPECTRAL_WARD_PERK     = apothItem("obsidian_arrow");
-    public static final ResourceLocation APOTH_GHOSTBOUND_PERK        = apothItem("prismatic_web");
-    public static final ResourceLocation APOTH_HEART_HEALER_PERK      = apothItem("potion_charm");
+    // Original Runic Skills icons (since 1.5.x); previously borrowed from
+    // Apotheosis's items sheet.
+    public static final ResourceLocation APOTH_SOCKET_VIRTUOSO_PERK = create("textures/skill/fortune/socket_virtuoso.png");
+    public static final ResourceLocation APOTH_AFFIX_AFFINITY_PERK = create("textures/skill/fortune/affix_affinity.png");
+    public static final ResourceLocation APOTH_CRITICAL_MASTERY_PERK = create("textures/skill/dexterity/apothic_critical_mastery.png");
+    public static final ResourceLocation APOTH_VAMPIRIC_FANGS_PERK = create("textures/skill/strength/vampiric_fangs.png");
+    public static final ResourceLocation APOTH_REAPERS_EDGE_PERK = create("textures/skill/strength/reapers_edge.png");
+    public static final ResourceLocation APOTH_EVASIVE_PERK = create("textures/skill/dexterity/evasive.png");
+    public static final ResourceLocation APOTH_ARROW_MASTERY_PERK = create("textures/skill/dexterity/arrow_mastery.png");
+    public static final ResourceLocation APOTH_EARTHBREAKER_PERK = create("textures/skill/building/earthbreaker.png");
+    public static final ResourceLocation APOTH_SCHOLAR_PERK = create("textures/skill/intelligence/apothic_scholar.png");
+    public static final ResourceLocation APOTH_SPECTRAL_WARD_PERK = create("textures/skill/strength/spectral_ward.png");
+    public static final ResourceLocation APOTH_GHOSTBOUND_PERK = create("textures/skill/constitution/ghostbound.png");
+    public static final ResourceLocation APOTH_HEART_HEALER_PERK = create("textures/skill/constitution/heart_of_the_healer.png");
 
     // ── 1.2.0: deferred-backlog perks ──
-    public static final ResourceLocation APOTH_APPRENTICE_PERK        = apothItem("gem_dust");
-    public static final ResourceLocation APOTH_GEM_THREADED_PERK      = apothItem("sigil_of_socketing");
-    public static final ResourceLocation APOTH_SPELLSOCKET_PERK       = apothItem("vial_of_expulsion");
-    public static final ResourceLocation APOTH_RESONANT_AFFIXES_PERK  = apothItem("vial_of_extraction");
+    public static final ResourceLocation APOTH_APPRENTICE_PERK = create("textures/skill/fortune/apothic_apprentice.png");
+    public static final ResourceLocation APOTH_GEM_THREADED_PERK = create("textures/skill/endurance/gem_threaded_armor.png");
+    public static final ResourceLocation APOTH_SPELLSOCKET_PERK = create("textures/skill/magic/spellsocket.png");
+    public static final ResourceLocation APOTH_RESONANT_AFFIXES_PERK = create("textures/skill/magic/resonant_affixes.png");
 
     // ── Ars Nouveau — Phase 2b form/utility perks ──
-    public static final ResourceLocation ARS_FORM_PROJECTILE_PERK     = arsItem("projectile");
-    public static final ResourceLocation ARS_FORM_TOUCH_PERK          = arsItem("touch");
-    public static final ResourceLocation ARS_FORM_SELF_PERK           = arsItem("self");
-    public static final ResourceLocation ARS_WILD_MANIPULATION_PERK   = arsItem("manipulation_essence");
+    public static final ResourceLocation ARS_FORM_PROJECTILE_PERK = create("textures/skill/magic/ars_form_projectile.png");
+    public static final ResourceLocation ARS_FORM_TOUCH_PERK = create("textures/skill/magic/ars_form_touch.png");
+    public static final ResourceLocation ARS_FORM_SELF_PERK = create("textures/skill/magic/ars_form_self.png");
+    public static final ResourceLocation ARS_WILD_MANIPULATION_PERK = create("textures/skill/magic/ars_wild_manipulation.png");
 
     // ── Ars Nouveau — Phase 2c per-school perks ──
-    public static final ResourceLocation ARS_HEDGEWITCH_PERK          = arsItem("water_essence");
-    public static final ResourceLocation ARS_EMBERFORGED_PERK         = arsItem("fire_essence");
-    public static final ResourceLocation ARS_STORMCALLER_PERK         = arsItem("air_essence");
-    public static final ResourceLocation ARS_GEOMANCER_PERK           = arsItem("earth_essence");
-    public static final ResourceLocation ARS_CONJURER_PERK            = arsItem("conjuration_essence");
-    public static final ResourceLocation ARS_ABJURER_PERK             = arsItem("abjuration_essence");
-    public static final ResourceLocation ARS_ARCANE_WEAVER_PERK       = arsItem("manipulation_essence");
+    public static final ResourceLocation ARS_HEDGEWITCH_PERK = create("textures/skill/magic/ars_hedgewitch.png");
+    public static final ResourceLocation ARS_EMBERFORGED_PERK = create("textures/skill/magic/ars_emberforged.png");
+    public static final ResourceLocation ARS_STORMCALLER_PERK = create("textures/skill/magic/ars_stormcaller.png");
+    public static final ResourceLocation ARS_GEOMANCER_PERK = create("textures/skill/magic/ars_geomancer.png");
+    public static final ResourceLocation ARS_CONJURER_PERK = create("textures/skill/magic/ars_conjurer.png");
+    public static final ResourceLocation ARS_ABJURER_PERK = create("textures/skill/magic/ars_abjurer.png");
+    public static final ResourceLocation ARS_ARCANE_WEAVER_PERK = create("textures/skill/magic/ars_arcane_weaver.png");
 
     // ── Phase 3: Cross-mod synergy perks ──
-    // Schoolbridges reuse ISS's per-school upgrade orbs so the tree displays a
-    // thematic link back to the ISS school they scale with.
-    public static final ResourceLocation X_SCHOOLBRIDGE_FIRE_PERK     = ironsItem("upgrade_orb_fire");
-    public static final ResourceLocation X_SCHOOLBRIDGE_WATER_PERK    = ironsItem("upgrade_orb_ice");
-    public static final ResourceLocation X_SCHOOLBRIDGE_AIR_PERK      = ironsItem("upgrade_orb_lightning");
-    public static final ResourceLocation X_SCHOOLBRIDGE_EARTH_PERK    = ironsItem("upgrade_orb_nature");
-    public static final ResourceLocation X_SCHOOLBRIDGE_ABJ_PERK      = ironsItem("upgrade_orb_holy");
-    public static final ResourceLocation X_SCHOOLBRIDGE_MANIP_PERK    = ironsItem("upgrade_orb_ender");
-    public static final ResourceLocation X_UNIFIED_ARCANA_PERK        = arsItem("mundane_belt");
-    public static final ResourceLocation X_TRIPLE_THREAT_PERK         = apothItem("star_cube");
-    public static final ResourceLocation X_AFFIX_FOCUS_PERK           = apothItem("mythic_material");
+    // Schoolbridges use a chain-link icon in the palette of the ISS school they
+    // scale with, so the tree still displays the thematic link.
+    public static final ResourceLocation X_SCHOOLBRIDGE_FIRE_PERK = create("textures/skill/magic/schoolbridge_fire.png");
+    public static final ResourceLocation X_SCHOOLBRIDGE_WATER_PERK = create("textures/skill/magic/schoolbridge_water.png");
+    public static final ResourceLocation X_SCHOOLBRIDGE_AIR_PERK = create("textures/skill/magic/schoolbridge_air.png");
+    public static final ResourceLocation X_SCHOOLBRIDGE_EARTH_PERK = create("textures/skill/magic/schoolbridge_earth.png");
+    public static final ResourceLocation X_SCHOOLBRIDGE_ABJ_PERK = create("textures/skill/magic/schoolbridge_abjuration.png");
+    public static final ResourceLocation X_SCHOOLBRIDGE_MANIP_PERK = create("textures/skill/magic/schoolbridge_manipulation.png");
+    public static final ResourceLocation X_UNIFIED_ARCANA_PERK = create("textures/skill/magic/unified_arcana.png");
+    public static final ResourceLocation X_TRIPLE_THREAT_PERK = create("textures/skill/magic/triple_threat.png");
+    public static final ResourceLocation X_AFFIX_FOCUS_PERK = create("textures/skill/magic/affix_focus.png");
 
     // ========== FORTUNE Perks ==========
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
@@ -602,23 +598,6 @@ public class HandlerResources {
     public static final ResourceLocation BACKPACK_ENGINEER_PERK = create("textures/skill/tinkering/backpack_engineer.png");
     public static final ResourceLocation WAYSTONE_TINKER_PERK = create("textures/skill/tinkering/waystone_tinker.png");
     public static final ResourceLocation MASTER_ARTIFICER_PERK = create("textures/skill/tinkering/master_artificer.png");
-
-    // Foreign-mod item-texture helpers. These point the perk-icon renderer at the
-    // source mod's own item sprites, so perk art matches the theme without us
-    // needing to ship our own PNGs. If the source mod isn't installed the perk is
-    // null-registered (see RegistryPerks), so the unresolved path never renders.
-    private static ResourceLocation ironsItem(String name) {
-        return new ResourceLocation("irons_spellbooks", "textures/item/" + name + ".png");
-    }
-
-    private static ResourceLocation arsItem(String name) {
-        return new ResourceLocation("ars_nouveau", "textures/item/" + name + ".png");
-    }
-
-    private static ResourceLocation apothItem(String name) {
-        // Apotheosis uses `textures/items/` (plural) rather than the vanilla `textures/item/`.
-        return new ResourceLocation("apotheosis", "textures/items/" + name + ".png");
-    }
 
     public static ResourceLocation create(String path) {
         return new ResourceLocation(RunicSkills.MOD_ID, path);

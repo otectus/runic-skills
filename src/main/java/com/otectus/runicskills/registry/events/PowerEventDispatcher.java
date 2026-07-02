@@ -984,7 +984,13 @@ public class PowerEventDispatcher {
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        PowerRuntime.clearPlayer(event.getEntity().getUUID());
+        java.util.UUID id = event.getEntity().getUUID();
+        PowerRuntime.clearPlayer(id);
+        // This dispatcher's own per-player state, without which every player who ever
+        // triggered these powers leaves permanent map entries for the server's lifetime.
+        BARRAGE_STATE.remove(id);
+        LONG_NOTE_CHANNEL_START.remove(id);
+        PYROCLASM_DETONATIONS.remove(id);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────

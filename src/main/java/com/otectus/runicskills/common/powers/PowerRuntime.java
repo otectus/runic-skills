@@ -50,6 +50,7 @@ public final class PowerRuntime {
         InternalCooldowns.clear(id);
         PositionBuffer.clear(id);
         SummonRegistry.clear(id);
+        TargetTags.clear(id);
     }
 
     // ── Spell history ───────────────────────────────────────────────────────────────
@@ -115,9 +116,21 @@ public final class PowerRuntime {
             return LAST_HIT_ENTITY_SCHOOL.get(victim);
         }
 
-        static void clear(UUID id) {
+        static synchronized void clear(UUID id) {
             LAST_HIT_TICK.remove(id);
-            LAST_HIT_ENTITY_SCHOOL_OWNER.values().removeIf(id::equals);
+            // Drop victim-keyed entries whose recorded attacker is the departing player, and
+            // keep LAST_HIT_ENTITY_SCHOOL in lockstep with the owner map — previously only the
+            // owner map was pruned, leaving the school entries behind forever.
+            LAST_HIT_ENTITY_SCHOOL_OWNER.entrySet().removeIf(e -> {
+                if (id.equals(e.getValue())) {
+                    LAST_HIT_ENTITY_SCHOOL.remove(e.getKey());
+                    return true;
+                }
+                return false;
+            });
+            // The departing player may itself be a recorded victim.
+            LAST_HIT_ENTITY_SCHOOL_OWNER.remove(id);
+            LAST_HIT_ENTITY_SCHOOL.remove(id);
         }
     }
 
@@ -190,6 +203,12 @@ public final class PowerRuntime {
         public static synchronized void remove(String tagKey, UUID entityId) {
             Map<UUID, Long> m = STORE.get(tagKey);
             if (m != null) m.remove(entityId);
+        }
+
+        /** Drops every tag on this entity — logout cleanup; expiry otherwise only happens lazily on has(). */
+        static synchronized void clear(UUID entityId) {
+            STORE.values().forEach(m -> m.remove(entityId));
+            STORE.values().removeIf(Map::isEmpty);
         }
     }
 

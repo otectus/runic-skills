@@ -480,3 +480,42 @@ tasks.register('checkLockProviders') {
     }
 }
 tasks.named('check').configure { dependsOn 'checkLockProviders' }
+
+// Version-consistency enforcement: the runtime update checker compares the mod's own version
+// against the published VERSION file, so a stale VERSION at release shows every user a false
+// "new version available" banner. This drift has now happened twice (1.3.7 audit finding #13,
+// again at 1.5.3), so make it a build-time invariant: VERSION, gradle.properties mod_version,
+// and the top CHANGELOG entry must agree.
+tasks.register('checkVersionConsistency') {
+    group = 'verification'
+    description = 'Fails the build if VERSION, mod_version, and the top CHANGELOG entry disagree'
+
+    def versionFile = file('VERSION')
+    def changelogFile = file('CHANGELOG.md')
+
+    inputs.file versionFile
+    inputs.file changelogFile
+    inputs.property 'modVersion', project.mod_version
+
+    doLast {
+        def declared = project.mod_version.toString().trim()
+        def published = versionFile.exists() ? versionFile.text.trim() : '<missing VERSION file>'
+        def changelogMatcher = changelogFile.text =~ /(?m)^## \[(\d[^\]]*)\]/
+        def changelogTop = changelogMatcher.find() ? changelogMatcher.group(1) : '<no ## [x.y.z] entry found>'
+
+        def mismatches = []
+        if (published != declared) {
+            mismatches << "VERSION file says '${published}' but gradle.properties mod_version is '${declared}'"
+        }
+        if (changelogTop != declared) {
+            mismatches << "CHANGELOG.md top entry is '${changelogTop}' but gradle.properties mod_version is '${declared}'"
+        }
+        if (!mismatches.isEmpty()) {
+            throw new GradleException(
+                    "Version drift (stale VERSION breaks the runtime update checker for all users):\n  " +
+                            mismatches.join('\n  ') +
+                            "\nUpdate VERSION and the CHANGELOG heading to match mod_version before building a release.")
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'checkVersionConsistency' }

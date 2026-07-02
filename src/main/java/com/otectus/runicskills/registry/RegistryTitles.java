@@ -34,6 +34,8 @@ public class RegistryTitles {
     public static final RegistryObject<Title> ADMIN = TITLES.register("administrator", () -> register("administrator", false));
 
     public static void load(IEventBus eventBus) {
+        mergeDefaultsIntoConfig();
+
         // Defensive dedup: in 1.3.3 we saw "Duplicate registration rookie" at boot even though
         // the on-disk titles.json5 has rookie exactly once and the compiled `List.of(...)` default
         // has it exactly once. Root cause is a YACL 3.5.0→3.6.6 interaction we couldn't fully
@@ -71,6 +73,74 @@ public class RegistryTitles {
 
         // Title conditions
         HandlerConditions.registerDefaults();
+    }
+
+    /**
+     * 1.5.2 default-merge: ConfigHolder loads an existing titles.json5 as-is with no merge,
+     * so titles added to the built-in defaults in a mod update never reach players who
+     * already have a config file. Union any built-in default whose TitleId isn't already
+     * present, preserving the user's existing entries and their custom tunings. The save()
+     * also rewrites a legacy snake_case file in the current Pascal-case format, healing it.
+     * Runs at startup ({@link #load}) and again on {@code /skillsreload} ({@link #rebindAfterReload}).
+     */
+    private static void mergeDefaultsIntoConfig() {
+        List<TitleModel> current = HandlerTitlesConfig.HANDLER.instance().titleList;
+        Set<String> presentIds = new HashSet<>();
+        for (TitleModel t : current) {
+            if (t != null && t.TitleId != null) presentIds.add(t.TitleId);
+        }
+        List<TitleModel> mergedDefaults = new ArrayList<>(current);
+        boolean addedDefaults = false;
+        for (TitleModel def : new HandlerTitlesConfig().titleList) {
+            if (def.TitleId != null && !presentIds.contains(def.TitleId)) {
+                mergedDefaults.add(def);
+                presentIds.add(def.TitleId);
+                addedDefaults = true;
+            }
+        }
+        if (addedDefaults) {
+            HandlerTitlesConfig.HANDLER.instance().titleList = mergedDefaults;
+            RunicSkills.getLOGGER().info("Merged {} new built-in title(s) into the titles config.",
+                    mergedDefaults.size() - current.size());
+            HandlerTitlesConfig.HANDLER.save();
+        }
+    }
+
+    /**
+     * Repairs the runtime titleList after {@code /skillsreload}. The reload replaces every
+     * {@link TitleModel} with a fresh Gson-built instance whose transient backing {@code Title}
+     * is null — previously that meant EVERY title was skipped by the serverPlayerTitles null
+     * guard (with a "titleList desync" warning per title per scan) until a full restart. This
+     * re-runs the default-merge, re-applies the dedup, and re-binds each model to its
+     * already-registered Title from the (startup-frozen) Forge registry. Config entries whose id
+     * was never registered — i.e. titles added to the file after startup — are reported as
+     * needing a restart; the frozen registry cannot accept them live.
+     */
+    public static void rebindAfterReload() {
+        mergeDefaultsIntoConfig();
+
+        Set<String> seenTitleIds = new HashSet<>();
+        List<TitleModel> boundTitles = new ArrayList<>();
+        for (TitleModel title : HandlerTitlesConfig.HANDLER.instance().titleList) {
+            if (title == null || title.TitleId == null || title.TitleId.isEmpty()) {
+                RunicSkills.getLOGGER().warn("Skipping null/unnamed TitleModel entry in titleList.");
+                continue;
+            }
+            if (!seenTitleIds.add(title.TitleId)) {
+                RunicSkills.getLOGGER().warn("Duplicate title id '{}' in titleList; ignoring duplicate.", title.TitleId);
+                continue;
+            }
+            Title registered = TITLES_REGISTRY.get().getValue(new ResourceLocation(RunicSkills.MOD_ID, title.TitleId));
+            if (registered == null) {
+                RunicSkills.getLOGGER().warn(
+                        "Title '{}' is new since startup; the title registry is frozen, so it will only take effect after a restart.",
+                        title.TitleId);
+                continue;
+            }
+            title.bind(registered);
+            boundTitles.add(title);
+        }
+        HandlerTitlesConfig.HANDLER.instance().titleList = List.copyOf(boundTitles);
     }
 
     private static Title register(String name, boolean requirement) {
