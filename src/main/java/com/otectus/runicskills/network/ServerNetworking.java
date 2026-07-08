@@ -28,7 +28,9 @@ public class ServerNetworking {
     // 1.5.3: bumped "6" -> "7" — CommonConfigSyncCP gained the maxPerkBudgetCap field, so a
     // pre-1.5.3 peer would pass the handshake and then misread the config-sync buffer.
     // Payload change => protocol bump, same rule as a new packet.
-    private static final String PROTOCOL_VERSION = "7";
+    // 1.6.0: bumped "7" -> "8" — CommonConfigSyncCP gained disabledPowers plus the
+    // hideDisabledPerks/Passives/Powers flags. Same rule: payload change => protocol bump.
+    private static final String PROTOCOL_VERSION = "8";
     public static SimpleChannel instance;
 
     /**

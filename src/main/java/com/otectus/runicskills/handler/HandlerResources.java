@@ -170,8 +170,10 @@ public class HandlerResources {
     public static final ResourceLocation ENDERIUM_RESILIENCE_PERK = create("textures/skill/constitution/enderium_resilience.png");
     public static final ResourceLocation SURVIVAL_INSTINCT_PERK = create("textures/skill/constitution/survival_instinct.png");
     public static final ResourceLocation MASTER_CHEF_PERK = create("textures/skill/constitution/master_chef.png");
+    public static final ResourceLocation COMFORT_FOOD_PERK = create("textures/skill/constitution/comfort_food.png");
 
     // ========== DEXTERITY Perks ==========
+    public static final ResourceLocation ANGLERS_INSIGHT_PERK = create("textures/skill/dexterity/anglers_insight.png");
     public static final ResourceLocation QUICK_REPOSITION_PERK = create("textures/skill/dexterity/quick_reposition.png");
     public static final ResourceLocation STEALTH_MASTERY_PERK = create("textures/skill/dexterity/stealth_mastery.png");
     public static final ResourceLocation CAT_EYES_PERK = create("textures/skill/dexterity/cat_eyes.png");
@@ -336,6 +338,8 @@ public class HandlerResources {
     public static final ResourceLocation RUNIC_SALVAGER_PERK = create("textures/skill/building/runic_salvager.png");
 
     // ========== WISDOM Perks ==========
+    public static final ResourceLocation GREEN_THUMB_PERK = create("textures/skill/wisdom/green_thumb.png");
+    public static final ResourceLocation NOURISHING_MEAL_PERK = create("textures/skill/wisdom/nourishing_meal.png");
     public static final ResourceLocation ENCHANTERS_INSIGHT_PERK = create("textures/skill/wisdom/enchanters_insight.png");
     public static final ResourceLocation LORE_MASTERY_PERK = create("textures/skill/wisdom/lore_mastery.png");
     public static final ResourceLocation ENCHANTMENT_PRESERVATION_PERK = create("textures/skill/wisdom/enchantment_preservation.png");
@@ -517,6 +521,8 @@ public class HandlerResources {
     public static final ResourceLocation X_AFFIX_FOCUS_PERK = create("textures/skill/magic/affix_focus.png");
 
     // ========== FORTUNE Perks ==========
+    public static final ResourceLocation ANGLER_LUCK_PERK = create("textures/skill/fortune/angler_luck.png");
+    public static final ResourceLocation CATCH_OF_THE_DAY_PERK = create("textures/skill/fortune/catch_of_the_day.png");
     public static final ResourceLocation CRITICAL_ROLL_PERK = create("textures/skill/fortune/critical_roll.png");
     public static final ResourceLocation LUCKY_DROP_PERK = create("textures/skill/fortune/lucky_drop.png");
     public static final ResourceLocation LIMIT_BREAKER_PERK = create("textures/skill/fortune/limit_breaker.png");
@@ -558,6 +564,10 @@ public class HandlerResources {
     public static final ResourceLocation GEM_ATTUNEMENT_PERK = create("textures/skill/fortune/gem_attunement.png");
 
     // ========== TINKERING Perks ==========
+    public static final ResourceLocation STEADY_HAMMER_PERK = create("textures/skill/tinkering/steady_hammer.png");
+    public static final ResourceLocation BLUEPRINT_SAVANT_PERK = create("textures/skill/tinkering/blueprint_savant.png");
+    public static final ResourceLocation METALLURGIST_PERK = create("textures/skill/tinkering/metallurgist.png");
+    public static final ResourceLocation MASTER_SMITH_PERK = create("textures/skill/tinkering/master_smith.png");
     public static final ResourceLocation LOCKSMITH_PERK = create("textures/skill/tinkering/locksmith.png");
     public static final ResourceLocation SAFE_CRACKER_PERK = create("textures/skill/tinkering/safe_cracker.png");
     public static final ResourceLocation MASTER_TINKERER_PERK = create("textures/skill/tinkering/master_tinkerer.png");

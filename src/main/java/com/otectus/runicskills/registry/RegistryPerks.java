@@ -3,6 +3,7 @@ package com.otectus.runicskills.registry;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.client.core.Value;
 import com.otectus.runicskills.client.core.ValueType;
+import com.otectus.runicskills.common.util.DisabledContentMatcher;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.integration.*;
@@ -1228,15 +1229,111 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().auraAttunementPercent)
             ));
 
-    // Farmer's Delight Integration - Conditional perks
+    // Culinary layer (Farmer's Delight + addons + Let's Do) - Conditional perks
     public static final RegistryObject<Perk> MASTER_CHEF =
-            !FarmersDelightIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().masterChefRequiredLevel < 0
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().masterChefRequiredLevel < 0
             ? null : PERKS.register("master_chef", () -> register(
                     "master_chef",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().masterChefRequiredLevel,
                     HandlerResources.MASTER_CHEF_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterChefPercent)
+            ));
+    // GREEN_THUMB works on any bonemealable block (vanilla included), so unlike the other culinary
+    // perks it is not gated on a culinary mod being present.
+    public static final RegistryObject<Perk> GREEN_THUMB =
+            HandlerCommonConfig.HANDLER.instance().greenThumbRequiredLevel < 0
+            ? null : PERKS.register("green_thumb", () -> register(
+                    "green_thumb",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().greenThumbRequiredLevel,
+                    HandlerResources.GREEN_THUMB_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().greenThumbPercent)
+            ));
+    public static final RegistryObject<Perk> NOURISHING_MEAL =
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().nourishingMealRequiredLevel < 0
+            ? null : PERKS.register("nourishing_meal", () -> register(
+                    "nourishing_meal",
+                    RegistrySkills.WISDOM,
+                    HandlerCommonConfig.HANDLER.instance().nourishingMealRequiredLevel,
+                    HandlerResources.NOURISHING_MEAL_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().nourishingMealPercent)
+            ));
+    public static final RegistryObject<Perk> COMFORT_FOOD =
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().comfortFoodRequiredLevel < 0
+            ? null : PERKS.register("comfort_food", () -> register(
+                    "comfort_food",
+                    RegistrySkills.CONSTITUTION,
+                    HandlerCommonConfig.HANDLER.instance().comfortFoodRequiredLevel,
+                    HandlerResources.COMFORT_FOOD_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().comfortFoodPercent)
+            ));
+
+    // Starcatcher Integration - Conditional perks
+    public static final RegistryObject<Perk> ANGLER_LUCK =
+            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().anglerLuckRequiredLevel < 0
+            ? null : PERKS.register("angler_luck", () -> register(
+                    "angler_luck",
+                    RegistrySkills.FORTUNE,
+                    HandlerCommonConfig.HANDLER.instance().anglerLuckRequiredLevel,
+                    HandlerResources.ANGLER_LUCK_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().anglerLuckPercent)
+            ));
+    public static final RegistryObject<Perk> CATCH_OF_THE_DAY =
+            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().catchOfTheDayRequiredLevel < 0
+            ? null : PERKS.register("catch_of_the_day", () -> register(
+                    "catch_of_the_day",
+                    RegistrySkills.FORTUNE,
+                    HandlerCommonConfig.HANDLER.instance().catchOfTheDayRequiredLevel,
+                    HandlerResources.CATCH_OF_THE_DAY_PERK,
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().catchOfTheDayDuration)
+            ));
+    public static final RegistryObject<Perk> ANGLERS_INSIGHT =
+            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().anglersInsightRequiredLevel < 0
+            ? null : PERKS.register("anglers_insight", () -> register(
+                    "anglers_insight",
+                    RegistrySkills.DEXTERITY,
+                    HandlerCommonConfig.HANDLER.instance().anglersInsightRequiredLevel,
+                    HandlerResources.ANGLERS_INSIGHT_PERK,
+                    new Value(ValueType.BOOST, HandlerCommonConfig.HANDLER.instance().anglersInsightBoost)
+            ));
+
+    // Overgeared Integration - Conditional perks
+    public static final RegistryObject<Perk> STEADY_HAMMER =
+            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().steadyHammerRequiredLevel < 0
+            ? null : PERKS.register("steady_hammer", () -> register(
+                    "steady_hammer",
+                    RegistrySkills.TINKERING,
+                    HandlerCommonConfig.HANDLER.instance().steadyHammerRequiredLevel,
+                    HandlerResources.STEADY_HAMMER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().steadyHammerPercent)
+            ));
+    public static final RegistryObject<Perk> BLUEPRINT_SAVANT =
+            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().blueprintSavantRequiredLevel < 0
+            ? null : PERKS.register("blueprint_savant", () -> register(
+                    "blueprint_savant",
+                    RegistrySkills.TINKERING,
+                    HandlerCommonConfig.HANDLER.instance().blueprintSavantRequiredLevel,
+                    HandlerResources.BLUEPRINT_SAVANT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().blueprintSavantPercent)
+            ));
+    public static final RegistryObject<Perk> METALLURGIST =
+            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().metallurgistRequiredLevel < 0
+            ? null : PERKS.register("metallurgist", () -> register(
+                    "metallurgist",
+                    RegistrySkills.TINKERING,
+                    HandlerCommonConfig.HANDLER.instance().metallurgistRequiredLevel,
+                    HandlerResources.METALLURGIST_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().metallurgistPercent)
+            ));
+    public static final RegistryObject<Perk> MASTER_SMITH =
+            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().masterSmithRequiredLevel < 0
+            ? null : PERKS.register("master_smith", () -> register(
+                    "master_smith",
+                    RegistrySkills.TINKERING,
+                    HandlerCommonConfig.HANDLER.instance().masterSmithRequiredLevel,
+                    HandlerResources.MASTER_SMITH_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterSmithPercent)
             ));
 
     // Apotheosis Integration - Conditional perks
@@ -1646,7 +1743,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().draconicConstitutionPercent)
             ));
     public static final RegistryObject<Perk> CULINARY_EXPERT =
-            !FarmersDelightIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().culinaryExpertRequiredLevel < 0
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().culinaryExpertRequiredLevel < 0
             ? null : PERKS.register("culinary_expert", () -> register(
                     "culinary_expert",
                     RegistrySkills.CONSTITUTION,
@@ -1691,7 +1788,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().undyingWillPercent)
             ));
     public static final RegistryObject<Perk> HEARTY_FEAST =
-            !FarmersDelightIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().heartyFeastRequiredLevel < 0
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().heartyFeastRequiredLevel < 0
             ? null : PERKS.register("hearty_feast", () -> register(
                     "hearty_feast",
                     RegistrySkills.CONSTITUTION,
@@ -2989,7 +3086,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().structuralEngineerPercent)
             ));
     public static final RegistryObject<Perk> FARMERS_HAND =
-            !FarmersDelightIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().farmersHandRequiredLevel < 0
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().farmersHandRequiredLevel < 0
             ? null : PERKS.register("farmers_hand", () -> register(
                     "farmers_hand",
                     RegistrySkills.BUILDING,
@@ -3755,7 +3852,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().jewelersEyePercent)
             ));
     public static final RegistryObject<Perk> FORTUNE_COOKIE =
-            !FarmersDelightIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fortuneCookieRequiredLevel < 0
+            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().fortuneCookieRequiredLevel < 0
             ? null : PERKS.register("fortune_cookie", () -> register(
                     "fortune_cookie",
                     RegistrySkills.FORTUNE,
@@ -4293,22 +4390,20 @@ public class RegistryPerks {
     // Disabled-via-config support. Accepts either a bare registry path ("berserker") or a
     // full id ("runicskills:berserker"); matches both against the disabledPerks list.
     public static boolean isDisabled(String perkName) {
-        if (perkName == null) return false;
-        List<String> list = HandlerCommonConfig.HANDLER.instance().disabledPerks;
-        if (list == null || list.isEmpty()) return false;
-        String fullId = perkName.contains(":") ? perkName : (RunicSkills.MOD_ID + ":" + perkName);
-        String path = perkName.contains(":") ? perkName.substring(perkName.indexOf(':') + 1) : perkName;
-        for (String entry : list) {
-            if (entry == null || entry.isEmpty()) continue;
-            if (entry.equals(path) || entry.equals(fullId)) return true;
-        }
-        return false;
+        return DisabledContentMatcher.matches(perkName, RunicSkills.MOD_ID,
+                HandlerCommonConfig.HANDLER.instance().disabledPerks);
     }
 
     public static boolean isDisabled(Perk perk) {
         if (perk == null) return false;
         if (isDisabled(perk.getName())) return true;
         return isDisabled(perk.getMod() + ":" + perk.getName());
+    }
+
+    // UI visibility: a perk is hidden from player-facing lists only when it is disabled AND the
+    // hideDisabledPerks flag is on. Flag-first short-circuits the list scan when the feature is off.
+    public static boolean isHiddenFromUi(Perk perk) {
+        return HandlerCommonConfig.HANDLER.instance().hideDisabledPerks && isDisabled(perk);
     }
 
     public static List<Perk> getSchoolAttunementPerks() {

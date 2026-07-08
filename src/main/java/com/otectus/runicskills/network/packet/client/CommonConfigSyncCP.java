@@ -46,6 +46,7 @@ public class CommonConfigSyncCP {
     private final List<String> disabledPassives;
     private final int perkSwapCooldownTicks;
     private final float skillLevelUpCostMultiplier;
+    private final int skillLevelUpMinCost;
     private final boolean enableItemLocks;
     private final boolean dropLockedItems;
     private final boolean enableScholarEnchantmentHiding;
@@ -130,6 +131,13 @@ public class CommonConfigSyncCP {
     private final boolean ironsEnableManaRegen;
     private final float ironsManaRegenPerMagicLevel;
 
+    // Hidden-content controls (since protocol "8"). disabledPowers was previously server-only;
+    // it is synced here so the client can hide powers authoritatively alongside the hide flags.
+    private final List<String> disabledPowers;
+    private final boolean hideDisabledPerks;
+    private final boolean hideDisabledPassives;
+    private final boolean hideDisabledPowers;
+
     public CommonConfigSyncCP() {
         skillFirstCostLevel = HandlerCommonConfig.HANDLER.instance().skillFirstCostLevel;
         maxActivePerks = HandlerCommonConfig.HANDLER.instance().maxActivePerks;
@@ -139,6 +147,7 @@ public class CommonConfigSyncCP {
         disabledPassives = HandlerCommonConfig.HANDLER.instance().disabledPassives;
         perkSwapCooldownTicks = HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks;
         skillLevelUpCostMultiplier = HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier;
+        skillLevelUpMinCost = HandlerCommonConfig.HANDLER.instance().skillLevelUpMinCost;
         enableItemLocks = HandlerCommonConfig.HANDLER.instance().enableItemLocks;
         dropLockedItems = HandlerCommonConfig.HANDLER.instance().dropLockedItems;
         enableScholarEnchantmentHiding = HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding;
@@ -213,6 +222,10 @@ public class CommonConfigSyncCP {
         ironsSpellLevelBonusThreshold2 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2;
         ironsEnableManaRegen = HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen;
         ironsManaRegenPerMagicLevel = HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel;
+        disabledPowers = HandlerCommonConfig.HANDLER.instance().disabledPowers;
+        hideDisabledPerks = HandlerCommonConfig.HANDLER.instance().hideDisabledPerks;
+        hideDisabledPassives = HandlerCommonConfig.HANDLER.instance().hideDisabledPassives;
+        hideDisabledPowers = HandlerCommonConfig.HANDLER.instance().hideDisabledPowers;
     }
 
     @SuppressWarnings("unchecked")
@@ -225,6 +238,7 @@ public class CommonConfigSyncCP {
         disabledPassives = readCappedStringList(buffer, "disabledPassives");
         perkSwapCooldownTicks = buffer.readInt();
         skillLevelUpCostMultiplier = buffer.readFloat();
+        skillLevelUpMinCost = buffer.readInt();
         enableItemLocks = buffer.readBoolean();
         dropLockedItems = buffer.readBoolean();
         enableScholarEnchantmentHiding = buffer.readBoolean();
@@ -302,6 +316,10 @@ public class CommonConfigSyncCP {
         ironsSpellLevelBonusThreshold2 = buffer.readInt();
         ironsEnableManaRegen = buffer.readBoolean();
         ironsManaRegenPerMagicLevel = buffer.readFloat();
+        disabledPowers = readCappedStringList(buffer, "disabledPowers");
+        hideDisabledPerks = buffer.readBoolean();
+        hideDisabledPassives = buffer.readBoolean();
+        hideDisabledPowers = buffer.readBoolean();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
@@ -313,6 +331,7 @@ public class CommonConfigSyncCP {
         buffer.writeCollection(this.disabledPassives, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
         buffer.writeInt(this.perkSwapCooldownTicks);
         buffer.writeFloat(this.skillLevelUpCostMultiplier);
+        buffer.writeInt(this.skillLevelUpMinCost);
         buffer.writeBoolean(this.enableItemLocks);
         buffer.writeBoolean(this.dropLockedItems);
         buffer.writeBoolean(this.enableScholarEnchantmentHiding);
@@ -389,6 +408,10 @@ public class CommonConfigSyncCP {
         buffer.writeInt(this.ironsSpellLevelBonusThreshold2);
         buffer.writeBoolean(this.ironsEnableManaRegen);
         buffer.writeFloat(this.ironsManaRegenPerMagicLevel);
+        buffer.writeCollection(this.disabledPowers, (buf, s) -> buf.writeUtf(s, Short.MAX_VALUE));
+        buffer.writeBoolean(this.hideDisabledPerks);
+        buffer.writeBoolean(this.hideDisabledPassives);
+        buffer.writeBoolean(this.hideDisabledPowers);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
@@ -404,6 +427,7 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().disabledPassives = this.disabledPassives;
                 HandlerCommonConfig.HANDLER.instance().perkSwapCooldownTicks = this.perkSwapCooldownTicks;
                 HandlerCommonConfig.HANDLER.instance().skillLevelUpCostMultiplier = this.skillLevelUpCostMultiplier;
+                HandlerCommonConfig.HANDLER.instance().skillLevelUpMinCost = this.skillLevelUpMinCost;
                 HandlerCommonConfig.HANDLER.instance().enableItemLocks = this.enableItemLocks;
                 HandlerCommonConfig.HANDLER.instance().dropLockedItems = this.dropLockedItems;
                 HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding = this.enableScholarEnchantmentHiding;
@@ -478,6 +502,10 @@ public class CommonConfigSyncCP {
                 HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2 = this.ironsSpellLevelBonusThreshold2;
                 HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen = this.ironsEnableManaRegen;
                 HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel = this.ironsManaRegenPerMagicLevel;
+                HandlerCommonConfig.HANDLER.instance().disabledPowers = this.disabledPowers;
+                HandlerCommonConfig.HANDLER.instance().hideDisabledPerks = this.hideDisabledPerks;
+                HandlerCommonConfig.HANDLER.instance().hideDisabledPassives = this.hideDisabledPassives;
+                HandlerCommonConfig.HANDLER.instance().hideDisabledPowers = this.hideDisabledPowers;
                 // Removed: HandlerCommonConfig.HANDLER.save() — server-synced values must not
                 // overwrite the user's local config file.
             }

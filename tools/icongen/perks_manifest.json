@@ -4147,5 +4147,95 @@
   "gate": "config:masterArtificerRequiredLevel",
   "name": "Master Artificer",
   "desc": "Crafted items have a %s chance for a bonus enchantment."
+ },
+ {
+  "id": "green_thumb",
+  "skill": "wisdom",
+  "texture_const": "GREEN_THUMB_PERK",
+  "texture": "runicskills:textures/skill/wisdom/green_thumb.png",
+  "gate": "config:greenThumbRequiredLevel",
+  "name": "Green Thumb",
+  "desc": "Using bonemeal has a %s chance to trigger one extra growth attempt."
+ },
+ {
+  "id": "nourishing_meal",
+  "skill": "wisdom",
+  "texture_const": "NOURISHING_MEAL_PERK",
+  "texture": "runicskills:textures/skill/wisdom/nourishing_meal.png",
+  "gate": "config:nourishingMealRequiredLevel",
+  "name": "Nourishing Meal",
+  "desc": "Eating food from supported culinary mods grants %s of its saturation again as a bonus."
+ },
+ {
+  "id": "comfort_food",
+  "skill": "constitution",
+  "texture_const": "COMFORT_FOOD_PERK",
+  "texture": "runicskills:textures/skill/constitution/comfort_food.png",
+  "gate": "config:comfortFoodRequiredLevel",
+  "name": "Comfort Food",
+  "desc": "Eating a meal from supported culinary mods has a %s chance to clear one harmful effect."
+ },
+ {
+  "id": "angler_luck",
+  "skill": "fortune",
+  "texture_const": "ANGLER_LUCK_PERK",
+  "texture": "runicskills:textures/skill/fortune/angler_luck.png",
+  "gate": "config:anglerLuckRequiredLevel",
+  "name": "Angler's Luck",
+  "desc": "Successful Starcatcher catches have a %s chance to grant a bonus treasure roll."
+ },
+ {
+  "id": "catch_of_the_day",
+  "skill": "fortune",
+  "texture_const": "CATCH_OF_THE_DAY_PERK",
+  "texture": "runicskills:textures/skill/fortune/catch_of_the_day.png",
+  "gate": "config:catchOfTheDayRequiredLevel",
+  "name": "Catch of the Day",
+  "desc": "The first Starcatcher catch of each day grants Luck for %s."
+ },
+ {
+  "id": "anglers_insight",
+  "skill": "dexterity",
+  "texture_const": "ANGLERS_INSIGHT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/anglers_insight.png",
+  "gate": "config:anglersInsightRequiredLevel",
+  "name": "Angler's Insight",
+  "desc": "Successful Starcatcher catches grant %s bonus experience."
+ },
+ {
+  "id": "steady_hammer",
+  "skill": "tinkering",
+  "texture_const": "STEADY_HAMMER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/steady_hammer.png",
+  "gate": "config:steadyHammerRequiredLevel",
+  "name": "Steady Hammer",
+  "desc": "Poorly Forged results from Overgeared anvils have a %s chance to be salvaged to Well Forged."
+ },
+ {
+  "id": "blueprint_savant",
+  "skill": "tinkering",
+  "texture_const": "BLUEPRINT_SAVANT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/blueprint_savant.png",
+  "gate": "config:blueprintSavantRequiredLevel",
+  "name": "Blueprint Savant",
+  "desc": "Forging with an Overgeared blueprint has a %s chance to grant bonus blueprint progress."
+ },
+ {
+  "id": "metallurgist",
+  "skill": "tinkering",
+  "texture_const": "METALLURGIST_PERK",
+  "texture": "runicskills:textures/skill/tinkering/metallurgist.png",
+  "gate": "config:metallurgistRequiredLevel",
+  "name": "Metallurgist",
+  "desc": "Taking Overgeared alloy or cast smelting results has a %s chance to yield one bonus item."
+ },
+ {
+  "id": "master_smith",
+  "skill": "tinkering",
+  "texture_const": "MASTER_SMITH_PERK",
+  "texture": "runicskills:textures/skill/tinkering/master_smith.png",
+  "gate": "config:masterSmithRequiredLevel",
+  "name": "Master Smith",
+  "desc": "Forged results have a %s chance to come out one quality tier higher, up to Perfectly Forged."
  }
 ]

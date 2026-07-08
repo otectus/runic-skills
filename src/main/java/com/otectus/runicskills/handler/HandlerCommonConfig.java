@@ -82,6 +82,21 @@ public class HandlerCommonConfig {
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPowers = Arrays.asList();
 
+    @SerialEntry(comment = "If true, perks listed in disabledPerks are hidden from the skills screen entirely instead of shown locked. Does NOT change enforcement (disabled perks are always blocked); this only controls UI visibility. Default false (disabled perks stay visible but locked). Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean hideDisabledPerks = false;
+
+    @SerialEntry(comment = "If true, passives listed in disabledPassives are hidden from the skills screen entirely instead of shown with a locked level-up button. Does NOT change enforcement; this only controls UI visibility. Default false. Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean hideDisabledPassives = false;
+
+    @SerialEntry(comment = "If true, powers listed in disabledPowers are hidden from the powers screen entirely instead of shown greyed-out. Does NOT change enforcement; this only controls UI visibility. Default false. Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean hideDisabledPowers = false;
+
     @SerialEntry(comment = "Per-player cooldown (in ticks, 20 = 1 second) between enabling perks. 0 = no cooldown (default). Applies only when going from disabled to enabled (not rank-ups, not disabling). Rejects server-side; clients attempting to enable during the cooldown are resynced.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 0, max = 72000)
@@ -93,6 +108,13 @@ public class HandlerCommonConfig {
     @FloatField(min = 0.1f, max = 10.0f)
     @Clamp(min = 0.1, max = 10)
     public float skillLevelUpCostMultiplier = 1.0f;
+
+    @SerialEntry(comment = "Minimum XP-point cost for a non-creative skill level-up. 1 = default. Prevents low skillLevelUpCostMultiplier values from rounding a real level-up down to a free one. Set to 0 to allow genuinely free level-ups when the scaled cost rounds to 0. Server-authoritative; synced to clients so the tooltip matches what the server charges.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 0, max = 10000)
+    @Clamp(min = 0, max = 10000)
+    public int skillLevelUpMinCost = 1;
+
     @SerialEntry(comment = "Show potions overlay over perks")
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
@@ -167,6 +189,32 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableJewelcraftIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the culinary integration layer (Farmer's Delight, its addons, and the Let's Do series; since 1.6.0). When false, the integration class is not registered, Nourishing Meal / Comfort Food become inert, and Master Chef / Culinary Expert fall back to Farmer's Delight food only (pre-1.6.0 behavior).")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableCulinaryIntegration = true;
+
+    @SerialEntry(comment = "When true, Master Chef's food-effect duration boost applies to food from every configured culinary namespace; when false the boost is disabled entirely.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean culinaryEnableFoodEffectBoost = true;
+
+    @SerialEntry(comment = "Item namespaces (mod ids) covered by the culinary integration layer. Food is detected as 'namespace in this list AND the item is edible' — no per-item lists. Defaults cover Farmer's Delight, Dungeons/Fruits/Rustic/Vintage Delight, Brewin' and Chewin', and the Let's Do series.")
+    @AutoGen(category = "common", group = "integrations")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> culinaryIntegrationNamespaces =
+            new java.util.ArrayList<>(com.otectus.runicskills.common.util.CulinaryNamespaces.defaults());
+
+    @SerialEntry(comment = "Master toggle for the Starcatcher integration (since 1.6.0). When false, the integration class is not registered: Angler's Luck / Catch of the Day / Angler's Insight become inert and Starcatcher rods/tackle are not item-locked.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableStarcatcherIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Overgeared integration (since 1.6.0). When false, the integration class is not registered: Steady Hammer / Blueprint Savant / Metallurgist / Master Smith become inert and Overgeared smithing gear is not item-locked.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableOvergearedIntegration = true;
 
     // Registry-driven (discovered) item locks for the long tail of supported mods (Epic Knights,
     // Aquaculture, Galosphere, Undergarden, Deeper Darker, Dragonsteel, Cataclysm, Mowzie's Mobs,
@@ -4682,4 +4730,107 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "farmers_delight")
     @IntField(min = -1)
     public int masterChefRequiredLevel = 16;
+
+    // ── Culinary layer (Farmer's Delight family + Let's Do) - Perks (since 1.6.0) ──
+    @SerialEntry(comment = "Green Thumb: Percentage chance that using bonemeal triggers one extra growth attempt (works on any bonemealable block: vanilla, Farmer's Delight, Let's Do crops)")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = 1, max = 100)
+    public int greenThumbPercent = 15;
+
+    @SerialEntry(comment = "Wisdom level required for Green Thumb perk (-1 to disable)")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = -1)
+    public int greenThumbRequiredLevel = 8;
+
+    @SerialEntry(comment = "Nourishing Meal: Percentage of a culinary meal's saturation granted again as bonus saturation (capped at the current food level, per vanilla rules)")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = 1, max = 100)
+    public int nourishingMealPercent = 20;
+
+    @SerialEntry(comment = "Wisdom level required for Nourishing Meal perk (-1 to disable)")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = -1)
+    public int nourishingMealRequiredLevel = 10;
+
+    @SerialEntry(comment = "Comfort Food: Percentage chance that eating a culinary meal clears one harmful effect")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = 1, max = 100)
+    public int comfortFoodPercent = 25;
+
+    @SerialEntry(comment = "Constitution level required for Comfort Food perk (-1 to disable)")
+    @AutoGen(category = "common", group = "culinary")
+    @IntField(min = -1)
+    public int comfortFoodRequiredLevel = 12;
+
+    // ── Starcatcher Integration - Perks (since 1.6.0) ──
+    @SerialEntry(comment = "Angler's Luck: Percentage chance that a successful Starcatcher catch grants one additive bonus roll of Starcatcher's treasure loot table")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = 1, max = 100)
+    public int anglerLuckPercent = 7;
+
+    @SerialEntry(comment = "Fortune level required for Angler's Luck perk (-1 to disable)")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = -1)
+    public int anglerLuckRequiredLevel = 12;
+
+    @SerialEntry(comment = "Catch of the Day: Duration in seconds of the Luck buff granted by the first Starcatcher catch of each Minecraft day")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = 1, max = 600)
+    public int catchOfTheDayDuration = 60;
+
+    @SerialEntry(comment = "Fortune level required for Catch of the Day perk (-1 to disable)")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = -1)
+    public int catchOfTheDayRequiredLevel = 8;
+
+    @SerialEntry(comment = "Angler's Insight: Flat bonus experience points granted per successful Starcatcher catch")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = 0, max = 100)
+    public int anglersInsightBoost = 3;
+
+    @SerialEntry(comment = "Dexterity level required for Angler's Insight perk (-1 to disable)")
+    @AutoGen(category = "common", group = "starcatcher")
+    @IntField(min = -1)
+    public int anglersInsightRequiredLevel = 10;
+
+    // ── Overgeared Integration - Perks (since 1.6.0) ──
+    @SerialEntry(comment = "Steady Hammer: Percentage chance that a Poorly Forged result is salvaged up to Well Forged when taken from an Overgeared smithing anvil")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = 1, max = 100)
+    public int steadyHammerPercent = 15;
+
+    @SerialEntry(comment = "Tinkering level required for Steady Hammer perk (-1 to disable)")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = -1)
+    public int steadyHammerRequiredLevel = 12;
+
+    @SerialEntry(comment = "Blueprint Savant: Percentage chance that the blueprint used in a forging gains one bonus point of Uses progress")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = 1, max = 100)
+    public int blueprintSavantPercent = 25;
+
+    @SerialEntry(comment = "Tinkering level required for Blueprint Savant perk (-1 to disable)")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = -1)
+    public int blueprintSavantRequiredLevel = 14;
+
+    @SerialEntry(comment = "Metallurgist: Percentage chance of one bonus output item when taking Overgeared alloy/cast smelting results")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = 1, max = 100)
+    public int metallurgistPercent = 10;
+
+    @SerialEntry(comment = "Tinkering level required for Metallurgist perk (-1 to disable)")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = -1)
+    public int metallurgistRequiredLevel = 18;
+
+    @SerialEntry(comment = "Master Smith: Percentage chance that a forged result upgrades one quality tier, hard-capped at Perfectly Forged (never grants Masterwork)")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = 1, max = 100)
+    public int masterSmithPercent = 10;
+
+    @SerialEntry(comment = "Tinkering level required for Master Smith perk (-1 to disable)")
+    @AutoGen(category = "common", group = "overgeared")
+    @IntField(min = -1)
+    public int masterSmithRequiredLevel = 24;
 }

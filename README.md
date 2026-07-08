@@ -111,7 +111,9 @@ Runic Skills detects installed mods at runtime and enables matching content with
 | **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item), Apotheosis Wisdom (enchantment-cap boost via Placebo's GetEnchantmentLevelEvent), plus gem rarity gating — socketing a gem requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), toggled by `apothEnableGemRarityGating` (default on) |
 | **Apothic Attributes** | Extended attribute pool for passives plus 10 combat perks (Apothic Critical Mastery, Vampiric Fangs, Reaper's Edge, Evasive, Arrow Mastery, Earthbreaker, Apothic Scholar, Spectral Ward, Ghostbound, Heart of the Healer) |
 | **Cross-mod synergy** | 6 Schoolbridges (Iron's school spell-power bleeds into matching Ars school damage), Unified Arcana (Ars casts refund ISS mana), Triple Threat (+% mana/regen/spell-power when Iron's + Ars + Apotheosis all loaded), Affix Focus (+ISS spell levels when 4+ Rare Apoth items equipped) |
-| **Farmers Delight** | Lock items on knives and cooking gear |
+| **Farmers Delight** + addons (**Dungeons / Fruits / Rustic / Vintage Delight**, **Brewin' and Chewin'**) and the **Let's Do** series (Vinery, Bakery, Brewery, Candlelight, Meadow, Farm & Charm, Beachparty, HerbalBrews) (since 1.6.0) | Namespace-driven culinary layer: Master Chef / Culinary Expert boosts apply to food from every configured namespace (`culinaryIntegrationNamespaces`), plus Green Thumb (bonemeal extra-growth, works on vanilla too), Nourishing Meal (bonus saturation) and Comfort Food (clears a harmful effect). Knives/tools/armor get item locks; **ordinary food, crops, seeds and decoration are never locked** |
+| **Starcatcher** (since 1.6.0) | Angler's Luck (bonus treasure roll on successful catches), Catch of the Day (daily Luck buff), Angler's Insight (bonus XP per catch); fishing rods and reusable tackle get Fortune/Dexterity locks. Minigame difficulty and bait preservation expose no stable hook upstream and are deliberately untouched |
+| **Overgeared** (since 1.6.0) | Steady Hammer (salvage Poorly Forged → Well Forged), Blueprint Savant (bonus blueprint progress), Metallurgist (bonus alloy/cast smelting output), Master Smith (one bonus quality tier, capped at Perfectly Forged — Masterwork stays Overgeared-exclusive); smithing hammers/tongs/blueprints and forged gear get Tinkering-centric locks, crafting components stay unlocked |
 | **Ice and Fire** | Dragon-slayer perk + dragon-item lock list |
 | **Cataclysm** | Fire-dragon weapon / gear lock items |
 | **Mowzie's Mobs** | Mowzie-weapon lock list |
@@ -150,11 +152,20 @@ All `/skills*` operator commands require OP level 2.
 
 Configuration surfaces (all under `config/RunicSkills/`):
 
-1. **Common config** (`config/RunicSkills/runicskills.common.json5`) — YACL-managed, editable via **Mods → Runic Skills → Config**. Covers skill max-level, XP costs, UI overlays, per-integration toggles, the disabled perk/passive/power lists, and the `enableItemLocks` master toggle.
+1. **Common config** (`config/RunicSkills/runicskills.common.json5`) — YACL-managed, editable via **Mods → Runic Skills → Config**. Covers skill max-level, XP costs, UI overlays, per-integration toggles, the disabled perk/passive/power lists (and their optional hide-from-UI flags), and the `enableItemLocks` master toggle.
 2. **Lock-item list** (`config/RunicSkills/runicskills.lockItems.json5`) — the per-item skill requirements. Edited directly in the file or with `/registeritem`; **not** shown in the YACL screen.
 3. **Client config** (`config/runicskills-client.toml`) — Forge config spec. Covers rendering toggles (critical-roll overlay, lucky-drop overlay, perk mod-name display), sort orders, and the Legendary Tabs priority.
 
 Title definitions and their conditions live as datapack JSON under `data/runicskills/titles/*.json`. After editing any config file in-world, apply it with `/skillsreload` (no restart needed) — this re-reads every config file and re-syncs to clients.
+
+### Disabling vs. hiding perks, passives & powers
+
+These are **two separate controls** in the common config, and it's worth understanding the difference:
+
+- **Disable** — `disabledPerks`, `disabledPassives`, `disabledPowers` (lists of registry names, e.g. `"berserker"` or `"runicskills:berserker"`). A disabled entry is **blocked**: perks can't be enabled/ranked up, passives can't be leveled and lose their attribute modifier, powers can't be equipped. By default the entry is still **shown** in the UI (locked/greyed) so players can see it exists but is unavailable.
+- **Hide** — `hideDisabledPerks`, `hideDisabledPassives`, `hideDisabledPowers` (booleans, default `false`). When a hide flag is `true`, entries in the *corresponding* `disabled*` list are **omitted from the UI entirely** — gone from the skills/powers screens, their level-up/equip buttons, and their tooltips — instead of shown locked. This avoids the "looks usable but isn't" confusion. Hiding **never** changes enforcement; it is purely cosmetic. Leaving these off preserves the classic behavior.
+
+Both are server-authoritative and synced to clients on join, so a dedicated server decides what its players can do *and* see. Apply changes with `/skillsreload`. Op-level admin commands like `/powers list` deliberately keep showing disabled entries (marked `[disabled]`) so operators retain full visibility.
 
 ### Disabling item locking
 

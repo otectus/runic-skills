@@ -116,8 +116,14 @@ public class RunicSkills {
             MinecraftForge.EVENT_BUS.register(new CataclysmIntegration());
         if (MowziesMobsIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new MowziesMobsIntegration());
-        if (FarmersDelightIntegration.isModLoaded())
-            MinecraftForge.EVENT_BUS.register(new FarmersDelightIntegration());
+        // Culinary layer (since 1.6.0): Farmer's Delight + addons + Let's Do series, detected by
+        // registry namespace + FoodProperties. Replaces the farmersdelight-only FarmersDelightIntegration.
+        if (cfg.enableCulinaryIntegration && CulinaryIntegration.isAnyLoaded())
+            MinecraftForge.EVENT_BUS.register(new CulinaryIntegration());
+        if (cfg.enableStarcatcherIntegration && StarcatcherIntegration.isModLoaded())
+            MinecraftForge.EVENT_BUS.register(new StarcatcherIntegration());
+        if (cfg.enableOvergearedIntegration && OvergearedIntegration.isModLoaded())
+            MinecraftForge.EVENT_BUS.register(new OvergearedIntegration());
         if (LocksIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new LocksIntegration());
 

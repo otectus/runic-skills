@@ -24,4 +24,19 @@ public final class SkillLevelUpMath {
     public static boolean canLevelUp(int currentLevel, int maxLevel) {
         return currentLevel < maxLevel;
     }
+
+    /**
+     * Whether a player can afford a skill level-up whose cost is {@code requiredPoints} XP points,
+     * given their current spendable balance {@code spendableXp} (see
+     * {@link ExperienceMath#spendableXp}). Creative players always afford it.
+     *
+     * <p>XP points are the single authoritative currency. Before 1.5.5 the packet handler also
+     * accepted an alternate "enough experience <em>levels</em>" branch, which let a player with few
+     * XP points but a high level number pass the gate and then be charged the full point cost —
+     * driving their XP negative. This helper collapses affordability to a single points comparison so
+     * validation (server) and the button/tooltip state (client) can never diverge.</p>
+     */
+    public static boolean canAfford(boolean creative, int spendableXp, int requiredPoints) {
+        return creative || requiredPoints <= spendableXp;
+    }
 }

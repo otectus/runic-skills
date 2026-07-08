@@ -1,6 +1,7 @@
 package com.otectus.runicskills.registry;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.util.DisabledContentMatcher;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.integration.IronsSpellbooksIntegration;
@@ -242,21 +243,18 @@ public class RegistryPowers {
 
     /** Mirrors {@link RegistryPerks#isDisabled(String)}. Reads {@code disabledPowers} config list. */
     public static boolean isDisabled(String powerName) {
-        if (powerName == null) return false;
-        List<String> list = HandlerCommonConfig.HANDLER.instance().disabledPowers;
-        if (list == null || list.isEmpty()) return false;
-        String fullId = powerName.contains(":") ? powerName : (RunicSkills.MOD_ID + ":" + powerName);
-        String path = powerName.contains(":") ? powerName.substring(powerName.indexOf(':') + 1) : powerName;
-        for (String entry : list) {
-            if (entry == null || entry.isEmpty()) continue;
-            if (entry.equals(path) || entry.equals(fullId)) return true;
-        }
-        return false;
+        return DisabledContentMatcher.matches(powerName, RunicSkills.MOD_ID,
+                HandlerCommonConfig.HANDLER.instance().disabledPowers);
     }
 
     public static boolean isDisabled(Power power) {
         if (power == null) return false;
         if (isDisabled(power.getName())) return true;
         return isDisabled(power.getMod() + ":" + power.getName());
+    }
+
+    // UI visibility: hidden only when disabled AND hideDisabledPowers is on.
+    public static boolean isHiddenFromUi(Power power) {
+        return HandlerCommonConfig.HANDLER.instance().hideDisabledPowers && isDisabled(power);
     }
 }

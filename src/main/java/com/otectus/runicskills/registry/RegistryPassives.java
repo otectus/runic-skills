@@ -1,6 +1,7 @@
 package com.otectus.runicskills.registry;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.util.DisabledContentMatcher;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.integration.ApothicAttributesIntegration;
@@ -133,22 +134,19 @@ public class RegistryPassives {
     // Disabled-via-config support. Accepts either a bare registry path ("attack_damage") or
     // a full id ("runicskills:attack_damage"); matches both against the disabledPassives list.
     public static boolean isDisabled(String passiveName) {
-        if (passiveName == null) return false;
-        List<String> list = HandlerCommonConfig.HANDLER.instance().disabledPassives;
-        if (list == null || list.isEmpty()) return false;
-        String fullId = passiveName.contains(":") ? passiveName : (RunicSkills.MOD_ID + ":" + passiveName);
-        String path = passiveName.contains(":") ? passiveName.substring(passiveName.indexOf(':') + 1) : passiveName;
-        for (String entry : list) {
-            if (entry == null || entry.isEmpty()) continue;
-            if (entry.equals(path) || entry.equals(fullId)) return true;
-        }
-        return false;
+        return DisabledContentMatcher.matches(passiveName, RunicSkills.MOD_ID,
+                HandlerCommonConfig.HANDLER.instance().disabledPassives);
     }
 
     public static boolean isDisabled(Passive passive) {
         if (passive == null) return false;
         if (isDisabled(passive.getName())) return true;
         return isDisabled(passive.getMod() + ":" + passive.getName());
+    }
+
+    // UI visibility: hidden only when disabled AND hideDisabledPassives is on.
+    public static boolean isHiddenFromUi(Passive passive) {
+        return HandlerCommonConfig.HANDLER.instance().hideDisabledPassives && isDisabled(passive);
     }
 }
 

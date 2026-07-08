@@ -470,3 +470,14 @@ tome_of_knowledge	tome	lapis	gold	plus	lapis	Books hold more levels
 unbreaking_mastery	pickaxe	iron	gold	shieldb	gold	Unbreaking chance improved
 ward_master	round_shield	frost	arcane	clockb	arcane	Wards last longer
 wisdom_of_ages	anvil	gold	lapis	downb	gold	Aged wisdom — cheap repairs
+# ===== 1.6.0 INTEGRATIONS (culinary / Starcatcher / Overgeared) =====
+green_thumb	wheat	moss	bone	sparkle	nature	Bonemealed crop — chance for an extra growth attempt
+nourishing_meal	drumstick	crimson	bone	heartb	crimson	Hearty meal — bonus saturation from culinary food
+comfort_food	cauldron	wood	crimson	heartb	gold	Comfort stew — chance to clear a harmful effect
+angler_luck	fish	gold	emerald	coinb	gold	Prize catch — bonus Starcatcher treasure roll
+catch_of_the_day	fish	storm	water	sunb	gold	First catch of the day — Luck buff
+anglers_insight	xp_orb	water	gold	plus	water	Insightful catch — bonus XP per catch
+steady_hammer	hammer	steel	gold	shieldb	steel	Steady smithing hammer — salvage poor forgings
+blueprint_savant	blueprint	lapis	gold	plus	lapis	Studied blueprint — bonus Uses progress
+metallurgist	furnace	ember	gold	plus	fire	Alloy furnace — bonus smelting output
+master_smith	anvil	gold	fire	starb	gold	Master's anvil — chance for a higher quality tier

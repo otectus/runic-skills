@@ -69,9 +69,17 @@ public class PowersScreen extends Screen {
     }
 
     private void rebuildPools() {
-        markPool  = sortByName(RegistryPowers.getByTier(PowerTier.MARK));
-        sealPool  = sortByName(RegistryPowers.getByTier(PowerTier.SEAL));
-        crownPool = sortByName(RegistryPowers.getByTier(PowerTier.CROWN));
+        markPool  = sortByName(filterHidden(RegistryPowers.getByTier(PowerTier.MARK)));
+        sealPool  = sortByName(filterHidden(RegistryPowers.getByTier(PowerTier.SEAL)));
+        crownPool = sortByName(filterHidden(RegistryPowers.getByTier(PowerTier.CROWN)));
+    }
+
+    // Omit disabled powers entirely when hideDisabledPowers is on. The button pass and the render
+    // pass both read the resulting pool fields, so their scroll/index math stays consistent.
+    private static List<Power> filterHidden(List<Power> in) {
+        List<Power> out = new ArrayList<>(in);
+        out.removeIf(RegistryPowers::isHiddenFromUi);
+        return out;
     }
 
     private static List<Power> sortByName(List<Power> in) {

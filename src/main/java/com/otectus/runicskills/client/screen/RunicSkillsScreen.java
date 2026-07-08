@@ -17,8 +17,10 @@ import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.network.packet.common.PassiveLevelDownSP;
 import com.otectus.runicskills.network.packet.common.PassiveLevelUpSP;
 import com.otectus.runicskills.network.packet.common.SetPlayerTitleSP;
+import com.otectus.runicskills.common.util.SkillLevelUpMath;
 import com.otectus.runicskills.network.packet.common.SkillLevelUpSP;
 import com.otectus.runicskills.network.packet.common.TogglePerkSP;
+import com.otectus.runicskills.registry.RegistryPassives;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.RegistryTitles;
@@ -473,7 +475,6 @@ public class RunicSkillsScreen extends Screen {
                 ChatFormatting color = canLevelUpSkill ? ChatFormatting.GREEN : ChatFormatting.RED;
                 Utils.drawToolTip(guiGraphics,
                         Component.translatable("tooltip.skill.level_up",
-                                Component.literal(String.valueOf(SkillLevelUpSP.requiredExperienceLevels(skillLevel))).withStyle(color),
                                 Component.literal(String.valueOf(SkillLevelUpSP.requiredPoints(skillLevel))).withStyle(color),
                                 Component.translatable(detailState.skill().getKey()).withStyle(color)).withStyle(ChatFormatting.GRAY),
                         mouseX,
@@ -680,6 +681,12 @@ public class RunicSkillsScreen extends Screen {
         List<Passive> passives = new ArrayList<>(skill.getPassives(skill));
         List<Perk> perks = new ArrayList<>(skill.getPerks(skill));
 
+        // Omit disabled content when the pack opts into hiding it. Filtering here (before chunking)
+        // keeps the render walk (drawDetail) and the click walk (handleDetailClick) — which both
+        // re-walk detailState.visibleRows() by index — in agreement. Pagination re-clamps below.
+        passives.removeIf(RegistryPassives::isHiddenFromUi);
+        perks.removeIf(RegistryPerks::isHiddenFromUi);
+
         switch (HandlerConfigClient.sortPassive.get()) {
             case ByName -> passives.sort(new SortPassiveByName());
             case ByReverseName -> passives.sort(new SortPassiveByName().reversed());
@@ -753,9 +760,10 @@ public class RunicSkillsScreen extends Screen {
             return false;
         }
 
-        return client.player.isCreative()
-                || Utils.getExperienceForLevel(SkillLevelUpSP.requiredExperienceLevels(skillLevel)) <= Utils.getPlayerXP(client.player)
-                || SkillLevelUpSP.requiredExperienceLevels(skillLevel) <= client.player.experienceLevel;
+        // Mirror the server gate exactly (SkillLevelUpMath.canAfford): XP points are the sole
+        // authoritative currency, so the button's green/red state matches what the server enforces.
+        return SkillLevelUpMath.canAfford(
+                client.player.isCreative(), Utils.getPlayerXP(client.player), SkillLevelUpSP.requiredPoints(skillLevel));
     }
 
     private void updateSearchBox(int panelX, int panelY) {

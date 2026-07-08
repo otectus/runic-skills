@@ -8,7 +8,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 /**
  * Tiny utility for the namespaced-id matching pattern that every integration
  * previously re-implemented inline (see SpartanIntegration, IceAndFireIntegration,
- * MowziesMobsIntegration, FarmersDelightIntegration, CataclysmIntegration).
+ * MowziesMobsIntegration, CulinaryIntegration, CataclysmIntegration).
  *
  * <p>Introduced for R3 batch 4 (mod-gated Strength perks) — the new integration
  * handlers detect their target items / entities by ResourceLocation namespace

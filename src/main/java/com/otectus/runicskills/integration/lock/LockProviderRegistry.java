@@ -124,5 +124,25 @@ public final class LockProviderRegistry {
         register(new GenericNamespaceLockProvider("nichirin_dynasty", 12, "nichirin_dynasty"));
         register(new GenericNamespaceLockProvider("saintsdragons", 14, "saintsdragons"));
         register(new GenericNamespaceLockProvider("stalwart_dungeons", 12, "stalwart_dungeons"));
+
+        // -- Culinary layer (since 1.6.0): Farmer's Delight addons + Let's Do series --
+        // Only gear-like items match LockGen keywords (knives, tools, the odd armor piece); food,
+        // crops, seeds and decoration never classify, so they are never locked. Mod ids verified
+        // against upstream mods.toml (Let's Do jars are letsdo-<x>-forge but register the bare id).
+        register(new GenericNamespaceLockProvider("dungeonsdelight", 6, "dungeonsdelight"));
+        register(new GenericNamespaceLockProvider("fruitsdelight", 4, "fruitsdelight"));
+        register(new GenericNamespaceLockProvider("rusticdelight", 4, "rusticdelight"));
+        register(new GenericNamespaceLockProvider("vintagedelight", 4, "vintagedelight"));
+        register(new GenericNamespaceLockProvider("brewinandchewin", 4, "brewinandchewin"));
+        register(new GenericNamespaceLockProvider("letsdo", 5,
+                "vinery", "bakery", "brewery", "candlelight", "meadow",
+                "farm_and_charm", "beachparty", "herbalbrews"));
+
+        // -- Bespoke Forge-only providers (since 1.6.0) --
+        // Custom rules instead of GenericNamespaceLockProvider because LockGen keywords would
+        // misfile them: "rod" → magic (Starcatcher fishing rods), "hammer" → melee weapon and
+        // "_head"/"_blade" component false-positives (Overgeared smithing kit).
+        register(new StarcatcherLockProvider());
+        register(new OvergearedLockProvider());
     }
 }

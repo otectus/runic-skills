@@ -1,5 +1,134 @@
 # Changelog
 
+## [1.6.1] - 2026-07-08 — Hide disabled content from the UI
+
+### Added — hide disabled content from the UI
+Previously a perk/passive/power listed in `disabledPerks` / `disabledPassives` / `disabledPowers`
+was blocked but still **shown** (locked/greyed), which playtesters read as a bug — the entry looks
+usable but isn't. Three new server-authoritative common-config booleans (all default `false`) let
+pack makers hide disabled content entirely instead:
+
+- **`hideDisabledPerks`**, **`hideDisabledPassives`**, **`hideDisabledPowers`** — when a flag is on,
+  entries in the matching `disabled*` list are **omitted entirely** from the skills/powers screens,
+  their level-up/equip buttons, and their tooltips (not greyed out). When off (default), behavior is
+  exactly as before — nothing changes for existing packs.
+- **Disabling** and **hiding** are now distinct: `disabled*` always blocks effects/leveling/equipping
+  server-side regardless of the hide flag; `hideDisabled*` only controls UI visibility.
+- The op-gated `/powers list` admin command deliberately keeps showing disabled powers with the
+  `[disabled]` marker — it is a diagnostic tool, not player-facing.
+- The duplicated disabled-name matching in the three registries was extracted into a Forge-free
+  `common/util/DisabledContentMatcher` (unit-tested: bare-path vs full-id matching, addon namespaces,
+  exact-match/no-prefix-collision, null/empty safety). Each registry gains an `isHiddenFromUi(...)`
+  helper (`disabled` AND the hide flag) that the screens filter through.
+- **Network protocol bump `7` → `8`**: `CommonConfigSyncCP` now also syncs `disabledPowers` (which
+  was previously enforced server-side only) plus the three hide flags, so a dedicated server controls
+  what clients see. Mismatched client/server pairs are rejected at the handshake.
+
+## [1.6.0] - 2026-07-06 — Culinary layer, Starcatcher & Overgeared compatibility
+
+### Added — culinary/agriculture integration layer (Farmer's Delight addons + Let's Do series)
+The farmersdelight-only `FarmersDelightIntegration` was generalized into a namespace-driven
+`CulinaryIntegration`. Food is detected as "registry namespace ∈ `culinaryIntegrationNamespaces`
+AND the item is edible" — no per-item lists, no upstream API imports. Default namespaces
+(verified against upstream mods.toml, not display names): `farmersdelight`, `dungeonsdelight`,
+`fruitsdelight`, `rusticdelight`, `vintagedelight`, `brewinandchewin`, plus the Let's Do series
+(`vinery`, `bakery`, `brewery`, `candlelight`, `meadow`, `farm_and_charm`, `beachparty`,
+`herbalbrews`).
+
+- **Master Chef** is unchanged in id/config/save data but its food-effect duration boost now
+  covers every configured culinary namespace (toggle: `culinaryEnableFoodEffectBoost`).
+  **Culinary Expert**'s saturation bonus was generalized the same way. With
+  `enableCulinaryIntegration` off, both fall back to Farmer's Delight-only (pre-1.6.0 behavior).
+- **New perks**: **Green Thumb** (Wisdom 8) — bonemeal has a 15% chance to trigger one extra
+  growth attempt on any bonemealable block (vanilla, FD and Let's Do crops alike; event-driven,
+  no random-tick or world-scan cost). **Nourishing Meal** (Wisdom 10) — culinary meals grant 20%
+  of their saturation again as a bonus (capped at the food level, per vanilla rules).
+  **Comfort Food** (Constitution 12) — culinary meals have a 25% chance to clear one harmful effect.
+- **Item locks**: generic namespace lock providers for `dungeonsdelight` (base 6),
+  `fruitsdelight`/`rusticdelight`/`vintagedelight`/`brewinandchewin` (base 4) and the Let's Do
+  namespaces (base 5). Only gear-like items (knives, tools, armor) classify — **ordinary food,
+  crops, seeds, ingredients and decoration are never locked**.
+
+### Added — Starcatcher integration (fishing minigame)
+Forge-only: Starcatcher posts vanilla `ItemFishedEvent` for every successful catch and its
+treasure loot table is addressable by id, so no Starcatcher classes are referenced
+(`enableStarcatcherIntegration` master toggle; verified against Starcatcher 2.3, Forge 1.20.1).
+
+- **Angler's Luck** (Fortune 12) — successful Starcatcher catches have a 7% chance to grant one
+  additive bonus roll of `starcatcher:gameplay/fishing/treasure`. Never mutates or duplicates the
+  catch itself, and only fires on a legitimate catch, so Starcatcher's biome/weather/daytime
+  restrictions have already applied.
+- **Catch of the Day** (Fortune 8) — the first Starcatcher catch each Minecraft day grants Luck
+  for 60s. **Angler's Insight** (Dexterity 10) — +3 XP per Starcatcher catch.
+- **Item locks** via a bespoke provider (LockGen's `rod` keyword means MAGIC, so generic keyword
+  classification would have misfiled fishing rods): rods → Fortune 8 / Dexterity 6, reusable
+  hooks/bobbers → Fortune 6. Bait, fish, bottles, trophies and the tackle box stay unlocked.
+- *Not implemented (no safe upstream hook)*: `steady_hand`-style minigame difficulty changes
+  (difficulty is data-driven `FishProperties` consumed internally) and `tackle_master`-style bait
+  preservation (bait consumption is an internal rod data write with no event). Catches routed
+  through Starcatcher's vanilla-loot path carry no starcatcher-namespaced drop and are not boosted.
+
+### Added — Overgeared integration (realistic forging)
+Forge-only: Overgeared fires vanilla `ItemCraftedEvent` when a forged result is taken from its
+smithing anvils, stores forging quality as the item-NBT string `ForgingQuality` (stats are derived
+from it dynamically), and its alloy/nether-alloy/cast furnaces use vanilla `FurnaceResultSlot`
+(→ `ItemSmeltedEvent`). No Overgeared classes are referenced (`enableOvergearedIntegration`
+master toggle; verified against Overgeared 1.6.x, Forge 1.20.1).
+
+- **Steady Hammer** (Tinkering 12) — 15% chance a Poorly Forged result is salvaged to Well Forged.
+- **Blueprint Savant** (Tinkering 14) — 25% chance the blueprint used in a forging gains one bonus
+  point of Uses progress (level-up itself stays with Overgeared's own `>= usesToLevel` check).
+- **Metallurgist** (Tinkering 18) — 10% chance of one bonus output item when taking Overgeared
+  alloy/cast smelting results (same bonus-copy idiom as the crafting perks; dupe-safe on quick-move).
+- **Master Smith** (Tinkering 24) — 10% chance a forged result comes out one quality tier higher,
+  **hard-capped at Perfectly Forged** — Masterwork remains exclusive to Overgeared's own reward path.
+- **Item locks** via a bespoke provider: smithing hammers → Tinkering 8 / Strength 6, tongs →
+  Tinkering 8, blueprints → Tinkering 6; finished gear falls through to generic classification
+  with a material-tiered base (copper 6 → iron 8 → steel 12 → netherite 16). Crafting components
+  (`*_head`, `*_blade`, plates, casts, heated ingots, arrows) are explicitly never locked.
+- *Not implemented (no safe upstream hook)*: forging-minigame tolerance changes (client-side
+  static state), failure-roll reduction and fuel/input preservation (internal to block entities).
+
+### Changed
+- `FarmersDelightIntegration` was removed; its registration line and the five perk gates that
+  referenced it now go through `CulinaryIntegration.isAnyLoaded()`. Master Chef and Culinary
+  Expert behavior for Farmer's Delight food is byte-for-byte equivalent.
+- New config fields (all in `runicskills.common.json5`): `enableCulinaryIntegration`,
+  `culinaryEnableFoodEffectBoost`, `culinaryIntegrationNamespaces`, `enableStarcatcherIntegration`,
+  `enableOvergearedIntegration`, plus `<perk>RequiredLevel` / effect-value fields for all ten new
+  perks (required level `-1` disables a perk, as everywhere else).
+- New pure-logic tests: culinary namespace matching, forging-quality tier math, and Starcatcher /
+  Overgeared lock classification rules.
+
+### Fixed — skill level-up could spend more XP than the player had
+With a low `skillLevelUpCostMultiplier` (e.g. `0.1`) a level-up could deduct more experience than
+the player actually owned, driving XP negative (symptom: after gaining XP the bar reset to 0 then
+climbed normally). Root cause: the server affordability gate in `SkillLevelUpSP` was an OR across
+two *different* currencies — XP **points** OR XP **levels** — while the deduction always removed
+points. A player with enough displayed levels but too few points passed the check and was charged
+the full point cost. The client button mirrored the same bypass, so it even lit green.
+
+- XP **points are now the single authoritative currency**. Affordability is a single points
+  comparison (`SkillLevelUpMath.canAfford` against the player's derived spendable balance) shared by
+  the server validation and the client button/tooltip, so they can never diverge. The alternate
+  "enough experience levels" branch (and `requiredExperienceLevels`) is gone.
+- XP deduction is now **clamped and consistent**: the resulting total can never go negative, and
+  `experienceLevel` / `experienceProgress` are always recomputed from the vanilla curve (no negative
+  progress or NaN). A rejected level-up packet resyncs the player so a stale/tampered client can't
+  linger in a misleading state.
+- The vanilla XP-curve math (previously copy-pasted, untested, in three places) was extracted into a
+  Forge-free `common/util/ExperienceMath` helper with unit tests covering the cost formula at skill
+  levels 1/15/30/31/max across multipliers, the exact affordability boundary, the enough-levels /
+  too-few-points rejection, and the negative-clamp guarantees.
+
+### Changed — level-up cost display & minimum cost
+- New config field **`skillLevelUpMinCost`** (default `1`, server-authoritative, synced to clients):
+  the minimum XP-point cost of a non-creative level-up. Prevents low multipliers from rounding a
+  real level-up down to a free one; set to `0` to explicitly allow free level-ups when the scaled
+  cost rounds to `0`.
+- The level-up tooltip now shows the **exact XP-point cost only** (`"Spend %s xp to level up %s."`),
+  matching what the server enforces, instead of a separately-rounded and misleading "levels" figure.
+
 ## [1.5.4] - 2026-07-02 — Original perk icon set
 
 ### Changed — every perk icon replaced with an original generated texture

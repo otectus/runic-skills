@@ -679,7 +679,10 @@ public class PerkEffectsHandler {
         if (on(RegistryPerks.HEARTY_FEAST, player)) satBonus += c.heartyFeastPercent / 100.0; // APPROX: more saturation ≈ effects last longer
         if (fish && on(RegistryPerks.ANGLERS_BOUNTY, player))    satBonus += c.anglersBountyPercent / 100.0;
         if (fish && on(RegistryPerks.AQUATIC_KNOWLEDGE, player)) satBonus += c.aquaticKnowledgePercent / 100.0;
-        if (ns(id, "farmersdelight") && on(RegistryPerks.CULINARY_EXPERT, player)) satBonus += c.culinaryExpertPercent / 100.0;
+        // Since 1.6.0 CULINARY_EXPERT covers every configured culinary namespace (FD addons, Let's Do),
+        // falling back to farmersdelight-only when the culinary integration master toggle is off.
+        if (on(RegistryPerks.CULINARY_EXPERT, player)
+                && com.otectus.runicskills.integration.CulinaryIntegration.isCulinaryFood(food)) satBonus += c.culinaryExpertPercent / 100.0;
         if (satBonus > 0) {
             var props = food.getFoodProperties(player);
             if (props != null) player.getFoodData().eat((int) Math.ceil(props.getNutrition() * satBonus), props.getSaturationModifier());
@@ -692,6 +695,32 @@ public class PerkEffectsHandler {
         // DRAGON_HEART — eating a dragon-heart item restores extra HP.
         if (on(RegistryPerks.DRAGON_HEART, player) && path(id, "dragon"))
             player.heal((float) val(RegistryPerks.DRAGON_HEART, player, 0));
+    }
+
+    // ── bonemeal / crop growth ──────────────────────────────────────────────────────
+    // GREEN_THUMB — chance for bonemeal to trigger one extra growth attempt. Block-agnostic
+    // (any BonemealableBlock: vanilla, Farmer's Delight, Let's Do crops) and event-driven only —
+    // no random-tick changes, no world scanning. The extra attempt is deferred one tick so it
+    // reads the post-vanilla-bonemeal state; applying it inside the event would be overwritten
+    // when vanilla grows from the stale pre-event BlockState it already captured.
+    @SubscribeEvent
+    public void onBonemeal(net.minecraftforge.event.entity.player.BonemealEvent event) {
+        if (event.isCanceled() || event.getResult() == Event.Result.DENY) return;
+        Player player = event.getEntity();
+        if (player == null || player instanceof FakePlayer) return;
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (!on(RegistryPerks.GREEN_THUMB, player)) return;
+        if (player.getRandom().nextDouble() >= cfg().greenThumbPercent / 100.0) return;
+
+        var pos = event.getPos();
+        level.getServer().tell(new net.minecraft.server.TickTask(level.getServer().getTickCount() + 1, () -> {
+            if (!level.isLoaded(pos)) return;
+            net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof net.minecraft.world.level.block.BonemealableBlock b
+                    && b.isValidBonemealTarget(level, pos, state, false)) {
+                b.performBonemeal(level, level.random, pos, state);
+            }
+        }));
     }
 
     // ── crafting output ─────────────────────────────────────────────────────────────

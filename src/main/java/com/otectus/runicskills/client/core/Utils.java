@@ -1,5 +1,6 @@
 package com.otectus.runicskills.client.core;
 
+import com.otectus.runicskills.common.util.ExperienceMath;
 import com.otectus.runicskills.registry.RegistrySounds;
 import com.mojang.authlib.GameProfile;
 
@@ -118,29 +119,9 @@ public class Utils {
         client.getSoundManager().play(SimpleSoundInstance.forUI(RegistrySounds.GAIN_TITLE.get(), 1.0F));
     }
 
+    /** The player's current spendable XP-point balance. Delegates to the shared {@link ExperienceMath}. */
     public static int getPlayerXP(Player player) {
-        return (int)(getExperienceForLevel(player.experienceLevel) + (player.experienceProgress * player.getXpNeededForNextLevel()));
-    }
-
-    public static int xpBarCap(int level) {
-        if (level >= 30)
-            return 112 + (level - 30) * 9;
-
-        if (level >= 15)
-            return 37 + (level - 15) * 5;
-
-        return 7 + level * 2;
-    }
-
-    public static int getExperienceForLevel(int level) {
-        if (level == 0) return 0;
-        if (level <= 15) return sum(level, 7, 2);
-        if (level <= 30) return 315 + sum(level - 15, 37, 5);
-        return 1395 + sum(level - 30, 112, 9);
-    }
-
-    private static int sum(int n, int a0, int d) {
-        return n * (2 * a0 + (n - 1) * d) / 2;
+        return ExperienceMath.spendableXp(player.experienceLevel, player.experienceProgress);
     }
 
 
