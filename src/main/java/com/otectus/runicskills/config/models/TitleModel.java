@@ -3,6 +3,7 @@ package com.otectus.runicskills.config.models;
 import com.google.gson.annotations.SerializedName;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.conditions.ConditionImpl;
+import com.otectus.runicskills.config.conditions.IntegerConditionImpl;
 import com.otectus.runicskills.handler.HandlerConditions;
 import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.resources.ResourceLocation;
@@ -96,6 +97,17 @@ public class TitleModel {
     /** A fully resolved condition; {@code null} entries mark malformed/unknown conditions (logged once). */
     private record Parsed(ConditionImpl<?> impl, ParsedParts parts) {}
 
+    /** Whether {@code value} parses as a whole number, used to validate integer conditions at load. */
+    private static boolean isInteger(String value) {
+        if (value == null || value.isEmpty()) return false;
+        try {
+            Integer.parseInt(value.trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     private transient List<Parsed> _parsedConditions;
 
     /**
@@ -121,6 +133,14 @@ public class TitleModel {
                     parsed.add(null);
                     continue;
                 }
+                // Reject a non-numeric expected value here, once, naming the title — rather than
+                // letting Integer.parseInt throw on every title scan for every player (RS-017).
+                if (conditionImpl.get() instanceof IntegerConditionImpl && !isInteger(parts.expected())) {
+                    RunicSkills.getLOGGER().error(">> Error! Title {} condition '{}' expects a whole number but found '{}'.",
+                            TitleId, condition, parts.expected());
+                    parsed.add(null);
+                    continue;
+                }
                 parsed.add(new Parsed(conditionImpl.get(), parts));
             }
             _parsedConditions = parsed;
@@ -137,14 +157,21 @@ public class TitleModel {
         for (Parsed condition : parsedConditions()) {
             if (condition == null) continue; // malformed — logged once at parse, can never pass
 
+            // MeetCondition is inside the guard because it is the throwing half. Integer-typed
+            // conditions do a bare Integer.parseInt on the expected value, which the parser never
+            // validates as numeric, so a title written as `skill/Strength/greater_or_equal/thirty`
+            // threw NumberFormatException out of the title scan. That scan runs from
+            // EntityJoinLevelEvent and again every 200 ticks per player, so a single typo in
+            // titles.json5 disconnected every joining player and then crashed the server tick
+            // repeatedly (RS-017). A throw now means "this condition is not met".
             try {
                 condition.impl().ProcessVariable(condition.parts().variable(), serverPlayer);
+                if (condition.impl().MeetCondition(condition.parts().expected(), condition.parts().comparator())) {
+                    passedConditions++;
+                }
             } catch (Exception e) {
-                RunicSkills.getLOGGER().error(">> Error! Title {} failed to process condition variable '{}': {}", TitleId, condition.parts().variable(), e.getMessage());
-                continue;
-            }
-            if (condition.impl().MeetCondition(condition.parts().expected(), condition.parts().comparator())) {
-                passedConditions++;
+                RunicSkills.getLOGGER().error(">> Error! Title {} failed to evaluate condition '{}/{}': {}",
+                        TitleId, condition.parts().variable(), condition.parts().expected(), e.getMessage());
             }
         }
 

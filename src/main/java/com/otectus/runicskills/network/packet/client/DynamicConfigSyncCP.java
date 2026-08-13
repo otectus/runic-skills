@@ -2,7 +2,6 @@ package com.otectus.runicskills.network.packet.client;
 
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.ServerNetworking;
-import io.netty.handler.codec.DecoderException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -10,9 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.Arrays;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Client packet to update dynamic config options.
@@ -114,45 +111,23 @@ public class DynamicConfigSyncCP {
     public DynamicConfigSyncCP(FriendlyByteBuf buffer){
         skillMaxLevel = buffer.readInt();
         playersMaxGlobalLevel = buffer.readInt();
-        String[] allLevels = buffer.readUtf().split("-");
-        // The encoder always writes exactly 16 '-'-joined sections; reject anything shorter so a
-        // malformed/hostile packet fails as a decoder error instead of AIOOBE-crashing the client.
-        if (allLevels.length < 16) {
-            throw new DecoderException("DynamicConfigSyncCP: expected 16 passive-level sections, got " + allLevels.length);
-        }
-        int[] levels;
-        levels = Arrays.stream(allLevels[0].split(",")).mapToInt(Integer::parseInt).toArray();
-        attackPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[1].split(",")).mapToInt(Integer::parseInt).toArray();
-        attackKnockbackPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[2].split(",")).mapToInt(Integer::parseInt).toArray();
-        maxHealthPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[3].split(",")).mapToInt(Integer::parseInt).toArray();
-        knockbackResistancePassiveLevels = levels;
-        levels = Arrays.stream(allLevels[4].split(",")).mapToInt(Integer::parseInt).toArray();
-        movementSpeedPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[5].split(",")).mapToInt(Integer::parseInt).toArray();
-        projectileDamagePassiveLevels = levels;
-        levels = Arrays.stream(allLevels[6].split(",")).mapToInt(Integer::parseInt).toArray();
-        armorPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[7].split(",")).mapToInt(Integer::parseInt).toArray();
-        armorToughnessPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[8].split(",")).mapToInt(Integer::parseInt).toArray();
-        attackSpeedPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[9].split(",")).mapToInt(Integer::parseInt).toArray();
-        entityReachPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[10].split(",")).mapToInt(Integer::parseInt).toArray();
-        blockReachPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[11].split(",")).mapToInt(Integer::parseInt).toArray();
-        breakSpeedPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[12].split(",")).mapToInt(Integer::parseInt).toArray();
-        beneficialEffectPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[13].split(",")).mapToInt(Integer::parseInt).toArray();
-        magicResistPassiveLevels = levels;
-        levels = Arrays.stream(allLevels[14].split(",")).mapToInt(Integer::parseInt).toArray();
-        criticalDamagePassiveLevels = levels;
-        levels = Arrays.stream(allLevels[15].split(",")).mapToInt(Integer::parseInt).toArray();
-        luckPassiveLevels = levels;
+        // Read order must match writePassiveLevels exactly.
+        attackPassiveLevels = readPassiveLevels(buffer);
+        attackKnockbackPassiveLevels = readPassiveLevels(buffer);
+        maxHealthPassiveLevels = readPassiveLevels(buffer);
+        knockbackResistancePassiveLevels = readPassiveLevels(buffer);
+        movementSpeedPassiveLevels = readPassiveLevels(buffer);
+        projectileDamagePassiveLevels = readPassiveLevels(buffer);
+        armorPassiveLevels = readPassiveLevels(buffer);
+        armorToughnessPassiveLevels = readPassiveLevels(buffer);
+        attackSpeedPassiveLevels = readPassiveLevels(buffer);
+        entityReachPassiveLevels = readPassiveLevels(buffer);
+        blockReachPassiveLevels = readPassiveLevels(buffer);
+        breakSpeedPassiveLevels = readPassiveLevels(buffer);
+        beneficialEffectPassiveLevels = readPassiveLevels(buffer);
+        magicResistPassiveLevels = readPassiveLevels(buffer);
+        criticalDamagePassiveLevels = readPassiveLevels(buffer);
+        luckPassiveLevels = readPassiveLevels(buffer);
 
         oneHandedRequiredLevel = buffer.readInt();
         fightingSpiritRequiredLevel = buffer.readInt();
@@ -183,8 +158,7 @@ public class DynamicConfigSyncCP {
     public void toBytes(FriendlyByteBuf buffer) {
         buffer.writeInt(this.skillMaxLevel);
         buffer.writeInt(this.playersMaxGlobalLevel);
-        String result = convertArraysToString(attackPassiveLevels, attackKnockbackPassiveLevels, maxHealthPassiveLevels, knockbackResistancePassiveLevels, movementSpeedPassiveLevels, projectileDamagePassiveLevels, armorPassiveLevels, armorToughnessPassiveLevels, attackSpeedPassiveLevels, entityReachPassiveLevels, blockReachPassiveLevels, breakSpeedPassiveLevels, beneficialEffectPassiveLevels, magicResistPassiveLevels, criticalDamagePassiveLevels, luckPassiveLevels);
-        buffer.writeUtf(result);
+        writePassiveLevels(buffer, attackPassiveLevels, attackKnockbackPassiveLevels, maxHealthPassiveLevels, knockbackResistancePassiveLevels, movementSpeedPassiveLevels, projectileDamagePassiveLevels, armorPassiveLevels, armorToughnessPassiveLevels, attackSpeedPassiveLevels, entityReachPassiveLevels, blockReachPassiveLevels, breakSpeedPassiveLevels, beneficialEffectPassiveLevels, magicResistPassiveLevels, criticalDamagePassiveLevels, luckPassiveLevels);
         buffer.writeInt(oneHandedRequiredLevel);
         buffer.writeInt(fightingSpiritRequiredLevel);
         buffer.writeInt(berserkerRequiredLevel);
@@ -211,13 +185,31 @@ public class DynamicConfigSyncCP {
         buffer.writeInt(limitBreakerRequiredLevel);
     }
 
-    private String convertArraysToString(int[]... arrays) {
-        return Arrays.stream(arrays)
-                .map(array -> Arrays.stream(array)
-                        .mapToObj(String::valueOf)
-                        .collect(Collectors.joining(",")))
-                .collect(Collectors.joining("-"));
+    /**
+     * Writes the sixteen passive-level arrays as length-prefixed varint arrays.
+     *
+     * <p>They used to be packed into a single {@code writeUtf} string as comma-joined sections
+     * joined by {@code -}. That format could not represent its own data: a negative level contains
+     * the section delimiter, so it split into extra sections and either shifted every later array
+     * onto the wrong passive or failed the section count and disconnected the client. An empty
+     * array produced an empty section, which {@code Integer.parseInt("")} rejected — also a
+     * disconnect, during login (RS-027). The string was additionally bounded at 32767 characters,
+     * which a large enough configuration could exceed (RS-153). A length-prefixed binary encoding
+     * has none of these failure modes.
+     */
+    private static void writePassiveLevels(FriendlyByteBuf buffer, int[]... arrays) {
+        for (int[] array : arrays) {
+            buffer.writeVarIntArray(array == null ? new int[0] : array);
+        }
     }
+
+    /** Reads one passive-level array, bounded so a hostile packet cannot allocate without limit. */
+    private static int[] readPassiveLevels(FriendlyByteBuf buffer) {
+        return buffer.readVarIntArray(MAX_PASSIVE_LEVELS);
+    }
+
+    /** Generous upper bound on a single passive's level array; well above any sane configuration. */
+    private static final int MAX_PASSIVE_LEVELS = 1024;
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
