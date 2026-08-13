@@ -218,10 +218,9 @@ public class RunicSkillsScreen extends Screen {
             }
         }
 
-        // Suppress our legacy tab strip whenever an external tab system is active —
-        // those mods register our Skills tab themselves and render it in their own strip,
-        // so drawing DrawTabs on top produces the duplicate-tabs-above-panel artefact.
-        if (!L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
+        // Suppress our legacy tab strip only after an external tab system registers it
+        // successfully. Incompatible L2Tabs versions fall back to this built-in strip.
+        if (!L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
             DrawTabs.render(guiGraphics, mouseX, mouseY, PANEL_WIDTH, PANEL_HEIGHT, 0);
         }
         guiGraphics.pose().popPose();
@@ -792,7 +791,7 @@ public class RunicSkillsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && !L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
+        if (button == 0 && !L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
             DrawTabs.mouseClicked(button);
         }
 
@@ -882,7 +881,7 @@ public class RunicSkillsScreen extends Screen {
         if (this.searchTitle != null) {
             this.searchTitle.setValue("");
         }
-        if (!L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()) {
+        if (!L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
             DrawTabs.onClose();
         }
         super.onClose();

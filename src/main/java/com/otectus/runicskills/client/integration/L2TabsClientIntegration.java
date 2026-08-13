@@ -21,10 +21,11 @@ import net.minecraft.network.chat.Component;
  * L2Tabs is absent — even though the lambda is gated behind {@code L2TabsIntegration.isModLoaded()}
  * and never actually runs.
  *
- * <p>Putting the call here means ClientProxy's constant pool only references this plain
- * class. The {@code dev.xkmc.l2tabs.*} types stay confined to this file and to
+ * <p>Putting the call here means the dependency-free bridge can load this adapter by class-name
+ * string only after confirming that L2 Tabs is installed and its expected API is available.
+ * The {@code dev.xkmc.l2tabs.*} types stay confined to this file and to
  * {@link com.otectus.runicskills.client.gui.TabRunicSkills}, both of which are only
- * class-loaded when {@code L2TabsIntegration.isModLoaded()} is true.
+ * class-loaded from {@code L2TabsIntegration.registerClientTab()}.
  *
  * <p>This is the same pattern applied to {@link LegendaryTabsClientIntegration} for
  * Legendary Tabs in 1.0.0; L2Tabs needed the same treatment in 1.1.0.

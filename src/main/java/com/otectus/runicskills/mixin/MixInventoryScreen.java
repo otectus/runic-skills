@@ -41,9 +41,11 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
 
     // L2Tabs and Legendary Tabs render the Skills tab natively via their own tab APIs
     // (see RunicSkillsClient#clientSetup); skip the mixin-driven draw so we don't double-render.
+    // L2Tabs counts as active only after registration succeeds, so an incompatible version falls
+    // back to Runic Skills' built-in strip instead of hiding the tab or crashing startup.
     @Unique
     private boolean runicskills$externalTabsActive() {
-        return L2TabsIntegration.isModLoaded() || LegendaryTabsIntegration.isModLoaded();
+        return L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isModLoaded();
     }
 
     @Inject(method = {"renderBg"}, at = {@At("TAIL")})
