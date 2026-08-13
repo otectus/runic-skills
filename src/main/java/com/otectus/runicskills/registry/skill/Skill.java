@@ -53,10 +53,16 @@ public class Skill {
         this.list = list;
     }
 
+    // Both of these iterate the memoised registry snapshot once.
+    //
+    // They previously called `PERKS_REGISTRY.get().getValues().stream().toList()` twice per
+    // iteration — once to evaluate the loop bound and once to index the element — so listing the
+    // perks of a single skill copied all 471 registry entries 942 times, roughly 450,000 element
+    // copies per GUI rebuild, and the Skills screen rebuilds on every page change (RS-077).
+
     public List<Perk> getPerks(Skill skill) {
         List<Perk> list = new ArrayList<>();
-        for (int i = 0; i < RegistryPerks.PERKS_REGISTRY.get().getValues().stream().toList().size(); i++) {
-            Perk perk = RegistryPerks.PERKS_REGISTRY.get().getValues().stream().toList().get(i);
+        for (Perk perk : RegistryPerks.getCachedValues()) {
             if (perk.getSkill() == skill) list.add(perk);
         }
         return list;
@@ -64,8 +70,7 @@ public class Skill {
 
     public List<Passive> getPassives(Skill skill) {
         List<Passive> list = new ArrayList<>();
-        for (int i = 0; i < RegistryPassives.PASSIVES_REGISTRY.get().getValues().stream().toList().size(); i++) {
-            Passive passive = RegistryPassives.PASSIVES_REGISTRY.get().getValues().stream().toList().get(i);
+        for (Passive passive : RegistryPassives.getCachedValues()) {
             if (passive.getSkill() == skill) list.add(passive);
         }
         return list;
@@ -93,43 +98,33 @@ public class Skill {
     }
 
     public ResourceLocation getLockedTexture(int fromLevel) {
-        int size = HandlerCommonConfig.HANDLER.instance().skillMaxLevel;
-        int textureListSize = this.lockedTexture.length;
-
-        int index = Math.floorDiv((fromLevel * textureListSize), size);
-        index = index == textureListSize ? index - 1 : index;
-
-        if (getLevel() > size){
-            SkillCapability.getLocal().setSkillLevel(this, size);
-        }
-
-        // If you upgrade a perk to max level and then change the skillMaxLevel option to a lower one
-        // This will throw an ArrayIndexOutOfBoundsException.
-        if (index >= 4) {
-            index = 3;
-        }
-
-        return this.lockedTexture[index];
+        return lockedTextureFor(fromLevel);
     }
 
     public ResourceLocation getLockedTexture() {
-        int size = HandlerCommonConfig.HANDLER.instance().skillMaxLevel;
+        return lockedTextureFor(getLevel());
+    }
+
+    /**
+     * Picks the locked-skill icon for a displayed level.
+     *
+     * <p>Both entry points used to <em>write</em> to the capability from here —
+     * {@code SkillCapability.getLocal().setSkillLevel(this, size)} — whenever the player's level
+     * exceeded a lowered {@code skillMaxLevel}. That is a render-path mutation of authoritative
+     * progression state, performed on the client, against a nullable accessor that NPE'd whenever
+     * the capability had not resolved yet. It also could not achieve anything: the server still
+     * held the real level, so the "fix" lasted until the next sync and then reappeared (RS-081,
+     * RS-090). Clamping the index locally displays the right icon and changes no state; lowering
+     * the cap is reconciled server-side where it belongs.
+     */
+    private ResourceLocation lockedTextureFor(int level) {
+        int size = Math.max(1, HandlerCommonConfig.HANDLER.instance().skillMaxLevel);
         int textureListSize = this.lockedTexture.length;
+        if (textureListSize == 0) return null;
 
-        if (getLevel() > size){
-            SkillCapability.getLocal().setSkillLevel(this, size);
-        }
-
-        int index = Math.floorDiv((getLevel() * textureListSize), size);
-        index = index == textureListSize ? index - 1 : index;
-
-        // If you upgrade a perk to max level and then change the skillMaxLevel option to a lower one
-        // This will throw an ArrayIndexOutOfBoundsException.
-        if (index >= 4) {
-            index = 3;
-        }
-
-        return this.lockedTexture[index];
+        int index = Math.floorDiv(Math.min(level, size) * textureListSize, size);
+        index = Math.min(index, textureListSize - 1);
+        return this.lockedTexture[Math.max(0, index)];
     }
 
     // ===== Visual override layer (since 1.3.0) =====
