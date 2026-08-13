@@ -34,12 +34,20 @@ public class PassiveLevelDownSP {
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
+        // Admission control runs on the network thread, BEFORE enqueueWork. Rate limiting used
+        // to happen inside the scheduled task, so a flooding client still allocated a lambda and
+        // queued a main-thread task for every packet — the limiter discarded the work only after
+        // the server had already paid to schedule it (RS-150).
+        ServerPlayer sender = context.getSender();
+        if (sender == null || !PacketRateLimiter.allow(sender, "passive_level_down", 2)) {
+            context.setPacketHandled(true);
+            return;
+        }
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
 
             if (player != null) {
-                if (!PacketRateLimiter.allow(player, "passive_level_down", 2)) return;
-                SkillCapability capability = SkillCapability.get(player);
+                                SkillCapability capability = SkillCapability.get(player);
                 if (capability == null) return;
 
                 Passive passive = RegistryPassives.getPassive(this.passive);

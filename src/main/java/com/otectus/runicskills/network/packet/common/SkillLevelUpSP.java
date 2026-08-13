@@ -37,11 +37,18 @@ public class SkillLevelUpSP {
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
+        // Admission control runs on the network thread, BEFORE enqueueWork. Rate limiting used
+        // to happen inside the scheduled task, so a flooding client still allocated a lambda and
+        // queued a main-thread task for every packet — the limiter discarded the work only after
+        // the server had already paid to schedule it (RS-150).
+        ServerPlayer sender = context.getSender();
+        if (sender == null || !PacketRateLimiter.allow(sender, "skill_level_up", 2)) {
+            context.setPacketHandled(true);
+            return;
+        }
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player != null) {
-                if (!PacketRateLimiter.allow(player, "skill_level_up", 2)) return;
-
                 SkillCapability capability = SkillCapability.get(player);
                 if (capability == null) return;
 
@@ -56,6 +63,17 @@ public class SkillLevelUpSP {
                 // command path enforces via its argument range.
                 if (!com.otectus.runicskills.common.util.SkillLevelUpMath.canLevelUp(
                         skillLevel, HandlerCommonConfig.HANDLER.instance().skillMaxLevel)) {
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
+
+                // The global level cap was enforced ONLY in the client GUI, so a patched or
+                // modified client could keep sending this packet and walk straight past a limit
+                // operators explicitly tune with /globallimit. Because the perk budget scales from
+                // earned global level, exceeding it also granted extra perk slots — the cap is a
+                // balance rule, and a rule only the client enforces is not a rule (RS-008).
+                int globalCap = HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel;
+                if (globalCap > 0 && capability.getGlobalLevel() >= globalCap) {
                     SyncSkillCapabilityCP.send(player);
                     return;
                 }
@@ -80,6 +98,10 @@ public class SkillLevelUpSP {
                 // Fire public Forge event (since 1.2.0). Subscribers may cancel to abort
                 // the level-up without consuming XP or syncing back to the client.
                 if (MinecraftForge.EVENT_BUS.post(new SkillLevelUpEvent(player, skillPlayer, skillLevel, skillLevel + 1))) {
+                    // Resync on the cancellation path too. The client had already optimistically
+                    // shown the level-up, so returning silently left it displaying a level the
+                    // server refused to grant until something else happened to resync (RS-156).
+                    SyncSkillCapabilityCP.send(player);
                     return;
                 }
 

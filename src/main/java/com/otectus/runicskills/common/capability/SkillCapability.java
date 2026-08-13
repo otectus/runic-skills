@@ -1,5 +1,6 @@
 package com.otectus.runicskills.common.capability;
 
+import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.common.util.LockCheck;
 import com.otectus.runicskills.handler.HandlerSkill;
@@ -39,6 +40,39 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     public static final String COOLDOWN_COUNTER_ATTACK_TIMER = "counter_attack_timer";
     public static final String COOLDOWN_LIMIT_BREAKER = "limit_breaker";
     public static final String COOLDOWN_PERK_SWAP = "perk_swap";
+
+    /**
+     * Schema version of the player data this class writes.
+     *
+     * <p>Version 0 is any save written before this field existed. Migration used to be tag-type
+     * sniffing plus three hardcoded legacy key names, with no way to tell an old shape from a new
+     * one — so any future change to what a stored number *means* (rank index becoming points
+     * spent, say) would have been silently reinterpreted on every existing save, with no hook to
+     * correct it (RS-005). Bump this and add a branch in {@link #migrate} whenever the meaning or
+     * layout of stored data changes.
+     *
+     * <p>1 — first versioned schema. Identical in layout to the unversioned form; the bump exists
+     * so later migrations have a floor to work from.
+     */
+    public static final int DATA_VERSION = 1;
+
+    private static final String KEY_DATA_VERSION = "dataVersion";
+    private static final String KEY_ORPHANS = "runicskills:retained";
+
+    /** Upper bound on retained unknown keys, so a pathological save cannot grow player NBT without limit. */
+    private static final int MAX_ORPHAN_KEYS = 4096;
+
+    /**
+     * Keys that were present on load but that no current registry entry or field claims.
+     *
+     * <p>Both serialization directions iterate the registry rather than the NBT, so a key whose
+     * registry entry is absent was never read and never re-written — the first autosave erased it.
+     * Titles are registered from an editable config file, so an operator removing one title
+     * destroyed every player's record of having earned it, permanently and silently; the same
+     * applied to any addon that was temporarily uninstalled (RS-006). These are replayed verbatim
+     * on save so the data survives until whatever owns it comes back.
+     */
+    private CompoundTag orphanTags = new CompoundTag();
 
     /**
      * Set by the client during FMLClientSetupEvent to supply the local player's capability.
@@ -141,21 +175,32 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         });
     }
 
-    // Legacy accessors for counter attack (delegates to generic cooldown)
+    /**
+     * Whether the Counter Attack retaliation window is currently open.
+     *
+     * <p>The window is the cooldown itself: {@link #tickCooldowns()} decrements it once per tick,
+     * so it expires on its own and no separate timer is needed. Previously the state was split
+     * across two entries and neither worked — {@code setCounterAttack(true)} was a no-op, so this
+     * method could never return true, so the two call sites that clear the retaliation bonus never
+     * ran and the ATTACK_DAMAGE modifier it granted was permanent and NBT-persisted. The
+     * accompanying timer was stored in the same map {@code tickCooldowns()} decrements, so even
+     * had the flag worked, the timer was pinned and could never reach its expiry threshold
+     * (RS-011).
+     */
     public boolean getCounterAttack() {
         return getCooldown(COOLDOWN_COUNTER_ATTACK) > 0;
     }
 
-    public void setCounterAttack(boolean set) {
-        if (!set) setCooldown(COOLDOWN_COUNTER_ATTACK, 0);
+    /** Opens the retaliation window for {@code windowTicks}; {@code 0} closes it immediately. */
+    public void setCounterAttack(int windowTicks) {
+        setCooldown(COOLDOWN_COUNTER_ATTACK, Math.max(0, windowTicks));
     }
 
-    public int getCounterAttackTimer() {
-        return getCooldown(COOLDOWN_COUNTER_ATTACK_TIMER);
-    }
-
-    public void setCounterAttackTimer(int timer) {
-        setCooldown(COOLDOWN_COUNTER_ATTACK_TIMER, timer);
+    /** Closes the retaliation window. */
+    public void clearCounterAttack() {
+        setCooldown(COOLDOWN_COUNTER_ATTACK, 0);
+        // Drop the pre-1.7.0 companion entry so it stops round-tripping through NBT.
+        setCooldown(COOLDOWN_COUNTER_ATTACK_TIMER, 0);
     }
 
     /**
@@ -461,6 +506,13 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
     public CompoundTag serializeNBT() {
         CompoundTag nbt = new CompoundTag();
+        // Replay retained keys FIRST, so anything the registry currently owns is written over the
+        // top of a stale copy rather than the other way round (RS-006).
+        for (String key : this.orphanTags.getAllKeys()) {
+            Tag value = this.orphanTags.get(key);
+            if (value != null) nbt.put(key, value.copy());
+        }
+        nbt.putInt(KEY_DATA_VERSION, DATA_VERSION);
         // getOrDefault (not get): a registry entry added after this cap was constructed — or a key
         // dropped during copyFrom — would otherwise unbox null and NPE during save. Defaults mirror
         // deserializeNBT (skill 1, passive 0, title.Requirement), matching the perk path below.
@@ -506,17 +558,81 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         return nbt;
     }
 
+    /**
+     * Applies ordered fixups to raw NBT before it is read, based on the schema version it was
+     * written with. Version 0 is any pre-1.7.0 save.
+     *
+     * <p>Nothing structural changed in version 1, so this is currently only a hook — but it is the
+     * hook every later data change needs, and it has to exist in a shipped version before the
+     * first change that depends on it, or that change has no way to recognise old data (RS-005).
+     */
+    private void migrate(CompoundTag nbt, int fromVersion) {
+        if (fromVersion >= DATA_VERSION) return;
+        // 0 -> 1: the legacy perk-rank byte/int sniffing and the three hardcoded cooldown key
+        // names are still handled inline below, because saves at version 0 are the common case
+        // and the inline handling is already correct for them.
+    }
+
+    /**
+     * Copies every key the load path did not claim into {@link #orphanTags} for write-back.
+     *
+     * <p>This is what stops a temporarily absent registry entry — a title deleted from
+     * {@code titles.json5}, an uninstalled addon's perk — from being erased on the next autosave
+     * (RS-006).
+     */
+    private void retainOrphans(CompoundTag nbt, java.util.Set<String> consumed) {
+        this.orphanTags = new CompoundTag();
+        int retained = 0;
+        for (String key : nbt.getAllKeys()) {
+            if (consumed.contains(key)) continue;
+            if (retained >= MAX_ORPHAN_KEYS) {
+                RunicSkills.getLOGGER().warn(
+                        "Player data carries more than {} unrecognised keys; the remainder will not be "
+                        + "preserved. This usually means a large mod was removed.", MAX_ORPHAN_KEYS);
+                break;
+            }
+            Tag value = nbt.get(key);
+            if (value == null) continue;
+            this.orphanTags.put(key, value.copy());
+            retained++;
+        }
+    }
+
+    /**
+     * Reads an equipped-Power slot list, dropping blanks and duplicates and stopping at the
+     * tier's slot count. Powers that no longer exist in the registry are kept here rather than
+     * discarded — removing an addon should not silently unequip a player's loadout — and are
+     * filtered at use time instead.
+     */
+    private static void readPowerSlots(ListTag source, List<String> target, int maxSlots) {
+        for (int i = 0; i < source.size() && target.size() < maxSlots; i++) {
+            String name = source.getString(i);
+            if (name.isEmpty() || target.contains(name)) continue;
+            target.add(name);
+        }
+    }
+
     public void deserializeNBT(CompoundTag nbt) {
+        int fromVersion = nbt.contains(KEY_DATA_VERSION, Tag.TAG_INT) ? nbt.getInt(KEY_DATA_VERSION) : 0;
+        migrate(nbt, fromVersion);
+        // Every key this method reads is recorded, so whatever is left over can be retained.
+        java.util.Set<String> consumed = new java.util.HashSet<>();
+        consumed.add(KEY_DATA_VERSION);
+        consumed.add(KEY_ORPHANS);
+
         for (Skill skill : RegistrySkills.getCachedValues()) {
             String key = "skill." + skill.getName();
-            this.skillLevel.put(skill.getName(), nbt.contains(key) ? nbt.getInt(key) : 1);
+            consumed.add(key);
+            this.skillLevel.put(skill.getName(), nbt.contains(key, Tag.TAG_INT) ? nbt.getInt(key) : 1);
         }
         for (Passive passive : RegistryPassives.getCachedValues()) {
             String key = "passive." + passive.getName();
-            this.passiveLevel.put(passive.getName(), nbt.contains(key) ? nbt.getInt(key) : 0);
+            consumed.add(key);
+            this.passiveLevel.put(passive.getName(), nbt.contains(key, Tag.TAG_INT) ? nbt.getInt(key) : 0);
         }
         for (Perk perk : RegistryPerks.getCachedValues()) {
             String key = "perk." + perk.getName();
+            consumed.add(key);
             if (nbt.contains(key)) {
                 byte tagType = nbt.getTagType(key);
                 if (tagType == net.minecraft.nbt.Tag.TAG_BYTE) {
@@ -533,8 +649,16 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         }
         for (Title title : RegistryTitles.getCachedValues()) {
             String key = "title." + title.getName();
+            consumed.add(key);
             this.unlockTitle.put(title.getName(), nbt.contains(key) ? nbt.getBoolean(key) : title.Requirement);
         }
+
+        java.util.Collections.addAll(consumed,
+                "perkCooldowns", "power.equippedMarks", "power.equippedSeals", "power.equippedCrown",
+                "powerCooldowns", "powerWindows", "playerTitle", "betterCombatEntityRange",
+                // Consumed by migrate(): read once and deliberately not carried forward.
+                "counterAttackTimer", "counterAttack", "limitBreakerCooldown");
+        retainOrphans(nbt, consumed);
 
         // Load generic perk cooldowns
         this.perkCooldowns.clear();
@@ -558,15 +682,19 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         }
 
         // Powers
+        // Equipped Power lists are bounded and de-duplicated on load. They were previously read
+        // straight out of NBT with no cap, no dedup and no existence check, so hand-edited or
+        // stale player data could carry more Powers than there are slots, or the same one many
+        // times over (RS-051).
         this.equippedMarks.clear();
         if (nbt.contains("power.equippedMarks", Tag.TAG_LIST)) {
-            ListTag marksTag = nbt.getList("power.equippedMarks", Tag.TAG_STRING);
-            for (int i = 0; i < marksTag.size(); i++) this.equippedMarks.add(marksTag.getString(i));
+            readPowerSlots(nbt.getList("power.equippedMarks", Tag.TAG_STRING), this.equippedMarks,
+                    PowerTier.MARK.maxEquipped);
         }
         this.equippedSeals.clear();
         if (nbt.contains("power.equippedSeals", Tag.TAG_LIST)) {
-            ListTag sealsTag = nbt.getList("power.equippedSeals", Tag.TAG_STRING);
-            for (int i = 0; i < sealsTag.size(); i++) this.equippedSeals.add(sealsTag.getString(i));
+            readPowerSlots(nbt.getList("power.equippedSeals", Tag.TAG_STRING), this.equippedSeals,
+                    PowerTier.SEAL.maxEquipped);
         }
         this.equippedCrown = nbt.contains("power.equippedCrown") ? nbt.getString("power.equippedCrown") : "";
         this.powerCooldowns.clear();
@@ -610,6 +738,9 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
         this.playerTitle = source.playerTitle;
         this.betterCombatEntityRange = source.betterCombatEntityRange;
+        // Retained keys have to survive the clone too, or death and dimension change would erase
+        // exactly the data retention was added to protect (RS-006).
+        this.orphanTags = source.orphanTags.copy();
     }
 }
 

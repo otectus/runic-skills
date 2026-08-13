@@ -516,6 +516,12 @@ public class PerkEffectsHandler {
         if (!(event.getPlayer() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (player.isCreative()) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        // Blocks broken by the Vein Miner cascade re-enter this handler, because the cascade now
+        // posts a real BreakEvent per block so protection mods can veto it (RS-013). Running the
+        // bonus-drop perks again for each cascaded block would compound them 48x, and a
+        // Silk Touch Mastery proc mid-cascade would try to cancel an event nothing is listening
+        // to. The cascade is one mining action; only the block that started it pays perks.
+        if (player.getPersistentData().getBoolean("rs_veinmining")) return;
         net.minecraft.world.level.block.state.BlockState state = event.getState();
         net.minecraft.core.BlockPos pos = event.getPos();
         boolean isOre = state.is(Tags.Blocks.ORES);
@@ -529,14 +535,33 @@ public class PerkEffectsHandler {
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.RUNIC_FORTUNE, c.runicFortunePercent);
         oreDrop(player, level, pos, state, tool, player.getY() < 0,     RegistryPerks.DEEP_CORE_MINING, c.deepCoreMiningPercent);
         oreDrop(player, level, pos, state, tool, player.getY() < 16,    RegistryPerks.QUARRY_MASTER, c.quarryMasterPercent);
-        oreDrop(player, level, pos, state, tool, true,                  RegistryPerks.DOUBLE_DOWN, c.doubleDownPercent);
+        // Bounded to ores like its nine siblings. Passing `true` applied it to EVERY block, so a
+        // place-and-break loop on cobblestone returned more than it consumed — a self-sustaining
+        // material multiplier that an auto-clicker could run unattended (RS-012).
+        oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.DOUBLE_DOWN, c.doubleDownPercent);
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.PROSPECTOR, c.prospectorPercent);
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.FORTUNES_FAVOR, c.fortunesFavorPercent); // APPROX: Fortune effectiveness ≈ bonus ore
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.SERENDIPITY, c.serendipityPercent);     // APPROX: "rare items" ≈ bonus ore
         // SILK_TOUCH_MASTERY — chance to drop the block itself, silk-touch style.
-        if (on(RegistryPerks.SILK_TOUCH_MASTERY, player) && player.getRandom().nextDouble() < c.silkTouchMasteryPercent / 100.0
-                && state.getBlock().asItem() != Items.AIR) {
+        // This REPLACES the normal drop. Popping the block item on top of the vanilla loot (which
+        // is what happened before, because BreakEvent fires ahead of the break and nothing
+        // suppressed it) meant mining one diamond ore yielded both the ore block and a diamond —
+        // a literal duplicator for every block in the game (RS-002).
+        if (on(RegistryPerks.SILK_TOUCH_MASTERY, player) && state.getBlock().asItem() != Items.AIR
+                && net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                        net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, tool) == 0
+                && player.getRandom().nextDouble() < c.silkTouchMasteryPercent / 100.0) {
+            event.setCanceled(true);
+            // Cancelling stops vanilla from breaking the block and computing its loot, so we
+            // perform the break ourselves and drop only the block item. Silk Touch grants no
+            // experience in vanilla, so none is awarded here either.
+            level.destroyBlock(pos, false, player);
             Block.popResource(level, pos, new ItemStack(state.getBlock()));
+            if (tool.isDamageableItem()) {
+                tool.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.MAIN_HAND));
+            }
+            player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(state.getBlock()));
+            return;
         }
         // VEIN_MINER — breaking an ore cascades to connected ores of the same block (bounded, guarded).
         if (isOre && on(RegistryPerks.VEIN_MINER, player) && !player.getPersistentData().getBoolean("rs_veinmining")) {
@@ -546,7 +571,18 @@ public class PerkEffectsHandler {
         }
     }
 
-    /** Flood-fill connected same-block ores from {@code origin} (origin itself is broken by the triggering event). */
+    /**
+     * Flood-fill connected same-block ores from {@code origin} (origin itself is broken by the
+     * triggering event).
+     *
+     * <p>Each cascaded block is posted as a real {@link BlockEvent.BreakEvent} and dropped with
+     * the player's actual tool. The previous implementation called
+     * {@code level.destroyBlock(pos, true, player)}, which in 1.20.1 posts no break event and
+     * drops with an <em>empty</em> tool. That had three consequences: land-claim and protection
+     * mods never saw 47 of the 48 breaks and could not veto them, a Fortune III pickaxe silently
+     * produced base drops for the whole vein, and {@code Stats.BLOCK_MINED} was never awarded so
+     * the mod's own block-mined title requirements under-counted (RS-013).
+     */
     private static void veinMine(ServerPlayer player, ServerLevel level, net.minecraft.core.BlockPos origin,
                                  Block target, ItemStack tool) {
         final int cap = 48;
@@ -559,11 +595,26 @@ public class PerkEffectsHandler {
             for (net.minecraft.core.BlockPos n : net.minecraft.core.BlockPos.betweenClosed(p.offset(-1, -1, -1), p.offset(1, 1, 1))) {
                 if (mined >= cap) break;
                 if (!seen.add(n.asLong())) continue;
-                if (!level.getBlockState(n).is(target)) continue;
-                level.destroyBlock(n.immutable(), true, player);
+                net.minecraft.world.level.block.state.BlockState ns = level.getBlockState(n);
+                if (!ns.is(target)) continue;
+                net.minecraft.core.BlockPos at = n.immutable();
+
+                // Give every other mod the same veto it would get on a hand-mined block.
+                BlockEvent.BreakEvent cascade = new BlockEvent.BreakEvent(level, at, ns, player);
+                if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(cascade)) continue;
+
+                net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(at);
+                level.destroyBlock(at, false, player);
+                // Drop with the real tool so Fortune and Silk Touch apply, as they do on the
+                // block that started the cascade.
+                Block.dropResources(ns, level, at, be, player, tool);
+                int exp = cascade.getExpToDrop();
+                if (exp > 0) ns.getBlock().popExperience(level, at, exp);
+                player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(ns.getBlock()));
+
                 mined++;
                 if (tool.isDamageableItem()) tool.hurtAndBreak(1, player, pl -> {});
-                queue.add(n.immutable());
+                queue.add(at);
             }
         }
     }
@@ -587,6 +638,10 @@ public class PerkEffectsHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onOutgoingDamage(LivingHurtEvent event) {
         if (!(event.getSource().getEntity() instanceof Player player) || player instanceof FakePlayer) return;
+        // Cleave's splash hits must not re-run the outgoing perk stack. CombatEventHandler held
+        // this guard for its own bonuses but this handler did not, so each splash target also got
+        // life-steal, a glowing effect and a chain-lightning roll of its own (RS-014).
+        if (CombatEventHandler.isCleaving(player)) return;
         LivingEntity target = event.getEntity();
         if (target == player) return;
         HandlerCommonConfig c = cfg();

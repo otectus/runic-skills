@@ -33,7 +33,9 @@ import java.util.stream.Collectors;
 public class RegistryPassives {
     public static final ResourceKey<Registry<Passive>> PASSIVES_KEY = ResourceKey.createRegistryKey(new ResourceLocation(RunicSkills.MOD_ID, "passives"));
     public static final DeferredRegister<Passive> PASSIVES = DeferredRegister.create(PASSIVES_KEY, RunicSkills.MOD_ID);
-    public static final Supplier<IForgeRegistry<Passive>> PASSIVES_REGISTRY = PASSIVES.makeRegistry(() -> new RegistryBuilder<Passive>().disableSaving());
+    // disableSync(): contents are config-derived and must not join the login handshake.
+    // See RegistryPerks for the full rationale (RS-015).
+    public static final Supplier<IForgeRegistry<Passive>> PASSIVES_REGISTRY = PASSIVES.makeRegistry(() -> new RegistryBuilder<Passive>().disableSaving().disableSync());
 
     public static final RegistryObject<Passive> ATTACK_DAMAGE = PASSIVES.register("attack_damage", () -> register("attack_damage", RegistrySkills.STRENGTH::get, HandlerResources.create("textures/skill/strength/passive_attack_damage.png"), Attributes.ATTACK_DAMAGE, "96a891fe-5919-418d-8205-f50464391500", HandlerCommonConfig.HANDLER.instance().attackDamageValue, HandlerCommonConfig.HANDLER.instance().attackPassiveLevels));
 

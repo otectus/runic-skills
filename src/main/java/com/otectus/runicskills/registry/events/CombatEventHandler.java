@@ -2,6 +2,7 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.ApothicAttributesIntegration;
 import com.otectus.runicskills.network.packet.client.*;
@@ -84,6 +85,19 @@ public class CombatEventHandler {
     private static final long PRUNE_INTERVAL_TICKS = 100L;
     private static long lastPruneTick = 0L;
 
+    /**
+     * Clears the static tick baseline and per-player combat memory on server stop, so a later
+     * world in the same JVM does not start with a baseline from the future (RS-132).
+     */
+    public static void resetTickBaselines() {
+        lastPruneTick = 0L;
+        RECENT_HITS.clear();
+        LAST_ATTACKER.clear();
+        LAST_STAND_ACTIVE_UNTIL.clear();
+        BLADE_STORM_ACTIVE_UNTIL.clear();
+        CLEAVING.clear();
+    }
+
     // Deterministic UUID for the transient ATTACK_SPEED modifier BLADE_STORM applies.
     // Stable across restarts so a stale modifier from a crashed session is overwritten
     // cleanly on next apply.
@@ -150,9 +164,13 @@ public class CombatEventHandler {
             if (RegistryPerks.LIMIT_BREAKER != null && RegistryPerks.LIMIT_BREAKER.get().isEnabled(player)) {
                 SkillCapability cap = SkillCapability.get(player);
                 if (cap != null && cap.getCooldown(SkillCapability.COOLDOWN_LIMIT_BREAKER) <= 0) {
-                    int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[0]);
+                    // ProcRoll refuses to roll a non-positive bound (a configured 0 used to throw
+                    // IllegalArgumentException out of this handler) and tests the roll against 0,
+                    // so a configured 1-in-1 chance always fires instead of never firing — the
+                    // old `random == 1` could not be true for nextInt(1) (RS-029, RS-154).
+                    boolean procs = ProcRoll.rolls(RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[0]);
                     Level level = event.getEntity().level();
-                    if (level instanceof ServerLevel serverLevel && random == 1) {
+                    if (level instanceof ServerLevel serverLevel && procs) {
                         target.hurt(target.damageSources().playerAttack(player), (float) RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[1]);
                         serverLevel.playSound(null, player, RegistrySounds.LIMIT_BREAKER.get(), SoundSource.PLAYERS, 0.5F, 1.0F);
                         cap.setCooldown(SkillCapability.COOLDOWN_LIMIT_BREAKER, 1200);
@@ -161,8 +179,8 @@ public class CombatEventHandler {
             }
 
             if (provider != null && provider.getCounterAttack() && player instanceof ServerPlayer serverPlayerAttacker) {
-                provider.setCounterAttack(false);
-                provider.setCounterAttackTimer(0);
+                // The retaliation is spent on the first swing back.
+                provider.clearCounterAttack();
                 new RegistryAttributes.RegisterAttribute(serverPlayerAttacker, Attributes.ATTACK_DAMAGE, 0.0F, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(false);
                 SyncSkillCapabilityCP.send(serverPlayerAttacker);
             }
@@ -314,8 +332,11 @@ public class CombatEventHandler {
 
                         if (provider != null && !event.isCanceled() && RegistryPerks.COUNTER_ATTACK != null && RegistryPerks.COUNTER_ATTACK.get().isEnabled(player)) {
                             float modifier = (float) (sourceDamage * RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[1] / 100.0D);
-                            provider.setCounterAttack(true);
-                            provider.setCounterAttackTimer(0);
+                            // Open a real, self-expiring window. value[0] is the window in seconds;
+                            // the historical *40.0D scaling is preserved so configured durations
+                            // keep their existing meaning.
+                            int windowTicks = (int) (RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[0] * 40.0D);
+                            provider.setCounterAttack(windowTicks);
                             new RegistryAttributes.RegisterAttribute(player, Attributes.ATTACK_DAMAGE, modifier, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(true);
                             SyncSkillCapabilityCP.send(player);
                         }
@@ -554,21 +575,75 @@ public class CombatEventHandler {
                 && !CLEAVING.contains(player.getUUID())) {
             HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
             float splash = event.getAmount() * (float) (cfg.cleavePercent / 100.0);
-            if (splash > 0.0f) {
+            if (splash > 0.0f && player.level() instanceof ServerLevel serverLevel) {
                 float range = Math.max(1.0f, cfg.cleaveRangeBlocks);
                 net.minecraft.world.phys.AABB box = target.getBoundingBox().inflate(range);
-                CLEAVING.add(player.getUUID());
-                try {
-                    for (LivingEntity other : player.level().getEntitiesOfClass(LivingEntity.class, box)) {
-                        if (other == target || other == player || !other.isAlive()) continue;
-                        if (other.isAlliedTo(player) || player.isAlliedTo(other)) continue;
-                        other.hurt(player.damageSources().playerAttack(player), splash);
-                    }
-                } finally {
-                    CLEAVING.remove(player.getUUID());
-                }
+                int maxTargets = Math.max(1, cfg.cleaveMaxTargets);
+                // Deferred to the next tick rather than dealt inline. Calling hurt() from inside
+                // the dispatch of a LivingHurtEvent re-entered every LivingHurtEvent listener in
+                // the pack — 19 from this mod alone — once per splashed target, and combat
+                // overhauls and ward/absorption mods that keep per-hit state are not written to
+                // survive that. One swing into a spawner room could spawn 20 nested damage
+                // dispatches, 20 life-steal heals and up to 20 lightning bolts in a single tick
+                // (RS-014).
+                serverLevel.getServer().submit(new net.minecraft.server.TickTask(
+                        serverLevel.getServer().getTickCount() + 1,
+                        () -> dealCleaveSplash(player, target, box, splash, maxTargets)));
             }
         }
+    }
+
+    /**
+     * Applies Cleave's splash damage, one tick after the swing that caused it.
+     *
+     * <p>The {@code CLEAVING} guard is held for the whole sweep and is consulted by both this
+     * handler and {@code PerkEffectsHandler#onOutgoingDamage}. Only this handler checked it
+     * before, so every splash hit re-ran the entire outgoing bonus table, life-steal, the
+     * unconditional glowing effect and a lightning-strike roll (RS-014).
+     */
+    private static void dealCleaveSplash(Player player, LivingEntity origin,
+                                         net.minecraft.world.phys.AABB box, float splash, int maxTargets) {
+        if (!player.isAlive() || !(player.level() instanceof ServerLevel level)) return;
+        CLEAVING.add(player.getUUID());
+        try {
+            int hit = 0;
+            for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, box)) {
+                if (hit >= maxTargets) break;
+                if (other == origin || other == player || !other.isAlive()) continue;
+                if (other.isAlliedTo(player) || player.isAlliedTo(other)) continue;
+                if (!isValidCleaveTarget(player, other, level)) continue;
+                other.hurt(player.damageSources().playerAttack(player), splash);
+                hit++;
+            }
+        } finally {
+            CLEAVING.remove(player.getUUID());
+        }
+    }
+
+    /**
+     * Whether Cleave may splash onto {@code other}.
+     *
+     * <p>{@code isAlliedTo} only covers scoreboard teams, so villagers, other players' pets and
+     * other players inside a protected claim were all valid splash targets. Damage dealt straight
+     * to {@code LivingEntity#hurt} also never reaches the events protection mods hook, so they had
+     * no chance to veto it.
+     */
+    private static boolean isValidCleaveTarget(Player player, LivingEntity other, ServerLevel level) {
+        if (other instanceof Player) {
+            return level.getServer().isPvpAllowed();
+        }
+        if (other instanceof net.minecraft.world.entity.TamableAnimal tamed) {
+            java.util.UUID owner = tamed.getOwnerUUID();
+            // Never splash someone else's pet; the player's own is still fair game if untamed
+            // rules would allow it, but leaving it out entirely is the friendlier default.
+            if (owner != null) return false;
+        }
+        return other.isAttackable();
+    }
+
+    /** Shared with {@code PerkEffectsHandler} so splash hits skip the outgoing perk stack. */
+    public static boolean isCleaving(Player player) {
+        return player != null && CLEAVING.contains(player.getUUID());
     }
 
     /** Heavy / two-handed Spartan Weaponry weapons that Titan's Grip applies to. */

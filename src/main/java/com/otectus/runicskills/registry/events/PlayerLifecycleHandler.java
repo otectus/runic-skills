@@ -81,6 +81,16 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public void onServerStopped(final ServerStoppedEvent event) {
         RunicSkills.server = null;
+        // Reset every static tick baseline. These are keyed on server.getTickCount(), which
+        // restarts at 0 with the server — so in a single JVM that hosts more than one world (a
+        // singleplayer player returning to the main menu and loading a different save), stale
+        // baselines from the previous run were all in the future. That silently disabled combat-
+        // memory pruning and made the packet rate limiter reject everything, for the rest of the
+        // JVM's life (RS-132).
+        CombatEventHandler.resetTickBaselines();
+        com.otectus.runicskills.network.PacketRateLimiter.clear();
+        com.otectus.runicskills.common.util.ContainerRewardLedger.clear();
+        com.otectus.runicskills.common.powers.PowerRuntime.clearAll();
     }
 
     @SubscribeEvent
@@ -102,6 +112,10 @@ public class PlayerLifecycleHandler {
             SkillCapability skillCapability = new SkillCapability();
             LazySkillCapability lazySkillCapability = new LazySkillCapability(skillCapability);
             event.addCapability(new ResourceLocation(RunicSkills.MOD_ID, "skills"), lazySkillCapability);
+            // Tie the LazyOptional's lifetime to the entity's. Without this listener, an optional
+            // already handed to a caller kept resolving to this player's capability after the
+            // entity was discarded on death or dimension change (RS-007).
+            event.addListener(lazySkillCapability::invalidate);
         }
     }
 

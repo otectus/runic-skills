@@ -28,10 +28,13 @@ import java.util.stream.Collectors;
 public class RegistryTitles {
     public static final ResourceKey<Registry<Title>> TITLES_KEY = ResourceKey.createRegistryKey(new ResourceLocation(RunicSkills.MOD_ID, "titles"));
     public static final DeferredRegister<Title> TITLES = DeferredRegister.create(TITLES_KEY, RunicSkills.MOD_ID);
-    public static final Supplier<IForgeRegistry<Title>> TITLES_REGISTRY = TITLES.makeRegistry(() -> new RegistryBuilder<Title>().disableSaving());
+    // disableSync(): contents are config-derived and must not join the login handshake.
+    // See RegistryPerks for the full rationale (RS-015).
+    public static final Supplier<IForgeRegistry<Title>> TITLES_REGISTRY = TITLES.makeRegistry(() -> new RegistryBuilder<Title>().disableSaving().disableSync());
 
     public static final RegistryObject<Title> TITLELESS = TITLES.register("titleless", () -> register("titleless", true));
-    public static final RegistryObject<Title> ADMIN = TITLES.register("administrator", () -> register("administrator", false));
+    /** Derived from op status, so it is revocable — de-opping takes it back (RS-056). */
+    public static final RegistryObject<Title> ADMIN = TITLES.register("administrator", () -> register("administrator", false, true));
 
     public static void load(IEventBus eventBus) {
         mergeDefaultsIntoConfig();
@@ -144,8 +147,12 @@ public class RegistryTitles {
     }
 
     private static Title register(String name, boolean requirement) {
+        return register(name, requirement, false);
+    }
+
+    private static Title register(String name, boolean requirement, boolean revocable) {
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
-        return new Title(key, requirement, true);
+        return new Title(key, requirement, true, revocable);
     }
 
     private static volatile List<Title> cachedValues;
