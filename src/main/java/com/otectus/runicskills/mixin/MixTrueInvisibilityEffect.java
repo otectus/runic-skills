@@ -27,7 +27,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(targets = "io.redspace.ironsspellbooks.effect.TrueInvisibilityEffect", remap = false)
 public abstract class MixTrueInvisibilityEffect {
 
-    @Inject(method = "onDealDamage", at = @At("HEAD"), cancellable = true, remap = false)
+    // require = 0: this targets an OPTIONAL third-party mod. Under the inherited
+    // defaultRequire of 1, the target mod renaming or reshaping this method in any update
+    // turned a missing injection point into a hard startup crash for the whole pack,
+    // rather than the perk quietly not applying (RS-048).
+    @Inject(method = "onDealDamage", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private static void runicskills$tricksterAriaSuppress(LivingHurtEvent event, CallbackInfo ci) {
         if (event == null) return;
         Entity attacker = event.getSource().getEntity();
