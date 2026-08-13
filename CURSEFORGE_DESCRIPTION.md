@@ -1,220 +1,173 @@
 # Runic Skills
 
-**Level ten skills through the actions you already take.** Runic Skills adds a quiet, vanilla-respecting RPG progression layer to Minecraft 1.20.1 — swing a sword to raise Strength, cast a spell to raise Magic, plant a farm to raise Wisdom. Each skill funds perks and passives you pick yourself, and titles you earn for the rare milestones a normal world never sees.
+**Turn your XP bar into a character build.** Runic Skills adds a full RPG progression layer to Minecraft: spend the experience you already earn on ten skills, then cash those skills in for abilities, permanent stat upgrades and titles that other players can see.
 
-> **Minecraft 1.20.1 · Forge 47.3.0+ · Java 17**
-> Forked from JustLevelingFork and substantially reworked. Free, open source, Apache-2.0 licensed.
+> **Minecraft 1.20.1 · Forge 47.3.0+**
+> Free and open source (Apache-2.0). Forked from JustLevelingFork and heavily reworked.
 
 ---
 
-## What makes Runic Skills different
+## How it works
 
-Most "RPG skills" mods make you grind against a separate track. Runic Skills piggy-backs on the things you already do in a survival world:
+You collect XP the normal way — mining, fighting, smelting, whatever you were doing anyway. Then you press **`Y`**, open the Skills screen, and **spend that XP on whichever skill you choose.**
 
-- **Ten skills, ten play-styles.** Strength, Constitution, Dexterity, Endurance, Intelligence, Building, Wisdom, Magic, Fortune, Tinkering. Melee players, archers, mages, farmers, miners, and engineers each have a natural primary track.
-- **Perks are abilities, not permanent stats.** You unlock them at skill breakpoints, you can toggle them on and off from the Skills screen, and many have multiple ranks (e.g. **Haggler I / II / III** deepens villager discounts; **Wormhole Storage** opens your ender chest from the inventory screen). Choose the ones that fit your playstyle.
-- **Passives are your stat spend.** Spend skill points into passive tiers: +Attack Damage, +Max Health, +Mana Regen, +Armor Toughness, +Movement Speed, +Projectile Damage — all via the vanilla/Apothic attribute system, so they stack correctly with gear and other mods.
-- **Titles are rare, visible, and earned.** ~50 titles for milestones like *slayer of the Ender Dragon*, *conqueror of the Warden*, *master enchanter*. Pick one to display above your name once you've earned it. Other players see it too.
-- **Item lock-gating** — optionally lock powerful armour, weapons, and tools behind skill thresholds. Throw someone a Netherite sword before their Strength is high enough and they literally can't swing it. Configurable per-item via the in-game config GUI.
+That's the whole loop, and the choice is the point: XP spent on Strength is XP not spent on Magic. Each skill costs more as it rises, so nobody maxes everything, and two players who did exactly the same things end up with completely different characters.
+
+There's no second XP bar to grind and nothing to babysit. Your experience finally has a long-term use beyond enchanting.
+
+## Ten skills to invest in
+
+Each skill unlocks its own branch of abilities and stat upgrades:
+
+| Skill | Governs | Perks |
+|---|---|---|
+| **Magic** | Spellcasting, mana, and all nine magic schools | 89 |
+| **Endurance** | Defence, wards, damage soaking | 49 |
+| **Tinkering** | Smithing, repair, lockpicking, tool mastery | 44 |
+| **Fortune** | Luck, critical hits, fishing, gems and sockets | 44 |
+| **Dexterity** | Stealth, accuracy, dodging, ranged precision | 43 |
+| **Strength** | Melee power, boss hunting, life-stealing | 42 |
+| **Intelligence** | Enchanting, alchemy, trading, spell efficiency | 41 |
+| **Building** | Mining, ore yield, salvaging, block work | 41 |
+| **Constitution** | Max health, cooking, food and healing | 39 |
+| **Wisdom** | Lore, focus, farming, arcane insight | 39 |
+
+---
+
+## What you spend it on
+
+**Perks — 471 abilities you pick.**
+Perks unlock at skill breakpoints and you toggle them on and off freely from the Skills screen. *Vein Miner* cascades an ore vein in one break. *Wormhole Storage* opens your ender chest from anywhere. *Haggler* talks villagers down. *Cleave* splashes damage into the crowd around your target. You have a limited number of active slots, so a build is about what you leave off as much as what you take.
+
+**Passives — 39 permanent stat upgrades.**
+Pour levels into +Max Health, +Attack Damage, +Movement Speed, +Armour Toughness, +Projectile Damage and more. These use Minecraft's real attribute system, so they stack correctly with your gear and with other mods.
+
+**Powers — 75 deep magic specialisations.** *(needs Iron's Spells 'n Spellbooks)*
+A second, separate loadout for spellcasters: **5 Marks, 3 Seals and 1 Crown**, escalating in strength, covering all nine magic schools plus cross-cutting effects. Equip them from the Powers panel.
+
+**Titles — 77 badges for real milestones.**
+Kill the Ender Dragon, beat the Warden, max out a skill. Earn one and you can wear it above your name, where everyone on the server sees it.
+
+**Item locking — gear gated by skill.** *(on by default)*
+Powerful weapons, tools and armour require a matching skill level. Hand a new player a netherite sword too early and they simply can't swing it — which makes progression mean something instead of being handed over by one lucky chest. Locked items say so in their tooltip, so nobody is left guessing. Not for your world? A single toggle (`enableItemLocks`) switches the whole system off.
 
 ---
 
 ## Screenshots
 
-> _Placeholder — drop screenshots or gifs here before publishing:_
->
-> - Skills overview page showing the ten aptitudes and total level.
-> - Detail page showing passives on the left, perks on the right, with a multi-rank perk expanded.
-> - Title selection screen with scroll list.
-> - Overlay warning for a skill-locked item.
-> - Legendary Tabs strip with the Skills tab installed.
+> _Placeholder — add before publishing:_
+> Skills overview · perk detail page · Powers panel · title selection · a locked-item warning
 
 ---
 
-## Mod compatibility
+## Getting started
 
-Runic Skills is built to feel like part of your modpack rather than an island. Optional integrations light up automatically when their mods are installed:
+1. Install **Minecraft Forge 47.3.0+** for **1.20.1**.
+2. Drop the Runic Skills jar into your `mods` folder.
+3. Launch and press **`Y`**.
 
-- **Ars Nouveau** — Magic scales spell damage, mana-regen passives, glyph mastery perk.
-- **Irons Spellbooks** — Spell echo, arcane shield, attunement perks (all nine schools), school bonuses, spell gating by Magic level.
-- **Apotheosis & Apothic Attributes** — Affix, gem, and socket awareness. Broader attribute pool for passives. Apotheosis Wisdom raises your effective enchantment cap, and gem rarity gating ties socketing a gem to a Fortune level scaled by the gem's rarity (config-toggleable).
-- **KubeJS** — Script your own skills, perks, passives, titles, and conditions. A `SKILL_LEVELUP` event is exposed.
-- **L2Tabs / Legendary Tabs** — Skills shows up as a native tab in those mods' strips instead of being drawn twice.
-- **FTB Quests** (since 1.3.0) — Six native task types (`runicskills:skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) so quest authors can gate FTB Quests on Runic Skills progression. Sticky completion by default; opt-in `"sticky": false` for live-threshold semantics. Backfills on login.
-- **Custom skill visuals** (since 1.3.0) — Override per-skill overview/detail/background art with a single datapack JSON per skill at `data/<ns>/runicskills/skill_visuals/<id>.json`. Accepts arbitrary `namespace:path` texture ids so pack authors can point at any mod's item or texture sprite without shipping copies under the runicskills namespace.
-- **Farmers Delight, Ice and Fire, Cataclysm, Mowzie's Mobs, Stalwart Dungeons, Bosses of Mass Destruction, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Natures Aura, More Vanilla, Fantasy Armor, Jewelcraft, Locks** — Auto-generated level-gate lock lists for each.
-- **Crayfish Gun Mod (unofficial), Scorched Guns 2, TacZ, PointBlank (Vic's)** — Gun-fire events honour Runic Skills perks and locks.
+That's the whole setup. No other mods are required.
 
-**Every integration is optional.** Runic Skills detects missing mods at runtime — no silent class-not-found crashes, no hard dependencies beyond Forge and YACL.
+**Controls**
 
----
+- **`Y`** — open and close the Skills screen (rebindable).
+- **Powers panel** — unbound by default so it can't clash with your pack; assign a key under Options → Controls.
+- **Skills tab** — sits next to your inventory tab. If you use L2Tabs or Legendary Tabs, it slots into their strip instead of drawing over it.
+- **Hover a perk and hold Shift** for its full description and level requirement.
 
-## Requirements
-
-- **Minecraft Forge 47.3.0+** on **Minecraft 1.20.1**.
-- **YACL (Yet Another Config Lib v3)** 3.4.2+ — client-side only, used for the in-game config GUI. Grab it from the [YACL CurseForge page](https://www.curseforge.com/minecraft/mc-mods/yacl) or [Modrinth](https://modrinth.com/mod/yacl).
-
-That's it. Everything else is optional.
+**Want the in-game settings menu?** Add [YACL](https://www.curseforge.com/minecraft/mc-mods/yacl) — it's optional, client-side only, and just gives you a graphical config screen. Without it everything still works; you'd edit the config file by hand instead.
 
 ---
 
-## Installation
+## Multiplayer
 
-1. Install **Minecraft Forge** for **1.20.1**.
-2. Download the Runic Skills jar.
-3. Drop it in your `.minecraft/mods/` folder. Add YACL to the same folder if you don't have it yet.
-4. Launch. Press **`Y`** in-game to open the Skills screen (or click the Skills tab next to your inventory tab).
+Works in single-player, LAN and on dedicated servers, using the same jar everywhere.
 
-Works on single-player, LAN, and dedicated servers. Same jar on client and server.
-
----
-
-## Controls and UI
-
-- **`Y`** (default, rebindable in Controls) — open Skills screen.
-- **Skills tab** — appears next to the inventory tab. With L2Tabs or Legendary Tabs installed, uses those mods' tab systems natively so the UI stays consistent with your modpack.
-- **Mouse-hover a perk, hold Shift** — see description, level requirement, rank, and when your next rank unlocks.
-- **Overlay warnings** — a skill requirement overlay appears briefly when you try to use a gated item you can't yet wield.
+- **Install it on the server and on every client** — clients and servers must be on the same version.
+- The **server decides the rules.** Skill caps, disabled perks and item locks are enforced server-side and pushed to clients on join, so one player's config can't give them an advantage.
+- Your progress is stored per-world in your player data and survives death and dimension changes.
 
 ---
 
-## For modpack makers
+## Works with your modpack
 
-- **Every number is in a config.** Skill max level, XP curves, lock-item lists, title requirements, per-integration toggles. You can tune the whole pack from `config/RunicSkills/runicskills.common.json5` (editable via the in-game config GUI as well).
-- **Disabling item locking** has four distinct levers: the `enableItemLocks` master toggle (whole feature, in the common config / **Config → General**), removing entries from `config/RunicSkills/runicskills.lockItems.json5`, the per-integration `*EnableLockItems` / `enable*Integration` toggles, and — importantly — *not* deleting `runicskills.lockItems.json5`, which **regenerates** the default locks rather than disabling them. Apply edits with `/skillsreload`.
-- **Titles are data-driven.** Datapack JSON under `data/runicskills/titles/` — ship your own title pack by dropping files in your pack. Reload live with `/skillsreload`.
-- **KubeJS scripting.** Register custom skills, perks, passives, titles, and condition types from server scripts. See the [`KubeJS scripting hook`](https://github.com/otectus/runic-skills#kubejs-scripting-hook) section of the README for examples.
-- **Sided-imports lint** runs at build time — no `net.minecraft.client.*` code leaks into common-side logic, so the mod is safe on dedicated servers. Repeatedly audited for packet-deserialization security (see the 0.9.2 CHANGELOG entry).
+Runic Skills integrates with around 40 mods. **Every one is optional** — it detects what you actually have installed and quietly skips the rest. Nothing crashes because a mod is missing.
 
----
+**Magic** — Ars Nouveau (spell damage, mana regen, glyph mastery) · Iron's Spells 'n Spellbooks (all nine schools, spell gating, and the entire Powers system)
 
-## Commands (ops only, permission level 2)
+**Gear & stats** — Apotheosis and Apothic Attributes (affix, gem and socket awareness, plus a much wider stat pool for passives)
 
-- `/skills <player> <skill> <level>` — set a player's skill.
-- `/skills <player> <skill> add <amount>` — nudge up or down.
-- `/listskills <player>` — print all ten skill levels.
-- `/respec <player>` — refund passives and perks without touching skill levels.
-- `/registeritem <item-id>` — runtime-lock an item.
-- `/skillsreload` — re-read the titles and lock-items datapack.
-- `/globallimit <cap>` — cap the total-skill sum.
-- `/titles <player> <title> set true|false` — grant or revoke a title.
+**Quests & scripting** — FTB Quests (six task types, so quests can require skill levels, perks or titles) · KubeJS (script your own skills, perks, passives and titles)
+
+**UI** — L2Tabs · Legendary Tabs
+
+**Combat & content** — Better Combat, Ice and Fire, Cataclysm, Mowzie's Mobs, Bosses of Mass Destruction, Stalwart Dungeons, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Farmer's Delight and the Let's Do series, Nature's Aura, Jewelcraft, and more — mostly automatic level-gating for their gear.
+
+**Guns** — TacZ, Scorched Guns 2, PointBlank (Vic's), Crayfish Gun Mod
 
 ---
 
-## What's new in 1.5.0
+## Configuring it
 
-Roster and integration pass to match the target Runecraft pack.
+Every number is adjustable: skill caps, XP costs, how many perks you can run at once, which perks exist at all, and every item lock. Edit them in-game via the config screen, or directly in `config/RunicSkills/`.
 
-- **Removed all Botania, Blood Magic, and Enigmatic Legacy perks** along with their integration classes and lock providers — those mods aren't in the target pack, so the perks were dead weight. (The Iron's Spellbooks blood-*school* perks — Blood Attunement, Blood-mancer, Blood-Warded, Blood Catalyst, Blood Fury — and the generic faith/soul perks stay; they don't depend on Blood Magic.)
-- **Apotheosis fully wired.** The Apotheosis Wisdom perk now boosts your effective enchantment cap via Placebo's `GetEnchantmentLevelEvent`, and the existing 14 Apotheosis perks were audited for API drift (none found).
-- **New: Apotheosis gem rarity gating.** Socketing a gem now requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), mirroring the existing affix-item rarity gating. Toggle with `apothEnableGemRarityGating` (default on).
-- Earlier in the release line: a unified over-GUI denial-message system and roughly 49 newly-implemented perks.
+Pack authors also get datapack support for titles, perk groups and custom skill artwork, plus KubeJS hooks for adding your own content. Full details are in the [README](https://github.com/otectus/runic-skills#readme).
 
-## What's new in 1.3.7
-
-Configuration-reliability audit driven by two user reports.
-
-- **"Disabling item locking does nothing" is fixed.** `/skillsreload` now re-reads *every* config file, not just the lock list — so editing the `enableItemLocks` master toggle (in `config/RunicSkills/runicskills.common.json5`) applies live, no restart. Previously only `runicskills.lockItems.json5` was reloaded, so common-config edits were ignored until a full restart. See the new **Disabling item locking** guide below — and note that *deleting* the lock file regenerates the defaults, it does not disable locking.
-- **"The config screen does nothing" is fixed.** If YACL is the wrong version (e.g. you grabbed the latest YACL whose API drifted), clicking Configure now shows a clear screen naming your installed YACL version and pointing at the log, plus one actionable error line — instead of silently doing nothing. A present-but-incompatible YACL used to throw a `LinkageError` that slipped past the error handling.
-- **`Disabled powers` is now editable in the config GUI** (it was saved to disk but missing from the screen, like `Disabled perks`/`Disabled passives` were before 1.1.0).
-- **Integration master toggles now also stop that integration's auto-generated locks**, and a malformed config file is backed up to `<name>.invalid` before defaults are restored. Plus NPE hardening for modded/unregistered items and defensive parsing of config ids.
-
-## What's new in 1.3.2
-
-- **Skill-panel header text is legible again.** The skill name, level/rank line, player name + XP, and "Choose Your Title" heading all render in black on the light gray panel background instead of white-on-white-ish. Pure cosmetic — no behaviour change, no save change.
-
-## What's new in 1.3.1
-
-- **No more "Error loading class" WARN at startup** when BetterCombat or PointBlank aren't installed. 1.2.1's `@Pseudo` fix silenced one of the two startup WARNs for those optional-target mixins; 1.3.1 finishes the job with a Mixin Config Plugin that gates the mixins on `LoadingModList` presence so Mixin never even asks the classloader for the missing target classes. Save-compatible with 1.3.0; no NBT, no protocol, no config changes.
-
-## What's new in 1.3.0
-
-Two data-driven features for pack authors:
-
-- **Custom skill visuals.** A new datapack folder at `data/<ns>/runicskills/skill_visuals/*.json` lets you override per-skill overview/detail/background art. Each field is optional — fill in just the slot you want to override, the rest fall through to the legacy defaults. Texture ids accept either bare paths (resolved to `runicskills:` for parity with prior KubeJS scripts) or fully-qualified `namespace:path` ResourceLocations. KubeJS `Perk.add(...)` / `Passive.add(...)` helpers also accept namespaced texture ids now, so scripts can point directly at any mod's item sprite without copying assets under the `runicskills` namespace. Reloads pick up overrides via `/reload` or world load.
-- **FTB Quests integration.** Six native task types — `skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected` — registered via FTB Quests' official `TaskType` API. Sticky completion by default (matching the "checked off, stays checked" UX players expect); opt-in `"sticky": false` per task for live-threshold semantics that reset on respec / passive level-down. Login + respawn + respec trigger a full task re-evaluation so quests added retroactively complete for already-qualified players. Master toggle `enableFTBQuestsIntegration = true` in the common config. Tested against FTB Quests Forge `[2001.4,)` (2001.4.22 at release). The integration is reflectively loaded so the mod boots cleanly when FTB Quests isn't installed — zero classloading risk, identical to the existing KubeJS / Ars Nouveau / Botania pattern.
-
-Save-compatible with 1.2.x. No NBT, no PROTOCOL_VERSION bump, no new packets. Both features are entirely additive — every existing skill, perk, passive, title, and integration toggle continues to work exactly as before.
-
-## What's new in 1.1.0
-
-- **Dedicated server now genuinely runs without YACL.** Pre-1.1.0 the README claimed YACL was not required server-side, but the mod's static initializer eager-loaded YACL classes during construction; servers without YACL crashed with `NoClassDefFoundError`. The config layer has been refactored: a new server-safe `ConfigHolder<T>` replaces YACL's `ConfigClassHandler` for all four handler classes, persistence runs through plain Gson (with a JSON5-comment stripper for backward compatibility), and the YACL UI moves behind a client-only builder reached via reflection. `mods.toml` flips YACL to `mandatory=false`. Existing `runicskills.common.json5` files load cleanly — field names unchanged.
-- **L2Tabs no-mod boot crash fixed.** Same JVM-verifier eager-resolution shape as the 1.0.0 Legendary Tabs fix; this one was missed at the time. ClientProxy used to inline a lambda referencing `TabRegistry.registerTab(...)`, which the verifier eager-loaded `BaseTab` for and crashed when L2Tabs was absent. Extracted to a `L2TabsClientIntegration::registerTab` method reference so the lambda body no longer holds the dangerous types.
-- **`/globallimit` works in-game again.** The command had a backwards guard that rejected every player invocation as "client-side", leaving only the dedicated-server console / rcon path working. Reported on CurseForge.
-- **Scholar perk no longer hides every enchantment in the world when disabled.** Adding `"scholar"` to `disabledPerks` (the natural way to "turn off" the perk) used to flip a global enchantment-name-hiding mixin, replacing every enchantment label on every item with a "Requires Scholar" placeholder. Decoupled: the new `enableScholarEnchantmentHiding` config (default off) is the only knob that controls hiding; the Scholar perk is now solely about its XP/enchanting bonus. Reported on CurseForge.
-- **`disabledPerks` and `disabledPassives` now appear in the in-game config UI.** Both fields existed in the JSON5 file but were missing the `@AutoGen` annotation, so the YACL screen never rendered them. Reported on CurseForge ("how do you disable certain perks?").
-- **Charge Mastery has a real effect.** Previously inert (the 1.0.2 changelog admitted ISS 3.x has no `CastType.CHARGE`). Now boosts `CastType.LONG` spell damage by `chargeMasteryPercent` (default `+25%`), modelling "released at full power regardless of how briefly held". Stacks multiplicatively with Long Channel.
-- **24 deferred Botania perks default-disabled.** The 1.0.1 changelog admitted that 24 Botania perks were registered with blank handlers pending future implementation. Until those handlers ship, every affected perk's `*RequiredLevel` defaults to `-1`, eliding them from the tree by default. Pack authors who want them visible (e.g. for a future patch) can set the level back. The list is in `CHANGELOG.md`.
-- **Per-integration "Generated N lock items" log lines** demoted from INFO to DEBUG. CurseForge user reported "ice and fire disabled repeating forever"; this likely was the closest source on busy reload cycles.
-- **Network protocol bumped 4 → 5.** Old clients hitting a 1.1.0 server (and vice versa) get a clean connection refusal rather than silent state corruption.
-- **Save-compatible with 1.0.2.** No NBT changes. Existing JSON5 config files load cleanly.
-
-## What's new in 1.0.2
-
-- **78 new magic-tree perks across four integrations.** Every perk null-registers when its source mod is missing, so the tree silently collapses to whatever you actually have installed — no crash, no orphan icons.
-- **Iron's Spells 'n Spellbooks — 46 perks.** Generic mana and casting: **Wellspring** (+max mana), **Quickening** (+cast speed), **Reservoir** (+mana regen), **Tempo** (+cooldown reduction), **Arcane Recovery** (mana on kill, scales with victim max HP), **Focus** (resist cast-interrupt on long casts), **Mana Bulwark** (redirect incoming damage into mana at 2:1), **Arcane Reprieve** (instant 40% mana refill the first time you hit zero, then 120s cooldown), **Mana Surge** (below-25% HP burst of +spell-power and +regen), **Spellweaver** (every 5th cast inside a 10-second combo window costs nothing), **Resonant Casting** (above 95% mana: +damage), **Imbued Focus** (+1 effective spell level on all casts), **Quickcast** (−CD on INSTANT spells), **Long Channel** (+damage on LONG casts), **Continuous Flow** (−per-tick mana on CONTINUOUS casts). Per-school triplets for all nine schools (Fire, Ice, Lightning, Holy, Ender, Blood, Evocation, Nature, Eldritch): an **X-mancer** (spell power), an **X-Warded** (resist), and an **X-Catalyst** that rolls a 1-in-N chance each cast to apply the school's signature ISS effect — Immolate / Chilled / Charged / Fortify / Planar Sight / Rend / Echoing Strikes / Oakskin / Abyssal Shroud. Plus summon perks: **Lord of the Dead** (+damage and +HP on your summons) and **Life Leech Bound** (your summons' damage returns to you as mana). Also adds the previously-missing **Eldritch Attunement** gate.
-- **Apotheosis + Apothic Attributes — 12 perks.** **Socket Virtuoso** (+1 socket on every equipped item). **Affix Affinity** (every Rare-or-better affix item you wear adds +2% damage and +2% damage reduction, capped at 90%). Ten stat-sticks that layer permanent modifiers on `attributeslib:*`: **Apothic Critical Mastery** (+crit chance/damage), **Vampiric Fangs** (+life steal), **Reaper's Edge** (+current-HP damage), **Evasive** (+dodge chance), **Arrow Mastery** (+arrow damage and velocity), **Earthbreaker** (+mining speed), **Apothic Scholar** (+XP gained), **Spectral Ward** (+prot pierce and shred), **Ghostbound** (+ghost health), **Heart of the Healer** (+healing received and overheal).
-- **Ars Nouveau — 11 perks.** Form Focus triad filters by the form glyph on the front of your spell — **Form Focus: Projectile** and **Form Focus: Self** cut mana cost, **Form Focus: Touch** adds damage. **Wild Manipulation** cuts mana cost on any spell containing a Manipulation-school glyph. Per-school specialists: **Hedgewitch** (Water cost + damage), **Emberforged** (Fire damage), **Stormcaller** (Air damage), **Geomancer** (Earth damage), **Conjurer** (Conjuration cost), **Abjurer** (Abjuration effect magnitude), **Arcane Weaver** (Manipulation damage, complements Wild Manipulation's cost side). All cost reductions floor at 1 Source so stacking discounts can't make a spell free.
-- **Cross-mod synergy — 9 perks that only light up when multiple source mods are installed together.**
-  - Six **Schoolbridges** (need Iron's + Ars): your ISS per-school spell power bleeds into the matching Ars school's damage. Fire → ELEMENTAL_FIRE, Ice → ELEMENTAL_WATER, Lightning → ELEMENTAL_AIR, Nature → ELEMENTAL_EARTH, Holy → ABJURATION, Ender → MANIPULATION.
-  - **Unified Arcana** (Iron's + Ars): a percent of every Ars cast's Source cost refunds back to your Iron's mana pool on success.
-  - **Triple Threat** (Iron's + Ars + Apotheosis): +5% max mana, mana regen, and spell power while all three are loaded.
-  - **Affix Focus** (Iron's + Apotheosis): wearing 4+ Rare-or-better Apotheosis items grants +1 effective spell level on all Iron's casts.
-- **Configurable everything.** Every new perk has a `requiredLevel` config (set to `-1` to disable), plus per-perk tuning (percentages, thresholds, cooldowns). Admins can null-out any perk they don't want in their pack without editing the jar.
-- **Save-compatible with 1.0.1.** No NBT or protocol changes. Drop the new jar in and keep playing.
-
-## What's new in 1.0.1
-
-- **Botania integration — 42 new perks.** A full perk tree across Wisdom and Magic, structured around Botania's own rune progression (Elemental / Seasonal / Sin / Gaia). Lights up automatically when Botania is in your modpack; stays silent otherwise. No hard dependency, no crash when Botania is missing.
-- **Wisdom tree (19 perks).** Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student, Agricultor's Eye, Forager's Palate, Loot-Hunter's Intuition, Still Listener, Manaseer's Lens, Corporea Query, Cartographer-Prospector, Far Reach, Lazy Swap, Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
-- **Magic tree (23 perks).** Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura, Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Velocity, Lens Potency, Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
-- **Hard-integration details.** Hooks Botania's `ManaProficiencyEvent`, `ManaDiscountEvent`, and Mana Pool capabilities via `BotaniaForgeCapabilities.MANA_RECEIVER` / `ManaItemHandler`. Inner Wellspring trickle-charges your inventory mana items from nearby Mana Pools; Rune of Water: Tidewoven adds an additive mana-cost discount while wet; Rune of Mana: Resonance promotes tool mana-proficiency; everything else leans on vanilla combat/tick/block-break events.
-- **Icons match Botania.** Every perk uses a unique Botania item texture as its icon — the 16 runes for their namesake perks, `lens_speed`/`lens_power`/`lens_storm` for the lens perks, `reach_ring` for Far Reach, `magnet_ring` for Magnetite, `aura_ring` for Band of Aura, `flight_tiara` for Flügel's Grace, `terrasteel_ingot` for Terrasteel Ascension, `king_key` for Relic Attunement, `monocle`/`itemfinder`/`sextant`/`divining_rod`/`mana_mirror` for the perception perks, and so on. No textures are bundled; the mod points at Botania's own assets.
-- **Save-compatible with 1.0.0.** No NBT or protocol changes. Drop the new jar in and keep playing.
-
-## What's new in 1.0.0
-
-- **First stable release.** Consolidates the full 0.9.x line into a single 1.0 milestone; no further pre-1.0 versions will be cut.
-- **Tooltip matches enforcement.** Disabling the item-lock master toggle (`enableItemLocks = false`) now also hides the "Requirements:" block from item tooltips. Previously the text remained, so players who unlocked items via config still saw stale "Requires Level X" warnings and thought the lock was still active.
-- **Server owners and pack makers get five new knobs** for balancing the perk/passive system. Defaults are behavior-preserving, so updating from 0.9.7 changes nothing until you opt in.
-- **Global active-perk cap** (`maxActivePerks`). Answers the top-requested "how many perks can I have active at once" question. `0` = unlimited. Iron's Spells school attunements count against this cap in addition to their own `ironsMaxSchoolSelections` limit.
-- **Per-perk and per-passive kill switches** (`disabledPerks`, `disabledPassives`). Lists of registry names that can't be enabled or leveled up; effects are fully suppressed but save data is preserved, so re-enabling restores state. No more "delete the whole integration" to nerf one perk.
-- **Perk-swap cooldown** (`perkSwapCooldownTicks`). Stops rapid-fire swapping between perks between fights. Cooldown persists through logout.
-- **Skill level-up cost multiplier** (`skillLevelUpCostMultiplier`). Tune vanilla XP cost up or down. `1.0` = vanilla, `2.0` = twice as expensive, `0.5` = half price.
-- **Data-driven perk groups via datapack.** Drop a JSON into `data/<pack>/perk_groups/` with `{ "max_active": N, "perks": [...] }` to enforce mutual-exclusion or custom caps on any subset of perks. Plays nicely alongside the hardcoded Iron's Spells school limit — both systems run independently.
-- **Server-authoritative everywhere.** Every new check rejects with a `SyncSkillCapabilityCP` resync so clients can't desync from server rules. `/skillsreload` propagates config *and* datapack changes without requiring anyone to relog.
-- **Protocol version bumped to `4`.** Clients and servers must update together — old clients connected to new servers (and vice versa) will get a clean connection refusal rather than a silent wire-format bug.
-- **Fixed: mod now loads cleanly without Legendary Tabs.** An inline lambda in the client-setup path caused the JVM verifier to eager-resolve `sfiomn.*` classes at mod construction, so the mod crashed with `NoClassDefFoundError: TabBase` whenever Legendary Tabs wasn't installed — ignoring the runtime `isModLoaded()` guard. Isolated the optional-mod references into a dedicated wrapper method so classes only load when Legendary Tabs is actually present. Runic Skills is now a clean optional dependency again.
-- **Fixed: skill-selection hover highlight is now aligned with the button.** The 74×26 green halo was being squashed into the 66-pixel button rect due to an incorrect `textureWidth` argument; it's now blitted at its true dimensions, centred around the button with a 4px outer glow.
-- **Fixed: skill-selection tooltip is no longer overpainted by adjacent cells.** Deferred the tooltip render until after the grid loop so no later cell can draw on top of it.
-
-## What's new in 0.9.6
-
-- **Skills tab blends seamlessly into the Legendary Tabs strip.** It now blits its sword icon directly from Legendary Tabs' own atlas, so the frame shape, shading, hover state, and "currently selected" treatment are byte-for-byte identical to every neighbouring tab.
-- **Skills always appears right after the Inventory tab.** Default priority lowered to `15`, slotting Skills between Inventory (priority 10) and every other known integration (20+).
-- **Tab strip stays stable as you move between inventory screens.** Opening Skills no longer collapses the strip to a lone icon — every tab on the vanilla inventory now appears on the Skills page in the same order and X position. Conversely, opening a companion screen (Medkit, Curios, Backpack, etc.) no longer hides the Skills tab.
-
-## What's new in 0.9.5
-
-- **Native Legendary Tabs integration.** Skills now participates in Legendary Tabs' own strip instead of being drawn on top of it. Priority is configurable.
-- **Major audit and remediation pass.** Two crash bugs (Better Combat attack-range modifiers; PointBlank skill-gated gun fire), multiple NPE paths in pre-sync tooltip/overlay rendering, matrix-stack leak in the tab renderer, and several config and capability guardrails fixed. See the full [CHANGELOG](https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md).
-- **Translations across 17 languages** — new lang keys for perk ranks and the title-edit button, translated for every language the mod already supports (Arabic, German, English, Spanish ×7, French, Hindi, Japanese, Korean, Portuguese-Brazilian, Russian, Simplified Chinese).
-- **Internal performance.** KubeJS level-up hook now caches its reflection lookups. `RecipeBook.isVisible()` is cached per render frame. Villager haggler-delta map self-cleans.
+To turn a perk off entirely, add its name to `disabledPerks`. To switch off item locking, set `enableItemLocks` to `false` — note that *deleting* the lock file regenerates the defaults rather than removing them. Apply changes live with `/skillsreload`.
 
 ---
 
-## Reporting bugs and requesting features
+## Commands
 
-- [GitHub issues](https://github.com/otectus/runic-skills/issues) is the best place.
-- If reporting a crash, attach `logs/latest.log`, your mod list, and if config-related your `config/RunicSkills/runicskills.common.json5`.
-- Pull requests welcome — the project is Apache-2.0.
+Operator commands (permission level 2):
+
+| Command | Does |
+|---|---|
+| `/skills <player> <skill> get\|set\|add\|subtract <level>` | Read or change a skill level |
+| `/listskills <player>` | Print all ten skill levels |
+| `/respec <player>` | Reset that player's skills, passives, perks and Powers |
+| `/titles <player> <title> set true\|false` | Grant or revoke a title |
+| `/registeritem <item>` | Add an item to the lock list at runtime |
+| `/globallimit <cap>` | Cap a player's total levels across all skills |
+| `/skillsreload` | Re-read the config and datapacks without a restart |
+| `/powers list\|view\|equip\|unequip` | Inspect and manage Powers |
+
+Available to everyone:
+
+| Command | Does |
+|---|---|
+| `/respec` | Reset **your own** progression |
+
+---
+
+## What's new in 1.7.0
+
+A large correctness and security pass driven by a full technical audit of the mod.
+
+- **Four duplication exploits closed.** Silk Touch Mastery and Lucky Drop could duplicate items, Double Down turned cobblestone into free material, and Locksmith was an unlimited source of XP. All four now behave as intended.
+- **Your config can no longer be wiped by a typo.** A single bad value used to reset all 1,100+ settings *and* overwrite your file. Now only that one setting falls back to its default, and an unreadable file is left untouched.
+- **Server rules are properly enforced.** The global level cap was previously only checked by the client, and the Administrator title was never removed when someone was de-opped.
+- **Smoother performance**, especially on busy servers — a lot of redundant per-tick network traffic has been removed.
+- **The Powers panel is finally reachable** — its keybind was never registered, so the whole screen was unusable.
+
+⚠️ **Update clients and servers together.** The network version changed, so 1.7.0 will not connect to older versions. Your existing worlds and configs carry over automatically.
+
+Full details for this and every previous release are in the [changelog](https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md).
+
+---
+
+## Bugs and suggestions
+
+[GitHub issues](https://github.com/otectus/runic-skills/issues) is the fastest way to reach us.
+
+For a crash, please attach `logs/latest.log` and your mod list. For anything config-related, add `config/RunicSkills/runicskills.common.json5` too.
+
+Translated into 17 languages. Pull requests welcome — including translation fixes.
 
 ---
 
 ## Credits
 
-- **Otectus** — current maintainer, rebrand, GUI rework, audit, Legendary Tabs integration.
-- **JustLevelingFork** — the original fork base.
-- Each third-party mod we integrate with is owned by and credited to its respective author. Runic Skills does not bundle their code; integrations are thin optional compat layers.
+**Otectus** — current maintainer. **JustLevelingFork** — the original fork base.
 
-Thanks for installing — drop feedback on the [issues tracker](https://github.com/otectus/runic-skills/issues). Happy levelling.
+Every mod we integrate with belongs to its own author; Runic Skills bundles none of their code and only adds thin optional compatibility layers.

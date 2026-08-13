@@ -1,5 +1,149 @@
 # Changelog
 
+## [1.7.0] - 2026-08-13 — Audit remediation: exploits, data safety, server authority
+
+Remediation pass driven by the 1.6.1 technical audit (`RUNIC_SKILLS_AUDIT.md`, 195 findings).
+Finding ids below are that document's. **This release closes four item/XP duplication exploits and
+changes how three perks behave** — see "Balance" before updating a live server.
+
+### Fixed — duplication and progression exploits (Critical)
+- **Locksmith** (RS-001) granted vanilla XP on *any* container open, with no cooldown and no
+  per-container state. Because vanilla XP is the only currency skill levels are bought with, holding
+  right-click on a crafting table was an unlimited, zero-cost progression bypass. The perk now pays
+  out per *block* container, once per configurable window, with a floor between any two rewards
+  (`locksmithContainerCooldownMinutes`, `locksmithMinSecondsBetweenRewards`).
+- **Silk Touch Mastery** (RS-002) popped the block item *in addition to* the normal drops, making it
+  a literal duplicator for every block in the game. It now replaces the drop, as silk touch does.
+- **Lucky Drop** (RS-003) multiplied any freshly-spawned item entity near a corpse, so a stack the
+  player dropped by hand at the right moment was multiplied too. It now multiplies only the drops
+  the death actually produced.
+- **Double Down** (RS-012) applied to *every* block rather than ores, making a place-and-break loop
+  on cobblestone net-positive. Now bounded to ores, like its nine sibling perks.
+- **Lore Mastery** (RS-058) multiplied any XP orb collected while a grindstone screen happened to be
+  open. Now limited to freshly-spawned orbs, so an XP farm cannot be funnelled through it.
+
+### Fixed — configuration data safety (Critical)
+- **A single typo no longer resets your config** (RS-004). Parsing was all-or-nothing across a
+  1,141-key document, and the failure path overwrote the operator's file with defaults. Fields now
+  bind one at a time — a bad value costs that one setting and names it in the log — and a file that
+  cannot be parsed at all is **left untouched** rather than replaced.
+- Unrecognised config keys are now **retained and written back** (RS-093), so a mod update that
+  renames a field, or a temporarily removed addon, no longer deletes a pack author's tuning.
+- A trailing comma in a JSON5 array no longer injects a `null` that NPE'd the lock loader (RS-030).
+- Single-quoted JSON5 strings containing `//` are no longer mangled by the comment stripper (RS-092).
+- Config writes are now fsynced and use a mod-namespaced temp file (RS-176).
+- **All 883 range-annotated config fields are now enforced at load time** (RS-028). `@IntField`
+  described the range and `@Clamp` enforced it, but only 9 fields had both — so on a dedicated
+  server, where the config UI does not exist, hand-edited values reached runtime unchecked. A new
+  `ClampCoverageTest` scans the source and fails the build if the two ever drift apart again.
+
+### Fixed — crash and denial-of-service vectors
+- A non-numeric title condition threw out of the title scan, disconnecting every joining player and
+  then crashing the server tick every 200 ticks (RS-017). Evaluation is now guarded, and bad values
+  are reported once at load with the offending title id.
+- A perk probability of `0` threw `IllegalArgumentException` out of crafting, container-open and
+  kill handlers — for every player, whether or not they had the perk (RS-029). All rolls now go
+  through a shared, tested `ProcRoll`, which also fixes a configured 1-in-1 chance meaning "never"
+  instead of "always" (RS-154).
+- An unknown title id from the server enqueued `null` and NPE'd the HUD overlay every frame, wedging
+  the title queue for the rest of the session (RS-022).
+- `DynamicConfigSyncCP` packed sixteen int arrays into a `-`-delimited string, which could not
+  represent a negative level or an empty array — either one disconnected the client during login
+  (RS-027). Now length-prefixed varint arrays. **Network protocol bump `8` → `9`.**
+- One unparseable item id in `treasureHunterItemList` left a null hole that NPE'd on block break
+  (RS-130); `treasureHunterProbability = 0` silently meant "always" and is now "never" (RS-129).
+- An empty passive-level array divided by zero and installed a NaN attribute modifier (RS-042).
+
+### Added — save-schema versioning and orphan retention
+- Player capability NBT now carries a `dataVersion` with an ordered migration hook (RS-005). This is
+  the precondition for every future change to stored data.
+- NBT keys the current build does not recognise are **retained across save/load and death** (RS-006).
+  Titles are registered from an editable config file, so removing one previously destroyed every
+  player's record of having earned it.
+
+### Fixed — server authority and security
+- **The global level cap is now enforced server-side** (RS-008). It was checked only in the client
+  GUI, so a modified client could walk past a limit operators set with `/globallimit` — and, because
+  the perk budget scales from global level, grant itself extra perk slots.
+- **The `administrator` title is now revoked on de-op** (RS-056). Unlocks were monotonic with no
+  re-lock branch, so a de-opped player kept an "Administrator" chat prefix permanently — a
+  staff-impersonation vector on public servers. Achievement titles remain monotonic.
+- **Vein Miner** cascaded up to 47 breaks that fired no `BlockEvent.BreakEvent`, so land-claim and
+  protection mods never saw them, Fortune and Silk Touch were silently dropped, and block-mined stats
+  under-counted (RS-013). Every cascaded break is now a real event other mods can veto.
+- **Cleave** re-entered `hurt()` from inside a `LivingHurtEvent` dispatch, re-running the full
+  outgoing perk stack per splash target and hitting villagers, other players' pets and players in
+  claims (RS-014). It is now deferred a tick, capped (`cleaveMaxTargets`), and respects PvP and
+  ownership.
+- **Counter Attack**'s `setCounterAttack(true)` was a no-op, so its ATTACK_DAMAGE bonus was permanent
+  and NBT-persisted with nothing able to remove it (RS-011). It is now a real, self-expiring window.
+- Attribute modifiers are **transient rather than permanent** (RS-018, RS-073). Permanent modifiers
+  outlived the perk that granted them; a one-time migration strips the ones existing saves carry.
+- Packet rate limiting now runs **before** work is queued to the main thread (RS-150).
+- The ender-chest packet now checks alive/spectator/sleeping state (RS-151).
+- `disableSync()` on all five custom registries (RS-015) — their contents are config-derived and had
+  no business in the login handshake, where a server with customised perk gates or titles could fail
+  or silently remap client logins.
+- The capability's `LazyOptional` is now invalidated with the entity (RS-007).
+- Equipped Powers are cleared by `/respec`, along with cooldowns and perk-swap locks (RS-020, RS-128).
+- `/respec` with no argument now resets **your own** progression and needs no permission (RS-052).
+  Lowering a perk budget could otherwise strand a whole playerbase behind an op-only command.
+- Static tick baselines reset on server stop (RS-132); five `PowerRuntime` maps that mutated outside
+  their lock are now synchronized (RS-131).
+
+### Fixed — performance
+- Per-tick mob-effect re-application (~40 packets/second/player) now refreshes only when the effect
+  is missing or nearly expired (RS-009).
+- Attribute application is idempotent, so unchanged values no longer mark `ARMOR`/`ATTACK_DAMAGE`
+  dirty every tick (RS-010).
+- `Perk.isEnabled` no longer builds a `modid:path` string on every call — it is called ~100× per
+  melee hit (RS-057).
+- `Skill#getPerks`/`getPassives` rebuilt the whole registry list twice per iteration, ~450,000
+  redundant element copies per GUI rebuild (RS-077).
+- The Powers dispatcher no longer does per-tick work for players with nothing equipped, and its
+  periodic scans are phase-shifted per player instead of all landing on the same tick (RS-066).
+- The tab strip no longer allocates two full `Screen`s and a GameProfile-tagged `ItemStack` every
+  frame (RS-025).
+
+### Fixed — compatibility
+- `MixForgeGui` no longer cancels `renderAir` unconditionally, and **increments** Forge's shared
+  right-side HUD cursor instead of assigning it — it was displacing every other mod's overlay
+  (RS-078).
+- The three optional-mod mixins use `require = 0`, so a target mod's update degrades gracefully
+  instead of crashing the pack at startup (RS-048).
+- `MixTargetFinder` moved to the client mixin list; it targets a client-only class but was declared
+  common (RS-105).
+
+### Fixed — UI
+- **The Powers panel is reachable.** Its keybind was documented but never registered, leaving the
+  whole equip screen as dead code (RS-023). Bound in Controls; unbound by default.
+- Both Runic Skills keybinds now close the screen they opened (RS-195).
+- The title pop-in animation is tick-driven rather than frame-driven, so it no longer runs 4× faster
+  on a 240 Hz display, and no longer divides by zero at the ends (RS-083).
+- The skill-icon lookup no longer writes to authoritative capability state from inside a render pass
+  (RS-081, RS-090).
+- `Utils.intToRoman` no longer throws outside 0–3999 (RS-169); adjacent tabs no longer overlap by one
+  pixel (RS-170).
+
+### Changed — build and CI
+- **Pinned the build** (RS-036): the SNAPSHOT mixingradle plugin and two dynamic version ranges meant
+  the same commit could produce a different jar on a different day.
+- **CI now boots a real dedicated server** (RS-115). The project's own smoke-test notes record
+  server-side classloading as its worst historical regression class, and compiling does not catch it.
+  CI also publishes test results, and its build step is labelled with what it actually runs.
+
+### Balance
+Four exploits are now closed, so affected perks yield less than they did in 1.6.1 — that is the
+point, but it is a live balance change. Locksmith in particular moves from unlimited XP to a
+rate-limited per-container reward. Both of its new limits can be set to `0` to restore the previous
+uncapped behaviour if a pack depends on it.
+
+### Migration
+- Player data is migrated automatically on load; no action required.
+- Permanent attribute modifiers written by earlier versions are stripped once, per player, on first
+  login. Active bonuses are re-applied immediately.
+- **Clients and servers must both be on 1.7.0** — the network protocol moved from `8` to `9`.
+
 ## [1.6.1] - 2026-07-08 — Hide disabled content from the UI
 
 ### Added — hide disabled content from the UI
