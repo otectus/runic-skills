@@ -56,6 +56,10 @@ public class ConfigHolder<T> {
     private final Supplier<T> defaultSupplier;
     private final boolean prettyPrint;
     private volatile T instance;
+    /** Set when the document was unparseable; suppresses write-back so the operator's file survives. */
+    private volatile boolean loadFailed;
+    /** Keys present on disk that no field claims, replayed on save so updates don't delete them. */
+    private final java.util.Map<String, JsonElement> orphans = new java.util.LinkedHashMap<>();
 
     public ConfigHolder(Class<T> type, Path path, Supplier<T> defaultSupplier) {
         this(type, path, defaultSupplier, true);
@@ -83,22 +87,32 @@ public class ConfigHolder<T> {
                 String raw = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
                 String stripped = stripJsonComments(raw);
                 JsonElement element = JsonParser.parseString(stripped);
-                T loaded = new Gson().fromJson(element, type);
-                if (loaded != null) {
-                    applyClamps(loaded);
-                    instance = loaded;
+                if (element != null && element.isJsonObject()) {
+                    instance = bindFields(element.getAsJsonObject());
+                    applyClamps(instance);
+                    // A per-field bind never loses the other 1140 settings, so it is always safe
+                    // to write back — that re-emits any field the file was missing.
+                    trySave();
                     return;
                 }
                 // File existed but parsed to null (empty file, or a literal `null`). Fall
                 // through to regenerate, logging at INFO so it's traceable but not alarming.
                 LOGGER.info("Config {} was empty; regenerating defaults.", path);
             } catch (Exception e) {
-                // Malformed file. Preserve the user's (broken) edits as a sibling .invalid copy
-                // before overwriting with defaults, so a typo never silently destroys their work.
-                LOGGER.warn(
-                        "Failed to parse {} ({}); regenerating defaults and keeping the unparseable "
-                        + "file as {}.invalid for recovery.", path, e.getMessage(), path.getFileName());
+                // The document itself is unparseable (e.g. a trailing comma inside an object),
+                // so there is nothing to bind field-by-field. Keep a .invalid copy for recovery
+                // and — critically — LEAVE THE ORIGINAL IN PLACE. Overwriting it here destroyed
+                // the operator's entire tuning on a single typo (RS-004); running on defaults for
+                // the session is recoverable, deleting their file is not.
+                LOGGER.error(
+                        "Failed to parse {} ({}). Running on DEFAULTS for this session. Your file has "
+                        + "been left untouched and copied to {}.invalid — fix the syntax error and "
+                        + "restart, or delete the file to regenerate defaults.",
+                        path, e.getMessage(), path.getFileName());
                 backupInvalid();
+                loadFailed = true;
+                instance = defaultSupplier.get();
+                return;
             }
         } else {
             // First run, or the user deleted the file. Deleting a config REGENERATES defaults —
@@ -106,12 +120,96 @@ public class ConfigHolder<T> {
             LOGGER.info("Config {} not found; writing defaults.", path);
         }
         instance = defaultSupplier.get();
+        trySave();
+    }
+
+    private void trySave() {
         try {
             ensureParent();
             save();
         } catch (Exception e) {
-            LOGGER.warn("Failed to write defaults to {}: {}", path, e.toString());
+            LOGGER.warn("Failed to write {}: {}", path, e.toString());
         }
+    }
+
+    /**
+     * Binds a parsed config document onto a defaults instance one field at a time, so a single
+     * bad value costs exactly that one setting instead of the whole file.
+     *
+     * <p>Before this existed, {@code Gson.fromJson(element, type)} was all-or-nothing: a
+     * {@code "skillMaxLevel": "abc"} anywhere in a 1141-key document threw, and the catch block
+     * reset every setting and overwrote the file (RS-004). Now each key is converted in its own
+     * try/catch, a failure logs that key by name and keeps its default, and unrecognised keys are
+     * retained verbatim for write-back (RS-093) so a mod update that renames a field — or a
+     * temporarily absent addon — does not silently delete a pack author's tuning from disk.
+     */
+    private T bindFields(com.google.gson.JsonObject root) {
+        T target = defaultSupplier.get();
+        Gson gson = new Gson();
+        java.util.Set<String> known = new java.util.HashSet<>();
+        for (java.lang.reflect.Field field : type.getFields()) {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+            known.add(field.getName());
+            JsonElement value = root.get(field.getName());
+            if (value == null || value.isJsonNull()) continue;
+            try {
+                Object bound = gson.fromJson(value, field.getGenericType());
+                if (bound == null) continue;
+                stripNullElementsSafely(field.getName(), bound);
+                field.set(target, bound);
+            } catch (Exception e) {
+                LOGGER.error("Config {}: could not read \"{}\" ({}); keeping the default value.",
+                        path.getFileName(), field.getName(), e.getMessage());
+            }
+        }
+        orphans.clear();
+        for (java.util.Map.Entry<String, JsonElement> entry : root.entrySet()) {
+            if (known.contains(entry.getKey())) continue;
+            orphans.put(entry.getKey(), entry.getValue());
+        }
+        if (!orphans.isEmpty()) {
+            LOGGER.info("Config {}: {} unrecognised key(s) retained for write-back: {}",
+                    path.getFileName(), orphans.size(), orphans.keySet());
+        }
+        return target;
+    }
+
+    /**
+     * Removes {@code null} elements a lenient parse can inject into a list. JSON5 permits a
+     * trailing comma in an array and the file extension advertises JSON5, but Gson's lenient
+     * reader turns {@code ["x","y",]} into {@code [x, y, null]} rather than rejecting it — and
+     * downstream consumers such as {@code HandlerSkill#getSkill} dereference every element
+     * without a null check, so a benign edit NPE'd the lock loader (RS-030).
+     */
+    private void stripNullElements(String fieldName, Object bound) {
+        if (!(bound instanceof java.util.List<?> list)) return;
+        int removed = 0;
+        for (java.util.Iterator<?> it = list.iterator(); it.hasNext(); ) {
+            if (it.next() == null) {
+                it.remove();
+                removed++;
+            }
+        }
+        if (removed > 0) {
+            LOGGER.warn("Config {}: dropped {} empty entr{} from \"{}\" — check for a trailing "
+                    + "comma at the end of that list.",
+                    path.getFileName(), removed, removed == 1 ? "y" : "ies", fieldName);
+        }
+    }
+
+    /** Removes null list elements, tolerating an immutable list from a custom deserializer. */
+    private void stripNullElementsSafely(String fieldName, Object bound) {
+        try {
+            stripNullElements(fieldName, bound);
+        } catch (UnsupportedOperationException e) {
+            LOGGER.debug("Config {}: list field {} is immutable; leaving as parsed.",
+                    path.getFileName(), fieldName);
+        }
+    }
+
+    /** True when the on-disk file could not be parsed and defaults are in use for this session. */
+    public boolean loadFailed() {
+        return loadFailed;
     }
 
     /**
@@ -155,6 +253,12 @@ public class ConfigHolder<T> {
 
     public synchronized void save() {
         if (instance == null) return;
+        if (loadFailed) {
+            // The file on disk is the operator's, and we could not read it. Writing our defaults
+            // over it is exactly the data loss RS-004 describes, so refuse (RS-004).
+            LOGGER.debug("Not writing {}: the existing file failed to parse and is being preserved.", path);
+            return;
+        }
         try {
             ensureParent();
         } catch (IOException e) {
@@ -162,13 +266,30 @@ public class ConfigHolder<T> {
             return;
         }
         Gson gson = prettyPrint ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
+        JsonElement tree = gson.toJsonTree(instance);
+        if (tree.isJsonObject() && !orphans.isEmpty()) {
+            // Replay keys we did not recognise on load. Ours are written first and are not
+            // overwritten, so a field that exists wins over a stale duplicate (RS-093).
+            com.google.gson.JsonObject out = tree.getAsJsonObject();
+            for (java.util.Map.Entry<String, JsonElement> entry : orphans.entrySet()) {
+                if (!out.has(entry.getKey())) out.add(entry.getKey(), entry.getValue());
+            }
+        }
         // Write to a sibling temp file, then move it into place. Writing the live file directly
         // meant a crash / disk-full mid-write truncated it, and the next load() would back the
         // torn file up as .invalid and silently reset the user's config to defaults.
-        Path tmp = path.resolveSibling(path.getFileName().toString() + ".tmp");
+        // The temp name is mod-namespaced so a crash never leaves a bare ".tmp" in the config
+        // directory that another tool might claim (RS-176).
+        Path tmp = path.resolveSibling(path.getFileName().toString() + ".runicskills.tmp");
         try {
-            try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-                gson.toJson(instance, w);
+            try (java.io.OutputStream out = Files.newOutputStream(tmp)) {
+                Writer w = new java.io.OutputStreamWriter(out, StandardCharsets.UTF_8);
+                gson.toJson(tree, w);
+                w.flush();
+                // Force the bytes to the platter before the rename. Without this an OS-level
+                // crash between write and move can leave a zero-length file that the next load
+                // treats as empty and regenerates from defaults (RS-176).
+                if (out instanceof java.io.FileOutputStream fos) fos.getFD().sync();
             }
             try {
                 Files.move(tmp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
@@ -233,24 +354,28 @@ public class ConfigHolder<T> {
     static String stripJsonComments(String src) {
         StringBuilder out = new StringBuilder(src.length());
         int i = 0;
-        boolean inString = false;
+        // 0 = not in a string, otherwise the quote character that opened it. JSON5 allows
+        // single-quoted strings, and treating them as ordinary text meant a value like
+        // 'http://x' had its tail eaten as a line comment, corrupting an otherwise valid
+        // file into a parse failure — which then reset the whole config (RS-092).
+        char quote = 0;
         boolean escape = false;
         while (i < src.length()) {
             char c = src.charAt(i);
-            if (inString) {
+            if (quote != 0) {
                 out.append(c);
                 if (escape) {
                     escape = false;
                 } else if (c == '\\') {
                     escape = true;
-                } else if (c == '"') {
-                    inString = false;
+                } else if (c == quote) {
+                    quote = 0;
                 }
                 i++;
                 continue;
             }
-            if (c == '"') {
-                inString = true;
+            if (c == '"' || c == '\'') {
+                quote = c;
                 out.append(c);
                 i++;
                 continue;

@@ -143,6 +143,7 @@
  "commands.message.title.unset" : "The player %s now no longer has the Title %s",
  "commands.message.capability.not_found" : "The player doesn't have a valid capability!",
  "commands.message.respec.success" : "Successfully reset all skills, passives, and perks for %s",
+ "commands.message.respec.player_only" : "Run /respec <player> from the console; /respec with no argument resets your own progression.",
  "commands.message.listskills.header" : "Skill levels for %s:",
  "commands.message.listskills.global" : "Global level: %s",
 

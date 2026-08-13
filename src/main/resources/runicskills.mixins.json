@@ -9,7 +9,8 @@
     "MixForgeGui",
     "MixPlayerRenderer",
     "MixInventoryScreen",
-    "MixGunItem"
+    "MixGunItem",
+    "MixTargetFinder"
   ],
   "mixins": [
     "MixItemStack",
@@ -17,7 +18,6 @@
     "MixPlayer",
     "MixPowderSnowBlock",
     "MixShulkerBullet",
-    "MixTargetFinder",
     "MixVillager",
     "MixCraftingMenu",
     "MixEnchantmentMenu",

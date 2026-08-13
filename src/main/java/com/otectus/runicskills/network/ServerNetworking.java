@@ -30,7 +30,13 @@ public class ServerNetworking {
     // Payload change => protocol bump, same rule as a new packet.
     // 1.6.0: bumped "7" -> "8" — CommonConfigSyncCP gained disabledPowers plus the
     // hideDisabledPerks/Passives/Powers flags. Same rule: payload change => protocol bump.
-    private static final String PROTOCOL_VERSION = "8";
+    // 1.7.0: bumped "8" -> "9" — DynamicConfigSyncCP now writes the sixteen passive-level arrays
+    // as length-prefixed varint arrays instead of one '-'-delimited string. The old format could
+    // not represent a negative level (the delimiter collided with the minus sign) or an empty
+    // array, and both cases disconnected the client during login (RS-027). A pre-1.7.0 peer would
+    // pass the handshake and then misparse the buffer, so the same rule applies: payload change
+    // => protocol bump.
+    private static final String PROTOCOL_VERSION = "9";
     public static SimpleChannel instance;
 
     /**

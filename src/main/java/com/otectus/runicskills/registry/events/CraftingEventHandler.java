@@ -2,6 +2,8 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.util.ContainerRewardLedger;
+import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.PlayerMessagesCP;
 import com.otectus.runicskills.registry.*;
@@ -57,10 +59,17 @@ public class CraftingEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerCraft(PlayerEvent.ItemCraftedEvent event) {
         Player player = event.getEntity();
-        if (player != null && RegistryPerks.CONVERGENCE != null) {
-            if (player instanceof FakePlayer) return;
-            int randomizer = ThreadLocalRandom.current().nextInt((int) RegistryPerks.CONVERGENCE.get().getActiveValue(player)[0]);
-            if (RegistryPerks.CONVERGENCE.get().isEnabled(player) && (RegistryPerks.CONVERGENCE.get().getActiveValue(player)[0] >= 100 || randomizer == 1)) {
+        // ItemCraftedEvent fires on BOTH logical sides. Rolling RNG here on the client produced
+        // ghost bonus items the server never granted, and the durability edit below mutated a
+        // client-side copy that the next inventory sync discarded (RS-061).
+        if (player == null || player.level().isClientSide) return;
+        if (player instanceof FakePlayer) return;
+        if (RegistryPerks.CONVERGENCE != null && RegistryPerks.CONVERGENCE.get().isEnabled(player)) {
+            // The roll now sits INSIDE the enablement check. It used to run for every craft by
+            // every player, so a configured probability of 0 threw out of this handler and broke
+            // crafting server-wide for people who had never taken the perk (RS-029).
+            double chance = RegistryPerks.CONVERGENCE.get().getActiveValue(player)[0];
+            if (chance >= 100 || ProcRoll.rolls(chance)) {
                 ItemStack convergenceItem = ConvergencePerk.drop(event.getCrafting());
                 if (convergenceItem != null) {
                     player.drop(convergenceItem, false);
@@ -68,19 +77,17 @@ public class CraftingEventHandler {
             }
         }
 
-        if (player != null && RegistryPerks.MASTER_TINKERER != null && RegistryPerks.MASTER_TINKERER.get().isEnabled(player)) {
-            if (!(player instanceof FakePlayer)) {
-                ItemStack crafted = event.getCrafting();
-                if (crafted.isDamageableItem()) {
-                    int bonusDurability = (int) (crafted.getMaxDamage() * HandlerCommonConfig.HANDLER.instance().masterTinkererPercent / 100.0);
-                    if (bonusDurability > 0 && crafted.getDamageValue() > 0) {
-                        crafted.setDamageValue(Math.max(0, crafted.getDamageValue() - bonusDurability));
-                    }
+        if (RegistryPerks.MASTER_TINKERER != null && RegistryPerks.MASTER_TINKERER.get().isEnabled(player)) {
+            ItemStack crafted = event.getCrafting();
+            if (crafted.isDamageableItem()) {
+                int bonusDurability = (int) (crafted.getMaxDamage() * HandlerCommonConfig.HANDLER.instance().masterTinkererPercent / 100.0);
+                if (bonusDurability > 0 && crafted.getDamageValue() > 0) {
+                    crafted.setDamageValue(Math.max(0, crafted.getDamageValue() - bonusDurability));
                 }
             }
         }
 
-        if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
+        if (player instanceof ServerPlayer serverPlayer) {
             double craftingLuck = serverPlayer.getAttributeValue(RegistryAttributes.CRAFTING_LUCK.get());
             if (craftingLuck > 0) {
                 int chance = ThreadLocalRandom.current().nextInt(100);
@@ -107,32 +114,68 @@ public class CraftingEventHandler {
     @SubscribeEvent
     public void onContainerOpen(PlayerContainerEvent.Open event) {
         Player player = event.getEntity();
-        if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
-            if (RegistryPerks.LOCKSMITH != null && RegistryPerks.LOCKSMITH.get().isEnabled(player)) {
-                int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LOCKSMITH.get().getActiveValue(player)[0]);
-                if (random == 0) {
-                    int bonusXp = 5;
-                    if (RegistryPerks.SAFE_CRACKER != null && RegistryPerks.SAFE_CRACKER.get().isEnabled(player)) {
-                        bonusXp += (int) RegistryPerks.SAFE_CRACKER.get().getActiveValue(player)[0];
-                    }
-                    serverPlayer.giveExperiencePoints(bonusXp);
-                }
-            }
+        if (!(player instanceof ServerPlayer serverPlayer) || player instanceof FakePlayer) return;
+        if (RegistryPerks.LOCKSMITH == null || !RegistryPerks.LOCKSMITH.get().isEnabled(player)) return;
+
+        // Only *block* containers can be rewarded. PlayerContainerEvent.Open also fires for the
+        // player's own inventory, a horse, a villager trade screen and any modded menu with no
+        // world position — none of which a "found a locked container" reward should pay for, and
+        // all of which are reopenable at will (RS-001).
+        BlockPos opened = findOpenedContainer(serverPlayer);
+        if (opened == null) return;
+
+        HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
+        long container = ContainerRewardLedger.key(
+                serverPlayer.level().dimension().location().toString(), opened.asLong());
+        // Each distinct container pays out at most once per window, with a floor between any two
+        // payouts. Without this, holding right-click on a single crafting table produced unbounded
+        // vanilla XP — the currency the whole skill progression is bought with (RS-001).
+        if (!ContainerRewardLedger.claim(serverPlayer.getUUID(), container,
+                serverPlayer.level().getGameTime(),
+                Math.max(0L, (long) c.locksmithContainerCooldownMinutes * 60L * 20L),
+                Math.max(0L, (long) c.locksmithMinSecondsBetweenRewards * 20L))) {
+            return;
         }
+
+        if (!ProcRoll.rolls(RegistryPerks.LOCKSMITH.get().getActiveValue(player)[0])) return;
+        int bonusXp = 5;
+        if (RegistryPerks.SAFE_CRACKER != null && RegistryPerks.SAFE_CRACKER.get().isEnabled(player)) {
+            bonusXp += (int) RegistryPerks.SAFE_CRACKER.get().getActiveValue(player)[0];
+        }
+        serverPlayer.giveExperiencePoints(bonusXp);
+    }
+
+    /**
+     * Resolves the world position of the block container a player just opened, or {@code null}
+     * when the menu is not backed by one. Forge exposes no accessor for a menu's
+     * {@code ContainerLevelAccess}, so this reads the position the player is interacting with:
+     * the block they are looking at, verified to actually carry a block entity.
+     */
+    private static BlockPos findOpenedContainer(ServerPlayer player) {
+        net.minecraft.world.phys.HitResult hit = player.pick(6.0D, 0.0F, false);
+        if (!(hit instanceof net.minecraft.world.phys.BlockHitResult block)) return null;
+        BlockPos pos = block.getBlockPos();
+        return player.level().getBlockEntity(pos) == null ? null : pos;
     }
 
     @SubscribeEvent
     public void onPickupXp(PlayerXpEvent.PickupXp event) {
         Player player = event.getEntity();
-        if (player instanceof ServerPlayer sp && RegistryPerks.LORE_MASTERY != null &&
-                RegistryPerks.LORE_MASTERY.get().isEnabled(sp)) {
-            if (sp.containerMenu instanceof net.minecraft.world.inventory.GrindstoneMenu) {
-                int originalXp = event.getOrb().getValue();
-                int bonusXp = (int) (originalXp * (RegistryPerks.LORE_MASTERY.get().getActiveValue(sp)[0] - 1.0));
-                if (bonusXp > 0) {
-                    sp.giveExperiencePoints(bonusXp);
-                }
-            }
+        if (!(player instanceof ServerPlayer sp) || player instanceof FakePlayer) return;
+        if (RegistryPerks.LORE_MASTERY == null || !RegistryPerks.LORE_MASTERY.get().isEnabled(sp)) return;
+        if (!(sp.containerMenu instanceof net.minecraft.world.inventory.GrindstoneMenu)) return;
+
+        // Require a freshly-spawned orb. A grindstone drops its experience at the player's feet
+        // and it is collected within a tick or two; orbs arriving from an XP farm have travelled
+        // and are older. Without this the perk multiplied ANY orb picked up while a grindstone
+        // screen happened to be open, which turned "stand in your XP farm with a grindstone
+        // menu up" into a flat XP multiplier (RS-058).
+        if (event.getOrb().tickCount > 2) return;
+
+        int originalXp = event.getOrb().getValue();
+        int bonusXp = (int) (originalXp * (RegistryPerks.LORE_MASTERY.get().getActiveValue(sp)[0] - 1.0));
+        if (bonusXp > 0) {
+            sp.giveExperiencePoints(bonusXp);
         }
     }
 
@@ -157,44 +200,34 @@ public class CraftingEventHandler {
 
             if (!(event.getEntity() instanceof Player)) {
                 entity = event.getSource().getEntity();
-                if (entity instanceof Player player) {
-                    if (RegistryPerks.LUCKY_DROP != null && RegistryPerks.LUCKY_DROP.get().isEnabled(player)) {
-                        int random = ThreadLocalRandom.current().nextInt((int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[0]);
-                        if (random == 0) {
+                if (entity instanceof ServerPlayer player && !(entity instanceof FakePlayer)) {
+                    if (RegistryPerks.LUCKY_DROP != null && RegistryPerks.LUCKY_DROP.get().isEnabled(player)
+                            && ProcRoll.rolls(RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[0])) {
+                        // Multiply THIS death's drops, which the event hands us directly. The old
+                        // implementation waited a tick and then re-scanned the world for any
+                        // ItemEntity with tickCount <= 1 inside a 2x2x2 box around the corpse,
+                        // which meant a stack the player manually dropped at the right moment was
+                        // multiplied too — a trivially automatable duplicator (RS-003).
+                        int multiplier = (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(player)[1];
+                        if (multiplier > 1) {
                             List<ItemStack> equipment = new ArrayList<>();
                             for (ItemStack next : event.getEntity().getAllSlots()) {
                                 equipment.add(next);
                             }
-
-                            BlockPos pos = event.getEntity().blockPosition();
-                            java.util.UUID luckyDropUuid = player.getUUID();
-                            enqueueTask(event.getEntity().level(), () -> {
-                                // Re-resolve the killer one tick later: capturing the Player ref
-                                // directly risked acting on a logged-out player (stale send/lookup).
-                                ServerPlayer onlinePlayer = RunicSkills.server == null ? null
-                                        : RunicSkills.server.getPlayerList().getPlayer(luckyDropUuid);
-                                if (onlinePlayer == null) return;
-                                List<ItemEntity> dropEntities = new ArrayList<>();
-                                Iterator<Entity> var5 = event.getEntity().level().getEntities(null, new AABB((pos.getX() - 1), (pos.getY() - 1), (pos.getZ() - 1), (pos.getX() + 1), (pos.getY() + 1), (pos.getZ() + 1))).iterator();
-                                while (var5.hasNext()) {
-                                    Entity ea = var5.next();
-                                    if (ea instanceof ItemEntity) dropEntities.add((ItemEntity) ea);
-                                }
-                                var5 = (Iterator) dropEntities.iterator();
-                                while (var5.hasNext()) {
-                                    ItemEntity dropEntity = (ItemEntity) var5.next();
-                                    int tickCount = dropEntity.tickCount;
-                                    if (tickCount <= 1) {
-                                        ItemStack itemStack = dropEntity.getItem();
-                                        if (!equipment.contains(itemStack)) {
-                                            if (itemStack.getMaxStackSize() > 1)
-                                                itemStack.setCount(itemStack.getCount() * (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(onlinePlayer)[1]);
-                                            PlayerMessagesCP.send(onlinePlayer, "overlay.perk.runicskills.lucky_drop", (int) RegistryPerks.LUCKY_DROP.get().getActiveValue(onlinePlayer)[1]);
-                                            dropEntity.setItem(itemStack);
-                                        }
-                                    }
-                                }
-                            }, 0);
+                            boolean multiplied = false;
+                            for (ItemEntity dropEntity : event.getDrops()) {
+                                ItemStack itemStack = dropEntity.getItem();
+                                // Unstackable items are the mob's own equipment; multiplying them
+                                // is both meaningless and the usual route to duplicating gear.
+                                if (itemStack.getMaxStackSize() <= 1) continue;
+                                if (equipment.contains(itemStack)) continue;
+                                itemStack.setCount(itemStack.getCount() * multiplier);
+                                dropEntity.setItem(itemStack);
+                                multiplied = true;
+                            }
+                            if (multiplied) {
+                                PlayerMessagesCP.send(player, "overlay.perk.runicskills.lucky_drop", multiplier);
+                            }
                         }
                     }
                 }

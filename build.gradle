@@ -5,15 +5,21 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        // Pinned to an immutable revision of the 0.7-SNAPSHOT stream.
+        //
+        // A bare SNAPSHOT plus the two dynamic version ranges below meant the same commit could
+        // produce a different jar tomorrow than it did today, with no record of what changed —
+        // and a broken upstream publish became a broken build for everyone, including CI on old
+        // tags (RS-036). Update these deliberately, not implicitly.
+        classpath 'org.spongepowered:mixingradle:0.7.38'
     }
 }
 
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'net.minecraftforge.gradle' version '6.0.24'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.2.0'
 }
 
 apply plugin: 'org.spongepowered.mixin'

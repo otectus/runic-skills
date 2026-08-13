@@ -37,7 +37,11 @@ import java.util.UUID;
 @Pseudo
 @Mixin({TargetFinder.class})
 public abstract class MixTargetFinder {
-    @Inject(method = {"findAttackTargetResult"}, at = {@At("HEAD")}, cancellable = true, remap = false)
+    // require = 0: this targets an OPTIONAL third-party mod. Under the inherited
+    // defaultRequire of 1, the target mod renaming or reshaping this method in any update
+    // turned a missing injection point into a hard startup crash for the whole pack,
+    // rather than the perk quietly not applying (RS-048).
+    @Inject(method = {"findAttackTargetResult"}, at = {@At("HEAD")}, cancellable = true, remap = false, require = 0)
     private static void findAttackTargetResult(Player player, Entity cursorTarget, WeaponAttributes.Attack attack, double attackRange, CallbackInfoReturnable<TargetFinder.TargetResult> info) {
         if(player == null || cursorTarget == null || !ForgeMod.ENTITY_REACH.isPresent()){
             return;

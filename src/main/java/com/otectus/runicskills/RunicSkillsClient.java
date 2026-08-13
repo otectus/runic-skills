@@ -7,7 +7,6 @@ import com.otectus.runicskills.client.gui.OverlayNoticeGui;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
-import com.otectus.runicskills.client.integration.L2TabsClientIntegration;
 import com.otectus.runicskills.client.integration.LegendaryTabsClientIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
@@ -32,13 +31,45 @@ public class RunicSkillsClient {
     public static Minecraft client = Minecraft.getInstance();
     public static KeyMapping OPEN_RUNICSKILLS_SCREEN = new KeyMapping("key.runicskills.open_skills", InputConstants.Type.KEYSYM, 89, "key.runicskills.title");
 
+    /**
+     * Opens the Powers panel.
+     *
+     * <p>{@code PowersScreen} — roughly 15 KB of UI with twelve translation keys, and the only
+     * place a player can equip Marks, Seals and a Crown — shipped with no entry point at all: the
+     * keybind its own documentation described was never registered, so the screen was unreachable
+     * dead code (RS-023). Unbound by default so it cannot collide with an existing binding in a
+     * large pack; players assign it in Controls.
+     */
+    public static KeyMapping OPEN_RUNICSKILLS_POWERS = new KeyMapping("key.runicskills.open_powers", InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), "key.runicskills.title");
+
     @EventBusSubscriber(modid = RunicSkills.MOD_ID, value = {Dist.CLIENT})
     public static class ClientForgeEvents {
         @SubscribeEvent
         public static void checkKeyboard(InputEvent.Key event) {
-            if (RunicSkillsClient.client.player != null && RunicSkillsClient.client.level != null &&
-                    RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN.consumeClick())
-                RunicSkillsClient.client.setScreen(new RunicSkillsScreen());
+            if (RunicSkillsClient.client.player == null || RunicSkillsClient.client.level == null) return;
+            if (RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN.consumeClick()) {
+                toggle(RunicSkillsScreen.class, RunicSkillsScreen::new);
+            }
+            if (RunicSkillsClient.OPEN_RUNICSKILLS_POWERS.consumeClick()) {
+                toggle(com.otectus.runicskills.client.screen.PowersScreen.class,
+                        com.otectus.runicskills.client.screen.PowersScreen::new);
+            }
+        }
+
+        /**
+         * Opens {@code screenType}, or closes it if it is already the active screen.
+         *
+         * <p>The keybind previously only ever opened, so the key that brought the panel up did
+         * nothing to dismiss it — inconsistent with vanilla's {@code E} and with every other
+         * inventory-style screen in the game (RS-195).
+         */
+        private static void toggle(Class<? extends net.minecraft.client.gui.screens.Screen> screenType,
+                                   java.util.function.Supplier<net.minecraft.client.gui.screens.Screen> factory) {
+            if (screenType.isInstance(RunicSkillsClient.client.screen)) {
+                RunicSkillsClient.client.setScreen(null);
+            } else {
+                RunicSkillsClient.client.setScreen(factory.get());
+            }
         }
     }
 
@@ -65,16 +96,11 @@ public class RunicSkillsClient {
             MinecraftForge.EVENT_BUS.register(OverlayNoticeGui.INSTANCE);
 
             if (L2TabsIntegration.isModLoaded()) {
-                // Use a method reference to L2TabsClientIntegration#registerTab rather than an
-                // inline lambda. Same JVM-verifier eager-resolution risk as the Legendary Tabs
-                // path below: an inline lambda body containing `TabRegistry.registerTab(...)`
-                // compiles to a synthetic method ON ClientProxy whose bytecode references
-                // dev.xkmc.l2tabs.* types. Forge loads ClientProxy via Class.forName(..., true,
-                // loader) at mod construction; the verifier eager-loads BaseTab via
-                // TabRunicSkills' superclass check and throws NoClassDefFoundError when L2Tabs
-                // is absent. The method reference puts only L2TabsClientIntegration's name in
-                // ClientProxy's constant pool — no l2tabs types in ClientProxy's bytecode.
-                event.enqueueWork(L2TabsClientIntegration::registerTab);
+                // The dependency-free bridge probes the expected API, reflectively loads the
+                // typed adapter, and quarantines linkage failures from incompatible versions.
+                // ClientProxy therefore contains neither L2 Tabs symbols nor an adapter-class
+                // reference that an eager verifier could resolve during startup.
+                event.enqueueWork(L2TabsIntegration::registerClientTab);
             }
 
             if (LegendaryTabsIntegration.isModLoaded()) {
@@ -101,6 +127,7 @@ public class RunicSkillsClient {
         @SubscribeEvent
         public static void registerKeys(RegisterKeyMappingsEvent event) {
             event.register(RunicSkillsClient.OPEN_RUNICSKILLS_SCREEN);
+            event.register(RunicSkillsClient.OPEN_RUNICSKILLS_POWERS);
         }
 
         /**

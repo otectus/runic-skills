@@ -21,7 +21,9 @@ public class RegistrySkills {
 
     private static final ResourceKey<Registry<Skill>> SKILLS_KEY = ResourceKey.createRegistryKey(new ResourceLocation(RunicSkills.MOD_ID, "skills"));
     private static final DeferredRegister<Skill> SKILLS = DeferredRegister.create(SKILLS_KEY, RunicSkills.MOD_ID);
-    public static Supplier<IForgeRegistry<Skill>> SKILLS_REGISTRY = SKILLS.makeRegistry(() -> new RegistryBuilder<Skill>().disableSaving());
+    // disableSync(): contents are config-derived and must not join the login handshake.
+    // See RegistryPerks for the full rationale (RS-015).
+    public static Supplier<IForgeRegistry<Skill>> SKILLS_REGISTRY = SKILLS.makeRegistry(() -> new RegistryBuilder<Skill>().disableSaving().disableSync());
 
     // 2x5 grid layout:
     // [0] Strength     [1] Constitution

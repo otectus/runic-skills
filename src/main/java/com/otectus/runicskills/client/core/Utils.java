@@ -60,8 +60,16 @@ public class Utils {
         matrixStack.renderTooltip(client.font, tooltip, Optional.empty(), mouseX, mouseY);
     }
 
+    /**
+     * Half-open hit test: {@code [x, x + width)} by {@code [y, y + height)}.
+     *
+     * <p>Both edges used to be inclusive, so a region and the one starting immediately after it
+     * both claimed the same boundary pixel. With tabs laid out at a 27 px pitch that gave every
+     * adjacent pair a shared column, and whichever came first in the iteration silently won
+     * (RS-170).
+     */
     public static boolean checkMouse(int x, int y, int mouseX, int mouseY, int width, int height) {
-        return (x <= mouseX && x + width >= mouseX && y <= mouseY && y + height >= mouseY);
+        return (mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height);
     }
 
     public static String numberFormat(int number) {
@@ -80,7 +88,16 @@ public class Utils {
         matrixStack.drawString(client.font, string, x - client.font.width(string) / 2, y, color, true);
     }
 
+    /**
+     * Roman numeral for {@code number}, falling back to decimal outside the representable range.
+     *
+     * <p>The lookup tables only cover 0–3999, and the method indexed them directly, so a value
+     * outside that range threw {@link ArrayIndexOutOfBoundsException} — from a tooltip or render
+     * path, where an exception is a crash rather than a bad label. Perk ranks and boosts are
+     * config-driven, so reaching 4000 or a negative value takes only an unusual config (RS-169).
+     */
     public static String intToRoman(int number) {
+        if (number < 1 || number > 3999) return String.valueOf(number);
         String[] thousands = {"", "M", "MM", "MMM"};
         String[] hundreds = {"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"};
         String[] tens = {"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"};

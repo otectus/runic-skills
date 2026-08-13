@@ -42,8 +42,10 @@ public class RegistryPowers {
             ResourceKey.createRegistryKey(new ResourceLocation(RunicSkills.MOD_ID, "powers"));
     public static final DeferredRegister<Power> POWERS =
             DeferredRegister.create(POWERS_KEY, RunicSkills.MOD_ID);
+    // disableSync(): contents are config-derived and must not join the login handshake.
+    // See RegistryPerks for the full rationale (RS-015).
     public static final Supplier<IForgeRegistry<Power>> POWERS_REGISTRY =
-            POWERS.makeRegistry(() -> new RegistryBuilder<Power>().disableSaving());
+            POWERS.makeRegistry(() -> new RegistryBuilder<Power>().disableSaving().disableSync());
 
     // Default skill-level gates from RUNIC_SKILLS_POWERS.md §3.1.
     private static final int LVL_MARK  = 30;

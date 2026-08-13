@@ -21,10 +21,15 @@ public class PacketRateLimiter {
      * @return true if allowed, false if rate-limited
      */
     public static boolean allow(ServerPlayer player, String packetType, int cooldownTicks) {
+        if (player.getServer() == null) return false;
         String key = player.getUUID() + ":" + packetType;
         long currentTick = player.getServer().getTickCount();
         Long lastTick = lastPacketTick.get(key);
-        if (lastTick != null && currentTick - lastTick < cooldownTicks) {
+        // getTickCount() restarts at 0 with the server, so a stale baseline from a previous run
+        // in the same JVM (an integrated server returning to the main menu and loading another
+        // world) made every delta negative and rate-limited every packet indefinitely. Treat a
+        // backwards clock as expired (RS-132).
+        if (lastTick != null && currentTick >= lastTick && currentTick - lastTick < cooldownTicks) {
             return false;
         }
         lastPacketTick.put(key, currentTick);
@@ -37,5 +42,13 @@ public class PacketRateLimiter {
     public static void clearPlayer(UUID playerUUID) {
         String prefix = playerUUID + ":";
         lastPacketTick.keySet().removeIf(key -> key.startsWith(prefix));
+    }
+
+    /**
+     * Drops every baseline. Called on server stop so the next world in this JVM starts from a
+     * clean tick baseline rather than inheriting the previous one (RS-132).
+     */
+    public static void clear() {
+        lastPacketTick.clear();
     }
 }

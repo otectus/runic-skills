@@ -873,12 +873,31 @@ public class PowerEventDispatcher {
      * resistance. Sampled every 60 ticks per spec; in between, the existing effect ticks
      * out naturally. Position memory comes from PowerRuntime.PositionBuffer.
      */
+    /**
+     * Whether this tick is {@code player}'s slot in an {@code every N ticks} schedule.
+     *
+     * <p>Offsetting by a stable hash of the player's id spreads periodic Power scans evenly over
+     * the interval rather than firing them all on the same tick (RS-066).
+     */
+    private static boolean phase(ServerPlayer player, long now, long interval) {
+        long offset = Math.floorMod((long) player.getUUID().hashCode(), interval);
+        return Math.floorMod(now, interval) == offset;
+    }
+
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof ServerPlayer player)) return;
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
+
+        // Players with nothing equipped do no Powers work at all. Every branch below is gated on
+        // a specific equipped Power, but the position-buffer push above them ran unconditionally
+        // for every player, every tick, into a synchronized static map — paid by the whole server
+        // whether or not anyone had a Power (RS-066).
+        if (cap.equippedMarks.isEmpty() && cap.equippedSeals.isEmpty() && cap.equippedCrown.isEmpty()) {
+            return;
+        }
 
         long now = player.level().getGameTime();
 
@@ -899,7 +918,10 @@ public class PowerEventDispatcher {
         // window (set by onSpellDamage) is active, hit the nearest hostile within 10
         // blocks for a flat 3 magic damage. Uses vanilla magic damage (not an ISS
         // lightning damage source) so it doesn't recursively trigger spell-damage Powers.
-        if ((now % 40L) == 0L
+        // Phase-shifted per player. `now % N == 0` put every eligible player's periodic scan on
+        // the SAME tick, so the cost arrived as a spike once every N ticks instead of spread
+        // across them — worst exactly when it matters, on a full server (RS-066).
+        if (phase(player, now, 40L)
                 && isEquipped(player, RegistryPowers.THUNDER_LORD)) {
             Power tl = RegistryPowers.THUNDER_LORD.get();
             if (PowerRuntime.ProcWindows.active(player.getUUID(), tl.getName(), now)) {
@@ -929,7 +951,7 @@ public class PowerEventDispatcher {
         // mutable from the dispatcher without intercepting ISS internals; the
         // extension half alone delivers the "control queen" fantasy. Ice Tomb death-deny
         // is also deferred (needs LivingDeathEvent cancel + scheduled re-kill timer).
-        if ((now % 20L) == 0L && isEquipped(player, RegistryPowers.GLACIAL_SOVEREIGN)) {
+        if (phase(player, now, 20L) && isEquipped(player, RegistryPowers.GLACIAL_SOVEREIGN)) {
             Power gs = RegistryPowers.GLACIAL_SOVEREIGN.get();
             int castWindow = PowerOverridesManager.intValueOr(gs, "cast_window_ticks", 300);
             int castThreshold = PowerOverridesManager.intValueOr(gs, "cast_threshold", 3);
@@ -959,7 +981,7 @@ public class PowerEventDispatcher {
             }
         }
 
-        if ((now % 60L) != 0L) return; // resample window every 3s
+        if (!phase(player, now, 60L)) return; // resample window every 3s
         if (!isEquipped(player, RegistryPowers.ROOTED)) return;
         if (!IronsSpellbooksPowerCompat.hasEffect(player, "oakskin")) return;
 

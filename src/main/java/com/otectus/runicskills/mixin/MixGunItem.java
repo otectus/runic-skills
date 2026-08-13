@@ -20,7 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Pseudo
 @Mixin(GunItem.class)
 public class MixGunItem {
-    @Inject(method = "tryFire", at = @At("HEAD"), cancellable = true, remap = false)
+    // require = 0: this targets an OPTIONAL third-party mod. Under the inherited
+    // defaultRequire of 1, the target mod renaming or reshaping this method in any update
+    // turned a missing injection point into a hard startup crash for the whole pack,
+    // rather than the perk quietly not applying (RS-048).
+    @Inject(method = "tryFire", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private void tryFire(LocalPlayer player, ItemStack itemStack, Entity targetEntity, CallbackInfoReturnable<Boolean> ci){
         if (!player.isCreative()) {
             if (!ClientCapabilityAccess.canUseItemClient(itemStack)) {

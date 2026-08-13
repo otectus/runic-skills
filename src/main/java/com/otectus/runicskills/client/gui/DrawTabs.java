@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 public class DrawTabs {
     public static final ResourceLocation TEXTURE = new ResourceLocation(RunicSkills.MOD_ID, "textures/gui/container/tabs.png");
@@ -23,13 +24,39 @@ public class DrawTabs {
     public static boolean isMouseCheck = false;
     public static boolean checkMouse = false;
 
+    /**
+     * Player-head icon, resolved once per player rather than per frame.
+     *
+     * <p>{@code Utils.playerHead()} builds an ItemStack and writes a GameProfile into its NBT.
+     * Doing that on every frame rebuilt the profile tag 60+ times a second for an icon that only
+     * changes when the player does (RS-025).
+     */
+    private static ItemStack cachedPlayerHead;
+    private static java.util.UUID cachedPlayerHeadOwner;
+
+    private static ItemStack playerHeadIcon() {
+        java.util.UUID owner = client.player == null ? null : client.player.getUUID();
+        if (cachedPlayerHead == null || !java.util.Objects.equals(owner, cachedPlayerHeadOwner)) {
+            cachedPlayerHead = Utils.playerHead();
+            cachedPlayerHeadOwner = owner;
+        }
+        return cachedPlayerHead;
+    }
+
     public static void render(GuiGraphics matrixStack, int mouseX, int mouseY, int textureWidth, int textureHeight, int recipe) {
         Screen screen = client.screen;
         if (client.player != null) {
             isMouseCheck = false;
+            // The strip is still rebuilt per frame because it encodes which tab is currently
+            // active, but it now costs two small records: the icons are cached and the screens
+            // are suppliers that only run when a tab is clicked (RS-025).
             tabList = new ArrayList<>();
-            tabList.add(new Tabs("inventory", Utils.playerHead(), new InventoryScreen(client.player), screen instanceof InventoryScreen, Component.translatable("container.inventory")));
-            tabList.add(new Tabs("leveling", RegistryItems.LEVELING_BOOK.get().getDefaultInstance(), new RunicSkillsScreen(), screen instanceof RunicSkillsScreen, Component.translatable("screen.skill.title")));
+            tabList.add(new Tabs("inventory", playerHeadIcon(),
+                    () -> new InventoryScreen(client.player),
+                    screen instanceof InventoryScreen, Component.translatable("container.inventory")));
+            tabList.add(new Tabs("leveling", RegistryItems.LEVELING_BOOK.get().getDefaultInstance(),
+                    RunicSkillsScreen::new,
+                    screen instanceof RunicSkillsScreen, Component.translatable("screen.skill.title")));
         }
         for (int i = 0; i < tabList.size(); i++) {
             Tabs type = tabList.get(i);

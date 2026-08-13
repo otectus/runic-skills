@@ -30,8 +30,23 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build (compile + checkSidedImports + reobf + jar)
+      # `build` runs compileJava, the :checkSidedImports lint, the JUnit suite, reobf and jar.
+      # The step used to be labelled as if it skipped the tests, which made a red run harder to
+      # read than it needed to be (RS-115).
+      - name: Build (compile + checkSidedImports + test + reobf + jar)
         run: ./gradlew --no-daemon build
+
+      # Test results were produced but never surfaced, so a failure showed only as a non-zero
+      # exit with the detail buried in the Gradle log (RS-115).
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            build/reports/tests/test/**
+            build/test-results/test/**
+          retention-days: 7
 
       - name: Upload jar
         if: success()
@@ -39,4 +54,80 @@ jobs:
         with:
           name: runicskills-jar
           path: build/libs/*.jar
+          retention-days: 7
+
+  # Boots a real dedicated server with the mod installed.
+  #
+  # This is the guard against the failure class the project's own SMOKE_TESTS.md records as its
+  # worst historical regression: code that loads fine on a client and dies on a dedicated server,
+  # because a common-side class touched a net.minecraft.client type. Compiling proves nothing
+  # here — the failure is a NoClassDefFoundError at class-init time, and only actually starting
+  # the server finds it (RS-115).
+  dedicated-server-smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Accept the Minecraft EULA for this run
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+          # Keep world generation cheap; we only care that the server reaches "Done".
+          printf 'level-type=flat\nmax-players=1\nonline-mode=false\nsync-chunk-writes=false\nview-distance=4\n' > run/server.properties
+
+      - name: Boot the dedicated server
+        run: |
+          set -uo pipefail
+          ./gradlew --no-daemon runServer > server.log 2>&1 &
+          GRADLE_PID=$!
+
+          booted=0
+          for _ in $(seq 1 240); do
+            if grep -qE 'Done \([0-9.]+s\)! For help' server.log; then booted=1; break; fi
+            if grep -qE 'NoClassDefFoundError|ExceptionInInitializerError|Failed to start the minecraft server|Mod loading has failed|A potential solution has been determined' server.log; then
+              break
+            fi
+            if ! kill -0 "$GRADLE_PID" 2>/dev/null; then break; fi
+            sleep 5
+          done
+
+          # Always stop the server before judging the result, so the job cannot hang.
+          kill "$GRADLE_PID" 2>/dev/null || true
+          pkill -f 'net.minecraft.server' 2>/dev/null || true
+          sleep 5
+
+          echo "----- last 120 lines of server.log -----"
+          tail -n 120 server.log
+
+          if [ "$booted" -ne 1 ]; then
+            echo "::error::Dedicated server did not reach 'Done' — see server.log artifact."
+            exit 1
+          fi
+          echo "Dedicated server booted successfully."
+
+      - name: Upload server log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dedicated-server-log
+          path: server.log
           retention-days: 7

@@ -53,6 +53,20 @@ public final class PowerRuntime {
         TargetTags.clear(id);
     }
 
+    /**
+     * Drops every service's state. Called on server stop so a subsequent world in the same JVM
+     * does not inherit the previous one's proc windows, cooldowns and position buffers (RS-132).
+     */
+    public static void clearAll() {
+        SpellHistory.clearAll();
+        DamageTypeMemory.clearAll();
+        ProcWindows.clearAll();
+        InternalCooldowns.clearAll();
+        PositionBuffer.clearAll();
+        SummonRegistry.clearAll();
+        TargetTags.clearAll();
+    }
+
     // ── Spell history ───────────────────────────────────────────────────────────────
 
     public record SpellEvent(ResourceLocation spellId, ResourceLocation schoolId, long gameTime) {}
@@ -84,7 +98,12 @@ public final class PowerRuntime {
             return (deque == null || deque.isEmpty()) ? null : deque.peekFirst();
         }
 
-        static void clear(UUID id) { STORE.remove(id); }
+        // synchronized like every other accessor on this map. These five clear() methods were
+        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
+        // read could observe a torn HashMap (RS-131).
+        static synchronized void clear(UUID id) { STORE.remove(id); }
+
+        static synchronized void clearAll() { STORE.clear(); }
     }
 
     // ── Damage-type memory ──────────────────────────────────────────────────────────
@@ -114,6 +133,12 @@ public final class PowerRuntime {
         @Nullable
         public static synchronized School lastSchoolHitOn(UUID victim) {
             return LAST_HIT_ENTITY_SCHOOL.get(victim);
+        }
+
+        static synchronized void clearAll() {
+            LAST_HIT_TICK.clear();
+            LAST_HIT_ENTITY_SCHOOL_OWNER.clear();
+            LAST_HIT_ENTITY_SCHOOL.clear();
         }
 
         static synchronized void clear(UUID id) {
@@ -155,7 +180,12 @@ public final class PowerRuntime {
             if (m != null) m.remove(powerName);
         }
 
-        static void clear(UUID id) { STORE.remove(id); }
+        // synchronized like every other accessor on this map. These five clear() methods were
+        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
+        // read could observe a torn HashMap (RS-131).
+        static synchronized void clear(UUID id) { STORE.remove(id); }
+
+        static synchronized void clearAll() { STORE.clear(); }
     }
 
     // ── Internal cooldowns ──────────────────────────────────────────────────────────
@@ -178,7 +208,12 @@ public final class PowerRuntime {
             return avail == null || avail <= now;
         }
 
-        static void clear(UUID id) { STORE.remove(id); }
+        // synchronized like every other accessor on this map. These five clear() methods were
+        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
+        // read could observe a torn HashMap (RS-131).
+        static synchronized void clear(UUID id) { STORE.remove(id); }
+
+        static synchronized void clearAll() { STORE.clear(); }
     }
 
     // ── Target tagging ──────────────────────────────────────────────────────────────
@@ -206,6 +241,8 @@ public final class PowerRuntime {
         }
 
         /** Drops every tag on this entity — logout cleanup; expiry otherwise only happens lazily on has(). */
+        static synchronized void clearAll() { STORE.clear(); }
+
         static synchronized void clear(UUID entityId) {
             STORE.values().forEach(m -> m.remove(entityId));
             STORE.values().removeIf(Map::isEmpty);
@@ -258,7 +295,12 @@ public final class PowerRuntime {
             return best;
         }
 
-        static void clear(UUID id) { STORE.remove(id); }
+        // synchronized like every other accessor on this map. These five clear() methods were
+        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
+        // read could observe a torn HashMap (RS-131).
+        static synchronized void clear(UUID id) { STORE.remove(id); }
+
+        static synchronized void clearAll() { STORE.clear(); }
     }
 
     // ── Summon registry ─────────────────────────────────────────────────────────────
@@ -280,6 +322,11 @@ public final class PowerRuntime {
             return set == null ? 0 : set.size();
         }
 
-        static void clear(UUID id) { STORE.remove(id); }
+        // synchronized like every other accessor on this map. These five clear() methods were
+        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
+        // read could observe a torn HashMap (RS-131).
+        static synchronized void clear(UUID id) { STORE.remove(id); }
+
+        static synchronized void clearAll() { STORE.clear(); }
     }
 }

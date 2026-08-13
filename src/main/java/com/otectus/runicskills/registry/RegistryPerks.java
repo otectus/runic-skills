@@ -29,7 +29,24 @@ import java.util.stream.Collectors;
 public class RegistryPerks {
     public static final ResourceKey<Registry<Perk>> PERKS_KEY = ResourceKey.createRegistryKey(new ResourceLocation(RunicSkills.MOD_ID, "perks"));
     public static final DeferredRegister<Perk> PERKS = DeferredRegister.create(PERKS_KEY, RunicSkills.MOD_ID);
-    public static final Supplier<IForgeRegistry<Perk>> PERKS_REGISTRY = PERKS.makeRegistry(() -> new RegistryBuilder<Perk>().disableSaving());
+    /**
+     * {@code disableSync()} keeps this registry's contents out of the login handshake.
+     *
+     * <p>A Forge custom registry defaults to {@code sync = true}, so its ids participate in the
+     * client/server registry comparison at login. That is fine for registries whose contents are
+     * fixed by the mod jar — but 470 of the 471 perks here are registered <em>conditionally</em>,
+     * on a {@code <name>RequiredLevel} value read from a local config file; titles are registered
+     * from {@code runicskills.titles.json5}; and Powers are skipped entirely when Iron's
+     * Spellbooks is absent. None of those config files reaches the client before the handshake,
+     * so any server that tuned its perk gates or titles differently from a connecting client
+     * presented a mismatched registry — a login failure, or worse, a silent id remap that pointed
+     * saved player data at the wrong perk (RS-015).
+     *
+     * <p>Nothing needs the vanilla sync: the mod distributes all of this through its own packets
+     * ({@code ConfigSyncCP}, {@code DynamicConfigSyncCP}, {@code SyncSkillCapabilityCP}), which
+     * run after login and carry the values rather than relying on matching registry order.
+     */
+    public static final Supplier<IForgeRegistry<Perk>> PERKS_REGISTRY = PERKS.makeRegistry(() -> new RegistryBuilder<Perk>().disableSaving().disableSync());
 
     public static final RegistryObject<Perk> ONE_HANDED =
             HandlerCommonConfig.HANDLER.instance().oneHandedRequiredLevel < 0
@@ -4396,6 +4413,15 @@ public class RegistryPerks {
 
     public static boolean isDisabled(Perk perk) {
         if (perk == null) return false;
+        // Short-circuit on the empty list before touching the perk at all.
+        //
+        // This is called from Perk#isEnabled, which runs on the order of a hundred times per melee
+        // hit across the mod's damage handlers. Building "runicskills:" + path for the full-id
+        // comparison allocated a String on every one of those calls — even though the overwhelmingly
+        // common case is an empty disabledPerks list, where there is nothing to compare against
+        // (RS-057). The concatenation now happens only when a pack has actually disabled something.
+        List<String> disabled = HandlerCommonConfig.HANDLER.instance().disabledPerks;
+        if (disabled == null || disabled.isEmpty()) return false;
         if (isDisabled(perk.getName())) return true;
         return isDisabled(perk.getMod() + ":" + perk.getName());
     }

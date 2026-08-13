@@ -23,11 +23,33 @@ import net.minecraft.server.level.ServerPlayer;
 public class RespecCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
-                (Commands.literal("respec").requires(source -> source.hasPermission(2)))
+                Commands.literal("respec")
+                // Respeccing SOMEONE ELSE stays operator-only; the permission check moved off the
+                // root literal onto this branch so the self-service form below is reachable.
                 .then(Commands.argument("player", EntityArgument.player())
+                        .requires(source -> source.hasPermission(2))
                         .executes(source -> respec(source, EntityArgument.getPlayer(source, "player")))
                 )
+                // Self-service form, available to any player.
+                //
+                // Lowering maxActivePerks or perksPerGlobalLevel puts everyone already above the
+                // new budget into a frozen state that TogglePerkSP will not let them spend out of,
+                // and a respec was the only exit — behind permission level 2. On a public server
+                // that meant a single config edit could strand the entire playerbase until an
+                // operator ran the command once per affected player, by hand (RS-052). Resetting
+                // your own progression is not a privileged action; it only ever costs the caller.
+                .executes(source -> respecSelf(source))
         );
+    }
+
+    /** Resets the calling player's own progression. Requires no permission level. */
+    private static int respecSelf(CommandContext<CommandSourceStack> source) {
+        ServerPlayer self = source.getSource().getPlayer();
+        if (self == null) {
+            source.getSource().sendFailure(Component.translatable("commands.message.respec.player_only"));
+            return 0;
+        }
+        return respec(source, self);
     }
 
     public static int respec(CommandContext<CommandSourceStack> source, ServerPlayer player) {
@@ -49,6 +71,24 @@ public class RespecCommand {
             for (Perk perk : RegistryPerks.getCachedValues()) {
                 capability.setPerkRank(perk, 0);
             }
+
+            // A respec resets every skill to 1, which puts every Power below its level gate — but
+            // equipped Powers were never cleared, so a player kept a full endgame loadout across
+            // a reset that took away everything that qualified them for it. The same gap let
+            // Powers survive skill loss and level rollback (RS-020).
+            capability.equippedMarks.clear();
+            capability.equippedSeals.clear();
+            capability.equippedCrown = "";
+            capability.powerCooldowns.clear();
+            capability.powerWindows.clear();
+
+            // Residue that used to survive a "full reset": in-flight perk cooldowns (including the
+            // perk-swap lock that could otherwise keep a just-respecced player frozen), the
+            // Counter Attack retaliation window, and the transient Powers runtime state keyed on
+            // this player (RS-128).
+            capability.perkCooldowns.clear();
+            com.otectus.runicskills.common.powers.PowerRuntime.clearPlayer(player.getUUID());
+            com.otectus.runicskills.common.util.ContainerRewardLedger.forget(player.getUUID());
 
             RegistryAttributes.modifierAttributes(player);
             SyncSkillCapabilityCP.send(player);
