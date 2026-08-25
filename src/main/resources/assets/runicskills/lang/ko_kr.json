@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "잠긴 아이템 추가 방법:\n<모드 이름>§b:§f<아이템 이름>§b#§f<스킬>§b:§f<레벨>\n\n스킬을 더 추가하려면 다음과 같이 작성하세요: (원하는 만큼 추가 가능)\n<모드 이름>§b:§f<아이템 이름>§b#§f<스킬>§b:§f<레벨>§b;§f<스킬>§b:§f<레벨>§b...§f\n\n아이템을 드롭 가능하게 만들려면 끝에 §b<droppable>§f을 추가하세요. 예시:\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "보물 아이템 추가 방법:\n<모드 이름>§b:§f<아이템 이름>\n\nNBT를 추가하려면 §b{ }§f를 사용하세요. 예시:\n<모드 이름>§b:§f<아이템 이름>§b{§fNBT§b}§f\n\n마지막으로 리스트에 대해, 리스트는 보물 확률을 얻으면 리스트에서 아이템 1개를 얻습니다. 리스트를 추가하려면:\n<리스트 이름>§bList[§f 여기에 원하는 만큼 아이템을 넣을 수 있으며, 구분은 §b;§f로 하고, 리스트를 닫으려면 §b]§f를 사용하세요",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "수렴 아이템 추가 방법: (공정함을 위해 수렴은 1개의 결과만 제공합니다)\n<모드 이름>§b:§f<아이템 이름>§b#§f<결과 모드 이름>§b:§f<결과 아이템 이름>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "화염 동조",
- "perk.runicskills.fire_attunement.description" : "화염 학파에 동조하여 화염 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.ice_attunement" : "얼음 동조",
- "perk.runicskills.ice_attunement.description" : "얼음 학파에 동조하여 얼음 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.lightning_attunement" : "번개 동조",
- "perk.runicskills.lightning_attunement.description" : "번개 학파에 동조하여 번개 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.holy_attunement" : "신성 동조",
- "perk.runicskills.holy_attunement.description" : "신성 학파에 동조하여 신성 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.nature_attunement" : "자연 동조",
- "perk.runicskills.nature_attunement.description" : "자연 학파에 동조하여 자연 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.blood_attunement" : "피의 동조",
- "perk.runicskills.blood_attunement.description" : "피의 학파에 동조하여 피의 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.ender_attunement" : "엔더 동조",
- "perk.runicskills.ender_attunement.description" : "엔더 학파에 동조하여 엔더 주문을 시전할 수 있게 됩니다.",
- "perk.runicskills.evocation_attunement" : "소환 동조",
- "perk.runicskills.evocation_attunement.description" : "소환 학파에 동조하여 소환 주문을 시전할 수 있게 됩니다.",
-
- "overlay.runicskills.school_locked" : "%s 학파에 동조하지 않았습니다. 학파 선택에서 선택하여 이 주문들을 시전하세요.",
 
  "school.runicskills.fire" : "화염",
  "school.runicskills.ice" : "얼음",

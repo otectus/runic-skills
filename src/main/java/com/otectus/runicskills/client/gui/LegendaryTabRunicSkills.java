@@ -4,7 +4,6 @@ import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.handler.HandlerConfigClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
@@ -19,13 +18,17 @@ import sfiomn.legendarytabs.api.tabs_menu.TabsMenu;
  * own tab strip — drawn, positioned, highlighted, paginated, and "current" tracked by
  * Legendary Tabs itself, exactly like the built-in tabs for FTB Quests, Backpacked, etc.
  * <p>
- * To stay pixel-identical to neighbouring tabs in the strip, this tab reuses the same
- * {@code legendarytabs:textures/gui/tab_menu_buttons.png} atlas the built-in tabs blit
- * from. The sword tile lives at {@code (u=27, v=92)} — a plain silver sword on the
- * standard 26×22 frame; no built-in tab class claims this slot, so reusing it avoids
- * any visual collision with an existing integration. Using the shared atlas means our
- * frame shape, shading, and hover-state transition are byte-for-byte identical to every
- * other tab — there is no custom texture to maintain in the Runic Skills resources.
+ * To stay pixel-identical to neighbouring tabs in the strip, this tab reuses Legendary
+ * Tabs' own icon asset rather than shipping one. Legendary Tabs 2.0 draws the button
+ * chrome itself — from the skin configured for the screen the strip is on — and asks the
+ * tab only for an 18×18 icon, so {@code legendarytabs:textures/gui/skills.png} is all we
+ * supply and the frame shape, shading and hover transition come out identical to every
+ * other tab for free.
+ * <p>
+ * Before 2.0 the API worked the other way round: each tab blitted its own 26×22 cell —
+ * chrome and icon baked together — out of a single {@code tab_menu_buttons.png} atlas.
+ * That atlas no longer exists, and a 26×22 cell cannot be remapped onto an 18×18 icon
+ * slot, which is why this class no longer overrides {@code render} at all.
  */
 public class LegendaryTabRunicSkills extends TabBase {
 
@@ -37,19 +40,22 @@ public class LegendaryTabRunicSkills extends TabBase {
     private static final int VANILLA_GUI_HEIGHT = 166;
     private static final int RUNIC_SKILLS_GUI_HEIGHT = 194;
 
-    // Legendary Tabs' shared atlas (256×256). Layout convention across all its built-in tab
-    // classes: the normal variant sits at (TAB_ICON_TEX_X, TAB_ICON_TEX_Y); the hover variant
-    // is at (TAB_ICON_TEX_X + 54, TAB_ICON_TEX_Y). The TabButton passes hover=true both on
-    // mouse-over *and* when the tab is the currently-used one (via TabButton.isDisabled), so
-    // the same +54 U shift serves as both hover and "selected" appearance — exactly as every
-    // other built-in tab handles it.
-    private static final ResourceLocation TAB_ICONS =
-            new ResourceLocation("legendarytabs", "textures/gui/tab_menu_buttons.png");
-    private static final int TAB_W = 26;
-    private static final int TAB_H = 22;
-    private static final int TAB_ICON_TEX_X = 27;   // Plain silver sword — unused by any built-in tab.
-    private static final int TAB_ICON_TEX_Y = 92;
-    private static final int HOVER_U_SHIFT  = 54;
+    // Legendary Tabs 2.0 ships one bare 18×18 PNG per tab. TabBase.render blits this whole
+    // file at (getIconTexX(), getIconTexY()), which default to 0,0 — correct for a bare icon
+    // rather than a region cut from a sheet.
+    private static final ResourceLocation ICON =
+            new ResourceLocation("legendarytabs", "textures/gui/skills.png");
+
+    // Ids are global across every Legendary Tabs addon, so namespace ours.
+    @Override
+    public String getId() {
+        return "runicskills_skills";
+    }
+
+    @Override
+    public ResourceLocation getIconTexture() {
+        return ICON;
+    }
 
     @Override
     public void openTargetScreen(Player player) {
@@ -62,11 +68,8 @@ public class LegendaryTabRunicSkills extends TabBase {
         return true;
     }
 
-    @Override
-    public void render(GuiGraphics gfx, int x, int y, boolean hover) {
-        int u = TAB_ICON_TEX_X + (hover ? HOVER_U_SHIFT : 0);
-        gfx.blit(TAB_ICONS, x, y, u, TAB_ICON_TEX_Y, TAB_W, TAB_H);
-    }
+    // No render() override: TabBase draws the chrome for the screen the strip is on and
+    // blits our 18×18 icon over it, including the hover/selected state.
 
     @Override
     public boolean isCurrentlyUsed(Screen currentScreen) {

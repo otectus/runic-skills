@@ -18,10 +18,8 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -373,72 +371,6 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arcaneShieldPercent)
             ));
 
-    // Iron's Spells 'n Spellbooks - School Attunement perks
-    public static final RegistryObject<Perk> FIRE_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireAttunementRequiredLevel < 0
-            ? null : PERKS.register("fire_attunement", () -> register(
-                    "fire_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().fireAttunementRequiredLevel,
-                    HandlerResources.FIRE_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> ICE_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceAttunementRequiredLevel < 0
-            ? null : PERKS.register("ice_attunement", () -> register(
-                    "ice_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().iceAttunementRequiredLevel,
-                    HandlerResources.ICE_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> LIGHTNING_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningAttunementRequiredLevel < 0
-            ? null : PERKS.register("lightning_attunement", () -> register(
-                    "lightning_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().lightningAttunementRequiredLevel,
-                    HandlerResources.LIGHTNING_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> HOLY_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyAttunementRequiredLevel < 0
-            ? null : PERKS.register("holy_attunement", () -> register(
-                    "holy_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().holyAttunementRequiredLevel,
-                    HandlerResources.HOLY_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> NATURE_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureAttunementRequiredLevel < 0
-            ? null : PERKS.register("nature_attunement", () -> register(
-                    "nature_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().natureAttunementRequiredLevel,
-                    HandlerResources.NATURE_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> BLOOD_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodAttunementRequiredLevel < 0
-            ? null : PERKS.register("blood_attunement", () -> register(
-                    "blood_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().bloodAttunementRequiredLevel,
-                    HandlerResources.BLOOD_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> ENDER_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderAttunementRequiredLevel < 0
-            ? null : PERKS.register("ender_attunement", () -> register(
-                    "ender_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().enderAttunementRequiredLevel,
-                    HandlerResources.ENDER_ATTUNEMENT_PERK
-            ));
-    public static final RegistryObject<Perk> EVOCATION_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationAttunementRequiredLevel < 0
-            ? null : PERKS.register("evocation_attunement", () -> register(
-                    "evocation_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().evocationAttunementRequiredLevel,
-                    HandlerResources.EVOCATION_ATTUNEMENT_PERK
-            ));
-
     // ── Iron's Spells — Phase 1a: generic mana & casting perks ──
     public static final RegistryObject<Perk> WELLSPRING =
             !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().wellspringRequiredLevel < 0
@@ -607,16 +539,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().chargeMasteryPercent)
             ));
 
-    // ── Iron's Spells — Phase 1b: school specialist triplets + Eldritch attunement ──
-    public static final RegistryObject<Perk> ELDRITCH_ATTUNEMENT =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchAttunementRequiredLevel < 0
-            ? null : PERKS.register("eldritch_attunement", () -> register(
-                    "eldritch_attunement",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().eldritchAttunementRequiredLevel,
-                    HandlerResources.ISS_ELDRITCH_ATTUNEMENT_PERK
-            ));
-
+    // ── Iron's Spells — Phase 1b: school specialist triplets ──
     // Fire
     public static final RegistryObject<Perk> FIRE_MANCER =
             !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireMancerRequiredLevel < 0
@@ -4349,26 +4272,6 @@ public class RegistryPerks {
         return cachedByName.get(perkName);
     }
 
-    // School Attunement helpers
-    private static final Set<String> SCHOOL_PERK_NAMES = Set.of(
-            "fire_attunement", "ice_attunement", "lightning_attunement", "holy_attunement",
-            "nature_attunement", "blood_attunement", "ender_attunement", "evocation_attunement"
-    );
-
-    public static boolean isSchoolAttunementPerk(String perkName) {
-        return SCHOOL_PERK_NAMES.contains(perkName);
-    }
-
-    public static int countEnabledSchoolPerks(com.otectus.runicskills.common.capability.SkillCapability capability) {
-        int count = 0;
-        for (String name : SCHOOL_PERK_NAMES) {
-            Perk perk = getPerk(name);
-            if (perk != null && capability.isPerkActive(perk)) {
-                count++;
-            }
-        }
-        return count;
-    }
 
     public static int countEnabledPerks(com.otectus.runicskills.common.capability.SkillCapability capability) {
         int count = 0;
@@ -4430,15 +4333,6 @@ public class RegistryPerks {
     // hideDisabledPerks flag is on. Flag-first short-circuits the list scan when the feature is off.
     public static boolean isHiddenFromUi(Perk perk) {
         return HandlerCommonConfig.HANDLER.instance().hideDisabledPerks && isDisabled(perk);
-    }
-
-    public static List<Perk> getSchoolAttunementPerks() {
-        List<Perk> perks = new ArrayList<>();
-        for (String name : SCHOOL_PERK_NAMES) {
-            Perk perk = getPerk(name);
-            if (perk != null) perks.add(perk);
-        }
-        return perks;
     }
 }
 

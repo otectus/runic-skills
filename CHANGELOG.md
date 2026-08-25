@@ -1,5 +1,196 @@
 # Changelog
 
+## [1.9.0] - 2026-08-25 — Death no longer wipes progression; spell attunement removed
+
+**Every player who died since 1.7.0 lost their character.** That is fixed here. This release also
+removes the spell-attunement system, so no school has to be selected to cast.
+
+### Fixed — skills, perks, passives, powers and titles were wiped on death (since 1.7.0)
+
+- **`PlayerEvent.Clone` silently copied nothing, and the blank result was then saved over the real
+  character.** The Clone handler itself was correct; the capability *provider* was not.
+  `LazySkillCapability` builds one `LazyOptional` in its constructor, keeps it in a `final` field and
+  returns that same instance from every `getCapability` call. 1.7.0's RS-007 fix then registered
+  `lazySkillCapability::invalidate` as an attach-time invalidation listener — correct in intent, since a
+  handed-out optional must stop resolving once its entity is discarded, but `LazyOptional#invalidate`
+  is irreversible and there was only ever the one optional to kill.
+
+  On the respawn path that is fatal. `PlayerList#respawn` discards the old entity first —
+  `removePlayerImmediately` → `Entity#remove` → `invalidateCaps()` → the mod's listener — and only then
+  builds the new `ServerPlayer` and fires `PlayerEvent.Clone`. By that point the optional is dead;
+  `reviveCaps()` only flips the provider's own `valid` flag, so `getCapability(...).ifPresent(...)`
+  no-opped, `copyFrom` never ran, and the respawned player kept the empty capability created at
+  attach time: every skill back to 1, every perk and passive to 0, no powers, no title. The next
+  autosave wrote that over their real data. It was never a display glitch — the sync layer was
+  faithfully transmitting zeroes — and it hit both death respawn and the End-portal return.
+
+  `invalidate()` now installs a fresh `LazyOptional` as it retires the old one. Callers still holding
+  the previous optional stop resolving it, so the RS-007 guarantee is intact, while the capability is
+  resolvable again after `reviveCaps()`. The underlying `SkillCapability` is untouched, so no data is
+  recreated. **Characters wiped by earlier 1.7.x/1.8.x builds cannot be recovered from this fix** —
+  the zeroed state was already written to disk. Restore from a world backup if you have one.
+
+- **Added `LazySkillCapabilityInvariantTest`.** No test covered capability persistence, which is why
+  this shipped. The test source set is deliberately Forge-free, so this is a source-scanning guard in
+  the same idiom as `PerkTextureResolutionTest`: it fails if the optional field goes back to `final`
+  or if `invalidate()` stops re-creating it. Verified against the broken revision.
+
+### Removed — spell attunement
+
+- **Spell schools no longer have to be attuned.** Casting an Iron's Spells spell required first
+  enabling that school's attunement perk, capped at `ironsMaxSchoolSelections` (default 2). The
+  denial message even directed players to "School Selection", a screen that has never existed. The
+  nine attunement perks (`fire`/`ice`/`lightning`/`holy`/`nature`/`blood`/`ender`/`evocation`/
+  `eldritch_attunement`), the cast-blocking check in `IronsSpellbooksIntegration`, and the
+  school cap in `TogglePerkSP` are gone, along with their 11 config fields, icons, and lang keys in
+  all 17 locales.
+
+- **Kept, because they never consulted the selected school:** the 27 school specialist perks
+  (Pyromancer / Fire Warded / Fire Catalyst and their eight siblings) key off their own perk and the
+  cast spell's school; the six cross-mod school bridges read spell attributes. `ironsEnableSchoolGating`
+  (spells gated on Magic level) and `ironsEnableSchoolBonuses` are untouched — neither involves
+  selecting a school. `Gem`, `Aura`, `Mystic` and `Source Attunement` are unrelated Apotheosis,
+  Nature's Aura, native and Ars Nouveau perks and remain.
+
+- **Existing saves keep their data dormant.** The capability's orphan-retention store preserves
+  unrecognised NBT keys, so `perk.fire_attunement` survives inertly with no schema bump, and would
+  come back if a pack ever re-added the perks. Perk registries already carry `.disableSync()`, so the
+  smaller perk set does not break the login handshake.
+
+- **Side effect:** `eldritch_attunement` was gated on cast but missing from the school-cap set, so it
+  had always been an effectively free third school. Moot now.
+
+- Deleting the attunement lang block also resolved the eight duplicate `school.runicskills.*` keys in
+  `en_us.json` (audit RS-171); the Powers screen's block survives and is a superset.
+## [1.8.1] - 2026-08-24 — Config screen reopened; Skills tab on late-registered screens
+
+Two unrelated regressions. The in-game config screen has been impossible to open since **1.5.0**:
+clicking Configure in the mod list did nothing visible and logged an error blaming the player's
+YACL install, which was never the cause. Separately,
+1.8.0 ported the tab to the Legendary Tabs 2.0 API and stopped the crash, but left the tab missing
+from any screen Legendary Tabs registers *after* startup — most visibly Sophisticated Backpacks'
+backpack screen, where the strip showed every other tab but not Skills.
+
+### Fixed — in-game config screen (broken since 1.5.0)
+
+- **Clicking Configure in the mod list opens the config screen again.** YACL's `ListGroupImpl`
+  refuses any `@ListGroup` field whose `@AutoGen` also declares a group — *"@ListGroup fields cannot
+  be inside a group as lists act as groups"* — and `ConfigClassHandlerImpl` rethrows that as
+  `YACLAutoGenException: Failed to create option for field '<name>'`, aborting the **entire** screen on
+  the first offender. `disabledPerks` acquired `group = "general"` when it was added in 1.5.0, and four
+  more list fields followed, so the screen has been unopenable on every YACL 3.x ever since. The five
+  `@AutoGen` annotations now omit `group`; each list renders as its own group box in *Common
+  configuration*. No config file migration is needed — the on-disk JSON5 schema is unchanged.
+
+- **Every option now shows a readable name.** 273 of the 741 generated options had no display-name
+  translation key and would have rendered as raw `yacl3.config.runicskills:config.<field>` strings. They
+  accumulated unnoticed precisely because nobody could open the screen to see them, concentrated in the
+  groups added since 1.5.0 (Iron's Spells 113, Apothic Attributes 41, Perks 26, Ars Nouveau 23, cross-mod
+  29). Fifteen of those were fields that had been renamed without their lang key following along — e.g.
+  `thickSkinPercent` → `thickSkinAmplifier` — so those keys were renamed in place rather than duplicated,
+  which also clears the dead originals.
+
+- **A failure to build the screen no longer blames YACL for the mod's own bugs.** The catch block
+  reported every failure as a YACL version mismatch and told the player to install a different YACL —
+  advice that could not have helped, since they already had the right one. It also logged only
+  `e.getClass().getName(): e.getMessage()`, discarding the cause chain that named the real problem;
+  that is why this survived three releases misdiagnosed. `LinkageError` (YACL genuinely absent or
+  binary-incompatible) and `RuntimeException` (a bug in this mod's config schema) are now reported
+  separately, the offending field name is extracted from the exception chain and shown both in the log
+  and on the fallback screen, and the full stack trace is written to `latest.log`.
+
+### Changed — build-time guards
+
+- **`./gradlew checkYaclAutogen`** fails the build if any field carries both `@ListGroup` and an
+  `@AutoGen` with a non-empty `group`, so this class of mistake cannot reach a release again. It joins
+  `checkSidedImports`, `checkLockProviders` and `checkVersionConsistency` on the `check` task.
+- **`checkVersionConsistency` now also pins the YACL version.** `YaclConfigUiBuilder`'s
+  `YACL_COMPILED_VERSION` is quoted verbatim in the error players see; it was a hand-copied literal of
+  `yacl_version`, so a dependency bump would silently have made that message name the wrong build.
+
+### Fixed — Skills tab placement
+
+- **The Skills tab now appears on companion screens that Legendary Tabs registers on world join.**
+  `LegendaryTabsClientIntegration.synchronizeTabStripAcrossScreens()` was a one-shot at
+  `FMLLoadCompleteEvent`, justified by the assumption that "every mod's `FMLClientSetupEvent` has
+  finished, so `TabsMenu.tabsScreens` is fully populated". That held for Legendary Tabs 1.x. In 2.0
+  most tabs are datapack-defined, pushed to the client by `SyncTabsPacket`, and installed by
+  `TabRegistry.reloadTabs()` — which seeds new screen classes *and* calls
+  `TabsMenu.fanOutInventoryTab()`. That first runs on **world join**, well after load-complete, and
+  again on every `/reload`. Screens entering the registry at that point were never revisited, so the
+  Skills tab silently never reached them. The launch log recorded the symptom plainly:
+  `reverse: Skills tab onto 1 inventory-like screen(s)` — only Curios qualified. The sync is now
+  re-entrant and additionally runs from a `ScreenEvent.Init.Pre` listener at `EventPriority.HIGHEST`
+  for the screen being opened, which lands before Legendary Tabs' `Init.Post` listener builds the
+  `TabButton` widgets, so a tab added there is picked up on the same frame.
+
+- **The "is this screen inventory-like?" test no longer keys off Legendary Tabs' inventory tab.**
+  The reverse pass only added the Skills tab to screens that already contained
+  `sfiomn.legendarytabs.client.tabs_menu.InventoryTab`. That is not a reliable signal: addons
+  legitimately remove that tab from screens where they supply their own equivalent — Sophisticated
+  Tab does exactly this on `BackpackScreen` — which would have made the Skills tab vanish from any
+  screen another mod curates. The gate is now "Legendary Tabs already has a `ScreenInfo` for this
+  screen", i.e. it already draws a strip there. That check also has to stay a *read*:
+  `addTabToScreen` routes through `ensureScreenInfo`, a `computeIfAbsent`, so calling it for an
+  unregistered screen would create the entry and grow a tab strip on a screen never meant to have
+  one — every chest, for instance.
+
+- **The registered tab instance is now held directly rather than rediscovered.** The reverse pass
+  used to locate its own tab by scanning `InventoryScreen`'s priority buckets for a
+  `LegendaryTabRunicSkills`, and bailed out with a log line if the scan came up empty.
+  `registerTab()` now keeps the reference it constructs, which removes that failure mode and the
+  `OUR_TAB_CLASS` name-matching constant with it.
+
+### Changed
+
+- **Failures reaching into Legendary Tabs' registry are now latched.** The strip sync runs per
+  screen init rather than once per launch, so the existing "internals changed?" warning is emitted
+  at most once per session instead of on every screen that opens.
+
+## [1.8.0] - 2026-08-14 — Legendary Tabs 2.0 compatibility
+
+Legendary Tabs `1.20.1-2.0` reshaped the `TabBase` API it asks integrations to implement. Runic
+Skills' tab was written against the 1.x shape, so **installing Legendary Tabs 2.0 crashed the client
+the moment the tab strip drew** — which is every time the inventory opened. This release ports the
+tab to the 2.0 API and adds the version gate that should have caught the mismatch at load time.
+
+### Fixed — client crash on Legendary Tabs 2.0
+
+- **Opening the inventory no longer crashes with `AbstractMethodError`.** Legendary Tabs 2.0 added
+  two abstract members to `TabBase`, `getId()` and `getIconTexture()`, and changed `render` from
+  `render(GuiGraphics, int, int, boolean)` to
+  `render(GuiGraphics, int, int, boolean, ResourceLocation, int, int)` — now a concrete method that
+  draws the button chrome and then calls `getIconTexture()` for the icon. `LegendaryTabRunicSkills`
+  implemented neither new member, and its `render` override silently stopped overriding anything
+  once the signature moved, so the base implementation ran instead and hit the unimplemented
+  `getIconTexture()`. The crash surfaced as `Rendering screen` on `InventoryScreen`, killing the
+  client rather than degrading the tab.
+- **The tab was also pointing at a deleted texture.** It blitted a 26×22 cell — chrome and icon
+  baked together — from `legendarytabs:textures/gui/tab_menu_buttons.png` at `(u=27, v=92)`. Version
+  2.0 removed that atlas entirely, replacing it with a 64×64 `buttons.png` chrome sheet plus one
+  bare 18×18 icon per tab, so the old coordinates had nothing left to read from.
+
+### Changed — tab rendering and dependency declaration
+
+- **The tab now supplies only an icon and lets Legendary Tabs draw the chrome.** `render` is gone
+  from `LegendaryTabRunicSkills`; `getIconTexture()` returns `legendarytabs:textures/gui/skills.png`,
+  an 18×18 icon Legendary Tabs 2.0 ships, and `getIconTexX()`/`getIconTexY()` keep their `0,0`
+  defaults because that file is a bare icon rather than a region of a sheet. The tab now inherits
+  per-screen button skins and icon offsets automatically, and its hover/selected state is the base
+  class's job — the old manual `+54` U-shift has no successor. Expect a slightly different look: the
+  sword glyph is replaced by Legendary Tabs' own skills icon.
+- **`getId()` returns `runicskills_skills`.** Legendary Tabs 2.0 ids are global across every addon,
+  so the value is namespaced to avoid colliding with another integration.
+- **Minimum Legendary Tabs is now `1.20.1-2.0`, declared in `mods.toml`.** Previously there was no
+  `legendarytabs` dependency entry at all — the integration was gated purely by
+  `ModList.isLoaded("legendarytabs")`, which any version satisfies. That is precisely how an
+  incompatible pairing reached a running client instead of being refused during mod loading. The
+  dependency stays `mandatory = false`, so Legendary Tabs remains optional; the range is enforced
+  only when it is actually present.
+- **The compile-time jar in `libs/` moved from `legendarytabs-1.20.1-1.1.3.1.jar` to
+  `legendarytabs-1.20.1-2.0.jar`,** and `build.gradle`'s `compileOnly` coordinate with it. A 1.x jar
+  will no longer compile against this source.
+
 ## [1.7.0] - 2026-08-13 — Audit remediation: exploits, data safety, server authority
 
 Remediation pass driven by the 1.6.1 technical audit (`RUNIC_SKILLS_AUDIT.md`, 195 findings).

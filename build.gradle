@@ -209,8 +209,10 @@ dependencies {
     compileOnly fg.deobf("dev.xkmc.l2tabs:l2tabs:0.3.3")
 
     // Legendary Tabs (Sfiomn) — compile-time only; resolved from local libs/.
-    // Drop the jar at libs/legendarytabs-1.20.1-1.1.3.1.jar (matches the runtime mod).
-    compileOnly fg.deobf("sfiomn.legendarytabs:legendarytabs:1.20.1-1.1.3.1")
+    // Drop the jar at libs/legendarytabs-1.20.1-2.0.jar (matches the runtime mod).
+    // 2.0 is a breaking API change: TabBase gained abstract getId()/getIconTexture()
+    // and render() took three more parameters, so 1.x jars will not compile here.
+    compileOnly fg.deobf("sfiomn.legendarytabs:legendarytabs:1.20.1-2.0")
 
     // ClothConfig implementation (Required by BetterCombat)
     implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.118")
@@ -494,14 +496,17 @@ tasks.named('check').configure { dependsOn 'checkLockProviders' }
 // and the top CHANGELOG entry must agree.
 tasks.register('checkVersionConsistency') {
     group = 'verification'
-    description = 'Fails the build if VERSION, mod_version, and the top CHANGELOG entry disagree'
+    description = 'Fails the build if VERSION, mod_version, the top CHANGELOG entry or the pinned YACL version disagree'
 
     def versionFile = file('VERSION')
     def changelogFile = file('CHANGELOG.md')
+    def yaclBridge = file('src/main/java/com/otectus/runicskills/client/config/YaclConfigUiBuilder.java')
 
     inputs.file versionFile
     inputs.file changelogFile
+    inputs.file yaclBridge
     inputs.property 'modVersion', project.mod_version
+    inputs.property 'yaclVersion', project.yacl_version
 
     doLast {
         def declared = project.mod_version.toString().trim()
@@ -516,12 +521,184 @@ tasks.register('checkVersionConsistency') {
         if (changelogTop != declared) {
             mismatches << "CHANGELOG.md top entry is '${changelogTop}' but gradle.properties mod_version is '${declared}'"
         }
+
+        // YaclConfigUiBuilder quotes YACL_COMPILED_VERSION verbatim in its "your YACL is
+        // incompatible" error. If that hand-copied literal drifts from the version we actually
+        // compile against, the error sends players chasing the wrong jar - which is how the
+        // 1.5.0 config-screen bug stayed misdiagnosed as a YACL problem for three releases.
+        def pinMatcher = yaclBridge.getText('UTF-8') =~ /YACL_COMPILED_VERSION\s*=\s*"([^"]*)"/
+        def pinned = pinMatcher.find() ? pinMatcher.group(1) : '<no YACL_COMPILED_VERSION literal found>'
+        if (pinned != project.yacl_version.toString().trim()) {
+            mismatches << "YaclConfigUiBuilder.YACL_COMPILED_VERSION is '${pinned}' but gradle.properties yacl_version is '${project.yacl_version}'"
+        }
         if (!mismatches.isEmpty()) {
             throw new GradleException(
                     "Version drift (stale VERSION breaks the runtime update checker for all users):\n  " +
                             mismatches.join('\n  ') +
-                            "\nUpdate VERSION and the CHANGELOG heading to match mod_version before building a release.")
+                            "\nUpdate VERSION, the CHANGELOG heading, and YACL_COMPILED_VERSION to match before building a release.")
         }
     }
 }
 tasks.named('check').configure { dependsOn 'checkVersionConsistency' }
+
+// YACL autogen enforcement: YACL's ListGroupImpl rejects any @ListGroup field whose @AutoGen
+// declares a non-empty group ("@ListGroup fields cannot be inside a group as lists act as
+// groups"), and ConfigClassHandlerImpl rethrows that as
+// `YACLAutoGenException: Failed to create option for field '<name>'`. Autogen aborts on the FIRST
+// offending field, so one bad annotation makes the whole in-game config screen unopenable on every
+// YACL 3.x. That is exactly what happened from 1.5.0 through 1.8.0 (disabledPerks), and it went
+// undiagnosed for three releases because the failure reads like a YACL version mismatch. Make it a
+// build-time invariant instead.
+tasks.register('checkYaclAutogen') {
+    group = 'verification'
+    description = 'Fails the build if a @ListGroup field also declares @AutoGen(group=...)'
+
+    def javaRoot = file('src/main/java/com/otectus/runicskills')
+    inputs.dir javaRoot
+
+    doLast {
+        char QUOTE = '"' as char
+        char ESCAPE = (char) 92
+        char NEWLINE = (char) 10
+        char SPACE = ' ' as char
+        char AT = '@' as char
+        char LPAREN = '(' as char
+        char RPAREN = ')' as char
+
+        // Blank out // and /* */ comments while preserving offsets, so annotation-looking text
+        // inside a comment can never be mistaken for a real annotation. String literals are copied
+        // through verbatim: @SerialEntry(comment = "...") routinely contains quoted parentheses,
+        // escaped quotes, and // sequences.
+        def stripComments = { String src ->
+            def out = new StringBuilder(src.length())
+            int i = 0
+            int n = src.length()
+            while (i < n) {
+                char c = src.charAt(i)
+                if (c == QUOTE) {
+                    int j = i + 1
+                    while (j < n) {
+                        if (src.charAt(j) == ESCAPE) { j += 2; continue }
+                        if (src.charAt(j) == QUOTE) { j++; break }
+                        j++
+                    }
+                    if (j > n) j = n
+                    out.append(src, i, j)
+                    i = j
+                } else if (src.startsWith('//', i)) {
+                    int j = src.indexOf(NEWLINE as String, i)
+                    if (j < 0) j = n
+                    for (int k = i; k < j; k++) out.append(SPACE)
+                    i = j
+                } else if (src.startsWith('/*', i)) {
+                    int j = src.indexOf('*/', i)
+                    j = (j < 0) ? n : j + 2
+                    for (int k = i; k < j; k++) out.append(src.charAt(k) == NEWLINE ? NEWLINE : SPACE)
+                    i = j
+                } else {
+                    out.append(c)
+                    i++
+                }
+            }
+            out.toString()
+        }
+
+        // Accumulate annotations until a declaration terminator, then inspect the collected set.
+        // A state machine rather than one regex: the config POJOs put several annotations on one
+        // line (`@AutoGen(...) @IntField(...)` is common) and spread field declarations over
+        // several lines.
+        def scanFile = { File f ->
+            def hits = []
+            String src = stripComments(f.text)
+            int i = 0
+            int n = src.length()
+            def pending = []
+            int declStart = 0
+            while (i < n) {
+                char c = src.charAt(i)
+                if (c == AT) {
+                    def m = (src.substring(i) =~ /^@(\w+)/)
+                    if (!m.find()) { i++; continue }
+                    String name = m.group(1)
+                    int j = i + m.end()
+                    String args = ''
+                    int k = j
+                    while (k < n && Character.isWhitespace(src.charAt(k))) k++
+                    if (k < n && src.charAt(k) == LPAREN) {
+                        int depth = 0
+                        int start = k
+                        while (k < n) {
+                            char ch = src.charAt(k)
+                            if (ch == QUOTE) {
+                                k++
+                                while (k < n) {
+                                    if (src.charAt(k) == ESCAPE) { k += 2; continue }
+                                    if (src.charAt(k) == QUOTE) break
+                                    k++
+                                }
+                            } else if (ch == LPAREN) {
+                                depth++
+                            } else if (ch == RPAREN) {
+                                depth--
+                                if (depth == 0) { k++; break }
+                            }
+                            k++
+                        }
+                        if (k > n) k = n
+                        args = src.substring(Math.min(start + 1, n), Math.max(start + 1, k - 1))
+                        j = k
+                    }
+                    pending << [name: name, args: args, line: src.substring(0, i).count(NEWLINE as String) + 1]
+                    i = j
+                    declStart = j
+                    continue
+                }
+                if (c == QUOTE) {
+                    i++
+                    while (i < n) {
+                        if (src.charAt(i) == ESCAPE) { i += 2; continue }
+                        if (src.charAt(i) == QUOTE) break
+                        i++
+                    }
+                    i++
+                    continue
+                }
+                if (c == (';' as char) || c == ('{' as char) || c == ('}' as char)) {
+                    if (!pending.isEmpty()) {
+                        def autoGen = pending.find { it.name == 'AutoGen' }
+                        def listGroup = pending.find { it.name == 'ListGroup' }
+                        if (autoGen != null && listGroup != null) {
+                            def gm = (autoGen.args =~ /group\s*=\s*"([^"]*)"/)
+                            if (gm.find() && !gm.group(1).trim().isEmpty()) {
+                                // Field name: last identifier before the initialiser (or the `;`).
+                                String decl = src.substring(Math.min(declStart, i), i)
+                                int eq = decl.indexOf('=')
+                                if (eq >= 0) decl = decl.substring(0, eq)
+                                def names = (decl =~ /(\w+)/).collect { it[1] }
+                                String fieldName = names ? names[-1] : '<unknown>'
+                                hits << "${f.path}:${autoGen.line}: field '${fieldName}' declares " +
+                                        "@AutoGen(group = \"${gm.group(1)}\") together with @ListGroup"
+                            }
+                        }
+                    }
+                    pending.clear()
+                }
+                i++
+            }
+            hits
+        }
+
+        def violations = []
+        javaRoot.eachFileRecurse { f ->
+            if (f.isFile() && f.name.endsWith('.java')) violations.addAll(scanFile(f))
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Illegal YACL autogen annotations (the in-game config screen will refuse to open):\n  " +
+                            violations.join('\n  ') +
+                            "\nYACL renders a @ListGroup as its own group, so such a field must use a bare " +
+                            "@AutoGen(category = \"...\") with no group=. Drop the group attribute.")
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'checkYaclAutogen' }

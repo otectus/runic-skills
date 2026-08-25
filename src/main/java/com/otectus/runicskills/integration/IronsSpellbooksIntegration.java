@@ -10,7 +10,6 @@ import com.otectus.runicskills.registry.skill.Skill;
 import io.redspace.ironsspellbooks.api.events.*;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
-import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
@@ -42,25 +41,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class IronsSpellbooksIntegration {
-
-    // School-to-attunement-perk mapping (lazy init to handle null RegistryObjects)
-    private static Map<String, RegistryObject<com.otectus.runicskills.registry.perks.Perk>> schoolPerkMap;
-
-    private static Map<String, RegistryObject<com.otectus.runicskills.registry.perks.Perk>> getSchoolPerkMap() {
-        if (schoolPerkMap == null) {
-            schoolPerkMap = new HashMap<>();
-            if (RegistryPerks.FIRE_ATTUNEMENT != null) schoolPerkMap.put("fire", RegistryPerks.FIRE_ATTUNEMENT);
-            if (RegistryPerks.ICE_ATTUNEMENT != null) schoolPerkMap.put("ice", RegistryPerks.ICE_ATTUNEMENT);
-            if (RegistryPerks.LIGHTNING_ATTUNEMENT != null) schoolPerkMap.put("lightning", RegistryPerks.LIGHTNING_ATTUNEMENT);
-            if (RegistryPerks.HOLY_ATTUNEMENT != null) schoolPerkMap.put("holy", RegistryPerks.HOLY_ATTUNEMENT);
-            if (RegistryPerks.NATURE_ATTUNEMENT != null) schoolPerkMap.put("nature", RegistryPerks.NATURE_ATTUNEMENT);
-            if (RegistryPerks.BLOOD_ATTUNEMENT != null) schoolPerkMap.put("blood", RegistryPerks.BLOOD_ATTUNEMENT);
-            if (RegistryPerks.ENDER_ATTUNEMENT != null) schoolPerkMap.put("ender", RegistryPerks.ENDER_ATTUNEMENT);
-            if (RegistryPerks.EVOCATION_ATTUNEMENT != null) schoolPerkMap.put("evocation", RegistryPerks.EVOCATION_ATTUNEMENT);
-            if (RegistryPerks.ELDRITCH_ATTUNEMENT != null) schoolPerkMap.put("eldritch", RegistryPerks.ELDRITCH_ATTUNEMENT);
-        }
-        return schoolPerkMap;
-    }
 
     // School-to-secondary-skill mapping for school-specific bonuses
     private static final Map<String, RegistryObject<Skill>> SCHOOL_SKILL_MAP = Map.of(
@@ -94,23 +74,6 @@ public class IronsSpellbooksIntegration {
 
         SkillCapability provider = SkillCapability.get(player);
         if (provider == null) return;
-
-        // School Attunement: require the school's attunement perk
-        if (HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolAttunement) {
-            AbstractSpell spell = SpellRegistry.getSpell(new ResourceLocation(spellId));
-            SchoolType school = (spell != null) ? spell.getSchoolType() : null;
-            if (school != null) {
-                String schoolName = school.getId().getPath();
-                RegistryObject<com.otectus.runicskills.registry.perks.Perk> attunementPerk = getSchoolPerkMap().get(schoolName);
-                if (attunementPerk != null && !attunementPerk.get().isEnabled(player)) {
-                    // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
-                    NoticeOverlayCP.send(player, "overlay.runicskills.school_locked",
-                            "school.runicskills." + schoolName);
-                    event.setCanceled(true);
-                    return;
-                }
-            }
-        }
 
         // School-based gating: check Magic skill level against spell level formula
         if (HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolGating) {

@@ -49,7 +49,7 @@ public class HandlerCommonConfig {
     @Clamp(min = 1, max = 1000)
     public int skillFirstCostLevel = 5;
 
-    @SerialEntry(comment = "Maximum number of perks a player can have enabled at once. 0 = unlimited (default). Server-authoritative; clients attempting to exceed the cap are rejected. Iron's Spells school attunements are counted against this cap in addition to their own ironsMaxSchoolSelections limit.")
+    @SerialEntry(comment = "Maximum number of perks a player can have enabled at once. 0 = unlimited (default). Server-authoritative; clients attempting to exceed the cap are rejected.")
     @AutoGen(category = "common", group = "general")
     @IntField(min = 0, max = 256)
     @Clamp(min = 0, max = 256)
@@ -67,18 +67,23 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 256)
     public int maxPerkBudgetCap = 0;
 
-    @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"fire_attunement\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
-    @AutoGen(category = "common", group = "general")
+    // The @AutoGen on this and the four other @ListGroup fields below deliberately omits group=.
+    // YACL's ListGroupImpl rejects a list option that declares a group ("lists act as groups") and
+    // aborts the WHOLE config screen on the first offender - that is what made the screen unopenable
+    // from 1.5.0 to 1.8.0. Each list renders as its own group box instead. Enforced by
+    // ./gradlew checkYaclAutogen.
+    @SerialEntry(comment = "Perk registry names to disable. Disabled perks cannot be enabled or ranked up; previously-enabled ranks remain in save data but their effects are suppressed (Perk.isEnabled returns false). Use the registry path only, e.g. \"berserker\" or \"pyromancer\" for runicskills: perks, or a full id like \"runicskills:limit_breaker\" for addon perks.")
+    @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPerks = Arrays.asList();
 
     @SerialEntry(comment = "Passive registry names to disable. Disabled passives cannot be leveled up; existing level is retained in save data but the attribute modifier is removed (runs on player login/respawn and /skillsreload). Use the registry path only, e.g. \"attack_damage\", or a full id like \"runicskills:max_health\".")
-    @AutoGen(category = "common", group = "general")
+    @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPassives = Arrays.asList();
 
     @SerialEntry(comment = "Power registry names to disable. Disabled powers cannot be equipped; previously-equipped entries are filtered out at runtime. Use the registry path only, e.g. \"fire_mark\" or a full id like \"runicskills:fire_mark\".")
-    @AutoGen(category = "common", group = "general")
+    @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledPowers = Arrays.asList();
 
@@ -201,7 +206,7 @@ public class HandlerCommonConfig {
     public boolean culinaryEnableFoodEffectBoost = true;
 
     @SerialEntry(comment = "Item namespaces (mod ids) covered by the culinary integration layer. Food is detected as 'namespace in this list AND the item is edible' — no per-item lists. Defaults cover Farmer's Delight, Dungeons/Fruits/Rustic/Vintage Delight, Brewin' and Chewin', and the Let's Do series.")
-    @AutoGen(category = "common", group = "integrations")
+    @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> culinaryIntegrationNamespaces =
             new java.util.ArrayList<>(com.otectus.runicskills.common.util.CulinaryNamespaces.defaults());
@@ -228,7 +233,7 @@ public class HandlerCommonConfig {
     public float discoveredLockLevelMultiplier = 1.0f;
 
     @SerialEntry(comment = "Mod ids / item namespaces to EXCLUDE from registry-driven (discovered) item locking, e.g. [\"cataclysm\", \"farmersdelight\"]. Empty = lock all supported discovered mods. Curated integrations (Spartan, Ice & Fire, Blood Magic, Iron's Spells, etc.) have their own toggles and are unaffected by this list.")
-    @AutoGen(category = "common", group = "integrations")
+    @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledDiscoveredLockMods = Arrays.asList();
 
@@ -4261,66 +4266,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0.0, max = 10.0)
     public float ironsManaRegenPerMagicLevel = 0.1f;
 
-    // Iron's Spells 'n Spellbooks Integration - School Attunement
-    @SerialEntry(comment = "Enable school attunement perks (each spell school requires a perk to cast)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @Boolean(formatter = Boolean.Formatter.ON_OFF)
-    public boolean ironsEnableSchoolAttunement = true;
-
-    @SerialEntry(comment = "Maximum number of spell schools a player can attune to")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = 1, max = 8)
-    @Clamp(min = 1, max = 8)
-    public int ironsMaxSchoolSelections = 2;
-
-    @SerialEntry(comment = "Required Magic level for Fire Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int fireAttunementRequiredLevel = 4;
-
-    @SerialEntry(comment = "Required Magic level for Ice Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int iceAttunementRequiredLevel = 4;
-
-    @SerialEntry(comment = "Required Magic level for Lightning Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int lightningAttunementRequiredLevel = 6;
-
-    @SerialEntry(comment = "Required Magic level for Holy Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int holyAttunementRequiredLevel = 8;
-
-    @SerialEntry(comment = "Required Magic level for Nature Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int natureAttunementRequiredLevel = 4;
-
-    @SerialEntry(comment = "Required Magic level for Blood Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int bloodAttunementRequiredLevel = 10;
-
-    @SerialEntry(comment = "Required Magic level for Ender Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int enderAttunementRequiredLevel = 8;
-
-    @SerialEntry(comment = "Required Magic level for Evocation Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int evocationAttunementRequiredLevel = 6;
-
     // ── Iron's Spells 'n Spellbooks — Phase 1a: generic mana & casting perks ──
     // Every *RequiredLevel defaults >= 1 (enabled). Set to -1 to null-register and
     // remove the perk from the tree entirely.
@@ -4558,14 +4503,8 @@ public class HandlerCommonConfig {
 
     // ── Iron's Spells 'n Spellbooks — Phase 1b: school specialist triplets ──
     // For each of 9 schools: X-mancer (power), X-Warded (resist), X-Catalyst
-    // (signature-effect proc on cast). Plus Eldritch Attunement to round out
-    // the 8 existing attunement gates.
-
-    @SerialEntry(comment = "Required Magic level for Eldritch Attunement (-1 to disable)")
-    @AutoGen(category = "common", group = "irons_spells")
-    @IntField(min = -1, max = 1000)
-    @Clamp(min = -1, max = 1000)
-    public int eldritchAttunementRequiredLevel = 16;
+    // (signature-effect proc on cast). Each is gated purely on its own perk and the
+    // cast spell's school - there is no school to select.
 
     // Fire
     @SerialEntry(comment = "Required Magic level for Pyromancer (-1 to disable)")

@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "如何添加锁定物品：\n<模组名>§b:§f<物品名>§b#§f<技能>§b:§f<等级>\n\n如果你想添加更多技能只需写：（可以添加任意数量）\n<模组名>§b:§f<物品名>§b#§f<技能>§b:§f<等级>§b;§f<技能>§b:§f<等级>§b...§f\n\n如果你想让物品可掉落，只需在末尾添加 §b<droppable>§f，如下例：\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "如何添加宝藏物品：\n<模组名>§b:§f<物品名>\n\n如果你想添加NBT，请使用 §b{ }§f，如下例：\n<模组名>§b:§f<物品名>§b{§fNBT§b}§f\n\n最后是列表，列表是指当你获得宝藏机会时你将从列表中获得1个物品，要添加列表请写：\n<列表名>§bList[§f 在这里你可以放入任意数量的物品，使用 §b;§f 分隔，使用 §b]§f 关闭列表",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "如何添加融合物品：（为了公平起见，融合只会给你1个结果）\n<模组名>§b:§f<物品名>§b#§f<结果模组名>§b:§f<结果物品名>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "火焰调谐",
- "perk.runicskills.fire_attunement.description" : "调谐至火焰学派，允许你施放火焰法术。",
- "perk.runicskills.ice_attunement" : "寒冰调谐",
- "perk.runicskills.ice_attunement.description" : "调谐至寒冰学派，允许你施放寒冰法术。",
- "perk.runicskills.lightning_attunement" : "闪电调谐",
- "perk.runicskills.lightning_attunement.description" : "调谐至闪电学派，允许你施放闪电法术。",
- "perk.runicskills.holy_attunement" : "神圣调谐",
- "perk.runicskills.holy_attunement.description" : "调谐至神圣学派，允许你施放神圣法术。",
- "perk.runicskills.nature_attunement" : "自然调谐",
- "perk.runicskills.nature_attunement.description" : "调谐至自然学派，允许你施放自然法术。",
- "perk.runicskills.blood_attunement" : "鲜血调谐",
- "perk.runicskills.blood_attunement.description" : "调谐至鲜血学派，允许你施放鲜血法术。",
- "perk.runicskills.ender_attunement" : "末影调谐",
- "perk.runicskills.ender_attunement.description" : "调谐至末影学派，允许你施放末影法术。",
- "perk.runicskills.evocation_attunement" : "唤魔调谐",
- "perk.runicskills.evocation_attunement.description" : "调谐至唤魔学派，允许你施放唤魔法术。",
-
- "overlay.runicskills.school_locked" : "你尚未调谐 %s 学派。在学派选择中选择它以施放这些法术。",
 
  "school.runicskills.fire" : "火焰",
  "school.runicskills.ice" : "寒冰",

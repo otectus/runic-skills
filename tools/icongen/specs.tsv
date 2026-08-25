@@ -259,15 +259,6 @@ strategic_mind	map	lapis	crimson	up	crimson	Battle plan — exploit weaknesses
 tactical_genius	banner	crimson	gold	up	gold	Rally banner — ally damage
 war_tactician	banner	steel	crimson	up	storm	War banner — ally attack speed
 # ===== MAGIC =====
-fire_attunement	rune_stone	fire	ember	flameb	fire	Fire school runestone
-ice_attunement	rune_stone	ice	frost	snowb	ice	Ice school runestone
-lightning_attunement	rune_stone	storm	gold	boltb	storm	Lightning school runestone
-holy_attunement	rune_stone	holy	gold	sunb	holy	Holy school runestone
-nature_attunement	rune_stone	nature	moss	leafb	nature	Nature school runestone
-blood_attunement	rune_stone	blood	crimson	dropb	blood	Blood school runestone
-ender_attunement	rune_stone	ender	void	pearlb	ender	Ender school runestone
-evocation_attunement	rune_stone	amethyst	arcane	starb	amethyst	Evocation school runestone
-eldritch_attunement	rune_stone	eldritch	void	eyeb	eldritch	Eldritch school runestone
 fire_mancer	flame	fire	gold	up	fire	Pyromancer flame — fire spell damage
 ice_mancer	snowflake	ice	diamond	up	ice	Cryomancer crystal — ice spell damage
 lightning_mancer	bolt	storm	bone	up	storm	Stormwrought bolt — lightning damage

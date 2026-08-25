@@ -72,7 +72,7 @@ That's the whole setup. No other mods are required.
 
 - **`Y`** — open and close the Skills screen (rebindable).
 - **Powers panel** — unbound by default so it can't clash with your pack; assign a key under Options → Controls.
-- **Skills tab** — sits next to your inventory tab. If you use L2Tabs or Legendary Tabs, it slots into their strip instead of drawing over it.
+- **Skills tab** — sits next to your inventory tab. If you use L2Tabs or Legendary Tabs (2.0 or newer), it slots into their strip instead of drawing over it.
 - **Hover a perk and hold Shift** for its full description and level requirement.
 
 **Want the in-game settings menu?** Add [YACL](https://www.curseforge.com/minecraft/mc-mods/yacl) — it's optional, client-side only, and just gives you a graphical config screen. Without it everything still works; you'd edit the config file by hand instead.
@@ -99,7 +99,7 @@ Runic Skills integrates with around 40 mods. **Every one is optional** — it de
 
 **Quests & scripting** — FTB Quests (six task types, so quests can require skill levels, perks or titles) · KubeJS (script your own skills, perks, passives and titles)
 
-**UI** — L2Tabs · Legendary Tabs
+**UI** — L2Tabs · Legendary Tabs (2.0+)
 
 **Combat & content** — Better Combat, Ice and Fire, Cataclysm, Mowzie's Mobs, Bosses of Mass Destruction, Stalwart Dungeons, Siege Machines, Saints Dragons, Samurai Dynasty, Nichirin Dynasty, Farmer's Delight and the Let's Do series, Nature's Aura, Jewelcraft, and more — mostly automatic level-gating for their gear.
 
@@ -140,17 +140,18 @@ Available to everyone:
 
 ---
 
-## What's new in 1.7.0
+## What's new in 1.8.1
 
-A large correctness and security pass driven by a full technical audit of the mod.
+**The client crash on Legendary Tabs 2.0 is fixed, and the Skills tab now shows up everywhere it should.**
 
-- **Four duplication exploits closed.** Silk Touch Mastery and Lucky Drop could duplicate items, Double Down turned cobblestone into free material, and Locksmith was an unlimited source of XP. All four now behave as intended.
-- **Your config can no longer be wiped by a typo.** A single bad value used to reset all 1,100+ settings *and* overwrite your file. Now only that one setting falls back to its default, and an unreadable file is left untouched.
-- **Server rules are properly enforced.** The global level cap was previously only checked by the client, and the Administrator title was never removed when someone was de-opped.
-- **Smoother performance**, especially on busy servers — a lot of redundant per-tick network traffic has been removed.
-- **The Powers panel is finally reachable** — its keybind was never registered, so the whole screen was unusable.
+- **Opening your inventory no longer crashes the game** when Legendary Tabs 2.0 is installed. Legendary Tabs reshaped the API its tabs are built on; the Runic Skills tab was still written for the 1.x version of it, so the client died the moment the tab strip drew — which is every time you opened your inventory. The tab is now built on the 2.0 API.
+- **The Skills tab no longer goes missing on other mods' inventory screens.** It was reaching only the screens Legendary Tabs knew about at startup, but Legendary Tabs 2.0 registers most screens later, when you join a world. So on screens like the Sophisticated Backpacks backpack view you would see every tab except Skills. The tab strip is now kept in sync as screens open, so Skills is there too.
+- **Legendary Tabs 2.0 or newer is now required if you use it.** It stays entirely optional, but Runic Skills now declares the version, so an older Legendary Tabs is refused during mod loading with a clear message instead of letting you into a world that crashes.
+- **The Skills tab icon looks slightly different.** Legendary Tabs 2.0 draws the button chrome itself and asks each tab only for an icon, so the tab now uses Legendary Tabs' own skills icon and picks up its per-screen button skins automatically.
 
-⚠️ **Update clients and servers together.** The network version changed, so 1.7.0 will not connect to older versions. Your existing worlds and configs carry over automatically.
+Nothing else changed — no config, world data or network changes. Protocol is unchanged from 1.7.0, so a 1.8.1 client still connects to a 1.7.0 server, though running the same version everywhere is still the recommendation.
+
+**Coming from 1.6.x or earlier?** 1.7.0 was a large correctness and security pass: four item and XP duplication exploits closed, configs no longer wiped by a single bad value, the global level cap enforced server-side, and the Powers panel made reachable. It bumped the network version, so ⚠️ **clients and servers must both be on 1.7.0 or newer.** Existing worlds and configs carry over automatically.
 
 Full details for this and every previous release are in the [changelog](https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md).
 

@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "ロックアイテムの追加方法：\n<MOD名>§b:§f<アイテム名>§b#§f<スキル>§b:§f<レベル>\n\nスキルを追加する場合は以下のように書いてください：（好きなだけ追加可能）\n<MOD名>§b:§f<アイテム名>§b#§f<スキル>§b:§f<レベル>§b;§f<スキル>§b:§f<レベル>§b...§f\n\nアイテムをドロップ可能にする場合は最後に §b<droppable>§f を追加してください。例：\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "トレジャーアイテムの追加方法：\n<MOD名>§b:§f<アイテム名>\n\nNBTを追加する場合は §b{ }§f を使用してください。例：\n<MOD名>§b:§f<アイテム名>§b{§fNBT§b}§f\n\n最後にリストについて、リストはトレジャーチャンスを得たときにリストから1つのアイテムを獲得します。リストを追加するには：\n<リスト名>§bList[§f ここに好きなだけアイテムを入れられます。区切りには §b;§f を使用し、リストを閉じるには §b]§f を使用してください",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "コンバージェンスアイテムの追加方法：（公平を期すため、コンバージェンスは1つの結果のみ返します）\n<MOD名>§b:§f<アイテム名>§b#§f<結果MOD名>§b:§f<結果アイテム名>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "炎の同調",
- "perk.runicskills.fire_attunement.description" : "炎の学派に同調し、炎の呪文を唱えられるようになります。",
- "perk.runicskills.ice_attunement" : "氷の同調",
- "perk.runicskills.ice_attunement.description" : "氷の学派に同調し、氷の呪文を唱えられるようになります。",
- "perk.runicskills.lightning_attunement" : "雷の同調",
- "perk.runicskills.lightning_attunement.description" : "雷の学派に同調し、雷の呪文を唱えられるようになります。",
- "perk.runicskills.holy_attunement" : "神聖の同調",
- "perk.runicskills.holy_attunement.description" : "神聖の学派に同調し、神聖の呪文を唱えられるようになります。",
- "perk.runicskills.nature_attunement" : "自然の同調",
- "perk.runicskills.nature_attunement.description" : "自然の学派に同調し、自然の呪文を唱えられるようになります。",
- "perk.runicskills.blood_attunement" : "血の同調",
- "perk.runicskills.blood_attunement.description" : "血の学派に同調し、血の呪文を唱えられるようになります。",
- "perk.runicskills.ender_attunement" : "エンダーの同調",
- "perk.runicskills.ender_attunement.description" : "エンダーの学派に同調し、エンダーの呪文を唱えられるようになります。",
- "perk.runicskills.evocation_attunement" : "召喚の同調",
- "perk.runicskills.evocation_attunement.description" : "召喚の学派に同調し、召喚の呪文を唱えられるようになります。",
-
- "overlay.runicskills.school_locked" : "%s の学派に同調していません。学派選択で選んでこれらの呪文を唱えてください。",
 
  "school.runicskills.fire" : "炎",
  "school.runicskills.ice" : "氷",

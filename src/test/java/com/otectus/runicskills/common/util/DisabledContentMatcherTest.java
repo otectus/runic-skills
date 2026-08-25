@@ -49,7 +49,7 @@ class DisabledContentMatcherTest {
 
     @Test
     void unmatchedNameReturnsFalse() {
-        assertFalse(DisabledContentMatcher.matches("berserker", MOD, List.of("fire_attunement")));
+        assertFalse(DisabledContentMatcher.matches("berserker", MOD, List.of("pyromancer")));
     }
 
     @Test

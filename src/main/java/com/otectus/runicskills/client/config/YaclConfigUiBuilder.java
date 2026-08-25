@@ -11,6 +11,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Client-only bridge between {@link ConfigHolder} and YACL's autogen UI. This is the only
  * class in the project allowed to import {@code dev.isxander.yacl3.*} symbols other than
@@ -42,15 +45,24 @@ public final class YaclConfigUiBuilder {
     }
 
     /**
-     * Used by the {@code ConfigScreenFactory} registered in {@code RunicSkillsClient}.
-     * Builds a fresh YACL screen for the common config each time the user clicks Configure.
-     * Falls back to the parent screen if YACL is missing or screen construction fails.
+     * YACL build this mod compiles against. Kept honest against {@code yacl_version} in
+     * gradle.properties by the {@code checkVersionConsistency} build task — nothing else stops a
+     * dependency bump from silently making the error message below lie about what we built against.
      */
-    /** YACL build this mod compiles against — see {@code yacl_version} in gradle.properties. */
     private static final String YACL_COMPILED_VERSION = "3.5.0+1.20.1-forge";
     /** Forge mod id YACL v3 registers under. */
     private static final String YACL_MOD_ID = "yet_another_config_lib_v3";
 
+    /**
+     * Used by the {@code ConfigScreenFactory} registered in {@code RunicSkillsClient}.
+     * Builds a fresh YACL screen for the common config each time the user clicks Configure.
+     *
+     * <p>On failure it returns a {@link YaclUnavailableScreen} pointing at the log and records one
+     * actionable error. The two failure classes are reported separately on purpose: a bad YACL
+     * install and a bug in this mod's own config schema need completely different fixes from the
+     * player, and conflating them is what kept the 1.5.0-1.8.0 {@code disabledPerks} bug
+     * misreported as a YACL version mismatch.
+     */
     public static Screen buildScreen(Minecraft mc, Screen parent) {
         try {
             HandlerCommonConfig.HANDLER.save();
@@ -58,23 +70,62 @@ public final class YaclConfigUiBuilder {
             handler.load();
             Screen screen = handler.generateGui().generateScreen(parent);
             return new ReloadOnCloseScreen(screen, parent, HandlerCommonConfig.HANDLER);
-        } catch (LinkageError | RuntimeException e) {
-            // Catch LinkageError (not just NoClassDefFoundError): a present-but-incompatible YACL —
-            // the "downloaded the most recent YACL" case, allowed by the open-ended [3.4.2,) range —
-            // throws NoSuchMethodError / NoSuchFieldError / AbstractMethodError / VerifyError while
-            // the screen is built. Those are LinkageErrors, NOT RuntimeExceptions, so the old
-            // `NoClassDefFoundError | RuntimeException` catch let them escape to Forge and the
-            // "Configure" button silently did nothing (Report 2). Detect the actual YACL version,
-            // log ONE actionable ERROR, and return a vanilla pointer screen instead of a no-op.
+        } catch (LinkageError e) {
+            // YACL is absent, or present with an API that has drifted from the build we compile
+            // against. NoClassDefFoundError / NoSuchMethodError / NoSuchFieldError /
+            // AbstractMethodError / VerifyError are all LinkageErrors, NOT RuntimeExceptions, so
+            // they must be caught explicitly or the "Configure" button silently does nothing.
+            // This is the ONLY branch where blaming the YACL install is correct.
             String found = detectYaclVersion();
             RunicSkills.getLOGGER().error(
-                    "Runic Skills config UI could not open. It needs Yet Another Config Lib (YACL) v3 "
-                    + "for Minecraft 1.20.1 (compiled against {}); installed YACL: '{}'. If you grabbed a "
-                    + "newer YACL, install the 1.20.1 build instead. Cause: {}: {}",
-                    YACL_COMPILED_VERSION, found, e.getClass().getName(), e.getMessage());
+                    "Runic Skills config UI could not open: the installed Yet Another Config Lib (YACL) is "
+                    + "missing or binary-incompatible. This mod is built against YACL {} for Minecraft "
+                    + "1.20.1; installed YACL: '{}'. Install a YACL v3 build for Minecraft 1.20.1.",
+                    YACL_COMPILED_VERSION, found, e);
             return new YaclUnavailableScreen(parent,
                     Component.translatable("runicskills.config.unavailable.body", found));
+        } catch (RuntimeException e) {
+            // NOT a YACL version problem — do not send players off to reinstall YACL. YACL loaded
+            // fine and rejected something about *this mod's* config schema. The canonical case is
+            // YACLAutoGenException from an illegal annotation combination on a Handler*Config
+            // field; `checkYaclAutogen` in build.gradle now catches the known form of that at build
+            // time. Log the whole cause chain: the previous handler printed only
+            // `e.getClass().getName(): e.getMessage()`, which hid the real reason and let an
+            // annotation bug survive three releases misreported as a YACL incompatibility.
+            String field = autoGenFieldName(e);
+            RunicSkills.getLOGGER().error(
+                    "Runic Skills config UI could not open. This is a bug in Runic Skills' own config "
+                    + "schema, NOT a problem with your YACL install (installed YACL: '{}', compiled "
+                    + "against '{}') - reinstalling or downgrading YACL will not help. Offending config "
+                    + "field: '{}'. Please report the stack trace below to the Runic Skills issue tracker.",
+                    detectYaclVersion(), YACL_COMPILED_VERSION, field, e);
+            return new YaclUnavailableScreen(parent,
+                    Component.translatable("runicskills.config.unavailable.schema", field));
         }
+    }
+
+    /** Matches the {@code field 'name'} fragment in YACL's autogen wrapper message. */
+    private static final Pattern AUTOGEN_FIELD = Pattern.compile("field '([^']+)'");
+
+    /**
+     * Best-effort field name from a YACL autogen failure. YACL puts the field name on the OUTER
+     * {@code YACLAutoGenException} ("Failed to create option for field 'x'") and the actual reason
+     * on its cause, so walk the chain - bounded, in case a cause loops - and take the first name we
+     * find. Naming the field is what turns a bug report into a one-line fix. References no YACL
+     * type, so it is safe to call after any failure.
+     */
+    private static String autoGenFieldName(Throwable t) {
+        Throwable cur = t;
+        for (int depth = 0; cur != null && depth < 10; cur = cur.getCause(), depth++) {
+            String msg = cur.getMessage();
+            if (msg != null) {
+                Matcher m = AUTOGEN_FIELD.matcher(msg);
+                if (m.find()) {
+                    return m.group(1);
+                }
+            }
+        }
+        return "unknown";
     }
 
     /**

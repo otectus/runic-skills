@@ -81,8 +81,9 @@ public class RunicSkillsClient {
             // reference keeps YACL types out of ClientProxy's constant pool (same isolation
             // pattern as L2Tabs / Legendary Tabs above): if YACL is absent, ClientProxy
             // still verifies cleanly because YACL classes only resolve when buildScreen
-            // is actually invoked. YaclConfigUiBuilder.buildScreen catches the
-            // NoClassDefFoundError in that case and falls back to the parent screen.
+            // is actually invoked. YaclConfigUiBuilder.buildScreen catches LinkageError in
+            // that case and returns YaclUnavailableScreen, a vanilla screen that points the
+            // player at the log instead of leaving the Configure button a silent no-op.
             ModLoadingContext.get().registerExtensionPoint(
                     ConfigScreenHandler.ConfigScreenFactory.class,
                     () -> new ConfigScreenHandler.ConfigScreenFactory(YaclConfigUiBuilder::buildScreen)
@@ -121,6 +122,13 @@ public class RunicSkillsClient {
                 // to a separate class puts only that class's name in ClientProxy's constant
                 // pool — no sfiomn types in ClientProxy's bytecode, no eager resolution.
                 event.enqueueWork(LegendaryTabsClientIntegration::registerTab);
+
+                // Keep the strip correct as screens are opened — Legendary Tabs 2.0 only
+                // seeds most of its screen registry on world join, long after the
+                // load-complete sweep below. Registered here, inside the isModLoaded
+                // guard, so the class is never loaded at all when Legendary Tabs is
+                // absent — the same isolation the method reference above buys us.
+                MinecraftForge.EVENT_BUS.register(LegendaryTabsClientIntegration.class);
             }
         }
 
@@ -145,12 +153,18 @@ public class RunicSkillsClient {
 
         @SubscribeEvent
         public static void loadComplete(FMLLoadCompleteEvent event) {
-            // At this point every mod's FMLClientSetupEvent (and its enqueued main-thread work)
-            // has finished, so TabsMenu.tabsScreens is fully populated. Mirror every tab
-            // registered against InventoryScreen onto RunicSkillsScreen so the Skills page
-            // shows the exact same tab strip as the inventory — same tabs, same order, same
-            // horizontal anchoring. Wrapped in enqueueWork to stay on the main/client thread
+            // Every mod's FMLClientSetupEvent (and its enqueued main-thread work) has
+            // finished, so every tab registered through the Java API is now in
+            // TabsMenu.tabsScreens. Mirror the InventoryScreen strip onto RunicSkillsScreen
+            // so the Skills page shows the same tabs, in the same order, at the same
+            // horizontal anchor. Wrapped in enqueueWork to stay on the main/client thread
             // where the map is otherwise mutated.
+            //
+            // This is the pre-world pass only. Legendary Tabs 2.0 seeds the rest of its
+            // screen registry — and fans its inventory tab across it — from
+            // TabRegistry.reloadTabs(), which first runs on world join and again on every
+            // /reload. The ScreenEvent.Init.Pre listener registered above is what covers
+            // everything that appears after this point.
             if (LegendaryTabsIntegration.isModLoaded()) {
                 event.enqueueWork(LegendaryTabsClientIntegration::synchronizeTabStripAcrossScreens);
             }

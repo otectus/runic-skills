@@ -12,7 +12,7 @@ import java.util.Map;
  * In-memory store for data-driven perk groups. Populated by {@link PerkGroupsReloadListener}
  * on server resource reload, replaced on client when the server broadcasts the sync packet.
  * <p>
- * This is additive to the hardcoded Iron's Spells school-attunement cap — both checks run
+ * This is additive to the global active-perk cap — both checks run
  * independently in {@code TogglePerkSP}.
  */
 public final class PerkGroupManager {

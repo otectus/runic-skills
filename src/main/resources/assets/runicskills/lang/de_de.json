@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "Wie man ein gesperrtes Gegenstand hinzufügt:\n<Mod-Name>§b:§f<Gegenstandsname>§b#§f<Fähigkeit>§b:§f<Stufe>\n\nWenn du mehr Fähigkeiten hinzufügen möchtest, schreibe: (du kannst so viele hinzufügen wie du willst)\n<Mod-Name>§b:§f<Gegenstandsname>§b#§f<Fähigkeit>§b:§f<Stufe>§b;§f<Fähigkeit>§b:§f<Stufe>§b...§f\n\nWenn du den Gegenstand fallbar machen willst, füge am Ende §b<droppable>§f hinzu, wie in diesem Beispiel:\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "Wie man einen Schatzgegenstand hinzufügt:\n<Mod-Name>§b:§f<Gegenstandsname>\n\nWenn du ein NBT hinzufügen willst, verwende §b{ }§f wie in diesem Beispiel:\n<Mod-Name>§b:§f<Gegenstandsname>§b{§fNBT§b}§f\n\nSchließlich haben wir Listen. Die Liste funktioniert so: Wenn du eine Schatzchance bekommst, erhältst du 1 Gegenstand aus der Liste. Um eine Liste hinzuzufügen, schreibe:\n<Listenname>§bList[§f Hier kannst du so viele Gegenstände hinzufügen wie du willst, trenne sie mit §b;§f um die Liste zu schließen verwende §b]§f",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "Wie man einen Konvergenz-Gegenstand hinzufügt: (um es fair zu machen, gibt die Konvergenz nur 1 Ergebnis)\n<Mod-Name>§b:§f<Gegenstandsname>§b#§f<Ergebnis-Mod-Name>§b:§f<Ergebnis-Gegenstandsname>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "Feuer-Einstimmung",
- "perk.runicskills.fire_attunement.description" : "Stimme dich auf die Feuerschule ein, um Feuerzauber wirken zu können.",
- "perk.runicskills.ice_attunement" : "Eis-Einstimmung",
- "perk.runicskills.ice_attunement.description" : "Stimme dich auf die Eisschule ein, um Eiszauber wirken zu können.",
- "perk.runicskills.lightning_attunement" : "Blitz-Einstimmung",
- "perk.runicskills.lightning_attunement.description" : "Stimme dich auf die Blitzschule ein, um Blitzzauber wirken zu können.",
- "perk.runicskills.holy_attunement" : "Heilig-Einstimmung",
- "perk.runicskills.holy_attunement.description" : "Stimme dich auf die Heilige Schule ein, um Heiligzauber wirken zu können.",
- "perk.runicskills.nature_attunement" : "Natur-Einstimmung",
- "perk.runicskills.nature_attunement.description" : "Stimme dich auf die Naturschule ein, um Naturzauber wirken zu können.",
- "perk.runicskills.blood_attunement" : "Blut-Einstimmung",
- "perk.runicskills.blood_attunement.description" : "Stimme dich auf die Blutschule ein, um Blutzauber wirken zu können.",
- "perk.runicskills.ender_attunement" : "Ender-Einstimmung",
- "perk.runicskills.ender_attunement.description" : "Stimme dich auf die Enderschule ein, um Enderzauber wirken zu können.",
- "perk.runicskills.evocation_attunement" : "Beschwörungs-Einstimmung",
- "perk.runicskills.evocation_attunement.description" : "Stimme dich auf die Beschwörungsschule ein, um Beschwörungszauber wirken zu können.",
-
- "overlay.runicskills.school_locked" : "Du bist nicht auf die Schule %s eingestimmt. Wähle sie in der Schulauswahl aus, um diese Zauber wirken zu können.",
 
  "school.runicskills.fire" : "Feuer",
  "school.runicskills.ice" : "Eis",

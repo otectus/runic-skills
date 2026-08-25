@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "Comment ajouter un objet verrouillé :\n<Nom du mod>§b:§f<Nom de l'objet>§b#§f<Compétence>§b:§f<Niveau>\n\nPour ajouter plus de compétences, écrivez : (vous pouvez en ajouter autant que vous le souhaitez)\n<Nom du mod>§b:§f<Nom de l'objet>§b#§f<Compétence>§b:§f<Niveau>§b;§f<Compétence>§b:§f<Niveau>§b...§f\n\nPour rendre l'objet lâchable, ajoutez à la fin §b<droppable>§f comme dans cet exemple :\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "Comment ajouter un objet au trésor :\n<Nom du mod>§b:§f<Nom de l'objet>\n\nPour ajouter un nbt, utilisez §b{ }§f comme dans cet exemple :\n<Nom du mod>§b:§f<Nom de l'objet>§b{§fNBT§b}§f\n\nEnfin, nous avons les listes. La liste fonctionne ainsi : si vous obtenez une chance de trésor, vous recevrez 1 objet de la liste. Pour ajouter une liste, écrivez :\n<Nom de la liste>§bList[§f Ici vous pouvez mettre autant d'objets que vous voulez, séparez-les avec §b;§f pour fermer la liste utilisez §b]§f",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "Comment ajouter un objet de convergence : (pour que ce soit équitable, la convergence ne donnera qu'un seul résultat)\n<Nom du mod>§b:§f<Nom de l'objet>§b#§f<Nom du mod résultat>§b:§f<Nom de l'objet résultat>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "Harmonisation au feu",
- "perk.runicskills.fire_attunement.description" : "Harmonisez-vous à l'école du feu, vous permettant de lancer des sorts de feu.",
- "perk.runicskills.ice_attunement" : "Harmonisation à la glace",
- "perk.runicskills.ice_attunement.description" : "Harmonisez-vous à l'école de la glace, vous permettant de lancer des sorts de glace.",
- "perk.runicskills.lightning_attunement" : "Harmonisation à la foudre",
- "perk.runicskills.lightning_attunement.description" : "Harmonisez-vous à l'école de la foudre, vous permettant de lancer des sorts de foudre.",
- "perk.runicskills.holy_attunement" : "Harmonisation au sacré",
- "perk.runicskills.holy_attunement.description" : "Harmonisez-vous à l'école du sacré, vous permettant de lancer des sorts sacrés.",
- "perk.runicskills.nature_attunement" : "Harmonisation à la nature",
- "perk.runicskills.nature_attunement.description" : "Harmonisez-vous à l'école de la nature, vous permettant de lancer des sorts de nature.",
- "perk.runicskills.blood_attunement" : "Harmonisation au sang",
- "perk.runicskills.blood_attunement.description" : "Harmonisez-vous à l'école du sang, vous permettant de lancer des sorts de sang.",
- "perk.runicskills.ender_attunement" : "Harmonisation à l'Ender",
- "perk.runicskills.ender_attunement.description" : "Harmonisez-vous à l'école de l'Ender, vous permettant de lancer des sorts de l'Ender.",
- "perk.runicskills.evocation_attunement" : "Harmonisation à l'évocation",
- "perk.runicskills.evocation_attunement.description" : "Harmonisez-vous à l'école de l'évocation, vous permettant de lancer des sorts d'évocation.",
-
- "overlay.runicskills.school_locked" : "Vous n'êtes pas harmonisé à l'école %s. Sélectionnez-la dans Sélection d'école pour lancer ces sorts.",
 
  "school.runicskills.fire" : "Feu",
  "school.runicskills.ice" : "Glace",

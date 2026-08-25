@@ -76,7 +76,6 @@
  "yacl3.config.runicskills:config.limitBreakerAmplifier" : "Limit Breaker Amplifier Value",
  "yacl3.config.runicskills:config.limitBreakerProbability" : "Limit Breaker Probability Value",
 
-
  "config.cloth-config.runicskills.lockItemList.tooltip" : "Como adicionar um item bloqueado:\n<Nome do mod>§b:§f<Nome do item>§b#§f<Habilidade>§b:§f<Nível>\n\nSe quiser adicionar mais habilidades, escreva: (você pode adicionar quantas quiser)\n<Nome do mod>§b:§f<Nome do item>§b#§f<Habilidade>§b:§f<Nível>§b;§f<Habilidade>§b:§f<Nível>§b...§f\n\nSe quiser tornar o item descartável, adicione no final §b<droppable>§f como neste exemplo:\nminecraft§b:§ftotem_of_undying§b#§fconstitution§b:§f16§b;§fmagic:12§b<droppable>",
  "config.cloth-config.runicskills.treasureHunterItemList.tooltip" : "Como adicionar um item de tesouro:\n<Nome do mod>§b:§f<Nome do item>\n\nSe quiser adicionar um nbt, use §b{ }§f como neste exemplo:\n<Nome do mod>§b:§f<Nome do item>§b{§fNBT§b}§f\n\nPor fim, temos listas. A lista funciona assim: se você obtiver uma chance de tesouro, receberá 1 item da lista. Para adicionar uma lista, escreva:\n<Nome da lista>§bList[§f Aqui você pode colocar quantos itens quiser, separe-os com §b;§f para fechar a lista use §b]§f",
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "Como adicionar um item de convergência: (para ser justo, a convergência só dará 1 resultado)\n<Nome do mod>§b:§f<Nome do item>§b#§f<Nome do mod resultado>§b:§f<Nome do item resultado>",
@@ -390,35 +389,6 @@
  "yacl3.config.runicskills:config.ironsSpellLevelBonusThreshold2" : "Spell Level Bonus Threshold (+2)",
  "yacl3.config.runicskills:config.ironsEnableManaRegen" : "Enable Mana Regen Bonus",
  "yacl3.config.runicskills:config.ironsManaRegenPerMagicLevel" : "Mana Regen Per Magic Level",
-
- "yacl3.config.runicskills:config.ironsEnableSchoolAttunement" : "Enable School Attunement",
- "yacl3.config.runicskills:config.fireAttunementRequiredLevel" : "Fire Attunement Required Level",
- "yacl3.config.runicskills:config.iceAttunementRequiredLevel" : "Ice Attunement Required Level",
- "yacl3.config.runicskills:config.lightningAttunementRequiredLevel" : "Lightning Attunement Required Level",
- "yacl3.config.runicskills:config.holyAttunementRequiredLevel" : "Holy Attunement Required Level",
- "yacl3.config.runicskills:config.natureAttunementRequiredLevel" : "Nature Attunement Required Level",
- "yacl3.config.runicskills:config.bloodAttunementRequiredLevel" : "Blood Attunement Required Level",
- "yacl3.config.runicskills:config.enderAttunementRequiredLevel" : "Ender Attunement Required Level",
- "yacl3.config.runicskills:config.evocationAttunementRequiredLevel" : "Evocation Attunement Required Level",
-
- "perk.runicskills.fire_attunement" : "Sintonização de fogo",
- "perk.runicskills.fire_attunement.description" : "Sintonize-se com a escola de fogo, permitindo lançar feitiços de fogo.",
- "perk.runicskills.ice_attunement" : "Sintonização de gelo",
- "perk.runicskills.ice_attunement.description" : "Sintonize-se com a escola de gelo, permitindo lançar feitiços de gelo.",
- "perk.runicskills.lightning_attunement" : "Sintonização de relâmpago",
- "perk.runicskills.lightning_attunement.description" : "Sintonize-se com a escola de relâmpago, permitindo lançar feitiços de relâmpago.",
- "perk.runicskills.holy_attunement" : "Sintonização sagrada",
- "perk.runicskills.holy_attunement.description" : "Sintonize-se com a escola sagrada, permitindo lançar feitiços sagrados.",
- "perk.runicskills.nature_attunement" : "Sintonização de natureza",
- "perk.runicskills.nature_attunement.description" : "Sintonize-se com a escola de natureza, permitindo lançar feitiços de natureza.",
- "perk.runicskills.blood_attunement" : "Sintonização de sangue",
- "perk.runicskills.blood_attunement.description" : "Sintonize-se com a escola de sangue, permitindo lançar feitiços de sangue.",
- "perk.runicskills.ender_attunement" : "Sintonização do Ender",
- "perk.runicskills.ender_attunement.description" : "Sintonize-se com a escola do Ender, permitindo lançar feitiços do Ender.",
- "perk.runicskills.evocation_attunement" : "Sintonização de evocação",
- "perk.runicskills.evocation_attunement.description" : "Sintonize-se com a escola de evocação, permitindo lançar feitiços de evocação.",
-
- "overlay.runicskills.school_locked" : "Você não se sintonizou com a escola %s. Selecione-a em Seleção de escola para lançar esses feitiços.",
 
  "school.runicskills.fire" : "Fogo",
  "school.runicskills.ice" : "Gelo",

@@ -103,3 +103,14 @@ description='''${mod_description}'''
     versionRange = "[2001.4,2002.0)"
     ordering = "AFTER"
     side = "BOTH"
+# Optional, but version-gated when present. Until 1.8.0 the integration was gated only by
+# ModList.isLoaded("legendarytabs"), which any version satisfies — so a Legendary Tabs 2.0
+# install loaded happily against a tab compiled for the 1.x TabBase API and then died with
+# an AbstractMethodError on the first frame the strip drew. The range makes that a clean
+# refusal at load time instead.
+[[dependencies."${mod_id}"]]
+    modId = "legendarytabs"
+    mandatory = false
+    versionRange = "[1.20.1-2.0,)"
+    ordering = "AFTER"
+    side = "CLIENT"

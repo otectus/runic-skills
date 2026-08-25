@@ -402,14 +402,6 @@ public class HandlerResources {
     public static final ResourceLocation AURA_MANIPULATION_PERK = create("textures/skill/magic/aura_manipulation.png");
     public static final ResourceLocation VOID_MAGIC_PERK = create("textures/skill/magic/void_magic.png");
     public static final ResourceLocation MANA_EFFICIENCY_PERK = create("textures/skill/magic/mana_efficiency.png");
-    public static final ResourceLocation FIRE_ATTUNEMENT_PERK = create("textures/skill/magic/fire_attunement.png");
-    public static final ResourceLocation ICE_ATTUNEMENT_PERK = create("textures/skill/magic/ice_attunement.png");
-    public static final ResourceLocation LIGHTNING_ATTUNEMENT_PERK = create("textures/skill/magic/lightning_attunement.png");
-    public static final ResourceLocation HOLY_ATTUNEMENT_PERK = create("textures/skill/magic/holy_attunement.png");
-    public static final ResourceLocation NATURE_ATTUNEMENT_PERK = create("textures/skill/magic/nature_attunement.png");
-    public static final ResourceLocation BLOOD_ATTUNEMENT_PERK = create("textures/skill/magic/blood_attunement.png");
-    public static final ResourceLocation ENDER_ATTUNEMENT_PERK = create("textures/skill/magic/ender_attunement.png");
-    public static final ResourceLocation EVOCATION_ATTUNEMENT_PERK = create("textures/skill/magic/evocation_attunement.png");
     public static final ResourceLocation ARCANE_EFFICIENCY_PERK = create("textures/skill/magic/arcane_efficiency.png");
     public static final ResourceLocation ARCANE_REFORGING_PERK = create("textures/skill/magic/arcane_reforging.png");
 
@@ -464,7 +456,6 @@ public class HandlerResources {
     public static final ResourceLocation ISS_ELDRITCH_MANCER_PERK = create("textures/skill/magic/eldritch_mancer.png");
     public static final ResourceLocation ISS_ELDRITCH_WARDED_PERK = create("textures/skill/endurance/eldritch_warded.png");
     public static final ResourceLocation ISS_ELDRITCH_CATALYST_PERK = create("textures/skill/magic/eldritch_catalyst.png");
-    public static final ResourceLocation ISS_ELDRITCH_ATTUNEMENT_PERK = create("textures/skill/magic/eldritch_attunement.png");
 
     // ── Iron's Spells 'n Spellbooks — Phase 1c summon/utility perks ──
     public static final ResourceLocation ISS_LORD_OF_THE_DEAD_PERK = create("textures/skill/magic/lord_of_the_dead.png");

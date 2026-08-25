@@ -288,78 +288,6 @@
   "desc": "Your endurance protects you from arcane forces, reducing incoming spell damage by %s."
  },
  {
-  "id": "fire_attunement",
-  "skill": "magic",
-  "texture_const": "FIRE_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/fire_attunement.png",
-  "gate": "config:fireAttunementRequiredLevel",
-  "name": "Fire Attunement",
-  "desc": "Attune to the Fire school, allowing you to cast Fire spells."
- },
- {
-  "id": "ice_attunement",
-  "skill": "magic",
-  "texture_const": "ICE_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/ice_attunement.png",
-  "gate": "config:fireAttunementRequiredLevel",
-  "name": "Ice Attunement",
-  "desc": "Attune to the Ice school, allowing you to cast Ice spells."
- },
- {
-  "id": "lightning_attunement",
-  "skill": "magic",
-  "texture_const": "LIGHTNING_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/lightning_attunement.png",
-  "gate": "config:iceAttunementRequiredLevel",
-  "name": "Lightning Attunement",
-  "desc": "Attune to the Lightning school, allowing you to cast Lightning spells."
- },
- {
-  "id": "holy_attunement",
-  "skill": "magic",
-  "texture_const": "HOLY_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/holy_attunement.png",
-  "gate": "config:lightningAttunementRequiredLevel",
-  "name": "Holy Attunement",
-  "desc": "Attune to the Holy school, allowing you to cast Holy spells."
- },
- {
-  "id": "nature_attunement",
-  "skill": "magic",
-  "texture_const": "NATURE_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/nature_attunement.png",
-  "gate": "config:holyAttunementRequiredLevel",
-  "name": "Nature Attunement",
-  "desc": "Attune to the Nature school, allowing you to cast Nature spells."
- },
- {
-  "id": "blood_attunement",
-  "skill": "magic",
-  "texture_const": "BLOOD_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/blood_attunement.png",
-  "gate": "config:natureAttunementRequiredLevel",
-  "name": "Blood Attunement",
-  "desc": "Attune to the Blood school, allowing you to cast Blood spells."
- },
- {
-  "id": "ender_attunement",
-  "skill": "magic",
-  "texture_const": "ENDER_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/ender_attunement.png",
-  "gate": "config:bloodAttunementRequiredLevel",
-  "name": "Ender Attunement",
-  "desc": "Attune to the Ender school, allowing you to cast Ender spells."
- },
- {
-  "id": "evocation_attunement",
-  "skill": "magic",
-  "texture_const": "EVOCATION_ATTUNEMENT_PERK",
-  "texture": "runicskills:textures/skill/magic/evocation_attunement.png",
-  "gate": "config:enderAttunementRequiredLevel",
-  "name": "Evocation Attunement",
-  "desc": "Attune to the Evocation school, allowing you to cast Evocation spells."
- },
- {
   "id": "wellspring",
   "skill": "magic",
   "texture_const": "ISS_WELLSPRING_PERK",
@@ -504,20 +432,11 @@
   "desc": "Master the charge. Iron's Spells held-cast (Long) spells deal %s more damage, modelling a fully-released charge regardless of how briefly held."
  },
  {
-  "id": "eldritch_attunement",
-  "skill": "magic",
-  "texture_const": "ISS_ELDRITCH_ATTUNEMENT_PERK",
-  "texture": "irons_spellbooks:textures/item/affinity_ring_eldritch.png",
-  "gate": "config:eldritchAttunementRequiredLevel",
-  "name": "Eldritch Attunement",
-  "desc": "Attune to the Eldritch school, allowing you to cast Eldritch spells."
- },
- {
   "id": "fire_mancer",
   "skill": "magic",
   "texture_const": "ISS_FIRE_MANCER_PERK",
   "texture": "irons_spellbooks:textures/item/upgrade_orb_fire.png",
-  "gate": "config:eldritchAttunementRequiredLevel",
+  "gate": "config:fireMancerRequiredLevel",
   "name": "Pyromancer",
   "desc": "You hurl flame with practiced ease. Fire spell damage increased by %s."
  },

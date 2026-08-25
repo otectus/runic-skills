@@ -109,15 +109,7 @@ public class TogglePerkSP {
                     return;
                 }
 
-                // School attunement limit check: only when enabling (going from 0 to 1+)
                 int currentRank = capability.getPerkRank(perk);
-                if (currentRank == 0 && RegistryPerks.isSchoolAttunementPerk(this.perk)) {
-                    int max = com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().ironsMaxSchoolSelections;
-                    if (RegistryPerks.countEnabledSchoolPerks(capability) >= max) {
-                        SyncSkillCapabilityCP.send(player);
-                        return;
-                    }
-                }
 
                 // Global active-perk cap: only when enabling (going from 0 to 1+). 0 = unlimited.
                 // Combines the flat maxActivePerks cap with the optional perksPerGlobalLevel scaled
