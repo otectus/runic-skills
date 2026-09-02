@@ -1,15 +1,19 @@
 package com.otectus.runicskills.network.packet.common;
 
+import com.otectus.runicskills.common.util.PacketBounds;
+import io.netty.handler.codec.DecoderException;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.network.PacketRateLimiter;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
+import com.otectus.runicskills.registry.powers.PowerEligibility;
 
 import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -34,12 +38,15 @@ public class PowerEquipSP {
     }
 
     public PowerEquipSP(FriendlyByteBuf buffer) {
-        this.powerName = buffer.readUtf();
+        this.powerName = buffer.readUtf(PacketBounds.MAX_CONTENT_ID_CHARS);
+        if (!PacketBounds.isContentIdValid(this.powerName)) {
+            throw new DecoderException("PowerEquipSP: malformed Power id");
+        }
         this.equip = buffer.readBoolean();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeUtf(this.powerName);
+        buffer.writeUtf(this.powerName, PacketBounds.MAX_CONTENT_ID_CHARS);
         buffer.writeBoolean(this.equip);
     }
 
@@ -62,42 +69,38 @@ public class PowerEquipSP {
 
             Power power = RegistryPowers.getPower(this.powerName);
             if (power == null) {
+                // Unresolvable id. Unequipping one is handled below by raw id, because a Power
+                // whose addon has been removed still occupies a slot and the player has to be able
+                // to reclaim it (RS10-006).
+                if (!this.equip && cap.unequipUnknownPower(this.powerName)) {
+                    SyncSkillCapabilityCP.send(player);
+                    return;
+                }
                 SyncSkillCapabilityCP.send(player);
                 return;
             }
 
-            // Unequip is always allowed — clean up stuck slots even if the Power is disabled.
+            // Unequip is always allowed — a slot must be reclaimable even when the Power in it has
+            // since been disabled, lost its dependency, or fallen below its requirement.
             if (!this.equip) {
                 cap.unequipPower(power);
                 SyncSkillCapabilityCP.send(player);
                 return;
             }
 
-            // Reject equipping a disabled Power.
-            if (RegistryPowers.isDisabled(power)) {
+            // One evaluation for every rule: disabled state, dependency, governing skill, the Seal
+            // secondary gate, the Crown total-skill gate, the same-school prerequisite chain, slot
+            // capacity and the Power Point budget. PowerTier's javadoc has claimed since 1.1.0 that
+            // these were "checked server-side"; four of them did not exist (RS10-006).
+            PowerEligibility.Result verdict = PowerEligibility.evaluateEquip(player, power);
+            if (!verdict.eligible()) {
+                // Say why. Silently resyncing left the player watching a button do nothing.
+                player.sendSystemMessage(Component.translatable("power.runicskills.equip_denied",
+                        Component.translatable(power.getKey()), verdict.describe(power)));
                 SyncSkillCapabilityCP.send(player);
                 return;
             }
 
-            // Required-mod check — the Power was registered, but the mod could have been
-            // removed mid-save in theory. Fail safe.
-            if (power.requiredModId != null
-                    && !net.minecraftforge.fml.ModList.get().isLoaded(power.requiredModId)) {
-                SyncSkillCapabilityCP.send(player);
-                return;
-            }
-
-            // Skill threshold (overridden by JSON tunable if set).
-            int requiredLvl = com.otectus.runicskills.registry.powers.PowerOverridesManager
-                    .requiredSkillLevelOr(power, power.requiredSkillLevel);
-            if (requiredLvl > 0
-                    && cap.getSkillLevel(power.getGoverningSkill()) < requiredLvl) {
-                SyncSkillCapabilityCP.send(player);
-                return;
-            }
-
-            // Capacity / duplicate enforced inside SkillCapability.equipPower; if it
-            // returns false the client just gets resynced.
             cap.equipPower(power);
             SyncSkillCapabilityCP.send(player);
         });

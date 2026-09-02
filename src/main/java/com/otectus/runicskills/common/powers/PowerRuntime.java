@@ -1,10 +1,15 @@
 package com.otectus.runicskills.common.powers;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumMap;
@@ -31,7 +36,8 @@ import javax.annotation.Nullable;
  *   <li>{@link TargetTags}      — short-lived per-entity tags ("marked", "conduit", etc.).</li>
  *   <li>{@link AllyDetector}    — party/ally resolution fallback.</li>
  *   <li>{@link PositionBuffer}  — 60-entry ring of player positions (used by Unraveled).</li>
- *   <li>{@link SummonRegistry}  — active summons per player.</li>
+ *   <li>{@link TimedModifiers} — self-expiring transient attribute modifiers on any entity.</li>
+ *   <li>{@link Counters}       — expiring per-key integers (chain hop index, hole extensions).</li>
  * </ul>
  *
  * All services are transient — rebuilt on login, cleared on logout. Persistent power state
@@ -49,7 +55,7 @@ public final class PowerRuntime {
         ProcWindows.clear(id);
         InternalCooldowns.clear(id);
         PositionBuffer.clear(id);
-        SummonRegistry.clear(id);
+        ProcThrottle.clear(id);
         TargetTags.clear(id);
     }
 
@@ -63,8 +69,10 @@ public final class PowerRuntime {
         ProcWindows.clearAll();
         InternalCooldowns.clearAll();
         PositionBuffer.clearAll();
-        SummonRegistry.clearAll();
+        ProcThrottle.clearAll();
         TargetTags.clearAll();
+        TimedModifiers.clearAll();
+        Counters.clearAll();
     }
 
     // ── Spell history ───────────────────────────────────────────────────────────────
@@ -108,6 +116,16 @@ public final class PowerRuntime {
 
     // ── Damage-type memory ──────────────────────────────────────────────────────────
 
+    /**
+     * Who last hit whom, with which school, and when.
+     *
+     * <p><b>Reserved, not abandoned.</b> Nothing calls {@link #recordHit} yet: the one Power that
+     * wants it, The Grove Remembers, ships only its damage half because
+     * {@code LivingHealEvent} carries no attacker pointer, so scoping the heal-reduction half to
+     * "marked by this player" needs the attribution this class exists to provide. See the note at
+     * that Power's dispatcher case. Kept deliberately so the deferred half has somewhere to land;
+     * a sibling registry with no possible consumer was deleted rather than left here.
+     */
     public static final class DamageTypeMemory {
         public enum School { FIRE, ICE, LIGHTNING, HOLY, ENDER, BLOOD, EVOCATION, NATURE, ELDRITCH }
 
@@ -168,11 +186,25 @@ public final class PowerRuntime {
             STORE.computeIfAbsent(id, k -> new HashMap<>()).put(powerName, expiresAt);
         }
 
+        /**
+         * Whether {@code powerName}'s window is still open, dropping it if it is not.
+         *
+         * <p>The expiry check used to be read-only, so an elapsed window stayed in the map until
+         * the player logged out. Every proc of a windowed Power added a key that nothing ever
+         * removed; over a long session that is per-player growth with no ceiling. Pruning on read
+         * is what {@link TargetTags#has} already does, and it costs nothing here.
+         */
         public static synchronized boolean active(UUID id, String powerName, long now) {
             Map<String, Long> m = STORE.get(id);
             if (m == null) return false;
             Long exp = m.get(powerName);
-            return exp != null && exp > now;
+            if (exp == null) return false;
+            if (exp <= now) {
+                m.remove(powerName);
+                if (m.isEmpty()) STORE.remove(id);
+                return false;
+            }
+            return true;
         }
 
         public static synchronized void consume(UUID id, String powerName) {
@@ -201,11 +233,54 @@ public final class PowerRuntime {
             return true;
         }
 
+        /**
+         * Whether {@code powerName} is off cooldown, dropping the entry once it has elapsed.
+         *
+         * <p>Same reasoning as {@link ProcWindows#active}: reading expiry without removing it left
+         * one dead key per Power per player for the rest of the session.
+         */
         public static synchronized boolean isAvailable(UUID id, String powerName, long now) {
             Map<String, Long> m = STORE.get(id);
             if (m == null) return true;
             Long avail = m.get(powerName);
-            return avail == null || avail <= now;
+            if (avail == null) return true;
+            if (avail <= now) {
+                m.remove(powerName);
+                if (m.isEmpty()) STORE.remove(id);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Brings forward the remaining cooldown of every Power in {@code powerNames} by
+         * {@code fraction} of what is left.
+         *
+         * <p>Several Powers are specified as "reduces that ability's cooldown by N%", which needs a
+         * partial adjustment rather than the all-or-nothing clear the rest of this class offers.
+         * Only Powers still cooling are touched, and a fully elapsed cooldown is dropped rather
+         * than left in the map.
+         *
+         * @return how many cooldowns were shortened
+         */
+        public static synchronized int reduceRemaining(UUID id, java.util.Collection<String> powerNames,
+                                                       double fraction, long now) {
+            Map<String, Long> m = STORE.get(id);
+            if (m == null || powerNames.isEmpty() || fraction <= 0.0) return 0;
+            int shortened = 0;
+            for (String powerName : powerNames) {
+                Long avail = m.get(powerName);
+                if (avail == null || avail <= now) continue;
+                long remaining = avail - now;
+                long reduced = remaining - (long) Math.ceil(remaining * Math.min(1.0, fraction));
+                if (reduced <= 0) {
+                    m.remove(powerName);
+                } else {
+                    m.put(powerName, now + reduced);
+                }
+                shortened++;
+            }
+            return shortened;
         }
 
         // synchronized like every other accessor on this map. These five clear() methods were
@@ -305,28 +380,122 @@ public final class PowerRuntime {
 
     // ── Summon registry ─────────────────────────────────────────────────────────────
 
-    public static final class SummonRegistry {
-        private static final Map<UUID, java.util.Set<UUID>> STORE = new HashMap<>();
+    // ── Timed attribute modifiers ───────────────────────────────────────────────────
 
-        public static synchronized void add(UUID owner, UUID summon) {
-            STORE.computeIfAbsent(owner, k -> new java.util.LinkedHashSet<>()).add(summon);
+    /**
+     * Transient attribute modifiers that expire on their own.
+     *
+     * <p>Scorched Earth's armour shred lands on whatever walked into a fire field — a mob nobody
+     * is tracking, in a chunk that may unload before the debuff is due to end. A
+     * {@link MobEffectInstance}-style countdown does not exist for attributes, so the expiry has
+     * to live somewhere, and it cannot be a strong reference to the entity or every mob a fire
+     * field ever touched would be pinned for the session. Weak references plus a periodic
+     * {@link #sweep} is the cheapest correct shape.
+     */
+    public static final class TimedModifiers {
+
+        private record Entry(WeakReference<LivingEntity> target, Attribute attribute,
+                             UUID id, long expiresAt) {}
+
+        private static final Map<String, Entry> STORE = new HashMap<>();
+
+        private static String key(LivingEntity target, UUID id) {
+            return id + "@" + target.getId();
         }
 
-        public static synchronized void remove(UUID owner, UUID summon) {
-            java.util.Set<UUID> set = STORE.get(owner);
-            if (set != null) set.remove(summon);
+        /**
+         * Applies (or refreshes) a transient modifier that will be removed at {@code expiresAt}.
+         * Re-applying with the same UUID replaces the existing modifier rather than stacking,
+         * because {@code addTransientModifier} throws on a duplicate id.
+         */
+        public static synchronized void apply(LivingEntity target, Attribute attribute, UUID id,
+                                              String name, double amount,
+                                              AttributeModifier.Operation operation, long expiresAt) {
+            if (target == null || attribute == null || id == null) return;
+            AttributeInstance instance = target.getAttribute(attribute);
+            if (instance == null) return;
+            AttributeModifier existing = instance.getModifier(id);
+            if (existing != null) instance.removeModifier(existing);
+            instance.addTransientModifier(new AttributeModifier(id, name, amount, operation));
+            STORE.put(key(target, id), new Entry(new WeakReference<>(target), attribute, id, expiresAt));
         }
 
-        public static synchronized int count(UUID owner) {
-            java.util.Set<UUID> set = STORE.get(owner);
-            return set == null ? 0 : set.size();
+        /** Removes a modifier ahead of its expiry. */
+        public static synchronized void remove(LivingEntity target, Attribute attribute, UUID id) {
+            if (target == null || attribute == null || id == null) return;
+            AttributeInstance instance = target.getAttribute(attribute);
+            if (instance != null) {
+                AttributeModifier existing = instance.getModifier(id);
+                if (existing != null) instance.removeModifier(existing);
+            }
+            STORE.remove(key(target, id));
         }
 
-        // synchronized like every other accessor on this map. These five clear() methods were
-        // the only ones that mutated STORE outside the lock, so a logout racing a gameplay
-        // read could observe a torn HashMap (RS-131).
-        static synchronized void clear(UUID id) { STORE.remove(id); }
+        /** Drops every elapsed modifier, and every entry whose target has been collected. */
+        public static synchronized void sweep(long now) {
+            STORE.entrySet().removeIf(e -> {
+                Entry entry = e.getValue();
+                LivingEntity target = entry.target().get();
+                if (target == null) return true;
+                if (entry.expiresAt() > now) return false;
+                AttributeInstance instance = target.getAttribute(entry.attribute());
+                if (instance != null) {
+                    AttributeModifier existing = instance.getModifier(entry.id());
+                    if (existing != null) instance.removeModifier(existing);
+                }
+                return true;
+            });
+        }
+
+        static synchronized void clearAll() {
+            for (Entry entry : STORE.values()) {
+                LivingEntity target = entry.target().get();
+                if (target == null) continue;
+                AttributeInstance instance = target.getAttribute(entry.attribute());
+                if (instance == null) continue;
+                AttributeModifier existing = instance.getModifier(entry.id());
+                if (existing != null) instance.removeModifier(existing);
+            }
+            STORE.clear();
+        }
+    }
+
+    // ── Expiring counters ───────────────────────────────────────────────────────────
+
+    /**
+     * Per-key integer counters that forget themselves.
+     *
+     * <p>Two Powers need to count events that belong to one transient thing rather than to a
+     * player: which hop of a Chain Lightning bolt is landing, and how many times one black hole
+     * has already been extended. Keying on the entity id and letting the entry expire is what
+     * keeps that from becoming a map the server never empties.
+     */
+    public static final class Counters {
+
+        private record Count(int value, long expiresAt) {}
+
+        private static final Map<String, Count> STORE = new HashMap<>();
+
+        /** Increments {@code key} (creating it at 1) and returns the new value. */
+        public static synchronized int increment(String key, long now, long ttlTicks) {
+            Count current = STORE.get(key);
+            int next = (current == null || current.expiresAt() <= now) ? 1 : current.value() + 1;
+            STORE.put(key, new Count(next, now + ttlTicks));
+            return next;
+        }
+
+        /** The current value of {@code key}, or 0 when unset or elapsed. */
+        public static synchronized int get(String key, long now) {
+            Count current = STORE.get(key);
+            if (current == null) return 0;
+            if (current.expiresAt() <= now) { STORE.remove(key); return 0; }
+            return current.value();
+        }
+
+        public static synchronized void reset(String key) { STORE.remove(key); }
 
         static synchronized void clearAll() { STORE.clear(); }
     }
+
 }
+

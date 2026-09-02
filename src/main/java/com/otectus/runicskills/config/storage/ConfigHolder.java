@@ -61,6 +61,29 @@ public class ConfigHolder<T> {
     /** Keys present on disk that no field claims, replayed on save so updates don't delete them. */
     private final java.util.Map<String, JsonElement> orphans = new java.util.LinkedHashMap<>();
 
+    /**
+     * The server's values, while this client is connected to one. When set, {@link #instance()}
+     * serves this instead of the local file's contents; {@link #local()}, {@link #load()} and
+     * {@link #save()} always operate on the local instance regardless.
+     *
+     * <p>This is the seam that makes the server authoritative (RS10-005). 1,909 call sites read
+     * gameplay configuration through {@code instance()}, and only 128 of the 1,133 fields were
+     * ever sent to clients — so a client's own file decided perk requirements, budgets, disabled
+     * content and integration behaviour for everything the two hand-written sync packets happened
+     * to omit, and the packets that did arrive overwrote the client's in-memory config rather than
+     * being kept apart from it. Redirecting one accessor makes every one of those call sites
+     * server-correct without touching them, and keeps the player's own file intact for the
+     * singleplayer setup screens.
+     *
+     * <p>{@code volatile} rather than synchronized: publication is a single reference swap, and
+     * readers are on the render and tick threads.
+     */
+    private volatile T authoritative;
+
+    /** Bumped on every authoritative publish/clear, so view-model caches can key off it. */
+    private final java.util.concurrent.atomic.AtomicInteger authoritativeVersion =
+            new java.util.concurrent.atomic.AtomicInteger();
+
     public ConfigHolder(Class<T> type, Path path, Supplier<T> defaultSupplier) {
         this(type, path, defaultSupplier, true);
     }
@@ -72,13 +95,56 @@ public class ConfigHolder<T> {
         this.prettyPrint = prettyPrint;
     }
 
+    /**
+     * The values gameplay code should read: the connected server's, if one has published a
+     * snapshot, otherwise this machine's own file.
+     */
     public T instance() {
+        T published = this.authoritative;
+        if (published != null) return published;
+        return local();
+    }
+
+    /**
+     * This machine's own configuration, ignoring any server snapshot.
+     *
+     * <p>Use it only where the local file genuinely is the subject: persistence, the config UI,
+     * and server-side admin commands that edit the file. Reading it for gameplay on a connected
+     * client is what RS10-005 is about.
+     */
+    public T local() {
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) load();
             }
         }
         return instance;
+    }
+
+    /**
+     * Installs the connected server's values. Replacement is a single reference swap, so no
+     * reader can observe a half-updated configuration.
+     */
+    public void setAuthoritative(T serverValues) {
+        this.authoritative = serverValues;
+        this.authoritativeVersion.incrementAndGet();
+    }
+
+    /** Drops the server's values, e.g. on disconnect, so local settings apply again. */
+    public void clearAuthoritative() {
+        if (this.authoritative == null) return;
+        this.authoritative = null;
+        this.authoritativeVersion.incrementAndGet();
+    }
+
+    /** True while a server snapshot is in force. */
+    public boolean hasAuthoritative() {
+        return this.authoritative != null;
+    }
+
+    /** Monotonic counter, incremented on every publish and clear. */
+    public int authoritativeVersion() {
+        return this.authoritativeVersion.get();
     }
 
     public synchronized void load() {
@@ -216,29 +282,14 @@ public class ConfigHolder<T> {
      * Clamps every {@code @Clamp}-annotated numeric field of a freshly parsed config into range,
      * logging a WARN per violation. Runs only on file loads — defaults are in-range by
      * construction, and the client UI enforces its own (YACL) ranges.
+     *
+     * <p>The enforcement itself lives in {@link ConfigClamps} so the identical rules also apply to
+     * a configuration snapshot arriving from a server, which is the other place unchecked numbers
+     * enter the mod.
      */
     private void applyClamps(T loaded) {
-        for (java.lang.reflect.Field field : type.getFields()) {
-            Clamp clamp = field.getAnnotation(Clamp.class);
-            if (clamp == null) continue;
-            try {
-                double value = ((Number) field.get(loaded)).doubleValue();
-                // NaN compares false to everything, so Math.min/max would pass it through.
-                double bounded = Double.isNaN(value)
-                        ? clamp.min()
-                        : Math.max(clamp.min(), Math.min(clamp.max(), value));
-                if (bounded == value) continue;
-                LOGGER.warn("Config {}: {} = {} is outside [{}, {}]; clamped to {}.",
-                        path.getFileName(), field.getName(), value, clamp.min(), clamp.max(), bounded);
-                Class<?> t = field.getType();
-                if (t == int.class) field.setInt(loaded, (int) bounded);
-                else if (t == long.class) field.setLong(loaded, (long) bounded);
-                else if (t == float.class) field.setFloat(loaded, (float) bounded);
-                else if (t == double.class) field.setDouble(loaded, bounded);
-            } catch (ReflectiveOperationException | ClassCastException | NullPointerException e) {
-                LOGGER.warn("Config {}: could not clamp field {}: {}", path.getFileName(), field.getName(), e.toString());
-            }
-        }
+        ConfigClamps.apply(type, loaded,
+                message -> LOGGER.warn("Config {}: {}", path.getFileName(), message));
     }
 
     /** Copies an unparseable config file to a sibling {@code <name>.invalid} before it is overwritten. */
@@ -251,6 +302,11 @@ public class ConfigHolder<T> {
         }
     }
 
+    /**
+     * Writes this machine's own configuration. Deliberately reads {@code instance} directly rather
+     * than {@link #instance()}: a connected client must never write the server's values over its
+     * own file.
+     */
     public synchronized void save() {
         if (instance == null) return;
         if (loadFailed) {

@@ -102,7 +102,7 @@ public class CombatEventHandler {
     // Stable across restarts so a stale modifier from a crashed session is overwritten
     // cleanly on next apply.
     private static final UUID BLADE_STORM_ATTACK_SPEED_UUID =
-            UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15577");
+            com.otectus.runicskills.registry.RunicAttributeModifiers.BLADE_STORM_ATTACK_SPEED;
 
     private static void recordHit(Player attacker, LivingEntity target, long gameTime) {
         if (attacker == null || target == null) return;

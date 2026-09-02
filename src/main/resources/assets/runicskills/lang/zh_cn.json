@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "宗师",
  "skill.runicskills.rank.8" : "传奇",
 
- "tooltip.skill.level_up" : "花费 %s 级（%s 经验）来提升 %s。",
+ "tooltip.skill.level_up" : "花费 %1$s 经验来提升 %2$s。",
  "tooltip.skill.max_level" : "你已达到 %s 的最高等级。",
  "tooltip.skill.global_max_level": "已达到全局技能等级上限 %s。",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "玩家与方块之间的交互距离。",
  "passive.runicskills.break_speed.description" : "使用工具破坏方块的速度。（仅影响镐、斧和铲）",
  "passive.runicskills.beneficial_effect.description" : "对玩家有益的药水持续时间。",
- "passive.runicskills.magic_resist.description" : "减少一部分魔法伤害，包括：伤害药水、唤魔者尖牙、凋灵头颅、荆棘附魔、守卫者光束等。",
  "passive.runicskills.fortune.description" : "提高从钓鱼或自然生成的箱子中获得高品质战利品的概率。",
  "passive.runicskills.critical_damage.description" : "造成比普通攻击更高伤害的攻击。（在玩家奔跑或跳跃下落时触发）",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "你需要幸运 %s 才能使用 %s 物品！",
  "overlay.runicskills.gem_attunement_saved": "宝石调谐保留了宝石！",
 
- "perk.runicskills.blood_mastery": "血液精通",
- "perk.runicskills.blood_mastery.description": "你的体质强化了你对抗血液祭品代价的能力，减少 %s 的生命消耗。",
- "perk.runicskills.ritual_sage": "仪式贤者",
- "perk.runicskills.ritual_sage.description": "你对血液仪式的深厚智慧减少了 %s 的LP消耗。",
- "perk.runicskills.crimson_bond": "绯红之约",
- "perk.runicskills.crimson_bond.description": "你与血液网络的羁绊给予你 %s 分之一的概率在使用符印时不消耗LP。",
 
  "perk.runicskills.dragon_slayer": "屠龙者",
  "perk.runicskills.dragon_slayer.description": "你的力量使你对龙和神话生物造成 %s 额外伤害。",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "灾变抗性",
  "perk.runicskills.cataclysm_resistance.description": "你的耐力使你对灾变力量更加坚韧，减少 %s 的Boss伤害。",
 
- "perk.runicskills.curse_ward": "诅咒结界",
- "perk.runicskills.curse_ward.description": "你的智慧保护你免受诅咒能量的侵害，减少 %s 的诅咒伤害。",
 
  "perk.runicskills.boss_hunter": "首领猎手",
  "perk.runicskills.boss_hunter.description": "你的力量使你在对抗强大首领时占据优势，造成 %s 额外伤害。",
 
- "perk.runicskills.aura_attunement": "灵气调谐",
- "perk.runicskills.aura_attunement.description": "你与自然的调谐提高你附近灵气效果的效率 %s。",
 
  "perk.runicskills.master_chef": "大厨",
  "perk.runicskills.master_chef.description": "你的体质使你能从食物中汲取更多营养，提高效果持续时间 %s。",

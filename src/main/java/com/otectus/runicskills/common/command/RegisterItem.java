@@ -2,6 +2,7 @@ package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -24,8 +25,8 @@ import java.util.Optional;
 
 public class RegisterItem {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register((Commands.literal("registeritem")
+    public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        return dispatcher.register((Commands.literal("registeritem")
                 .requires((source) -> source.hasPermission(2)))
                 .then(Commands.argument("skill", SkillArgument.getArgument())
                         .then(Commands.argument("level", IntegerArgumentType.integer())

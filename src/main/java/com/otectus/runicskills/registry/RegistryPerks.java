@@ -41,14 +41,39 @@ public class RegistryPerks {
      * saved player data at the wrong perk (RS-015).
      *
      * <p>Nothing needs the vanilla sync: the mod distributes all of this through its own packets
-     * ({@code ConfigSyncCP}, {@code DynamicConfigSyncCP}, {@code SyncSkillCapabilityCP}), which
-     * run after login and carry the values rather than relying on matching registry order.
+     * ({@code GameplayConfigCP}, {@code ConfigSyncCP}, {@code SyncSkillCapabilityCP}), which run
+     * after login and carry the values rather than relying on matching registry order.
+     *
+     * <p><b>Since 2.0.0, configuration no longer decides membership.</b> A perk used to be skipped
+     * entirely when its {@code <name>RequiredLevel} was negative, which meant a server and a client
+     * with different files genuinely had different catalogues — the exact divergence disableSync()
+     * exists to tolerate, made worse because saved player data then referred to perks one side had
+     * never registered (RS10-005). Every perk is now registered unconditionally and a negative
+     * requirement is runtime state: {@code Perk.isEnabled} already treats it as disabled, so the
+     * behaviour a pack author configured is unchanged while the id stays resolvable on both sides.
+     *
+     * <p>The remaining {@code null} registrations are gated on an optional mod being <em>absent</em>.
+     * That is a property of the environment rather than a tuning choice, and keeping the constant
+     * null is what keeps the optional mod's classes out of this class's constant pool.
      */
     public static final Supplier<IForgeRegistry<Perk>> PERKS_REGISTRY = PERKS.makeRegistry(() -> new RegistryBuilder<Perk>().disableSaving().disableSync());
 
+    /**
+     * Every perk's registration lambda, kept so it can be re-run when the configuration changes.
+     *
+     * <p>A perk's requirement level and its displayed values come from config fields named at the
+     * registration site, and Forge freezes registries after startup — so without this the mapping
+     * would have to be restated in a refresh routine, 462 times, in a second place that could
+     * drift from the first. Re-running the original lambda keeps one source of truth.
+     */
+    private static final java.util.Map<String, Supplier<Perk>> REBUILDERS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    // Declared BEFORE the registration fields below, deliberately: static initialisers run in
+    // textual order, so a map declared after them is still null when the first one calls
+    // registerPerk() — which takes mod construction down with a NullPointerException.
+
     public static final RegistryObject<Perk> ONE_HANDED =
-            HandlerCommonConfig.HANDLER.instance().oneHandedRequiredLevel < 0
-            ? null : PERKS.register("one_handed", () -> register(
+            registerPerk("one_handed", () -> register(
                     "one_handed",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().oneHandedRequiredLevel,
@@ -57,8 +82,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> FIGHTING_SPIRIT =
-            HandlerCommonConfig.HANDLER.instance().fightingSpiritRequiredLevel < 0
-            ? null : PERKS.register("fighting_spirit", () -> register(
+            registerPerk("fighting_spirit", () -> register(
                     "fighting_spirit",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().fightingSpiritRequiredLevel,
@@ -68,8 +92,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> BERSERKER =
-            HandlerCommonConfig.HANDLER.instance().berserkerRequiredLevel < 0
-            ? null : PERKS.register("berserker", () -> register(
+            registerPerk("berserker", () -> register(
                     "berserker",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().berserkerRequiredLevel,
@@ -78,8 +101,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> ATHLETICS =
-            HandlerCommonConfig.HANDLER.instance().athleticsRequiredLevel < 0
-            ? null : PERKS.register("athletics", () -> register(
+            registerPerk("athletics", () -> register(
                     "athletics",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().athleticsRequiredLevel,
@@ -88,8 +110,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> TURTLE_SHIELD =
-            HandlerCommonConfig.HANDLER.instance().turtleShieldRequiredLevel < 0
-            ? null : PERKS.register("turtle_shield", () -> register(
+            registerPerk("turtle_shield", () -> register(
                     "turtle_shield",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().turtleShieldRequiredLevel,
@@ -97,8 +118,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LION_HEART =
-            HandlerCommonConfig.HANDLER.instance().lionHeartRequiredLevel < 0
-            ? null : PERKS.register("lion_heart", () -> register(
+            registerPerk("lion_heart", () -> register(
                     "lion_heart",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().lionHeartRequiredLevel,
@@ -107,8 +127,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> QUICK_REPOSITION =
-            HandlerCommonConfig.HANDLER.instance().quickRepositionRequiredLevel < 0
-            ? null : PERKS.register("quick_reposition", () -> register(
+            registerPerk("quick_reposition", () -> register(
                     "quick_reposition",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().quickRepositionRequiredLevel,
@@ -118,8 +137,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> STEALTH_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().stealthMasteryRequiredLevel < 0
-            ? null : PERKS.register("stealth_mastery", () -> register(
+            registerPerk("stealth_mastery", () -> register(
                     "stealth_mastery",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().stealthMasteryRequiredLevel,
@@ -130,8 +148,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> CAT_EYES =
-            HandlerCommonConfig.HANDLER.instance().catEyesRequiredLevel < 0
-            ? null : PERKS.register("cat_eyes", () -> register(
+            registerPerk("cat_eyes", () -> register(
                     "cat_eyes",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().catEyesRequiredLevel,
@@ -139,8 +156,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SNOW_WALKER =
-            HandlerCommonConfig.HANDLER.instance().snowWalkerRequiredLevel < 0
-            ? null : PERKS.register("snow_walker", () -> register(
+            registerPerk("snow_walker", () -> register(
                     "snow_walker",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().snowWalkerRequiredLevel,
@@ -148,8 +164,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> COUNTER_ATTACK =
-            HandlerCommonConfig.HANDLER.instance().counterattackRequiredLevel < 0
-            ? null : PERKS.register("counter_attack", () -> register(
+            registerPerk("counter_attack", () -> register(
                     "counter_attack",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().counterattackRequiredLevel,
@@ -159,8 +174,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> DIAMOND_SKIN =
-            HandlerCommonConfig.HANDLER.instance().diamondSkinRequiredLevel < 0
-            ? null : PERKS.register("diamond_skin", () -> register(
+            registerPerk("diamond_skin", () -> register(
                     "diamond_skin",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().diamondSkinRequiredLevel,
@@ -170,8 +184,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SCHOLAR =
-            HandlerCommonConfig.HANDLER.instance().scholarRequiredLevel < 0
-            ? null : PERKS.register("scholar", () -> register(
+            registerPerk("scholar", () -> register(
                     "scholar",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().scholarRequiredLevel,
@@ -179,8 +192,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> HAGGLER =
-            HandlerCommonConfig.HANDLER.instance().hagglerRequiredLevel < 0
-            ? null : PERKS.register("haggler", () -> register(
+            registerPerk("haggler", () -> register(
                     "haggler",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().hagglerRequiredLevel,
@@ -189,8 +201,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> ALCHEMY_MANIPULATION =
-            HandlerCommonConfig.HANDLER.instance().alchemyManipulationRequiredLevel < 0
-            ? null : PERKS.register("alchemy_manipulation", () -> register(
+            registerPerk("alchemy_manipulation", () -> register(
                     "alchemy_manipulation",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().alchemyManipulationRequiredLevel,
@@ -200,8 +211,7 @@ public class RegistryPerks {
 
     // Building perks
     public static final RegistryObject<Perk> OBSIDIAN_SMASHER =
-            HandlerCommonConfig.HANDLER.instance().obsidianSmasherRequiredLevel < 0
-            ? null : PERKS.register("obsidian_smasher", () -> register(
+            registerPerk("obsidian_smasher", () -> register(
                     "obsidian_smasher",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().obsidianSmasherRequiredLevel,
@@ -210,8 +220,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> TREASURE_HUNTER =
-            HandlerCommonConfig.HANDLER.instance().treasureHunterRequiredLevel < 0
-            ? null : PERKS.register("treasure_hunter", () -> register(
+            registerPerk("treasure_hunter", () -> register(
                     "treasure_hunter",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().treasureHunterRequiredLevel,
@@ -220,8 +229,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> CONVERGENCE =
-            HandlerCommonConfig.HANDLER.instance().convergenceRequiredLevel < 0
-            ? null : PERKS.register("convergence", () -> register(
+            registerPerk("convergence", () -> register(
                     "convergence",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().convergenceRequiredLevel,
@@ -231,8 +239,7 @@ public class RegistryPerks {
 
     // Tinkering base perks
     public static final RegistryObject<Perk> LOCKSMITH =
-            HandlerCommonConfig.HANDLER.instance().locksmithRequiredLevel < 0
-            ? null : PERKS.register("locksmith", () -> register(
+            registerPerk("locksmith", () -> register(
                     "locksmith",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().locksmithRequiredLevel,
@@ -241,8 +248,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SAFE_CRACKER =
-            HandlerCommonConfig.HANDLER.instance().safeCrackerRequiredLevel < 0
-            ? null : PERKS.register("safe_cracker", () -> register(
+            registerPerk("safe_cracker", () -> register(
                     "safe_cracker",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().safeCrackerRequiredLevel,
@@ -251,8 +257,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> MASTER_TINKERER =
-            HandlerCommonConfig.HANDLER.instance().masterTinkererRequiredLevel < 0
-            ? null : PERKS.register("master_tinkerer", () -> register(
+            registerPerk("master_tinkerer", () -> register(
                     "master_tinkerer",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().masterTinkererRequiredLevel,
@@ -262,8 +267,7 @@ public class RegistryPerks {
 
     // Wisdom base perks
     public static final RegistryObject<Perk> ENCHANTERS_INSIGHT =
-            HandlerCommonConfig.HANDLER.instance().enchantersInsightRequiredLevel < 0
-            ? null : PERKS.register("enchanters_insight", () -> register(
+            registerPerk("enchanters_insight", () -> register(
                     "enchanters_insight",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().enchantersInsightRequiredLevel,
@@ -272,8 +276,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LORE_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().loreMasteryRequiredLevel < 0
-            ? null : PERKS.register("lore_mastery", () -> register(
+            registerPerk("lore_mastery", () -> register(
                     "lore_mastery",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().loreMasteryRequiredLevel,
@@ -282,8 +285,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SAFE_PORT =
-            HandlerCommonConfig.HANDLER.instance().safePortRequiredLevel < 0
-            ? null : PERKS.register("safe_port", () -> register(
+            registerPerk("safe_port", () -> register(
                     "safe_port",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().safePortRequiredLevel,
@@ -291,8 +293,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LIFE_EATER =
-            HandlerCommonConfig.HANDLER.instance().lifeEaterRequiredLevel < 0
-            ? null : PERKS.register("life_eater", () -> register(
+            registerPerk("life_eater", () -> register(
                     "life_eater",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().lifeEaterRequiredLevel,
@@ -301,8 +302,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> WORMHOLE_STORAGE =
-            HandlerCommonConfig.HANDLER.instance().wormholeStorageRequiredLevel < 0
-            ? null : PERKS.register("wormhole_storage", () -> register(
+            registerPerk("wormhole_storage", () -> register(
                     "wormhole_storage",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().wormholeStorageRequiredLevel,
@@ -310,8 +310,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> CRITICAL_ROLL =
-            HandlerCommonConfig.HANDLER.instance().criticalRollRequiredLevel < 0
-            ? null : PERKS.register("critical_roll", () -> register(
+            registerPerk("critical_roll", () -> register(
                     "critical_roll",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().criticalRollRequiredLevel,
@@ -321,8 +320,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LUCKY_DROP =
-             HandlerCommonConfig.HANDLER.instance().luckyDropRequiredLevel < 0
-            ? null : PERKS.register("lucky_drop", () -> register(
+             registerPerk("lucky_drop", () -> register(
                     "lucky_drop",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyDropRequiredLevel,
@@ -332,8 +330,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LIMIT_BREAKER =
-            HandlerCommonConfig.HANDLER.instance().limitBreakerRequiredLevel < 0
-            ? null : PERKS.register("limit_breaker", () -> register(
+            registerPerk("limit_breaker", () -> register(
                     "limit_breaker",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().limitBreakerRequiredLevel,
@@ -344,8 +341,8 @@ public class RegistryPerks {
 
     // Iron's Spells 'n Spellbooks Integration - Conditional perks
     public static final RegistryObject<Perk> MANA_EFFICIENCY =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaEfficiencyRequiredLevel < 0
-            ? null : PERKS.register("mana_efficiency", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("mana_efficiency", () -> register(
                     "mana_efficiency",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().manaEfficiencyRequiredLevel,
@@ -353,8 +350,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaEfficiencyPercent)
             ));
     public static final RegistryObject<Perk> SPELL_ECHO =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellEchoRequiredLevel < 0
-            ? null : PERKS.register("spell_echo", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spell_echo", () -> register(
                     "spell_echo",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().spellEchoRequiredLevel,
@@ -362,8 +359,8 @@ public class RegistryPerks {
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().spellEchoProbability)
             ));
     public static final RegistryObject<Perk> ARCANE_SHIELD =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneShieldRequiredLevel < 0
-            ? null : PERKS.register("arcane_shield", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("arcane_shield", () -> register(
                     "arcane_shield",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().arcaneShieldRequiredLevel,
@@ -373,8 +370,8 @@ public class RegistryPerks {
 
     // ── Iron's Spells — Phase 1a: generic mana & casting perks ──
     public static final RegistryObject<Perk> WELLSPRING =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().wellspringRequiredLevel < 0
-            ? null : PERKS.register("wellspring", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("wellspring", () -> register(
                     "wellspring",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().wellspringRequiredLevel,
@@ -383,8 +380,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> QUICKENING =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().quickeningRequiredLevel < 0
-            ? null : PERKS.register("quickening", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("quickening", () -> register(
                     "quickening",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().quickeningRequiredLevel,
@@ -393,8 +390,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> RESERVOIR =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().reservoirRequiredLevel < 0
-            ? null : PERKS.register("reservoir", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("reservoir", () -> register(
                     "reservoir",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().reservoirRequiredLevel,
@@ -403,8 +400,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> TEMPO =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().tempoRequiredLevel < 0
-            ? null : PERKS.register("tempo", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("tempo", () -> register(
                     "tempo",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().tempoRequiredLevel,
@@ -413,8 +410,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> ARCANE_RECOVERY =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneRecoveryRequiredLevel < 0
-            ? null : PERKS.register("arcane_recovery", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("arcane_recovery", () -> register(
                     "arcane_recovery",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arcaneRecoveryRequiredLevel,
@@ -424,8 +421,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> FOCUS =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().focusRequiredLevel < 0
-            ? null : PERKS.register("focus", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("focus", () -> register(
                     "focus",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().focusRequiredLevel,
@@ -434,8 +431,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> MANA_BULWARK =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaBulwarkRequiredLevel < 0
-            ? null : PERKS.register("mana_bulwark", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("mana_bulwark", () -> register(
                     "mana_bulwark",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().manaBulwarkRequiredLevel,
@@ -445,8 +442,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> ARCANE_REPRIEVE =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneReprieveRequiredLevel < 0
-            ? null : PERKS.register("arcane_reprieve", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("arcane_reprieve", () -> register(
                     "arcane_reprieve",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arcaneReprieveRequiredLevel,
@@ -456,8 +453,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> MANA_SURGE =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaSurgeRequiredLevel < 0
-            ? null : PERKS.register("mana_surge", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("mana_surge", () -> register(
                     "mana_surge",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().manaSurgeRequiredLevel,
@@ -468,8 +465,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SPELLWEAVER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellweaverRequiredLevel < 0
-            ? null : PERKS.register("spellweaver", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spellweaver", () -> register(
                     "spellweaver",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().spellweaverRequiredLevel,
@@ -479,8 +476,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> RESONANT_CASTING =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().resonantCastingRequiredLevel < 0
-            ? null : PERKS.register("resonant_casting", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("resonant_casting", () -> register(
                     "resonant_casting",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().resonantCastingRequiredLevel,
@@ -490,8 +487,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> IMBUED_FOCUS =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().imbuedFocusRequiredLevel < 0
-            ? null : PERKS.register("imbued_focus", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("imbued_focus", () -> register(
                     "imbued_focus",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().imbuedFocusRequiredLevel,
@@ -500,8 +497,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> QUICKCAST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().quickcastRequiredLevel < 0
-            ? null : PERKS.register("quickcast", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("quickcast", () -> register(
                     "quickcast",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().quickcastRequiredLevel,
@@ -510,8 +507,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LONG_CHANNEL =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().longChannelRequiredLevel < 0
-            ? null : PERKS.register("long_channel", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("long_channel", () -> register(
                     "long_channel",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().longChannelRequiredLevel,
@@ -520,8 +517,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> CONTINUOUS_FLOW =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().continuousFlowRequiredLevel < 0
-            ? null : PERKS.register("continuous_flow", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("continuous_flow", () -> register(
                     "continuous_flow",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().continuousFlowRequiredLevel,
@@ -530,8 +527,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> CHARGE_MASTERY =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().chargeMasteryRequiredLevel < 0
-            ? null : PERKS.register("charge_mastery", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("charge_mastery", () -> register(
                     "charge_mastery",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().chargeMasteryRequiredLevel,
@@ -542,20 +539,20 @@ public class RegistryPerks {
     // ── Iron's Spells — Phase 1b: school specialist triplets ──
     // Fire
     public static final RegistryObject<Perk> FIRE_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireMancerRequiredLevel < 0
-            ? null : PERKS.register("fire_mancer", () -> register("fire_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("fire_mancer", () -> register("fire_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().fireMancerRequiredLevel,
                     HandlerResources.ISS_FIRE_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireMancerPercent)));
     public static final RegistryObject<Perk> FIRE_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireWardedRequiredLevel < 0
-            ? null : PERKS.register("fire_warded", () -> register("fire_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("fire_warded", () -> register("fire_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().fireWardedRequiredLevel,
                     HandlerResources.ISS_FIRE_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireWardedPercent)));
     public static final RegistryObject<Perk> FIRE_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fireCatalystRequiredLevel < 0
-            ? null : PERKS.register("fire_catalyst", () -> register("fire_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("fire_catalyst", () -> register("fire_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().fireCatalystRequiredLevel,
                     HandlerResources.ISS_FIRE_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().fireCatalystProbability),
@@ -563,20 +560,20 @@ public class RegistryPerks {
 
     // Ice
     public static final RegistryObject<Perk> ICE_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceMancerRequiredLevel < 0
-            ? null : PERKS.register("ice_mancer", () -> register("ice_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ice_mancer", () -> register("ice_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().iceMancerRequiredLevel,
                     HandlerResources.ISS_ICE_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().iceMancerPercent)));
     public static final RegistryObject<Perk> ICE_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceWardedRequiredLevel < 0
-            ? null : PERKS.register("ice_warded", () -> register("ice_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ice_warded", () -> register("ice_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().iceWardedRequiredLevel,
                     HandlerResources.ISS_ICE_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().iceWardedPercent)));
     public static final RegistryObject<Perk> ICE_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().iceCatalystRequiredLevel < 0
-            ? null : PERKS.register("ice_catalyst", () -> register("ice_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ice_catalyst", () -> register("ice_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().iceCatalystRequiredLevel,
                     HandlerResources.ISS_ICE_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().iceCatalystProbability),
@@ -584,20 +581,20 @@ public class RegistryPerks {
 
     // Lightning
     public static final RegistryObject<Perk> LIGHTNING_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningMancerRequiredLevel < 0
-            ? null : PERKS.register("lightning_mancer", () -> register("lightning_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("lightning_mancer", () -> register("lightning_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().lightningMancerRequiredLevel,
                     HandlerResources.ISS_LIGHTNING_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lightningMancerPercent)));
     public static final RegistryObject<Perk> LIGHTNING_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningWardedRequiredLevel < 0
-            ? null : PERKS.register("lightning_warded", () -> register("lightning_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("lightning_warded", () -> register("lightning_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().lightningWardedRequiredLevel,
                     HandlerResources.ISS_LIGHTNING_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lightningWardedPercent)));
     public static final RegistryObject<Perk> LIGHTNING_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lightningCatalystRequiredLevel < 0
-            ? null : PERKS.register("lightning_catalyst", () -> register("lightning_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("lightning_catalyst", () -> register("lightning_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().lightningCatalystRequiredLevel,
                     HandlerResources.ISS_LIGHTNING_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().lightningCatalystProbability),
@@ -605,20 +602,20 @@ public class RegistryPerks {
 
     // Holy
     public static final RegistryObject<Perk> HOLY_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyMancerRequiredLevel < 0
-            ? null : PERKS.register("holy_mancer", () -> register("holy_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("holy_mancer", () -> register("holy_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().holyMancerRequiredLevel,
                     HandlerResources.ISS_HOLY_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().holyMancerPercent)));
     public static final RegistryObject<Perk> HOLY_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyWardedRequiredLevel < 0
-            ? null : PERKS.register("holy_warded", () -> register("holy_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("holy_warded", () -> register("holy_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().holyWardedRequiredLevel,
                     HandlerResources.ISS_HOLY_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().holyWardedPercent)));
     public static final RegistryObject<Perk> HOLY_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().holyCatalystRequiredLevel < 0
-            ? null : PERKS.register("holy_catalyst", () -> register("holy_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("holy_catalyst", () -> register("holy_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().holyCatalystRequiredLevel,
                     HandlerResources.ISS_HOLY_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().holyCatalystProbability),
@@ -626,20 +623,20 @@ public class RegistryPerks {
 
     // Ender
     public static final RegistryObject<Perk> ENDER_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderMancerRequiredLevel < 0
-            ? null : PERKS.register("ender_mancer", () -> register("ender_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ender_mancer", () -> register("ender_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().enderMancerRequiredLevel,
                     HandlerResources.ISS_ENDER_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enderMancerPercent)));
     public static final RegistryObject<Perk> ENDER_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderWardedRequiredLevel < 0
-            ? null : PERKS.register("ender_warded", () -> register("ender_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ender_warded", () -> register("ender_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().enderWardedRequiredLevel,
                     HandlerResources.ISS_ENDER_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enderWardedPercent)));
     public static final RegistryObject<Perk> ENDER_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().enderCatalystRequiredLevel < 0
-            ? null : PERKS.register("ender_catalyst", () -> register("ender_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("ender_catalyst", () -> register("ender_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().enderCatalystRequiredLevel,
                     HandlerResources.ISS_ENDER_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().enderCatalystProbability),
@@ -647,20 +644,20 @@ public class RegistryPerks {
 
     // Blood
     public static final RegistryObject<Perk> BLOOD_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodMancerRequiredLevel < 0
-            ? null : PERKS.register("blood_mancer", () -> register("blood_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("blood_mancer", () -> register("blood_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().bloodMancerRequiredLevel,
                     HandlerResources.ISS_BLOOD_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodMancerPercent)));
     public static final RegistryObject<Perk> BLOOD_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodWardedRequiredLevel < 0
-            ? null : PERKS.register("blood_warded", () -> register("blood_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("blood_warded", () -> register("blood_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().bloodWardedRequiredLevel,
                     HandlerResources.ISS_BLOOD_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodWardedPercent)));
     public static final RegistryObject<Perk> BLOOD_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bloodCatalystRequiredLevel < 0
-            ? null : PERKS.register("blood_catalyst", () -> register("blood_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("blood_catalyst", () -> register("blood_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().bloodCatalystRequiredLevel,
                     HandlerResources.ISS_BLOOD_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().bloodCatalystProbability),
@@ -668,20 +665,20 @@ public class RegistryPerks {
 
     // Evocation
     public static final RegistryObject<Perk> EVOCATION_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationMancerRequiredLevel < 0
-            ? null : PERKS.register("evocation_mancer", () -> register("evocation_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("evocation_mancer", () -> register("evocation_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().evocationMancerRequiredLevel,
                     HandlerResources.ISS_EVOCATION_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evocationMancerPercent)));
     public static final RegistryObject<Perk> EVOCATION_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationWardedRequiredLevel < 0
-            ? null : PERKS.register("evocation_warded", () -> register("evocation_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("evocation_warded", () -> register("evocation_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().evocationWardedRequiredLevel,
                     HandlerResources.ISS_EVOCATION_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evocationWardedPercent)));
     public static final RegistryObject<Perk> EVOCATION_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evocationCatalystRequiredLevel < 0
-            ? null : PERKS.register("evocation_catalyst", () -> register("evocation_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("evocation_catalyst", () -> register("evocation_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().evocationCatalystRequiredLevel,
                     HandlerResources.ISS_EVOCATION_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().evocationCatalystProbability),
@@ -689,20 +686,20 @@ public class RegistryPerks {
 
     // Nature
     public static final RegistryObject<Perk> NATURE_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureMancerRequiredLevel < 0
-            ? null : PERKS.register("nature_mancer", () -> register("nature_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("nature_mancer", () -> register("nature_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().natureMancerRequiredLevel,
                     HandlerResources.ISS_NATURE_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureMancerPercent)));
     public static final RegistryObject<Perk> NATURE_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureWardedRequiredLevel < 0
-            ? null : PERKS.register("nature_warded", () -> register("nature_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("nature_warded", () -> register("nature_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().natureWardedRequiredLevel,
                     HandlerResources.ISS_NATURE_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureWardedPercent)));
     public static final RegistryObject<Perk> NATURE_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureCatalystRequiredLevel < 0
-            ? null : PERKS.register("nature_catalyst", () -> register("nature_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("nature_catalyst", () -> register("nature_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().natureCatalystRequiredLevel,
                     HandlerResources.ISS_NATURE_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().natureCatalystProbability),
@@ -710,20 +707,20 @@ public class RegistryPerks {
 
     // Eldritch
     public static final RegistryObject<Perk> ELDRITCH_MANCER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchMancerRequiredLevel < 0
-            ? null : PERKS.register("eldritch_mancer", () -> register("eldritch_mancer", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("eldritch_mancer", () -> register("eldritch_mancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().eldritchMancerRequiredLevel,
                     HandlerResources.ISS_ELDRITCH_MANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eldritchMancerPercent)));
     public static final RegistryObject<Perk> ELDRITCH_WARDED =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchWardedRequiredLevel < 0
-            ? null : PERKS.register("eldritch_warded", () -> register("eldritch_warded", RegistrySkills.ENDURANCE,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("eldritch_warded", () -> register("eldritch_warded", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().eldritchWardedRequiredLevel,
                     HandlerResources.ISS_ELDRITCH_WARDED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eldritchWardedPercent)));
     public static final RegistryObject<Perk> ELDRITCH_CATALYST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchCatalystRequiredLevel < 0
-            ? null : PERKS.register("eldritch_catalyst", () -> register("eldritch_catalyst", RegistrySkills.MAGIC,
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("eldritch_catalyst", () -> register("eldritch_catalyst", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().eldritchCatalystRequiredLevel,
                     HandlerResources.ISS_ELDRITCH_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().eldritchCatalystProbability),
@@ -731,8 +728,8 @@ public class RegistryPerks {
 
     // ── Iron's Spells — Phase 1c: summon/utility perks ──
     public static final RegistryObject<Perk> LORD_OF_THE_DEAD =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lordOfTheDeadRequiredLevel < 0
-            ? null : PERKS.register("lord_of_the_dead", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("lord_of_the_dead", () -> register(
                     "lord_of_the_dead",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().lordOfTheDeadRequiredLevel,
@@ -742,8 +739,8 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> LIFE_LEECH_BOUND =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().lifeLeechBoundRequiredLevel < 0
-            ? null : PERKS.register("life_leech_bound", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("life_leech_bound", () -> register(
                     "life_leech_bound",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().lifeLeechBoundRequiredLevel,
@@ -753,16 +750,16 @@ public class RegistryPerks {
 
     // ── Apothic Attributes / Apotheosis — Phase 2a: combat perks ──
     public static final RegistryObject<Perk> SOCKET_VIRTUOSO =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().socketVirtuosoRequiredLevel < 0
-            ? null : PERKS.register("socket_virtuoso", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("socket_virtuoso", () -> register(
                     "socket_virtuoso", RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().socketVirtuosoRequiredLevel,
                     HandlerResources.APOTH_SOCKET_VIRTUOSO_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().socketVirtuosoBonus)
             ));
     public static final RegistryObject<Perk> AFFIX_AFFINITY =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().affixAffinityRequiredLevel < 0
-            ? null : PERKS.register("affix_affinity", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("affix_affinity", () -> register(
                     "affix_affinity", RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().affixAffinityRequiredLevel,
                     HandlerResources.APOTH_AFFIX_AFFINITY_PERK,
@@ -772,8 +769,8 @@ public class RegistryPerks {
 
     // ── 1.2.0: Apothic Apprentice (higher-tier Socket Virtuoso mirror) ──
     public static final RegistryObject<Perk> APOTHIC_APPRENTICE =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothicApprenticeRequiredLevel < 0
-            ? null : PERKS.register("apothic_apprentice", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("apothic_apprentice", () -> register(
                     "apothic_apprentice", RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().apothicApprenticeRequiredLevel,
                     HandlerResources.APOTH_APPRENTICE_PERK,
@@ -782,8 +779,8 @@ public class RegistryPerks {
 
     // ── 1.2.0: Gem-Threaded Armor — armor bonus scaling with equipped socket count ──
     public static final RegistryObject<Perk> GEM_THREADED_ARMOR =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().gemThreadedArmorRequiredLevel < 0
-            ? null : PERKS.register("gem_threaded_armor", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("gem_threaded_armor", () -> register(
                     "gem_threaded_armor", RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().gemThreadedArmorRequiredLevel,
                     HandlerResources.APOTH_GEM_THREADED_PERK,
@@ -793,8 +790,7 @@ public class RegistryPerks {
     // ── 1.2.0: Spellsocket — ISS spell-level bonus per N equipped sockets ──
     public static final RegistryObject<Perk> SPELLSOCKET =
             !ApotheosisIntegration.isModLoaded() || !IronsSpellbooksIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().spellsocketRequiredLevel < 0
-            ? null : PERKS.register("spellsocket", () -> register(
+            ? null : registerPerk("spellsocket", () -> register(
                     "spellsocket", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().spellsocketRequiredLevel,
                     HandlerResources.APOTH_SPELLSOCKET_PERK,
@@ -805,16 +801,15 @@ public class RegistryPerks {
     // ── 1.2.0: Resonant Affixes — ISS spell-damage bonus per rare+ affix item ──
     public static final RegistryObject<Perk> RESONANT_AFFIXES =
             !ApotheosisIntegration.isModLoaded() || !IronsSpellbooksIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().resonantAffixesRequiredLevel < 0
-            ? null : PERKS.register("resonant_affixes", () -> register(
+            ? null : registerPerk("resonant_affixes", () -> register(
                     "resonant_affixes", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().resonantAffixesRequiredLevel,
                     HandlerResources.APOTH_RESONANT_AFFIXES_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().resonantAffixesPercent)
             ));
     public static final RegistryObject<Perk> APOTHIC_CRITICAL_MASTERY =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryRequiredLevel < 0
-            ? null : PERKS.register("apothic_critical_mastery", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("apothic_critical_mastery", () -> register(
                     "apothic_critical_mastery", RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryRequiredLevel,
                     HandlerResources.APOTH_CRITICAL_MASTERY_PERK,
@@ -822,32 +817,32 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apothCriticalMasteryDamagePercent)
             ));
     public static final RegistryObject<Perk> VAMPIRIC_FANGS =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().vampiricFangsRequiredLevel < 0
-            ? null : PERKS.register("vampiric_fangs", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("vampiric_fangs", () -> register(
                     "vampiric_fangs", RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().vampiricFangsRequiredLevel,
                     HandlerResources.APOTH_VAMPIRIC_FANGS_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().vampiricFangsPercent)
             ));
     public static final RegistryObject<Perk> REAPERS_EDGE =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().reapersEdgeRequiredLevel < 0
-            ? null : PERKS.register("reapers_edge", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("reapers_edge", () -> register(
                     "reapers_edge", RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().reapersEdgeRequiredLevel,
                     HandlerResources.APOTH_REAPERS_EDGE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().reapersEdgePercent)
             ));
     public static final RegistryObject<Perk> EVASIVE =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().evasiveRequiredLevel < 0
-            ? null : PERKS.register("evasive", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("evasive", () -> register(
                     "evasive", RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().evasiveRequiredLevel,
                     HandlerResources.APOTH_EVASIVE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evasivePercent)
             ));
     public static final RegistryObject<Perk> ARROW_MASTERY =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arrowMasteryRequiredLevel < 0
-            ? null : PERKS.register("arrow_mastery", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("arrow_mastery", () -> register(
                     "arrow_mastery", RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().arrowMasteryRequiredLevel,
                     HandlerResources.APOTH_ARROW_MASTERY_PERK,
@@ -855,24 +850,24 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arrowMasteryVelocityPercent)
             ));
     public static final RegistryObject<Perk> EARTHBREAKER =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().earthbreakerRequiredLevel < 0
-            ? null : PERKS.register("earthbreaker", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("earthbreaker", () -> register(
                     "earthbreaker", RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().earthbreakerRequiredLevel,
                     HandlerResources.APOTH_EARTHBREAKER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().earthbreakerPercent)
             ));
     public static final RegistryObject<Perk> APOTHIC_SCHOLAR =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apothScholarRequiredLevel < 0
-            ? null : PERKS.register("apothic_scholar", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("apothic_scholar", () -> register(
                     "apothic_scholar", RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().apothScholarRequiredLevel,
                     HandlerResources.APOTH_SCHOLAR_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apothScholarPercent)
             ));
     public static final RegistryObject<Perk> SPECTRAL_WARD =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spectralWardRequiredLevel < 0
-            ? null : PERKS.register("spectral_ward", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("spectral_ward", () -> register(
                     "spectral_ward", RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().spectralWardRequiredLevel,
                     HandlerResources.APOTH_SPECTRAL_WARD_PERK,
@@ -880,16 +875,16 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spectralWardShredPercent)
             ));
     public static final RegistryObject<Perk> GHOSTBOUND =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ghostboundRequiredLevel < 0
-            ? null : PERKS.register("ghostbound", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("ghostbound", () -> register(
                     "ghostbound", RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().ghostboundRequiredLevel,
                     HandlerResources.APOTH_GHOSTBOUND_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().ghostboundBonus)
             ));
     public static final RegistryObject<Perk> HEART_OF_THE_HEALER =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().heartHealerRequiredLevel < 0
-            ? null : PERKS.register("heart_of_the_healer", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("heart_of_the_healer", () -> register(
                     "heart_of_the_healer", RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().heartHealerRequiredLevel,
                     HandlerResources.APOTH_HEART_HEALER_PERK,
@@ -899,32 +894,32 @@ public class RegistryPerks {
 
     // ── Ars Nouveau — Phase 2b: form/utility perks ──
     public static final RegistryObject<Perk> ARS_FORM_PROJECTILE =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormProjectileRequiredLevel < 0
-            ? null : PERKS.register("ars_form_projectile", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_form_projectile", () -> register(
                     "ars_form_projectile", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsFormProjectileRequiredLevel,
                     HandlerResources.ARS_FORM_PROJECTILE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormProjectilePercent)
             ));
     public static final RegistryObject<Perk> ARS_FORM_TOUCH =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormTouchRequiredLevel < 0
-            ? null : PERKS.register("ars_form_touch", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_form_touch", () -> register(
                     "ars_form_touch", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsFormTouchRequiredLevel,
                     HandlerResources.ARS_FORM_TOUCH_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormTouchPercent)
             ));
     public static final RegistryObject<Perk> ARS_FORM_SELF =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsFormSelfRequiredLevel < 0
-            ? null : PERKS.register("ars_form_self", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_form_self", () -> register(
                     "ars_form_self", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsFormSelfRequiredLevel,
                     HandlerResources.ARS_FORM_SELF_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsFormSelfPercent)
             ));
     public static final RegistryObject<Perk> ARS_WILD_MANIPULATION =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsWildManipulationRequiredLevel < 0
-            ? null : PERKS.register("ars_wild_manipulation", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_wild_manipulation", () -> register(
                     "ars_wild_manipulation", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsWildManipulationRequiredLevel,
                     HandlerResources.ARS_WILD_MANIPULATION_PERK,
@@ -933,8 +928,8 @@ public class RegistryPerks {
 
     // ── Ars Nouveau — Phase 2c: per-school perks ──
     public static final RegistryObject<Perk> ARS_HEDGEWITCH =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsHedgewitchRequiredLevel < 0
-            ? null : PERKS.register("ars_hedgewitch", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_hedgewitch", () -> register(
                     "ars_hedgewitch", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsHedgewitchRequiredLevel,
                     HandlerResources.ARS_HEDGEWITCH_PERK,
@@ -942,48 +937,48 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsHedgewitchDamagePercent)
             ));
     public static final RegistryObject<Perk> ARS_EMBERFORGED =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsEmberforgedRequiredLevel < 0
-            ? null : PERKS.register("ars_emberforged", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_emberforged", () -> register(
                     "ars_emberforged", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsEmberforgedRequiredLevel,
                     HandlerResources.ARS_EMBERFORGED_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsEmberforgedDamagePercent)
             ));
     public static final RegistryObject<Perk> ARS_STORMCALLER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsStormcallerRequiredLevel < 0
-            ? null : PERKS.register("ars_stormcaller", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_stormcaller", () -> register(
                     "ars_stormcaller", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsStormcallerRequiredLevel,
                     HandlerResources.ARS_STORMCALLER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsStormcallerDamagePercent)
             ));
     public static final RegistryObject<Perk> ARS_GEOMANCER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsGeomancerRequiredLevel < 0
-            ? null : PERKS.register("ars_geomancer", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_geomancer", () -> register(
                     "ars_geomancer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsGeomancerRequiredLevel,
                     HandlerResources.ARS_GEOMANCER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsGeomancerDamagePercent)
             ));
     public static final RegistryObject<Perk> ARS_CONJURER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsConjurerRequiredLevel < 0
-            ? null : PERKS.register("ars_conjurer", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_conjurer", () -> register(
                     "ars_conjurer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsConjurerRequiredLevel,
                     HandlerResources.ARS_CONJURER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsConjurerPercent)
             ));
     public static final RegistryObject<Perk> ARS_ABJURER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsAbjurerRequiredLevel < 0
-            ? null : PERKS.register("ars_abjurer", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_abjurer", () -> register(
                     "ars_abjurer", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsAbjurerRequiredLevel,
                     HandlerResources.ARS_ABJURER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsAbjurerPercent)
             ));
     public static final RegistryObject<Perk> ARS_ARCANE_WEAVER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverRequiredLevel < 0
-            ? null : PERKS.register("ars_arcane_weaver", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_arcane_weaver", () -> register(
                     "ars_arcane_weaver", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsArcaneWeaverRequiredLevel,
                     HandlerResources.ARS_ARCANE_WEAVER_PERK,
@@ -994,8 +989,7 @@ public class RegistryPerks {
     // Each Schoolbridge needs both ISS (attribute source) and Ars (spell hook).
     public static final RegistryObject<Perk> SCHOOLBRIDGE_FIRE =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeFireRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_fire", () -> register(
+            ? null : registerPerk("schoolbridge_fire", () -> register(
                     "schoolbridge_fire", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeFireRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_FIRE_PERK,
@@ -1003,8 +997,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> SCHOOLBRIDGE_WATER =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeWaterRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_water", () -> register(
+            ? null : registerPerk("schoolbridge_water", () -> register(
                     "schoolbridge_water", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeWaterRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_WATER_PERK,
@@ -1012,8 +1005,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> SCHOOLBRIDGE_AIR =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAirRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_air", () -> register(
+            ? null : registerPerk("schoolbridge_air", () -> register(
                     "schoolbridge_air", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAirRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_AIR_PERK,
@@ -1021,8 +1013,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> SCHOOLBRIDGE_EARTH =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeEarthRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_earth", () -> register(
+            ? null : registerPerk("schoolbridge_earth", () -> register(
                     "schoolbridge_earth", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeEarthRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_EARTH_PERK,
@@ -1030,8 +1021,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> SCHOOLBRIDGE_ABJ =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAbjRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_abjuration", () -> register(
+            ? null : registerPerk("schoolbridge_abjuration", () -> register(
                     "schoolbridge_abjuration", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeAbjRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_ABJ_PERK,
@@ -1039,8 +1029,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> SCHOOLBRIDGE_MANIP =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xSchoolbridgeManipRequiredLevel < 0
-            ? null : PERKS.register("schoolbridge_manipulation", () -> register(
+            ? null : registerPerk("schoolbridge_manipulation", () -> register(
                     "schoolbridge_manipulation", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xSchoolbridgeManipRequiredLevel,
                     HandlerResources.X_SCHOOLBRIDGE_MANIP_PERK,
@@ -1048,8 +1037,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> UNIFIED_ARCANA =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaRequiredLevel < 0
-            ? null : PERKS.register("unified_arcana", () -> register(
+            ? null : registerPerk("unified_arcana", () -> register(
                     "unified_arcana", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaRequiredLevel,
                     HandlerResources.X_UNIFIED_ARCANA_PERK,
@@ -1058,8 +1046,7 @@ public class RegistryPerks {
     public static final RegistryObject<Perk> TRIPLE_THREAT =
             !IronsSpellbooksIntegration.isModLoaded() || !ArsNouveauIntegration.isModLoaded()
                     || !ApotheosisIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xTripleThreatRequiredLevel < 0
-            ? null : PERKS.register("triple_threat", () -> register(
+            ? null : registerPerk("triple_threat", () -> register(
                     "triple_threat", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xTripleThreatRequiredLevel,
                     HandlerResources.X_TRIPLE_THREAT_PERK,
@@ -1067,8 +1054,7 @@ public class RegistryPerks {
             ));
     public static final RegistryObject<Perk> AFFIX_FOCUS =
             !IronsSpellbooksIntegration.isModLoaded() || !ApotheosisIntegration.isModLoaded()
-                    || HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredLevel < 0
-            ? null : PERKS.register("affix_focus", () -> register(
+            ? null : registerPerk("affix_focus", () -> register(
                     "affix_focus", RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().xAffixFocusRequiredLevel,
                     HandlerResources.X_AFFIX_FOCUS_PERK,
@@ -1078,8 +1064,8 @@ public class RegistryPerks {
 
     // Ars Nouveau Integration - Conditional perks
     public static final RegistryObject<Perk> ARCANE_EFFICIENCY =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel < 0
-            ? null : PERKS.register("arcane_efficiency", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("arcane_efficiency", () -> register(
                     "arcane_efficiency",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyRequiredLevel,
@@ -1087,8 +1073,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyPercent)
             ));
     public static final RegistryObject<Perk> GLYPH_MASTERY =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsGlyphMasteryRequiredLevel < 0
-            ? null : PERKS.register("glyph_mastery", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("glyph_mastery", () -> register(
                     "glyph_mastery",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().arsGlyphMasteryRequiredLevel,
@@ -1096,8 +1082,8 @@ public class RegistryPerks {
                     new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().arsGlyphMasteryAmplification)
             ));
     public static final RegistryObject<Perk> ARCANE_WARD =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsArcaneWardRequiredLevel < 0
-            ? null : PERKS.register("arcane_ward", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("arcane_ward", () -> register(
                     "arcane_ward",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().arsArcaneWardRequiredLevel,
@@ -1108,8 +1094,8 @@ public class RegistryPerks {
     // Blood Magic Integration - Conditional perks
     // Ice and Fire Integration - Conditional perks
     public static final RegistryObject<Perk> DRAGON_SLAYER =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonSlayerRequiredLevel < 0
-            ? null : PERKS.register("dragon_slayer", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_slayer", () -> register(
                     "dragon_slayer",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().dragonSlayerRequiredLevel,
@@ -1117,8 +1103,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonSlayerPercent)
             ));
     public static final RegistryObject<Perk> BEAST_TAMER =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().beastTamerRequiredLevel < 0
-            ? null : PERKS.register("beast_tamer", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("beast_tamer", () -> register(
                     "beast_tamer",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().beastTamerRequiredLevel,
@@ -1126,8 +1112,8 @@ public class RegistryPerks {
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().beastTamerProbability)
             ));
     public static final RegistryObject<Perk> MYTHIC_FORTITUDE =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().mythicFortitudeRequiredLevel < 0
-            ? null : PERKS.register("mythic_fortitude", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("mythic_fortitude", () -> register(
                     "mythic_fortitude",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().mythicFortitudeRequiredLevel,
@@ -1137,8 +1123,8 @@ public class RegistryPerks {
 
     // Cataclysm Integration - Conditional perks
     public static final RegistryObject<Perk> CATACLYSM_RESISTANCE =
-            !CataclysmIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().cataclysmResistanceRequiredLevel < 0
-            ? null : PERKS.register("cataclysm_resistance", () -> register(
+            !CataclysmIntegration.isModLoaded()
+            ? null : registerPerk("cataclysm_resistance", () -> register(
                     "cataclysm_resistance",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().cataclysmResistanceRequiredLevel,
@@ -1149,8 +1135,8 @@ public class RegistryPerks {
     // Enigmatic Legacy Integration - Conditional perks
     // Mowzie's Mobs Integration - Conditional perks
     public static final RegistryObject<Perk> BOSS_HUNTER =
-            !MowziesMobsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().bossHunterRequiredLevel < 0
-            ? null : PERKS.register("boss_hunter", () -> register(
+            !MowziesMobsIntegration.isModLoaded()
+            ? null : registerPerk("boss_hunter", () -> register(
                     "boss_hunter",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().bossHunterRequiredLevel,
@@ -1158,21 +1144,10 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bossHunterPercent)
             ));
 
-    // Nature's Aura Integration - Conditional perks
-    public static final RegistryObject<Perk> AURA_ATTUNEMENT =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().auraAttunementRequiredLevel < 0
-            ? null : PERKS.register("aura_attunement", () -> register(
-                    "aura_attunement",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().auraAttunementRequiredLevel,
-                    HandlerResources.AURA_ATTUNEMENT_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().auraAttunementPercent)
-            ));
-
     // Culinary layer (Farmer's Delight + addons + Let's Do) - Conditional perks
     public static final RegistryObject<Perk> MASTER_CHEF =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().masterChefRequiredLevel < 0
-            ? null : PERKS.register("master_chef", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("master_chef", () -> register(
                     "master_chef",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().masterChefRequiredLevel,
@@ -1182,8 +1157,7 @@ public class RegistryPerks {
     // GREEN_THUMB works on any bonemealable block (vanilla included), so unlike the other culinary
     // perks it is not gated on a culinary mod being present.
     public static final RegistryObject<Perk> GREEN_THUMB =
-            HandlerCommonConfig.HANDLER.instance().greenThumbRequiredLevel < 0
-            ? null : PERKS.register("green_thumb", () -> register(
+            registerPerk("green_thumb", () -> register(
                     "green_thumb",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().greenThumbRequiredLevel,
@@ -1191,8 +1165,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().greenThumbPercent)
             ));
     public static final RegistryObject<Perk> NOURISHING_MEAL =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().nourishingMealRequiredLevel < 0
-            ? null : PERKS.register("nourishing_meal", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("nourishing_meal", () -> register(
                     "nourishing_meal",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().nourishingMealRequiredLevel,
@@ -1200,8 +1174,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().nourishingMealPercent)
             ));
     public static final RegistryObject<Perk> COMFORT_FOOD =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().comfortFoodRequiredLevel < 0
-            ? null : PERKS.register("comfort_food", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("comfort_food", () -> register(
                     "comfort_food",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().comfortFoodRequiredLevel,
@@ -1211,8 +1185,8 @@ public class RegistryPerks {
 
     // Starcatcher Integration - Conditional perks
     public static final RegistryObject<Perk> ANGLER_LUCK =
-            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().anglerLuckRequiredLevel < 0
-            ? null : PERKS.register("angler_luck", () -> register(
+            !StarcatcherIntegration.isModLoaded()
+            ? null : registerPerk("angler_luck", () -> register(
                     "angler_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().anglerLuckRequiredLevel,
@@ -1220,8 +1194,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().anglerLuckPercent)
             ));
     public static final RegistryObject<Perk> CATCH_OF_THE_DAY =
-            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().catchOfTheDayRequiredLevel < 0
-            ? null : PERKS.register("catch_of_the_day", () -> register(
+            !StarcatcherIntegration.isModLoaded()
+            ? null : registerPerk("catch_of_the_day", () -> register(
                     "catch_of_the_day",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().catchOfTheDayRequiredLevel,
@@ -1229,8 +1203,8 @@ public class RegistryPerks {
                     new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().catchOfTheDayDuration)
             ));
     public static final RegistryObject<Perk> ANGLERS_INSIGHT =
-            !StarcatcherIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().anglersInsightRequiredLevel < 0
-            ? null : PERKS.register("anglers_insight", () -> register(
+            !StarcatcherIntegration.isModLoaded()
+            ? null : registerPerk("anglers_insight", () -> register(
                     "anglers_insight",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().anglersInsightRequiredLevel,
@@ -1240,8 +1214,8 @@ public class RegistryPerks {
 
     // Overgeared Integration - Conditional perks
     public static final RegistryObject<Perk> STEADY_HAMMER =
-            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().steadyHammerRequiredLevel < 0
-            ? null : PERKS.register("steady_hammer", () -> register(
+            !OvergearedIntegration.isModLoaded()
+            ? null : registerPerk("steady_hammer", () -> register(
                     "steady_hammer",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().steadyHammerRequiredLevel,
@@ -1249,8 +1223,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().steadyHammerPercent)
             ));
     public static final RegistryObject<Perk> BLUEPRINT_SAVANT =
-            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().blueprintSavantRequiredLevel < 0
-            ? null : PERKS.register("blueprint_savant", () -> register(
+            !OvergearedIntegration.isModLoaded()
+            ? null : registerPerk("blueprint_savant", () -> register(
                     "blueprint_savant",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().blueprintSavantRequiredLevel,
@@ -1258,8 +1232,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().blueprintSavantPercent)
             ));
     public static final RegistryObject<Perk> METALLURGIST =
-            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().metallurgistRequiredLevel < 0
-            ? null : PERKS.register("metallurgist", () -> register(
+            !OvergearedIntegration.isModLoaded()
+            ? null : registerPerk("metallurgist", () -> register(
                     "metallurgist",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().metallurgistRequiredLevel,
@@ -1267,8 +1241,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().metallurgistPercent)
             ));
     public static final RegistryObject<Perk> MASTER_SMITH =
-            !OvergearedIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().masterSmithRequiredLevel < 0
-            ? null : PERKS.register("master_smith", () -> register(
+            !OvergearedIntegration.isModLoaded()
+            ? null : registerPerk("master_smith", () -> register(
                     "master_smith",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().masterSmithRequiredLevel,
@@ -1278,8 +1252,8 @@ public class RegistryPerks {
 
     // Apotheosis Integration - Conditional perks
     public static final RegistryObject<Perk> RUNIC_SALVAGER =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().runicSalvagerRequiredLevel < 0
-            ? null : PERKS.register("runic_salvager", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("runic_salvager", () -> register(
                     "runic_salvager",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().runicSalvagerRequiredLevel,
@@ -1288,8 +1262,8 @@ public class RegistryPerks {
                     new Value(ValueType.MODIFIER, HandlerCommonConfig.HANDLER.instance().runicSalvagerModifier)
             ));
     public static final RegistryObject<Perk> GEM_ATTUNEMENT =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().gemAttunementRequiredLevel < 0
-            ? null : PERKS.register("gem_attunement", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("gem_attunement", () -> register(
                     "gem_attunement",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().gemAttunementRequiredLevel,
@@ -1297,8 +1271,8 @@ public class RegistryPerks {
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().gemAttunementProbability)
             ));
     public static final RegistryObject<Perk> ARCANE_REFORGING =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneReforgingRequiredLevel < 0
-            ? null : PERKS.register("arcane_reforging", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("arcane_reforging", () -> register(
                     "arcane_reforging",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arcaneReforgingRequiredLevel,
@@ -1308,8 +1282,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - STRENGTH ==========
     public static final RegistryObject<Perk> ARMOR_PIERCING =
-            HandlerCommonConfig.HANDLER.instance().armorPiercingRequiredLevel < 0
-            ? null : PERKS.register("armor_piercing", () -> register(
+            registerPerk("armor_piercing", () -> register(
                     "armor_piercing",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().armorPiercingRequiredLevel,
@@ -1317,8 +1290,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().armorPiercingPercent)
             ));
     public static final RegistryObject<Perk> HEAVY_STRIKES =
-            HandlerCommonConfig.HANDLER.instance().heavyStrikesRequiredLevel < 0
-            ? null : PERKS.register("heavy_strikes", () -> register(
+            registerPerk("heavy_strikes", () -> register(
                     "heavy_strikes",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().heavyStrikesRequiredLevel,
@@ -1326,24 +1298,23 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().heavyStrikesPercent)
             ));
     public static final RegistryObject<Perk> CLEAVE =
-            HandlerCommonConfig.HANDLER.instance().cleaveRequiredLevel < 0
-            ? null : PERKS.register("cleave", () -> register(
+            registerPerk("cleave", () -> register(
                     "cleave",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().cleaveRequiredLevel,
                     HandlerResources.CLEAVE_PERK
             ));
     public static final RegistryObject<Perk> TITANS_GRIP =
-            !SpartanIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().titansGripRequiredLevel < 0
-            ? null : PERKS.register("titans_grip", () -> register(
+            !SpartanIntegration.isAnyLoaded()
+            ? null : registerPerk("titans_grip", () -> register(
                     "titans_grip",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().titansGripRequiredLevel,
                     HandlerResources.TITANS_GRIP_PERK
             ));
     public static final RegistryObject<Perk> SAMURAIS_EDGE =
-            !SamuraiDynastyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().samuraisEdgeRequiredLevel < 0
-            ? null : PERKS.register("samurais_edge", () -> register(
+            !SamuraiDynastyIntegration.isModLoaded()
+            ? null : registerPerk("samurais_edge", () -> register(
                     "samurais_edge",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().samuraisEdgeRequiredLevel,
@@ -1351,8 +1322,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().samuraisEdgePercent)
             ));
     public static final RegistryObject<Perk> BRUTAL_SWING =
-            !SpartanIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().brutalSwingRequiredLevel < 0
-            ? null : PERKS.register("brutal_swing", () -> register(
+            !SpartanIntegration.isAnyLoaded()
+            ? null : registerPerk("brutal_swing", () -> register(
                     "brutal_swing",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().brutalSwingRequiredLevel,
@@ -1360,8 +1331,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().brutalSwingPercent)
             ));
     public static final RegistryObject<Perk> POLEARM_MASTERY =
-            !SpartanIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().polearmMasteryRequiredLevel < 0
-            ? null : PERKS.register("polearm_mastery", () -> register(
+            !SpartanIntegration.isAnyLoaded()
+            ? null : registerPerk("polearm_mastery", () -> register(
                     "polearm_mastery",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().polearmMasteryRequiredLevel,
@@ -1369,8 +1340,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().polearmMasteryPercent)
             ));
     public static final RegistryObject<Perk> WARMONGER =
-            HandlerCommonConfig.HANDLER.instance().warmongerRequiredLevel < 0
-            ? null : PERKS.register("warmonger", () -> register(
+            registerPerk("warmonger", () -> register(
                     "warmonger",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().warmongerRequiredLevel,
@@ -1378,8 +1348,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().warmongerPercent)
             ));
     public static final RegistryObject<Perk> EXECUTE =
-            HandlerCommonConfig.HANDLER.instance().executeRequiredLevel < 0
-            ? null : PERKS.register("execute", () -> register(
+            registerPerk("execute", () -> register(
                     "execute",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().executeRequiredLevel,
@@ -1387,8 +1356,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().executePercent)
             ));
     public static final RegistryObject<Perk> BLOODLUST =
-            HandlerCommonConfig.HANDLER.instance().bloodlustRequiredLevel < 0
-            ? null : PERKS.register("bloodlust", () -> register(
+            registerPerk("bloodlust", () -> register(
                     "bloodlust",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().bloodlustRequiredLevel,
@@ -1396,8 +1364,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodlustPercent)
             ));
     public static final RegistryObject<Perk> DRAGON_BONE_MASTERY =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonBoneMasteryRequiredLevel < 0
-            ? null : PERKS.register("dragon_bone_mastery", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_bone_mastery", () -> register(
                     "dragon_bone_mastery",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().dragonBoneMasteryRequiredLevel,
@@ -1405,8 +1373,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonBoneMasteryPercent)
             ));
     public static final RegistryObject<Perk> NICHIRIN_BLADE =
-            !NichirinDynastyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().nichirinBladeRequiredLevel < 0
-            ? null : PERKS.register("nichirin_blade", () -> register(
+            !NichirinDynastyIntegration.isModLoaded()
+            ? null : registerPerk("nichirin_blade", () -> register(
                     "nichirin_blade",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().nichirinBladeRequiredLevel,
@@ -1414,8 +1382,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().nichirinBladePercent)
             ));
     public static final RegistryObject<Perk> SIEGE_BREAKER =
-            !CataclysmIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().siegeBreakerRequiredLevel < 0
-            ? null : PERKS.register("siege_breaker", () -> register(
+            !CataclysmIntegration.isModLoaded()
+            ? null : registerPerk("siege_breaker", () -> register(
                     "siege_breaker",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().siegeBreakerRequiredLevel,
@@ -1423,8 +1391,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().siegeBreakerPercent)
             ));
     public static final RegistryObject<Perk> MOWZIES_MIGHT =
-            !MowziesMobsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().mowziesMightRequiredLevel < 0
-            ? null : PERKS.register("mowzies_might", () -> register(
+            !MowziesMobsIntegration.isModLoaded()
+            ? null : registerPerk("mowzies_might", () -> register(
                     "mowzies_might",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().mowziesMightRequiredLevel,
@@ -1432,8 +1400,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mowziesMightPercent)
             ));
     public static final RegistryObject<Perk> SPARTANS_DISCIPLINE =
-            !SpartanIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().spartansDisciplineRequiredLevel < 0
-            ? null : PERKS.register("spartans_discipline", () -> register(
+            !SpartanIntegration.isAnyLoaded()
+            ? null : registerPerk("spartans_discipline", () -> register(
                     "spartans_discipline",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().spartansDisciplineRequiredLevel,
@@ -1441,8 +1409,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spartansDisciplinePercent)
             ));
     public static final RegistryObject<Perk> POWER_ATTACK =
-            HandlerCommonConfig.HANDLER.instance().powerAttackRequiredLevel < 0
-            ? null : PERKS.register("power_attack", () -> register(
+            registerPerk("power_attack", () -> register(
                     "power_attack",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().powerAttackRequiredLevel,
@@ -1450,8 +1417,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().powerAttackPercent)
             ));
     public static final RegistryObject<Perk> UNSTOPPABLE_FORCE =
-            HandlerCommonConfig.HANDLER.instance().unstoppableForceRequiredLevel < 0
-            ? null : PERKS.register("unstoppable_force", () -> register(
+            registerPerk("unstoppable_force", () -> register(
                     "unstoppable_force",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().unstoppableForceRequiredLevel,
@@ -1459,8 +1425,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().unstoppableForcePercent)
             ));
     public static final RegistryObject<Perk> PRIMAL_FURY =
-            HandlerCommonConfig.HANDLER.instance().primalFuryRequiredLevel < 0
-            ? null : PERKS.register("primal_fury", () -> register(
+            registerPerk("primal_fury", () -> register(
                     "primal_fury",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().primalFuryRequiredLevel,
@@ -1468,8 +1433,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().primalFuryPercent)
             ));
     public static final RegistryObject<Perk> VENGEANCE =
-            HandlerCommonConfig.HANDLER.instance().vengeanceRequiredLevel < 0
-            ? null : PERKS.register("vengeance", () -> register(
+            registerPerk("vengeance", () -> register(
                     "vengeance",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().vengeanceRequiredLevel,
@@ -1477,8 +1441,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().vengeancePercent)
             ));
     public static final RegistryObject<Perk> LAST_STAND =
-            HandlerCommonConfig.HANDLER.instance().lastStandRequiredLevel < 0
-            ? null : PERKS.register("last_stand", () -> register(
+            registerPerk("last_stand", () -> register(
                     "last_stand",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().lastStandRequiredLevel,
@@ -1486,8 +1449,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lastStandPercent)
             ));
     public static final RegistryObject<Perk> WARLORDS_PRESENCE =
-            HandlerCommonConfig.HANDLER.instance().warlordsPresenceRequiredLevel < 0
-            ? null : PERKS.register("warlords_presence", () -> register(
+            registerPerk("warlords_presence", () -> register(
                     "warlords_presence",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().warlordsPresenceRequiredLevel,
@@ -1495,8 +1457,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().warlordsPresencePercent)
             ));
     public static final RegistryObject<Perk> CHAIN_LIGHTNING_STRIKE =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().chainLightningStrikeRequiredLevel < 0
-            ? null : PERKS.register("chain_lightning_strike", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("chain_lightning_strike", () -> register(
                     "chain_lightning_strike",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().chainLightningStrikeRequiredLevel,
@@ -1504,8 +1466,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().chainLightningStrikePercent)
             ));
     public static final RegistryObject<Perk> BLADE_STORM =
-            HandlerCommonConfig.HANDLER.instance().bladeStormRequiredLevel < 0
-            ? null : PERKS.register("blade_storm", () -> register(
+            registerPerk("blade_storm", () -> register(
                     "blade_storm",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().bladeStormRequiredLevel,
@@ -1513,8 +1474,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bladeStormPercent)
             ));
     public static final RegistryObject<Perk> DEVASTATING_BLOW =
-            HandlerCommonConfig.HANDLER.instance().devastatingBlowRequiredLevel < 0
-            ? null : PERKS.register("devastating_blow", () -> register(
+            registerPerk("devastating_blow", () -> register(
                     "devastating_blow",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().devastatingBlowRequiredLevel,
@@ -1522,16 +1482,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().devastatingBlowPercent)
             ));
     public static final RegistryObject<Perk> SACRED_FIRE =
-            HandlerCommonConfig.HANDLER.instance().sacredFireRequiredLevel < 0
-            ? null : PERKS.register("sacred_fire", () -> register(
+            registerPerk("sacred_fire", () -> register(
                     "sacred_fire",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().sacredFireRequiredLevel,
                     HandlerResources.SACRED_FIRE_PERK
             ));
     public static final RegistryObject<Perk> BLOOD_FURY =
-            HandlerCommonConfig.HANDLER.instance().bloodFuryRequiredLevel < 0
-            ? null : PERKS.register("blood_fury", () -> register(
+            registerPerk("blood_fury", () -> register(
                     "blood_fury",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().bloodFuryRequiredLevel,
@@ -1539,8 +1497,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bloodFuryPercent)
             ));
     public static final RegistryObject<Perk> CATACLYSMS_WRATH =
-            !CataclysmIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().cataclysmsWrathRequiredLevel < 0
-            ? null : PERKS.register("cataclysms_wrath", () -> register(
+            !CataclysmIntegration.isModLoaded()
+            ? null : registerPerk("cataclysms_wrath", () -> register(
                     "cataclysms_wrath",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().cataclysmsWrathRequiredLevel,
@@ -1548,8 +1506,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().cataclysmsWrathPercent)
             ));
     public static final RegistryObject<Perk> GLADIATOR =
-            HandlerCommonConfig.HANDLER.instance().gladiatorRequiredLevel < 0
-            ? null : PERKS.register("gladiator", () -> register(
+            registerPerk("gladiator", () -> register(
                     "gladiator",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().gladiatorRequiredLevel,
@@ -1557,8 +1514,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().gladiatorPercent)
             ));
     public static final RegistryObject<Perk> TROPHY_HUNTER =
-            HandlerCommonConfig.HANDLER.instance().trophyHunterRequiredLevel < 0
-            ? null : PERKS.register("trophy_hunter", () -> register(
+            registerPerk("trophy_hunter", () -> register(
                     "trophy_hunter",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().trophyHunterRequiredLevel,
@@ -1566,8 +1522,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().trophyHunterPercent)
             ));
     public static final RegistryObject<Perk> DRACONIC_FURY =
-            !SaintsDragonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().draconicFuryRequiredLevel < 0
-            ? null : PERKS.register("draconic_fury", () -> register(
+            !SaintsDragonsIntegration.isModLoaded()
+            ? null : registerPerk("draconic_fury", () -> register(
                     "draconic_fury",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().draconicFuryRequiredLevel,
@@ -1575,8 +1531,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().draconicFuryPercent)
             ));
     public static final RegistryObject<Perk> MYTHICAL_BERSERKER =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().mythicalBerserkerRequiredLevel < 0
-            ? null : PERKS.register("mythical_berserker", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("mythical_berserker", () -> register(
                     "mythical_berserker",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().mythicalBerserkerRequiredLevel,
@@ -1584,8 +1540,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mythicalBerserkerPercent)
             ));
     public static final RegistryObject<Perk> STALWART_STRIKER =
-            !StalwartDungeonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().stalwartStrikerRequiredLevel < 0
-            ? null : PERKS.register("stalwart_striker", () -> register(
+            !StalwartDungeonsIntegration.isModLoaded()
+            ? null : registerPerk("stalwart_striker", () -> register(
                     "stalwart_striker",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().stalwartStrikerRequiredLevel,
@@ -1593,8 +1549,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().stalwartStrikerAmplifier)
             ));
     public static final RegistryObject<Perk> WEAPON_MASTER =
-            HandlerCommonConfig.HANDLER.instance().weaponMasterRequiredLevel < 0
-            ? null : PERKS.register("weapon_master", () -> register(
+            registerPerk("weapon_master", () -> register(
                     "weapon_master",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().weaponMasterRequiredLevel,
@@ -1602,8 +1557,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().weaponMasterPercent)
             ));
     public static final RegistryObject<Perk> RUNIC_MIGHT =
-            HandlerCommonConfig.HANDLER.instance().runicMightRequiredLevel < 0
-            ? null : PERKS.register("runic_might", () -> register(
+            registerPerk("runic_might", () -> register(
                     "runic_might",
                     RegistrySkills.STRENGTH,
                     HandlerCommonConfig.HANDLER.instance().runicMightRequiredLevel,
@@ -1613,16 +1567,14 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - CONSTITUTION ==========
     public static final RegistryObject<Perk> IRON_STOMACH =
-            HandlerCommonConfig.HANDLER.instance().ironStomachRequiredLevel < 0
-            ? null : PERKS.register("iron_stomach", () -> register(
+            registerPerk("iron_stomach", () -> register(
                     "iron_stomach",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().ironStomachRequiredLevel,
                     HandlerResources.IRON_STOMACH_PERK
             ));
     public static final RegistryObject<Perk> SECOND_WIND =
-            HandlerCommonConfig.HANDLER.instance().secondWindRequiredLevel < 0
-            ? null : PERKS.register("second_wind", () -> register(
+            registerPerk("second_wind", () -> register(
                     "second_wind",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().secondWindRequiredLevel,
@@ -1630,8 +1582,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().secondWindAmplifier)
             ));
     public static final RegistryObject<Perk> VITALITY =
-            HandlerCommonConfig.HANDLER.instance().vitalityRequiredLevel < 0
-            ? null : PERKS.register("vitality", () -> register(
+            registerPerk("vitality", () -> register(
                     "vitality",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().vitalityRequiredLevel,
@@ -1639,8 +1590,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().vitalityAmplifier)
             ));
     public static final RegistryObject<Perk> NATURAL_RECOVERY =
-            HandlerCommonConfig.HANDLER.instance().naturalRecoveryRequiredLevel < 0
-            ? null : PERKS.register("natural_recovery", () -> register(
+            registerPerk("natural_recovery", () -> register(
                     "natural_recovery",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().naturalRecoveryRequiredLevel,
@@ -1648,8 +1598,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().naturalRecoveryPercent)
             ));
     public static final RegistryObject<Perk> THICK_SKIN =
-            HandlerCommonConfig.HANDLER.instance().thickSkinRequiredLevel < 0
-            ? null : PERKS.register("thick_skin", () -> register(
+            registerPerk("thick_skin", () -> register(
                     "thick_skin",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().thickSkinRequiredLevel,
@@ -1657,16 +1606,14 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().thickSkinAmplifier)
             ));
     public static final RegistryObject<Perk> POISON_IMMUNITY =
-            HandlerCommonConfig.HANDLER.instance().poisonImmunityRequiredLevel < 0
-            ? null : PERKS.register("poison_immunity", () -> register(
+            registerPerk("poison_immunity", () -> register(
                     "poison_immunity",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().poisonImmunityRequiredLevel,
                     HandlerResources.POISON_IMMUNITY_PERK
             ));
     public static final RegistryObject<Perk> FIRE_RESISTANCE =
-            HandlerCommonConfig.HANDLER.instance().fireResistanceRequiredLevel < 0
-            ? null : PERKS.register("fire_resistance", () -> register(
+            registerPerk("fire_resistance", () -> register(
                     "fire_resistance",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().fireResistanceRequiredLevel,
@@ -1674,8 +1621,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireResistancePercent)
             ));
     public static final RegistryObject<Perk> DRACONIC_CONSTITUTION =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().draconicConstitutionRequiredLevel < 0
-            ? null : PERKS.register("draconic_constitution", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("draconic_constitution", () -> register(
                     "draconic_constitution",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().draconicConstitutionRequiredLevel,
@@ -1683,8 +1630,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().draconicConstitutionPercent)
             ));
     public static final RegistryObject<Perk> CULINARY_EXPERT =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().culinaryExpertRequiredLevel < 0
-            ? null : PERKS.register("culinary_expert", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("culinary_expert", () -> register(
                     "culinary_expert",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().culinaryExpertRequiredLevel,
@@ -1692,8 +1639,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().culinaryExpertPercent)
             ));
     public static final RegistryObject<Perk> ANGLERS_BOUNTY =
-            HandlerCommonConfig.HANDLER.instance().anglersBountyRequiredLevel < 0
-            ? null : PERKS.register("anglers_bounty", () -> register(
+            registerPerk("anglers_bounty", () -> register(
                     "anglers_bounty",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().anglersBountyRequiredLevel,
@@ -1701,8 +1647,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().anglersBountyPercent)
             ));
     public static final RegistryObject<Perk> SEARING_RESISTANCE =
-            HandlerCommonConfig.HANDLER.instance().searingResistanceRequiredLevel < 0
-            ? null : PERKS.register("searing_resistance", () -> register(
+            registerPerk("searing_resistance", () -> register(
                     "searing_resistance",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().searingResistanceRequiredLevel,
@@ -1710,8 +1655,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().searingResistancePercent)
             ));
     public static final RegistryObject<Perk> WITHER_RESISTANCE =
-            HandlerCommonConfig.HANDLER.instance().witherResistanceRequiredLevel < 0
-            ? null : PERKS.register("wither_resistance", () -> register(
+            registerPerk("wither_resistance", () -> register(
                     "wither_resistance",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().witherResistanceRequiredLevel,
@@ -1719,8 +1663,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().witherResistancePercent)
             ));
     public static final RegistryObject<Perk> UNDYING_WILL =
-            HandlerCommonConfig.HANDLER.instance().undyingWillRequiredLevel < 0
-            ? null : PERKS.register("undying_will", () -> register(
+            registerPerk("undying_will", () -> register(
                     "undying_will",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().undyingWillRequiredLevel,
@@ -1728,8 +1671,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().undyingWillPercent)
             ));
     public static final RegistryObject<Perk> HEARTY_FEAST =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().heartyFeastRequiredLevel < 0
-            ? null : PERKS.register("hearty_feast", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("hearty_feast", () -> register(
                     "hearty_feast",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().heartyFeastRequiredLevel,
@@ -1737,8 +1680,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().heartyFeastPercent)
             ));
     public static final RegistryObject<Perk> DRAGON_HEART =
-            !SaintsDragonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonHeartRequiredLevel < 0
-            ? null : PERKS.register("dragon_heart", () -> register(
+            !SaintsDragonsIntegration.isModLoaded()
+            ? null : registerPerk("dragon_heart", () -> register(
                     "dragon_heart",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().dragonHeartRequiredLevel,
@@ -1746,8 +1689,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().dragonHeartAmplifier)
             ));
     public static final RegistryObject<Perk> SWIMMERS_ENDURANCE =
-            HandlerCommonConfig.HANDLER.instance().swimmersEnduranceRequiredLevel < 0
-            ? null : PERKS.register("swimmers_endurance", () -> register(
+            registerPerk("swimmers_endurance", () -> register(
                     "swimmers_endurance",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().swimmersEnduranceRequiredLevel,
@@ -1755,26 +1697,16 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().swimmersEndurancePercent)
             ));
     public static final RegistryObject<Perk> EXPLORERS_VIGOR =
-            !StalwartDungeonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().explorersVigorRequiredLevel < 0
-            ? null : PERKS.register("explorers_vigor", () -> register(
+            !StalwartDungeonsIntegration.isModLoaded()
+            ? null : registerPerk("explorers_vigor", () -> register(
                     "explorers_vigor",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().explorersVigorRequiredLevel,
                     HandlerResources.EXPLORERS_VIGOR_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().explorersVigorPercent)
             ));
-    public static final RegistryObject<Perk> AURA_OF_VITALITY =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().auraOfVitalityRequiredLevel < 0
-            ? null : PERKS.register("aura_of_vitality", () -> register(
-                    "aura_of_vitality",
-                    RegistrySkills.CONSTITUTION,
-                    HandlerCommonConfig.HANDLER.instance().auraOfVitalityRequiredLevel,
-                    HandlerResources.AURA_OF_VITALITY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().auraOfVitalityPercent)
-            ));
     public static final RegistryObject<Perk> BATTLE_RECOVERY =
-            HandlerCommonConfig.HANDLER.instance().battleRecoveryRequiredLevel < 0
-            ? null : PERKS.register("battle_recovery", () -> register(
+            registerPerk("battle_recovery", () -> register(
                     "battle_recovery",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().battleRecoveryRequiredLevel,
@@ -1782,8 +1714,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().battleRecoveryAmplifier)
             ));
     public static final RegistryObject<Perk> ARMOR_OF_FAITH =
-            HandlerCommonConfig.HANDLER.instance().armorOfFaithRequiredLevel < 0
-            ? null : PERKS.register("armor_of_faith", () -> register(
+            registerPerk("armor_of_faith", () -> register(
                     "armor_of_faith",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().armorOfFaithRequiredLevel,
@@ -1791,8 +1722,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().armorOfFaithPercent)
             ));
     public static final RegistryObject<Perk> SOUL_SUSTENANCE =
-            HandlerCommonConfig.HANDLER.instance().soulSustenanceRequiredLevel < 0
-            ? null : PERKS.register("soul_sustenance", () -> register(
+            registerPerk("soul_sustenance", () -> register(
                     "soul_sustenance",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().soulSustenanceRequiredLevel,
@@ -1800,8 +1730,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().soulSustenanceAmplifier)
             ));
     public static final RegistryObject<Perk> COLONIAL_NOURISHMENT =
-            HandlerCommonConfig.HANDLER.instance().colonialNourishmentRequiredLevel < 0
-            ? null : PERKS.register("colonial_nourishment", () -> register(
+            registerPerk("colonial_nourishment", () -> register(
                     "colonial_nourishment",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().colonialNourishmentRequiredLevel,
@@ -1809,8 +1738,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonialNourishmentPercent)
             ));
     public static final RegistryObject<Perk> OBSIDIAN_HEART =
-            HandlerCommonConfig.HANDLER.instance().obsidianHeartRequiredLevel < 0
-            ? null : PERKS.register("obsidian_heart", () -> register(
+            registerPerk("obsidian_heart", () -> register(
                     "obsidian_heart",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().obsidianHeartRequiredLevel,
@@ -1818,8 +1746,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().obsidianHeartPercent)
             ));
     public static final RegistryObject<Perk> POTION_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().potionMasteryRequiredLevel < 0
-            ? null : PERKS.register("potion_mastery", () -> register(
+            registerPerk("potion_mastery", () -> register(
                     "potion_mastery",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().potionMasteryRequiredLevel,
@@ -1827,8 +1754,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().potionMasteryPercent)
             ));
     public static final RegistryObject<Perk> PHOENIX_RISING =
-            HandlerCommonConfig.HANDLER.instance().phoenixRisingRequiredLevel < 0
-            ? null : PERKS.register("phoenix_rising", () -> register(
+            registerPerk("phoenix_rising", () -> register(
                     "phoenix_rising",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().phoenixRisingRequiredLevel,
@@ -1836,8 +1762,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().phoenixRisingPercent)
             ));
     public static final RegistryObject<Perk> NATURES_BLESSING =
-            HandlerCommonConfig.HANDLER.instance().naturesBlessingRequiredLevel < 0
-            ? null : PERKS.register("natures_blessing", () -> register(
+            registerPerk("natures_blessing", () -> register(
                     "natures_blessing",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().naturesBlessingRequiredLevel,
@@ -1845,8 +1770,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().naturesBlessingAmplifier)
             ));
     public static final RegistryObject<Perk> RUNIC_FORTIFICATION =
-            HandlerCommonConfig.HANDLER.instance().runicFortificationRequiredLevel < 0
-            ? null : PERKS.register("runic_fortification", () -> register(
+            registerPerk("runic_fortification", () -> register(
                     "runic_fortification",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().runicFortificationRequiredLevel,
@@ -1854,8 +1778,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicFortificationPercent)
             ));
     public static final RegistryObject<Perk> GOURMET =
-            HandlerCommonConfig.HANDLER.instance().gourmetRequiredLevel < 0
-            ? null : PERKS.register("gourmet", () -> register(
+            registerPerk("gourmet", () -> register(
                     "gourmet",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().gourmetRequiredLevel,
@@ -1863,8 +1786,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().gourmetPercent)
             ));
     public static final RegistryObject<Perk> FROST_WALKER_CONSTITUTION =
-            HandlerCommonConfig.HANDLER.instance().frostWalkerConstitutionRequiredLevel < 0
-            ? null : PERKS.register("frost_walker_constitution", () -> register(
+            registerPerk("frost_walker_constitution", () -> register(
                     "frost_walker_constitution",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().frostWalkerConstitutionRequiredLevel,
@@ -1872,8 +1794,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().frostWalkerConstitutionPercent)
             ));
     public static final RegistryObject<Perk> MYRMEX_CARAPACE =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().myrmexCarapaceRequiredLevel < 0
-            ? null : PERKS.register("myrmex_carapace", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("myrmex_carapace", () -> register(
                     "myrmex_carapace",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().myrmexCarapaceRequiredLevel,
@@ -1881,8 +1803,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().myrmexCarapacePercent)
             ));
     public static final RegistryObject<Perk> ENDERIUM_RESILIENCE =
-            HandlerCommonConfig.HANDLER.instance().enderiumResilienceRequiredLevel < 0
-            ? null : PERKS.register("enderium_resilience", () -> register(
+            registerPerk("enderium_resilience", () -> register(
                     "enderium_resilience",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().enderiumResilienceRequiredLevel,
@@ -1890,8 +1811,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enderiumResiliencePercent)
             ));
     public static final RegistryObject<Perk> SURVIVAL_INSTINCT =
-            HandlerCommonConfig.HANDLER.instance().survivalInstinctRequiredLevel < 0
-            ? null : PERKS.register("survival_instinct", () -> register(
+            registerPerk("survival_instinct", () -> register(
                     "survival_instinct",
                     RegistrySkills.CONSTITUTION,
                     HandlerCommonConfig.HANDLER.instance().survivalInstinctRequiredLevel,
@@ -1901,8 +1821,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - DEXTERITY ==========
     public static final RegistryObject<Perk> EAGLE_EYE =
-            HandlerCommonConfig.HANDLER.instance().eagleEyeRequiredLevel < 0
-            ? null : PERKS.register("eagle_eye", () -> register(
+            registerPerk("eagle_eye", () -> register(
                     "eagle_eye",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().eagleEyeRequiredLevel,
@@ -1910,8 +1829,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eagleEyePercent)
             ));
     public static final RegistryObject<Perk> RAPID_FIRE =
-            HandlerCommonConfig.HANDLER.instance().rapidFireRequiredLevel < 0
-            ? null : PERKS.register("rapid_fire", () -> register(
+            registerPerk("rapid_fire", () -> register(
                     "rapid_fire",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().rapidFireRequiredLevel,
@@ -1919,8 +1837,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().rapidFirePercent)
             ));
     public static final RegistryObject<Perk> MULTISHOT_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().multishotMasteryRequiredLevel < 0
-            ? null : PERKS.register("multishot_mastery", () -> register(
+            registerPerk("multishot_mastery", () -> register(
                     "multishot_mastery",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().multishotMasteryRequiredLevel,
@@ -1928,8 +1845,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().multishotMasteryPercent)
             ));
     public static final RegistryObject<Perk> ARROW_RECOVERY =
-            HandlerCommonConfig.HANDLER.instance().arrowRecoveryRequiredLevel < 0
-            ? null : PERKS.register("arrow_recovery", () -> register(
+            registerPerk("arrow_recovery", () -> register(
                     "arrow_recovery",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().arrowRecoveryRequiredLevel,
@@ -1937,8 +1853,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arrowRecoveryPercent)
             ));
     public static final RegistryObject<Perk> ACROBAT =
-            HandlerCommonConfig.HANDLER.instance().acrobatRequiredLevel < 0
-            ? null : PERKS.register("acrobat", () -> register(
+            registerPerk("acrobat", () -> register(
                     "acrobat",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().acrobatRequiredLevel,
@@ -1946,8 +1861,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().acrobatPercent)
             ));
     public static final RegistryObject<Perk> DODGE_ROLL =
-            HandlerCommonConfig.HANDLER.instance().dodgeRollRequiredLevel < 0
-            ? null : PERKS.register("dodge_roll", () -> register(
+            registerPerk("dodge_roll", () -> register(
                     "dodge_roll",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().dodgeRollRequiredLevel,
@@ -1955,8 +1869,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dodgeRollPercent)
             ));
     public static final RegistryObject<Perk> SPRINT_MASTER =
-            HandlerCommonConfig.HANDLER.instance().sprintMasterRequiredLevel < 0
-            ? null : PERKS.register("sprint_master", () -> register(
+            registerPerk("sprint_master", () -> register(
                     "sprint_master",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().sprintMasterRequiredLevel,
@@ -1964,8 +1877,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sprintMasterPercent)
             ));
     public static final RegistryObject<Perk> SILENT_STEP =
-            HandlerCommonConfig.HANDLER.instance().silentStepRequiredLevel < 0
-            ? null : PERKS.register("silent_step", () -> register(
+            registerPerk("silent_step", () -> register(
                     "silent_step",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().silentStepRequiredLevel,
@@ -1973,8 +1885,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().silentStepPercent)
             ));
     public static final RegistryObject<Perk> PRECISION_SHOT =
-            HandlerCommonConfig.HANDLER.instance().precisionShotRequiredLevel < 0
-            ? null : PERKS.register("precision_shot", () -> register(
+            registerPerk("precision_shot", () -> register(
                     "precision_shot",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().precisionShotRequiredLevel,
@@ -1982,8 +1893,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().precisionShotPercent)
             ));
     public static final RegistryObject<Perk> ARCHERY_EXPANSION =
-            HandlerCommonConfig.HANDLER.instance().archeryExpansionRequiredLevel < 0
-            ? null : PERKS.register("archery_expansion", () -> register(
+            registerPerk("archery_expansion", () -> register(
                     "archery_expansion",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().archeryExpansionRequiredLevel,
@@ -1991,8 +1901,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().archeryExpansionPercent)
             ));
     public static final RegistryObject<Perk> CROSSBOW_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().crossbowExpertRequiredLevel < 0
-            ? null : PERKS.register("crossbow_expert", () -> register(
+            registerPerk("crossbow_expert", () -> register(
                     "crossbow_expert",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().crossbowExpertRequiredLevel,
@@ -2000,8 +1909,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().crossbowExpertPercent)
             ));
     public static final RegistryObject<Perk> SPARTAN_MARKSMANSHIP =
-            !SpartanIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().spartanMarksmanshipRequiredLevel < 0
-            ? null : PERKS.register("spartan_marksmanship", () -> register(
+            !SpartanIntegration.isAnyLoaded()
+            ? null : registerPerk("spartan_marksmanship", () -> register(
                     "spartan_marksmanship",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().spartanMarksmanshipRequiredLevel,
@@ -2009,8 +1918,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spartanMarksmanshipPercent)
             ));
     public static final RegistryObject<Perk> POISON_ARROW =
-            HandlerCommonConfig.HANDLER.instance().poisonArrowRequiredLevel < 0
-            ? null : PERKS.register("poison_arrow", () -> register(
+            registerPerk("poison_arrow", () -> register(
                     "poison_arrow",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().poisonArrowRequiredLevel,
@@ -2018,8 +1926,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().poisonArrowPercent)
             ));
     public static final RegistryObject<Perk> WIND_RUNNER =
-            HandlerCommonConfig.HANDLER.instance().windRunnerRequiredLevel < 0
-            ? null : PERKS.register("wind_runner", () -> register(
+            registerPerk("wind_runner", () -> register(
                     "wind_runner",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().windRunnerRequiredLevel,
@@ -2027,8 +1934,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().windRunnerPercent)
             ));
     public static final RegistryObject<Perk> NINJA_TRAINING =
-            !SamuraiDynastyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().ninjaTrainingRequiredLevel < 0
-            ? null : PERKS.register("ninja_training", () -> register(
+            !SamuraiDynastyIntegration.isModLoaded()
+            ? null : registerPerk("ninja_training", () -> register(
                     "ninja_training",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().ninjaTrainingRequiredLevel,
@@ -2036,8 +1943,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ninjaTrainingPercent)
             ));
     public static final RegistryObject<Perk> PARKOUR_MASTER =
-            HandlerCommonConfig.HANDLER.instance().parkourMasterRequiredLevel < 0
-            ? null : PERKS.register("parkour_master", () -> register(
+            registerPerk("parkour_master", () -> register(
                     "parkour_master",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().parkourMasterRequiredLevel,
@@ -2046,8 +1952,7 @@ public class RegistryPerks {
             ));
 
     public static final RegistryObject<Perk> SHARPSHOOTER =
-            HandlerCommonConfig.HANDLER.instance().sharpshooterRequiredLevel < 0
-            ? null : PERKS.register("sharpshooter", () -> register(
+            registerPerk("sharpshooter", () -> register(
                     "sharpshooter",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().sharpshooterRequiredLevel,
@@ -2055,8 +1960,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sharpshooterPercent)
             ));
     public static final RegistryObject<Perk> EVASION =
-            HandlerCommonConfig.HANDLER.instance().evasionRequiredLevel < 0
-            ? null : PERKS.register("evasion", () -> register(
+            registerPerk("evasion", () -> register(
                     "evasion",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().evasionRequiredLevel,
@@ -2064,8 +1968,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().evasionPercent)
             ));
     public static final RegistryObject<Perk> FLEET_FOOTED =
-            HandlerCommonConfig.HANDLER.instance().fleetFootedRequiredLevel < 0
-            ? null : PERKS.register("fleet_footed", () -> register(
+            registerPerk("fleet_footed", () -> register(
                     "fleet_footed",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().fleetFootedRequiredLevel,
@@ -2073,8 +1976,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fleetFootedPercent)
             ));
     public static final RegistryObject<Perk> AMBUSH =
-            HandlerCommonConfig.HANDLER.instance().ambushRequiredLevel < 0
-            ? null : PERKS.register("ambush", () -> register(
+            registerPerk("ambush", () -> register(
                     "ambush",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().ambushRequiredLevel,
@@ -2082,8 +1984,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ambushPercent)
             ));
     public static final RegistryObject<Perk> QUICK_DRAW =
-            HandlerCommonConfig.HANDLER.instance().quickDrawRequiredLevel < 0
-            ? null : PERKS.register("quick_draw", () -> register(
+            registerPerk("quick_draw", () -> register(
                     "quick_draw",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().quickDrawRequiredLevel,
@@ -2091,8 +1992,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().quickDrawPercent)
             ));
     public static final RegistryObject<Perk> RICOCHET =
-            HandlerCommonConfig.HANDLER.instance().ricochetRequiredLevel < 0
-            ? null : PERKS.register("ricochet", () -> register(
+            registerPerk("ricochet", () -> register(
                     "ricochet",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().ricochetRequiredLevel,
@@ -2100,8 +2000,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ricochetPercent)
             ));
     public static final RegistryObject<Perk> PHANTOM_STRIKE =
-            HandlerCommonConfig.HANDLER.instance().phantomStrikeRequiredLevel < 0
-            ? null : PERKS.register("phantom_strike", () -> register(
+            registerPerk("phantom_strike", () -> register(
                     "phantom_strike",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().phantomStrikeRequiredLevel,
@@ -2109,8 +2008,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().phantomStrikePercent)
             ));
     public static final RegistryObject<Perk> DRAGON_RIDER =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonRiderRequiredLevel < 0
-            ? null : PERKS.register("dragon_rider", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_rider", () -> register(
                     "dragon_rider",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().dragonRiderRequiredLevel,
@@ -2118,8 +2017,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonRiderPercent)
             ));
     public static final RegistryObject<Perk> ICE_ARROWS =
-            HandlerCommonConfig.HANDLER.instance().iceArrowsRequiredLevel < 0
-            ? null : PERKS.register("ice_arrows", () -> register(
+            registerPerk("ice_arrows", () -> register(
                     "ice_arrows",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().iceArrowsRequiredLevel,
@@ -2127,8 +2025,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().iceArrowsPercent)
             ));
     public static final RegistryObject<Perk> SPELL_DODGE =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellDodgeRequiredLevel < 0
-            ? null : PERKS.register("spell_dodge", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spell_dodge", () -> register(
                     "spell_dodge",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().spellDodgeRequiredLevel,
@@ -2136,8 +2034,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellDodgePercent)
             ));
     public static final RegistryObject<Perk> ZIPLINE_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().ziplineExpertRequiredLevel < 0
-            ? null : PERKS.register("zipline_expert", () -> register(
+            registerPerk("zipline_expert", () -> register(
                     "zipline_expert",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().ziplineExpertRequiredLevel,
@@ -2145,8 +2042,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ziplineExpertPercent)
             ));
     public static final RegistryObject<Perk> SNIPER =
-            HandlerCommonConfig.HANDLER.instance().sniperRequiredLevel < 0
-            ? null : PERKS.register("sniper", () -> register(
+            registerPerk("sniper", () -> register(
                     "sniper",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().sniperRequiredLevel,
@@ -2154,8 +2050,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sniperPercent)
             ));
     public static final RegistryObject<Perk> SMOKE_BOMB =
-            HandlerCommonConfig.HANDLER.instance().smokeBombRequiredLevel < 0
-            ? null : PERKS.register("smoke_bomb", () -> register(
+            registerPerk("smoke_bomb", () -> register(
                     "smoke_bomb",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().smokeBombRequiredLevel,
@@ -2163,8 +2058,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().smokeBombPercent)
             ));
     public static final RegistryObject<Perk> MOUNTED_COMBAT =
-            HandlerCommonConfig.HANDLER.instance().mountedCombatRequiredLevel < 0
-            ? null : PERKS.register("mounted_combat", () -> register(
+            registerPerk("mounted_combat", () -> register(
                     "mounted_combat",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().mountedCombatRequiredLevel,
@@ -2172,16 +2066,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mountedCombatPercent)
             ));
     public static final RegistryObject<Perk> TRACKING =
-            HandlerCommonConfig.HANDLER.instance().trackingRequiredLevel < 0
-            ? null : PERKS.register("tracking", () -> register(
+            registerPerk("tracking", () -> register(
                     "tracking",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().trackingRequiredLevel,
                     HandlerResources.TRACKING_PERK
             ));
     public static final RegistryObject<Perk> WIND_WALKER =
-            HandlerCommonConfig.HANDLER.instance().windWalkerRequiredLevel < 0
-            ? null : PERKS.register("wind_walker", () -> register(
+            registerPerk("wind_walker", () -> register(
                     "wind_walker",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().windWalkerRequiredLevel,
@@ -2189,16 +2081,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().windWalkerPercent)
             ));
     public static final RegistryObject<Perk> TRICK_SHOT =
-            HandlerCommonConfig.HANDLER.instance().trickShotRequiredLevel < 0
-            ? null : PERKS.register("trick_shot", () -> register(
+            registerPerk("trick_shot", () -> register(
                     "trick_shot",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().trickShotRequiredLevel,
                     HandlerResources.TRICK_SHOT_PERK
             ));
     public static final RegistryObject<Perk> BLADE_DANCER =
-            HandlerCommonConfig.HANDLER.instance().bladeDancerRequiredLevel < 0
-            ? null : PERKS.register("blade_dancer", () -> register(
+            registerPerk("blade_dancer", () -> register(
                     "blade_dancer",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().bladeDancerRequiredLevel,
@@ -2206,8 +2096,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bladeDancerPercent)
             ));
     public static final RegistryObject<Perk> SILENT_KILL =
-            HandlerCommonConfig.HANDLER.instance().silentKillRequiredLevel < 0
-            ? null : PERKS.register("silent_kill", () -> register(
+            registerPerk("silent_kill", () -> register(
                     "silent_kill",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().silentKillRequiredLevel,
@@ -2215,8 +2104,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().silentKillPercent)
             ));
     public static final RegistryObject<Perk> AGILE_CLIMBER =
-            HandlerCommonConfig.HANDLER.instance().agileClimberRequiredLevel < 0
-            ? null : PERKS.register("agile_climber", () -> register(
+            registerPerk("agile_climber", () -> register(
                     "agile_climber",
                     RegistrySkills.DEXTERITY,
                     HandlerCommonConfig.HANDLER.instance().agileClimberRequiredLevel,
@@ -2226,8 +2114,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - ENDURANCE ==========
     public static final RegistryObject<Perk> SHIELD_WALL =
-            HandlerCommonConfig.HANDLER.instance().shieldWallRequiredLevel < 0
-            ? null : PERKS.register("shield_wall", () -> register(
+            registerPerk("shield_wall", () -> register(
                     "shield_wall",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().shieldWallRequiredLevel,
@@ -2235,8 +2122,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().shieldWallPercent)
             ));
     public static final RegistryObject<Perk> HEAVY_ARMOR_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().heavyArmorMasteryRequiredLevel < 0
-            ? null : PERKS.register("heavy_armor_mastery", () -> register(
+            registerPerk("heavy_armor_mastery", () -> register(
                     "heavy_armor_mastery",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().heavyArmorMasteryRequiredLevel,
@@ -2244,8 +2130,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().heavyArmorMasteryAmplifier)
             ));
     public static final RegistryObject<Perk> STEADFAST =
-            HandlerCommonConfig.HANDLER.instance().steadfastRequiredLevel < 0
-            ? null : PERKS.register("steadfast", () -> register(
+            registerPerk("steadfast", () -> register(
                     "steadfast",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().steadfastRequiredLevel,
@@ -2253,8 +2138,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().steadfastPercent)
             ));
     public static final RegistryObject<Perk> TOUGHENED_HIDE =
-            HandlerCommonConfig.HANDLER.instance().toughenedHideRequiredLevel < 0
-            ? null : PERKS.register("toughened_hide", () -> register(
+            registerPerk("toughened_hide", () -> register(
                     "toughened_hide",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().toughenedHideRequiredLevel,
@@ -2262,8 +2146,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().toughenedHideAmplifier)
             ));
     public static final RegistryObject<Perk> FIRE_PROOF =
-            HandlerCommonConfig.HANDLER.instance().fireProofRequiredLevel < 0
-            ? null : PERKS.register("fire_proof", () -> register(
+            registerPerk("fire_proof", () -> register(
                     "fire_proof",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().fireProofRequiredLevel,
@@ -2271,8 +2154,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fireProofPercent)
             ));
     public static final RegistryObject<Perk> BLAST_RESISTANCE =
-            HandlerCommonConfig.HANDLER.instance().blastResistanceRequiredLevel < 0
-            ? null : PERKS.register("blast_resistance", () -> register(
+            registerPerk("blast_resistance", () -> register(
                     "blast_resistance",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().blastResistanceRequiredLevel,
@@ -2280,8 +2162,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().blastResistancePercent)
             ));
     public static final RegistryObject<Perk> WARDING_RUNE =
-            HandlerCommonConfig.HANDLER.instance().wardingRuneRequiredLevel < 0
-            ? null : PERKS.register("warding_rune", () -> register(
+            registerPerk("warding_rune", () -> register(
                     "warding_rune",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().wardingRuneRequiredLevel,
@@ -2289,8 +2170,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().wardingRunePercent)
             ));
     public static final RegistryObject<Perk> DRAGON_SCALE_ARMOR =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonScaleArmorRequiredLevel < 0
-            ? null : PERKS.register("dragon_scale_armor", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_scale_armor", () -> register(
                     "dragon_scale_armor",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().dragonScaleArmorRequiredLevel,
@@ -2298,8 +2179,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonScaleArmorPercent)
             ));
     public static final RegistryObject<Perk> BULWARK =
-            HandlerCommonConfig.HANDLER.instance().bulwarkRequiredLevel < 0
-            ? null : PERKS.register("bulwark", () -> register(
+            registerPerk("bulwark", () -> register(
                     "bulwark",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().bulwarkRequiredLevel,
@@ -2307,8 +2187,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bulwarkPercent)
             ));
     public static final RegistryObject<Perk> STONEFLESH =
-            HandlerCommonConfig.HANDLER.instance().stonefleshRequiredLevel < 0
-            ? null : PERKS.register("stoneflesh", () -> register(
+            registerPerk("stoneflesh", () -> register(
                     "stoneflesh",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().stonefleshRequiredLevel,
@@ -2316,8 +2195,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().stonefleshPercent)
             ));
     public static final RegistryObject<Perk> POISON_RESISTANCE =
-            HandlerCommonConfig.HANDLER.instance().poisonResistanceRequiredLevel < 0
-            ? null : PERKS.register("poison_resistance", () -> register(
+            registerPerk("poison_resistance", () -> register(
                     "poison_resistance",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().poisonResistanceRequiredLevel,
@@ -2325,8 +2203,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().poisonResistancePercent)
             ));
     public static final RegistryObject<Perk> THORNS_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().thornsMasteryRequiredLevel < 0
-            ? null : PERKS.register("thorns_mastery", () -> register(
+            registerPerk("thorns_mastery", () -> register(
                     "thorns_mastery",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().thornsMasteryRequiredLevel,
@@ -2334,8 +2211,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().thornsMasteryPercent)
             ));
     public static final RegistryObject<Perk> SENTINEL =
-            HandlerCommonConfig.HANDLER.instance().sentinelRequiredLevel < 0
-            ? null : PERKS.register("sentinel", () -> register(
+            registerPerk("sentinel", () -> register(
                     "sentinel",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().sentinelRequiredLevel,
@@ -2343,8 +2219,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sentinelPercent)
             ));
     public static final RegistryObject<Perk> DRAGONHIDE =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonhideRequiredLevel < 0
-            ? null : PERKS.register("dragonhide", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragonhide", () -> register(
                     "dragonhide",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().dragonhideRequiredLevel,
@@ -2352,8 +2228,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonhidePercent)
             ));
     public static final RegistryObject<Perk> FANTASY_FORTITUDE =
-            !FantasyArmorIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().fantasyFortitudeRequiredLevel < 0
-            ? null : PERKS.register("fantasy_fortitude", () -> register(
+            !FantasyArmorIntegration.isModLoaded()
+            ? null : registerPerk("fantasy_fortitude", () -> register(
                     "fantasy_fortitude",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().fantasyFortitudeRequiredLevel,
@@ -2361,8 +2237,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fantasyFortitudePercent)
             ));
     public static final RegistryObject<Perk> COLONY_GUARDIAN =
-            HandlerCommonConfig.HANDLER.instance().colonyGuardianRequiredLevel < 0
-            ? null : PERKS.register("colony_guardian", () -> register(
+            registerPerk("colony_guardian", () -> register(
                     "colony_guardian",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().colonyGuardianRequiredLevel,
@@ -2370,8 +2245,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonyGuardianPercent)
             ));
     public static final RegistryObject<Perk> FROST_ENDURANCE =
-            HandlerCommonConfig.HANDLER.instance().frostEnduranceRequiredLevel < 0
-            ? null : PERKS.register("frost_endurance", () -> register(
+            registerPerk("frost_endurance", () -> register(
                     "frost_endurance",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().frostEnduranceRequiredLevel,
@@ -2379,8 +2253,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().frostEndurancePercent)
             ));
     public static final RegistryObject<Perk> OBSIDIAN_SKIN =
-            HandlerCommonConfig.HANDLER.instance().obsidianSkinRequiredLevel < 0
-            ? null : PERKS.register("obsidian_skin", () -> register(
+            registerPerk("obsidian_skin", () -> register(
                     "obsidian_skin",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().obsidianSkinRequiredLevel,
@@ -2388,8 +2261,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().obsidianSkinPercent)
             ));
     public static final RegistryObject<Perk> LIGHTNING_ROD =
-            HandlerCommonConfig.HANDLER.instance().lightningRodRequiredLevel < 0
-            ? null : PERKS.register("lightning_rod", () -> register(
+            registerPerk("lightning_rod", () -> register(
                     "lightning_rod",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().lightningRodRequiredLevel,
@@ -2397,8 +2269,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lightningRodPercent)
             ));
     public static final RegistryObject<Perk> SAMURAI_RESOLVE =
-            !SamuraiDynastyIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().samuraiResolveRequiredLevel < 0
-            ? null : PERKS.register("samurai_resolve", () -> register(
+            !SamuraiDynastyIntegration.isModLoaded()
+            ? null : registerPerk("samurai_resolve", () -> register(
                     "samurai_resolve",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().samuraiResolveRequiredLevel,
@@ -2406,8 +2278,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().samuraiResolvePercent)
             ));
     public static final RegistryObject<Perk> DUNGEON_RESILIENCE =
-            !StalwartDungeonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dungeonResilienceRequiredLevel < 0
-            ? null : PERKS.register("dungeon_resilience", () -> register(
+            !StalwartDungeonsIntegration.isModLoaded()
+            ? null : registerPerk("dungeon_resilience", () -> register(
                     "dungeon_resilience",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().dungeonResilienceRequiredLevel,
@@ -2415,26 +2287,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dungeonResiliencePercent)
             ));
     public static final RegistryObject<Perk> PRISMARINE_SHIELD =
-            HandlerCommonConfig.HANDLER.instance().prismarineShieldRequiredLevel < 0
-            ? null : PERKS.register("prismarine_shield", () -> register(
+            registerPerk("prismarine_shield", () -> register(
                     "prismarine_shield",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().prismarineShieldRequiredLevel,
                     HandlerResources.PRISMARINE_SHIELD_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().prismarineShieldPercent)
             ));
-    public static final RegistryObject<Perk> AURA_SHIELD =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().auraShieldRequiredLevel < 0
-            ? null : PERKS.register("aura_shield", () -> register(
-                    "aura_shield",
-                    RegistrySkills.ENDURANCE,
-                    HandlerCommonConfig.HANDLER.instance().auraShieldRequiredLevel,
-                    HandlerResources.AURA_SHIELD_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().auraShieldPercent)
-            ));
     public static final RegistryObject<Perk> PAIN_SUPPRESSION =
-            HandlerCommonConfig.HANDLER.instance().painSuppressionRequiredLevel < 0
-            ? null : PERKS.register("pain_suppression", () -> register(
+            registerPerk("pain_suppression", () -> register(
                     "pain_suppression",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().painSuppressionRequiredLevel,
@@ -2442,8 +2303,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().painSuppressionPercent)
             ));
     public static final RegistryObject<Perk> SPELL_SHIELD =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellShieldRequiredLevel < 0
-            ? null : PERKS.register("spell_shield", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("spell_shield", () -> register(
                     "spell_shield",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().spellShieldRequiredLevel,
@@ -2451,8 +2312,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellShieldPercent)
             ));
     public static final RegistryObject<Perk> UNBREAKABLE =
-            HandlerCommonConfig.HANDLER.instance().unbreakableRequiredLevel < 0
-            ? null : PERKS.register("unbreakable", () -> register(
+            registerPerk("unbreakable", () -> register(
                     "unbreakable",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().unbreakableRequiredLevel,
@@ -2460,8 +2320,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().unbreakablePercent)
             ));
     public static final RegistryObject<Perk> DRAGON_BREATH_SHIELD =
-            !SaintsDragonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonBreathShieldRequiredLevel < 0
-            ? null : PERKS.register("dragon_breath_shield", () -> register(
+            !SaintsDragonsIntegration.isModLoaded()
+            ? null : registerPerk("dragon_breath_shield", () -> register(
                     "dragon_breath_shield",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().dragonBreathShieldRequiredLevel,
@@ -2469,8 +2329,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonBreathShieldPercent)
             ));
     public static final RegistryObject<Perk> SIEGE_DEFENSE =
-            HandlerCommonConfig.HANDLER.instance().siegeDefenseRequiredLevel < 0
-            ? null : PERKS.register("siege_defense", () -> register(
+            registerPerk("siege_defense", () -> register(
                     "siege_defense",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().siegeDefenseRequiredLevel,
@@ -2478,8 +2337,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().siegeDefensePercent)
             ));
     public static final RegistryObject<Perk> ANCIENT_GUARDIAN =
-            HandlerCommonConfig.HANDLER.instance().ancientGuardianRequiredLevel < 0
-            ? null : PERKS.register("ancient_guardian", () -> register(
+            registerPerk("ancient_guardian", () -> register(
                     "ancient_guardian",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().ancientGuardianRequiredLevel,
@@ -2487,8 +2345,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ancientGuardianPercent)
             ));
     public static final RegistryObject<Perk> RUNIC_WARD =
-            HandlerCommonConfig.HANDLER.instance().runicWardRequiredLevel < 0
-            ? null : PERKS.register("runic_ward", () -> register(
+            registerPerk("runic_ward", () -> register(
                     "runic_ward",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().runicWardRequiredLevel,
@@ -2496,8 +2353,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicWardPercent)
             ));
     public static final RegistryObject<Perk> ADAPTATION =
-            HandlerCommonConfig.HANDLER.instance().adaptationRequiredLevel < 0
-            ? null : PERKS.register("adaptation", () -> register(
+            registerPerk("adaptation", () -> register(
                     "adaptation",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().adaptationRequiredLevel,
@@ -2505,8 +2361,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().adaptationPercent)
             ));
     public static final RegistryObject<Perk> IMMOVABLE_OBJECT =
-            HandlerCommonConfig.HANDLER.instance().immovableObjectRequiredLevel < 0
-            ? null : PERKS.register("immovable_object", () -> register(
+            registerPerk("immovable_object", () -> register(
                     "immovable_object",
                     RegistrySkills.ENDURANCE,
                     HandlerCommonConfig.HANDLER.instance().immovableObjectRequiredLevel,
@@ -2515,8 +2370,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - INTELLIGENCE ==========
     public static final RegistryObject<Perk> BOOKWORM =
-            HandlerCommonConfig.HANDLER.instance().bookwormRequiredLevel < 0
-            ? null : PERKS.register("bookworm", () -> register(
+            registerPerk("bookworm", () -> register(
                     "bookworm",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().bookwormRequiredLevel,
@@ -2524,8 +2378,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bookwormPercent)
             ));
     public static final RegistryObject<Perk> QUICK_LEARNER =
-            HandlerCommonConfig.HANDLER.instance().quickLearnerRequiredLevel < 0
-            ? null : PERKS.register("quick_learner", () -> register(
+            registerPerk("quick_learner", () -> register(
                     "quick_learner",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().quickLearnerRequiredLevel,
@@ -2533,8 +2386,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().quickLearnerPercent)
             ));
     public static final RegistryObject<Perk> LINGUIST =
-            HandlerCommonConfig.HANDLER.instance().linguistRequiredLevel < 0
-            ? null : PERKS.register("linguist", () -> register(
+            registerPerk("linguist", () -> register(
                     "linguist",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().linguistRequiredLevel,
@@ -2542,8 +2394,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().linguistAmplifier)
             ));
     public static final RegistryObject<Perk> CARTOGRAPHER =
-            HandlerCommonConfig.HANDLER.instance().cartographerRequiredLevel < 0
-            ? null : PERKS.register("cartographer", () -> register(
+            registerPerk("cartographer", () -> register(
                     "cartographer",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().cartographerRequiredLevel,
@@ -2551,8 +2402,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().cartographerPercent)
             ));
     public static final RegistryObject<Perk> POTION_BREWING_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().potionBrewingExpertRequiredLevel < 0
-            ? null : PERKS.register("potion_brewing_expert", () -> register(
+            registerPerk("potion_brewing_expert", () -> register(
                     "potion_brewing_expert",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().potionBrewingExpertRequiredLevel,
@@ -2560,8 +2410,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().potionBrewingExpertAmplifier)
             ));
     public static final RegistryObject<Perk> LORE_KEEPER =
-            HandlerCommonConfig.HANDLER.instance().loreKeeperRequiredLevel < 0
-            ? null : PERKS.register("lore_keeper", () -> register(
+            registerPerk("lore_keeper", () -> register(
                     "lore_keeper",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().loreKeeperRequiredLevel,
@@ -2569,8 +2418,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().loreKeeperPercent)
             ));
     public static final RegistryObject<Perk> DRAGON_LORE =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonLoreRequiredLevel < 0
-            ? null : PERKS.register("dragon_lore", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_lore", () -> register(
                     "dragon_lore",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().dragonLoreRequiredLevel,
@@ -2578,8 +2427,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonLorePercent)
             ));
     public static final RegistryObject<Perk> SPELLCRAFT_KNOWLEDGE =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellcraftKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("spellcraft_knowledge", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spellcraft_knowledge", () -> register(
                     "spellcraft_knowledge",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().spellcraftKnowledgeRequiredLevel,
@@ -2587,26 +2436,16 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellcraftKnowledgePercent)
             ));
     public static final RegistryObject<Perk> ARCANE_SCHOLAR =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneScholarRequiredLevel < 0
-            ? null : PERKS.register("arcane_scholar", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("arcane_scholar", () -> register(
                     "arcane_scholar",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().arcaneScholarRequiredLevel,
                     HandlerResources.ARCANE_SCHOLAR_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().arcaneScholarAmplifier)
             ));
-    public static final RegistryObject<Perk> COLONY_ADVISOR =
-            HandlerCommonConfig.HANDLER.instance().colonyAdvisorRequiredLevel < 0
-            ? null : PERKS.register("colony_advisor", () -> register(
-                    "colony_advisor",
-                    RegistrySkills.INTELLIGENCE,
-                    HandlerCommonConfig.HANDLER.instance().colonyAdvisorRequiredLevel,
-                    HandlerResources.COLONY_ADVISOR_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonyAdvisorPercent)
-            ));
     public static final RegistryObject<Perk> APOTHECARY =
-            HandlerCommonConfig.HANDLER.instance().apothecaryRequiredLevel < 0
-            ? null : PERKS.register("apothecary", () -> register(
+            registerPerk("apothecary", () -> register(
                     "apothecary",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().apothecaryRequiredLevel,
@@ -2614,8 +2453,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().apothecaryAmplifier)
             ));
     public static final RegistryObject<Perk> SIEGE_ENGINEER =
-            HandlerCommonConfig.HANDLER.instance().siegeEngineerRequiredLevel < 0
-            ? null : PERKS.register("siege_engineer", () -> register(
+            registerPerk("siege_engineer", () -> register(
                     "siege_engineer",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().siegeEngineerRequiredLevel,
@@ -2623,8 +2461,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().siegeEngineerPercent)
             ));
     public static final RegistryObject<Perk> MONSTER_COMPENDIUM =
-            HandlerCommonConfig.HANDLER.instance().monsterCompendiumRequiredLevel < 0
-            ? null : PERKS.register("monster_compendium", () -> register(
+            registerPerk("monster_compendium", () -> register(
                     "monster_compendium",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().monsterCompendiumRequiredLevel,
@@ -2632,26 +2469,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().monsterCompendiumPercent)
             ));
     public static final RegistryObject<Perk> TACTICAL_GENIUS =
-            HandlerCommonConfig.HANDLER.instance().tacticalGeniusRequiredLevel < 0
-            ? null : PERKS.register("tactical_genius", () -> register(
+            registerPerk("tactical_genius", () -> register(
                     "tactical_genius",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().tacticalGeniusRequiredLevel,
                     HandlerResources.TACTICAL_GENIUS_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tacticalGeniusPercent)
             ));
-    public static final RegistryObject<Perk> NATURES_WISDOM =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().naturesWisdomRequiredLevel < 0
-            ? null : PERKS.register("natures_wisdom", () -> register(
-                    "natures_wisdom",
-                    RegistrySkills.INTELLIGENCE,
-                    HandlerCommonConfig.HANDLER.instance().naturesWisdomRequiredLevel,
-                    HandlerResources.NATURES_WISDOM_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().naturesWisdomPercent)
-            ));
     public static final RegistryObject<Perk> ENCHANTMENT_INSIGHT =
-            HandlerCommonConfig.HANDLER.instance().enchantmentInsightRequiredLevel < 0
-            ? null : PERKS.register("enchantment_insight", () -> register(
+            registerPerk("enchantment_insight", () -> register(
                     "enchantment_insight",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().enchantmentInsightRequiredLevel,
@@ -2659,8 +2485,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().enchantmentInsightAmplifier)
             ));
     public static final RegistryObject<Perk> EFFICIENT_CRAFTING =
-            HandlerCommonConfig.HANDLER.instance().efficientCraftingRequiredLevel < 0
-            ? null : PERKS.register("efficient_crafting", () -> register(
+            registerPerk("efficient_crafting", () -> register(
                     "efficient_crafting",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().efficientCraftingRequiredLevel,
@@ -2668,8 +2493,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().efficientCraftingPercent)
             ));
     public static final RegistryObject<Perk> RUNECRAFTER =
-            HandlerCommonConfig.HANDLER.instance().runecrafterRequiredLevel < 0
-            ? null : PERKS.register("runecrafter", () -> register(
+            registerPerk("runecrafter", () -> register(
                     "runecrafter",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().runecrafterRequiredLevel,
@@ -2677,8 +2501,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runecrafterPercent)
             ));
     public static final RegistryObject<Perk> AQUATIC_KNOWLEDGE =
-            HandlerCommonConfig.HANDLER.instance().aquaticKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("aquatic_knowledge", () -> register(
+            registerPerk("aquatic_knowledge", () -> register(
                     "aquatic_knowledge",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().aquaticKnowledgeRequiredLevel,
@@ -2686,8 +2509,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().aquaticKnowledgePercent)
             ));
     public static final RegistryObject<Perk> PROGRESSIVE_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().progressiveMasteryRequiredLevel < 0
-            ? null : PERKS.register("progressive_mastery", () -> register(
+            registerPerk("progressive_mastery", () -> register(
                     "progressive_mastery",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().progressiveMasteryRequiredLevel,
@@ -2695,8 +2517,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().progressiveMasteryPercent)
             ));
     public static final RegistryObject<Perk> SCROLL_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().scrollMasteryRequiredLevel < 0
-            ? null : PERKS.register("scroll_mastery", () -> register(
+            registerPerk("scroll_mastery", () -> register(
                     "scroll_mastery",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().scrollMasteryRequiredLevel,
@@ -2704,8 +2525,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().scrollMasteryPercent)
             ));
     public static final RegistryObject<Perk> FAMILIAR_BOND =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().familiarBondRequiredLevel < 0
-            ? null : PERKS.register("familiar_bond", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("familiar_bond", () -> register(
                     "familiar_bond",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().familiarBondRequiredLevel,
@@ -2713,8 +2534,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().familiarBondPercent)
             ));
     public static final RegistryObject<Perk> STRATEGIC_MIND =
-            HandlerCommonConfig.HANDLER.instance().strategicMindRequiredLevel < 0
-            ? null : PERKS.register("strategic_mind", () -> register(
+            registerPerk("strategic_mind", () -> register(
                     "strategic_mind",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().strategicMindRequiredLevel,
@@ -2722,8 +2542,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().strategicMindPercent)
             ));
     public static final RegistryObject<Perk> BREWING_INNOVATION =
-            HandlerCommonConfig.HANDLER.instance().brewingInnovationRequiredLevel < 0
-            ? null : PERKS.register("brewing_innovation", () -> register(
+            registerPerk("brewing_innovation", () -> register(
                     "brewing_innovation",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().brewingInnovationRequiredLevel,
@@ -2731,8 +2550,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().brewingInnovationAmplifier)
             ));
     public static final RegistryObject<Perk> ANCIENT_LANGUAGES =
-            HandlerCommonConfig.HANDLER.instance().ancientLanguagesRequiredLevel < 0
-            ? null : PERKS.register("ancient_languages", () -> register(
+            registerPerk("ancient_languages", () -> register(
                     "ancient_languages",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().ancientLanguagesRequiredLevel,
@@ -2740,8 +2558,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ancientLanguagesPercent)
             ));
     public static final RegistryObject<Perk> MASTER_RESEARCHER =
-            HandlerCommonConfig.HANDLER.instance().masterResearcherRequiredLevel < 0
-            ? null : PERKS.register("master_researcher", () -> register(
+            registerPerk("master_researcher", () -> register(
                     "master_researcher",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().masterResearcherRequiredLevel,
@@ -2749,8 +2566,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterResearcherPercent)
             ));
     public static final RegistryObject<Perk> GOLEM_COMMANDER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().golemCommanderRequiredLevel < 0
-            ? null : PERKS.register("golem_commander", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("golem_commander", () -> register(
                     "golem_commander",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().golemCommanderRequiredLevel,
@@ -2758,8 +2575,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().golemCommanderPercent)
             ));
     public static final RegistryObject<Perk> DIMENSIONAL_SCHOLAR =
-            HandlerCommonConfig.HANDLER.instance().dimensionalScholarRequiredLevel < 0
-            ? null : PERKS.register("dimensional_scholar", () -> register(
+            registerPerk("dimensional_scholar", () -> register(
                     "dimensional_scholar",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().dimensionalScholarRequiredLevel,
@@ -2767,8 +2583,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dimensionalScholarPercent)
             ));
     public static final RegistryObject<Perk> WAR_TACTICIAN =
-            HandlerCommonConfig.HANDLER.instance().warTacticianRequiredLevel < 0
-            ? null : PERKS.register("war_tactician", () -> register(
+            registerPerk("war_tactician", () -> register(
                     "war_tactician",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().warTacticianRequiredLevel,
@@ -2776,8 +2591,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().warTacticianPercent)
             ));
     public static final RegistryObject<Perk> ALCHEMIC_TRANSMUTATION =
-            HandlerCommonConfig.HANDLER.instance().alchemicTransmutationRequiredLevel < 0
-            ? null : PERKS.register("alchemic_transmutation", () -> register(
+            registerPerk("alchemic_transmutation", () -> register(
                     "alchemic_transmutation",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().alchemicTransmutationRequiredLevel,
@@ -2785,8 +2599,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().alchemicTransmutationPercent)
             ));
     public static final RegistryObject<Perk> MYSTIC_ANALYSIS =
-            HandlerCommonConfig.HANDLER.instance().mysticAnalysisRequiredLevel < 0
-            ? null : PERKS.register("mystic_analysis", () -> register(
+            registerPerk("mystic_analysis", () -> register(
                     "mystic_analysis",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().mysticAnalysisRequiredLevel,
@@ -2794,8 +2607,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mysticAnalysisPercent)
             ));
     public static final RegistryObject<Perk> SAGES_FOCUS =
-            HandlerCommonConfig.HANDLER.instance().sagesFocusRequiredLevel < 0
-            ? null : PERKS.register("sages_focus", () -> register(
+            registerPerk("sages_focus", () -> register(
                     "sages_focus",
                     RegistrySkills.INTELLIGENCE,
                     HandlerCommonConfig.HANDLER.instance().sagesFocusRequiredLevel,
@@ -2804,8 +2616,7 @@ public class RegistryPerks {
             ));
     // ========== NEW PERKS - BUILDING ==========
     public static final RegistryObject<Perk> EFFICIENT_MINER =
-            HandlerCommonConfig.HANDLER.instance().efficientMinerRequiredLevel < 0
-            ? null : PERKS.register("efficient_miner", () -> register(
+            registerPerk("efficient_miner", () -> register(
                     "efficient_miner",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().efficientMinerRequiredLevel,
@@ -2813,16 +2624,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().efficientMinerPercent)
             ));
     public static final RegistryObject<Perk> VEIN_MINER =
-            HandlerCommonConfig.HANDLER.instance().veinMinerRequiredLevel < 0
-            ? null : PERKS.register("vein_miner", () -> register(
+            registerPerk("vein_miner", () -> register(
                     "vein_miner",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().veinMinerRequiredLevel,
                     HandlerResources.VEIN_MINER_PERK
             ));
     public static final RegistryObject<Perk> SILK_TOUCH_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().silkTouchMasteryRequiredLevel < 0
-            ? null : PERKS.register("silk_touch_mastery", () -> register(
+            registerPerk("silk_touch_mastery", () -> register(
                     "silk_touch_mastery",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().silkTouchMasteryRequiredLevel,
@@ -2830,8 +2639,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().silkTouchMasteryPercent)
             ));
     public static final RegistryObject<Perk> FORTUNE_MINER =
-            HandlerCommonConfig.HANDLER.instance().fortuneMinerRequiredLevel < 0
-            ? null : PERKS.register("fortune_miner", () -> register(
+            registerPerk("fortune_miner", () -> register(
                     "fortune_miner",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().fortuneMinerRequiredLevel,
@@ -2839,26 +2647,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fortuneMinerPercent)
             ));
     public static final RegistryObject<Perk> ARCHITECT =
-            HandlerCommonConfig.HANDLER.instance().architectRequiredLevel < 0
-            ? null : PERKS.register("architect", () -> register(
+            registerPerk("architect", () -> register(
                     "architect",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().architectRequiredLevel,
                     HandlerResources.ARCHITECT_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().architectPercent)
             ));
-    public static final RegistryObject<Perk> MASTER_MASON =
-            HandlerCommonConfig.HANDLER.instance().masterMasonRequiredLevel < 0
-            ? null : PERKS.register("master_mason", () -> register(
-                    "master_mason",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().masterMasonRequiredLevel,
-                    HandlerResources.MASTER_MASON_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterMasonPercent)
-            ));
     public static final RegistryObject<Perk> LUMBERJACK =
-            HandlerCommonConfig.HANDLER.instance().lumberjackRequiredLevel < 0
-            ? null : PERKS.register("lumberjack", () -> register(
+            registerPerk("lumberjack", () -> register(
                     "lumberjack",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().lumberjackRequiredLevel,
@@ -2866,8 +2663,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lumberjackPercent)
             ));
     public static final RegistryObject<Perk> SMELTER =
-            HandlerCommonConfig.HANDLER.instance().smelterRequiredLevel < 0
-            ? null : PERKS.register("smelter", () -> register(
+            registerPerk("smelter", () -> register(
                     "smelter",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().smelterRequiredLevel,
@@ -2875,26 +2671,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().smelterPercent)
             ));
     public static final RegistryObject<Perk> QUARRY_MASTER =
-            HandlerCommonConfig.HANDLER.instance().quarryMasterRequiredLevel < 0
-            ? null : PERKS.register("quarry_master", () -> register(
+            registerPerk("quarry_master", () -> register(
                     "quarry_master",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().quarryMasterRequiredLevel,
                     HandlerResources.QUARRY_MASTER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().quarryMasterPercent)
             ));
-    public static final RegistryObject<Perk> COLONY_BUILDER =
-            HandlerCommonConfig.HANDLER.instance().colonyBuilderRequiredLevel < 0
-            ? null : PERKS.register("colony_builder", () -> register(
-                    "colony_builder",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().colonyBuilderRequiredLevel,
-                    HandlerResources.COLONY_BUILDER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().colonyBuilderPercent)
-            ));
     public static final RegistryObject<Perk> RESOURCE_EFFICIENCY =
-            HandlerCommonConfig.HANDLER.instance().resourceEfficiencyRequiredLevel < 0
-            ? null : PERKS.register("resource_efficiency", () -> register(
+            registerPerk("resource_efficiency", () -> register(
                     "resource_efficiency",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().resourceEfficiencyRequiredLevel,
@@ -2902,8 +2687,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().resourceEfficiencyPercent)
             ));
     public static final RegistryObject<Perk> REINFORCED_CONSTRUCTION =
-            HandlerCommonConfig.HANDLER.instance().reinforcedConstructionRequiredLevel < 0
-            ? null : PERKS.register("reinforced_construction", () -> register(
+            registerPerk("reinforced_construction", () -> register(
                     "reinforced_construction",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().reinforcedConstructionRequiredLevel,
@@ -2911,8 +2695,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().reinforcedConstructionPercent)
             ));
     public static final RegistryObject<Perk> TERRAFORMER =
-            HandlerCommonConfig.HANDLER.instance().terraformerRequiredLevel < 0
-            ? null : PERKS.register("terraformer", () -> register(
+            registerPerk("terraformer", () -> register(
                     "terraformer",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().terraformerRequiredLevel,
@@ -2920,16 +2703,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().terraformerPercent)
             ));
     public static final RegistryObject<Perk> ORE_DETECTOR =
-            HandlerCommonConfig.HANDLER.instance().oreDetectorRequiredLevel < 0
-            ? null : PERKS.register("ore_detector", () -> register(
+            registerPerk("ore_detector", () -> register(
                     "ore_detector",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().oreDetectorRequiredLevel,
                     HandlerResources.ORE_DETECTOR_PERK
             ));
     public static final RegistryObject<Perk> BLAST_MINING =
-            HandlerCommonConfig.HANDLER.instance().blastMiningRequiredLevel < 0
-            ? null : PERKS.register("blast_mining", () -> register(
+            registerPerk("blast_mining", () -> register(
                     "blast_mining",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().blastMiningRequiredLevel,
@@ -2937,8 +2718,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().blastMiningPercent)
             ));
     public static final RegistryObject<Perk> STONE_CUTTER_EFFICIENCY =
-            HandlerCommonConfig.HANDLER.instance().stoneCutterEfficiencyRequiredLevel < 0
-            ? null : PERKS.register("stone_cutter_efficiency", () -> register(
+            registerPerk("stone_cutter_efficiency", () -> register(
                     "stone_cutter_efficiency",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().stoneCutterEfficiencyRequiredLevel,
@@ -2946,26 +2726,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().stoneCutterEfficiencyPercent)
             ));
     public static final RegistryObject<Perk> MASTER_WOODWORKER =
-            HandlerCommonConfig.HANDLER.instance().masterWoodworkerRequiredLevel < 0
-            ? null : PERKS.register("master_woodworker", () -> register(
+            registerPerk("master_woodworker", () -> register(
                     "master_woodworker",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().masterWoodworkerRequiredLevel,
                     HandlerResources.MASTER_WOODWORKER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterWoodworkerPercent)
             ));
-    public static final RegistryObject<Perk> SCAFFOLD_MASTER =
-            HandlerCommonConfig.HANDLER.instance().scaffoldMasterRequiredLevel < 0
-            ? null : PERKS.register("scaffold_master", () -> register(
-                    "scaffold_master",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().scaffoldMasterRequiredLevel,
-                    HandlerResources.SCAFFOLD_MASTER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().scaffoldMasterPercent)
-            ));
     public static final RegistryObject<Perk> DEEP_CORE_MINING =
-            HandlerCommonConfig.HANDLER.instance().deepCoreMiningRequiredLevel < 0
-            ? null : PERKS.register("deep_core_mining", () -> register(
+            registerPerk("deep_core_mining", () -> register(
                     "deep_core_mining",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().deepCoreMiningRequiredLevel,
@@ -2973,8 +2742,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().deepCoreMiningPercent)
             ));
     public static final RegistryObject<Perk> BRIDGE_BUILDER =
-            HandlerCommonConfig.HANDLER.instance().bridgeBuilderRequiredLevel < 0
-            ? null : PERKS.register("bridge_builder", () -> register(
+            registerPerk("bridge_builder", () -> register(
                     "bridge_builder",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().bridgeBuilderRequiredLevel,
@@ -2982,8 +2750,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().bridgeBuilderAmplifier)
             ));
     public static final RegistryObject<Perk> RUNIC_MINING =
-            HandlerCommonConfig.HANDLER.instance().runicMiningRequiredLevel < 0
-            ? null : PERKS.register("runic_mining", () -> register(
+            registerPerk("runic_mining", () -> register(
                     "runic_mining",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().runicMiningRequiredLevel,
@@ -2991,8 +2758,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicMiningPercent)
             ));
     public static final RegistryObject<Perk> MEDIEVAL_ARCHITECTURE =
-            HandlerCommonConfig.HANDLER.instance().medievalArchitectureRequiredLevel < 0
-            ? null : PERKS.register("medieval_architecture", () -> register(
+            registerPerk("medieval_architecture", () -> register(
                     "medieval_architecture",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().medievalArchitectureRequiredLevel,
@@ -3000,34 +2766,23 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().medievalArchitecturePercent)
             ));
     public static final RegistryObject<Perk> EXPLOSIVE_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().explosiveExpertRequiredLevel < 0
-            ? null : PERKS.register("explosive_expert", () -> register(
+            registerPerk("explosive_expert", () -> register(
                     "explosive_expert",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().explosiveExpertRequiredLevel,
                     HandlerResources.EXPLOSIVE_EXPERT_PERK
             ));
     public static final RegistryObject<Perk> FOUNDATION_LAYER =
-            HandlerCommonConfig.HANDLER.instance().foundationLayerRequiredLevel < 0
-            ? null : PERKS.register("foundation_layer", () -> register(
+            registerPerk("foundation_layer", () -> register(
                     "foundation_layer",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().foundationLayerRequiredLevel,
                     HandlerResources.FOUNDATION_LAYER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().foundationLayerPercent)
             ));
-    public static final RegistryObject<Perk> STRUCTURAL_ENGINEER =
-            HandlerCommonConfig.HANDLER.instance().structuralEngineerRequiredLevel < 0
-            ? null : PERKS.register("structural_engineer", () -> register(
-                    "structural_engineer",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().structuralEngineerRequiredLevel,
-                    HandlerResources.STRUCTURAL_ENGINEER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().structuralEngineerPercent)
-            ));
     public static final RegistryObject<Perk> FARMERS_HAND =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().farmersHandRequiredLevel < 0
-            ? null : PERKS.register("farmers_hand", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("farmers_hand", () -> register(
                     "farmers_hand",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().farmersHandRequiredLevel,
@@ -3035,26 +2790,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().farmersHandPercent)
             ));
     public static final RegistryObject<Perk> IRRIGATION_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().irrigationExpertRequiredLevel < 0
-            ? null : PERKS.register("irrigation_expert", () -> register(
+            registerPerk("irrigation_expert", () -> register(
                     "irrigation_expert",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().irrigationExpertRequiredLevel,
                     HandlerResources.IRRIGATION_EXPERT_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().irrigationExpertPercent)
             ));
-    public static final RegistryObject<Perk> DIMENSIONAL_BUILDER =
-            HandlerCommonConfig.HANDLER.instance().dimensionalBuilderRequiredLevel < 0
-            ? null : PERKS.register("dimensional_builder", () -> register(
-                    "dimensional_builder",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().dimensionalBuilderRequiredLevel,
-                    HandlerResources.DIMENSIONAL_BUILDER_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dimensionalBuilderPercent)
-            ));
     public static final RegistryObject<Perk> MASTER_BREAKER =
-            HandlerCommonConfig.HANDLER.instance().masterBreakerRequiredLevel < 0
-            ? null : PERKS.register("master_breaker", () -> register(
+            registerPerk("master_breaker", () -> register(
                     "master_breaker",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().masterBreakerRequiredLevel,
@@ -3062,16 +2806,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterBreakerPercent)
             ));
     public static final RegistryObject<Perk> GLOWSTONE_SIGHT =
-            HandlerCommonConfig.HANDLER.instance().glowstoneSightRequiredLevel < 0
-            ? null : PERKS.register("glowstone_sight", () -> register(
+            registerPerk("glowstone_sight", () -> register(
                     "glowstone_sight",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().glowstoneSightRequiredLevel,
                     HandlerResources.GLOWSTONE_SIGHT_PERK
             ));
     public static final RegistryObject<Perk> SALVAGE_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().salvageExpertRequiredLevel < 0
-            ? null : PERKS.register("salvage_expert", () -> register(
+            registerPerk("salvage_expert", () -> register(
                     "salvage_expert",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().salvageExpertRequiredLevel,
@@ -3079,26 +2821,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().salvageExpertPercent)
             ));
     public static final RegistryObject<Perk> PROSPECTOR =
-            HandlerCommonConfig.HANDLER.instance().prospectorRequiredLevel < 0
-            ? null : PERKS.register("prospector", () -> register(
+            registerPerk("prospector", () -> register(
                     "prospector",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().prospectorRequiredLevel,
                     HandlerResources.PROSPECTOR_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().prospectorPercent)
             ));
-    public static final RegistryObject<Perk> CONSTRUCTION_HASTE =
-            HandlerCommonConfig.HANDLER.instance().constructionHasteRequiredLevel < 0
-            ? null : PERKS.register("construction_haste", () -> register(
-                    "construction_haste",
-                    RegistrySkills.BUILDING,
-                    HandlerCommonConfig.HANDLER.instance().constructionHasteRequiredLevel,
-                    HandlerResources.CONSTRUCTION_HASTE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().constructionHastePercent)
-            ));
     public static final RegistryObject<Perk> UNDERGROUND_EXPLORER =
-            HandlerCommonConfig.HANDLER.instance().undergroundExplorerRequiredLevel < 0
-            ? null : PERKS.register("underground_explorer", () -> register(
+            registerPerk("underground_explorer", () -> register(
                     "underground_explorer",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().undergroundExplorerRequiredLevel,
@@ -3106,8 +2837,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().undergroundExplorerPercent)
             ));
     public static final RegistryObject<Perk> MASS_PRODUCTION =
-            HandlerCommonConfig.HANDLER.instance().massProductionRequiredLevel < 0
-            ? null : PERKS.register("mass_production", () -> register(
+            registerPerk("mass_production", () -> register(
                     "mass_production",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().massProductionRequiredLevel,
@@ -3115,8 +2845,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().massProductionPercent)
             ));
     public static final RegistryObject<Perk> HERITAGE_BUILDER =
-            HandlerCommonConfig.HANDLER.instance().heritageBuilderRequiredLevel < 0
-            ? null : PERKS.register("heritage_builder", () -> register(
+            registerPerk("heritage_builder", () -> register(
                     "heritage_builder",
                     RegistrySkills.BUILDING,
                     HandlerCommonConfig.HANDLER.instance().heritageBuilderRequiredLevel,
@@ -3126,8 +2855,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - WISDOM ==========
     public static final RegistryObject<Perk> ENCHANTMENT_PRESERVATION =
-            HandlerCommonConfig.HANDLER.instance().enchantmentPreservationRequiredLevel < 0
-            ? null : PERKS.register("enchantment_preservation", () -> register(
+            registerPerk("enchantment_preservation", () -> register(
                     "enchantment_preservation",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().enchantmentPreservationRequiredLevel,
@@ -3135,8 +2863,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantmentPreservationPercent)
             ));
     public static final RegistryObject<Perk> DISENCHANT_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().disenchantMasteryRequiredLevel < 0
-            ? null : PERKS.register("disenchant_mastery", () -> register(
+            registerPerk("disenchant_mastery", () -> register(
                     "disenchant_mastery",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().disenchantMasteryRequiredLevel,
@@ -3144,8 +2871,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().disenchantMasteryPercent)
             ));
     public static final RegistryObject<Perk> MENDING_BOOST =
-            HandlerCommonConfig.HANDLER.instance().mendingBoostRequiredLevel < 0
-            ? null : PERKS.register("mending_boost", () -> register(
+            registerPerk("mending_boost", () -> register(
                     "mending_boost",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().mendingBoostRequiredLevel,
@@ -3153,8 +2879,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mendingBoostPercent)
             ));
     public static final RegistryObject<Perk> UNBREAKING_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().unbreakingMasteryRequiredLevel < 0
-            ? null : PERKS.register("unbreaking_mastery", () -> register(
+            registerPerk("unbreaking_mastery", () -> register(
                     "unbreaking_mastery",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().unbreakingMasteryRequiredLevel,
@@ -3162,8 +2887,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().unbreakingMasteryPercent)
             ));
     public static final RegistryObject<Perk> ENCHANTMENT_STACKING =
-            HandlerCommonConfig.HANDLER.instance().enchantmentStackingRequiredLevel < 0
-            ? null : PERKS.register("enchantment_stacking", () -> register(
+            registerPerk("enchantment_stacking", () -> register(
                     "enchantment_stacking",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().enchantmentStackingRequiredLevel,
@@ -3171,8 +2895,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantmentStackingPercent)
             ));
     public static final RegistryObject<Perk> WISDOM_OF_AGES =
-            HandlerCommonConfig.HANDLER.instance().wisdomOfAgesRequiredLevel < 0
-            ? null : PERKS.register("wisdom_of_ages", () -> register(
+            registerPerk("wisdom_of_ages", () -> register(
                     "wisdom_of_ages",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().wisdomOfAgesRequiredLevel,
@@ -3180,8 +2903,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().wisdomOfAgesPercent)
             ));
     public static final RegistryObject<Perk> TOME_OF_KNOWLEDGE =
-            HandlerCommonConfig.HANDLER.instance().tomeOfKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("tome_of_knowledge", () -> register(
+            registerPerk("tome_of_knowledge", () -> register(
                     "tome_of_knowledge",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().tomeOfKnowledgeRequiredLevel,
@@ -3189,8 +2911,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tomeOfKnowledgePercent)
             ));
     public static final RegistryObject<Perk> RUNIC_ENCHANTMENT =
-            HandlerCommonConfig.HANDLER.instance().runicEnchantmentRequiredLevel < 0
-            ? null : PERKS.register("runic_enchantment", () -> register(
+            registerPerk("runic_enchantment", () -> register(
                     "runic_enchantment",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().runicEnchantmentRequiredLevel,
@@ -3198,8 +2919,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicEnchantmentPercent)
             ));
     public static final RegistryObject<Perk> APOTHEOSIS_WISDOM =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apotheosisWisdomRequiredLevel < 0
-            ? null : PERKS.register("apotheosis_wisdom", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("apotheosis_wisdom", () -> register(
                     "apotheosis_wisdom",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().apotheosisWisdomRequiredLevel,
@@ -3207,16 +2928,14 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().apotheosisWisdomAmplifier)
             ));
     public static final RegistryObject<Perk> SCROLL_SCRIBE =
-            HandlerCommonConfig.HANDLER.instance().scrollScribeRequiredLevel < 0
-            ? null : PERKS.register("scroll_scribe", () -> register(
+            registerPerk("scroll_scribe", () -> register(
                     "scroll_scribe",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().scrollScribeRequiredLevel,
                     HandlerResources.SCROLL_SCRIBE_PERK
             ));
     public static final RegistryObject<Perk> MYSTIC_ATTUNEMENT =
-            HandlerCommonConfig.HANDLER.instance().mysticAttunementRequiredLevel < 0
-            ? null : PERKS.register("mystic_attunement", () -> register(
+            registerPerk("mystic_attunement", () -> register(
                     "mystic_attunement",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().mysticAttunementRequiredLevel,
@@ -3224,16 +2943,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mysticAttunementPercent)
             ));
     public static final RegistryObject<Perk> SOUL_BINDING =
-            HandlerCommonConfig.HANDLER.instance().soulBindingRequiredLevel < 0
-            ? null : PERKS.register("soul_binding", () -> register(
+            registerPerk("soul_binding", () -> register(
                     "soul_binding",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().soulBindingRequiredLevel,
                     HandlerResources.SOUL_BINDING_PERK
             ));
     public static final RegistryObject<Perk> EXPERIENCED_ENCHANTER =
-            HandlerCommonConfig.HANDLER.instance().experiencedEnchanterRequiredLevel < 0
-            ? null : PERKS.register("experienced_enchanter", () -> register(
+            registerPerk("experienced_enchanter", () -> register(
                     "experienced_enchanter",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().experiencedEnchanterRequiredLevel,
@@ -3241,8 +2958,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().experiencedEnchanterPercent)
             ));
     public static final RegistryObject<Perk> ARCANE_LINGUIST =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arcaneLinguistRequiredLevel < 0
-            ? null : PERKS.register("arcane_linguist", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("arcane_linguist", () -> register(
                     "arcane_linguist",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().arcaneLinguistRequiredLevel,
@@ -3250,8 +2967,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arcaneLinguistPercent)
             ));
     public static final RegistryObject<Perk> WARD_MASTER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().wardMasterRequiredLevel < 0
-            ? null : PERKS.register("ward_master", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ward_master", () -> register(
                     "ward_master",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().wardMasterRequiredLevel,
@@ -3259,8 +2976,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().wardMasterPercent)
             ));
     public static final RegistryObject<Perk> DIMENSIONAL_WISDOM =
-            HandlerCommonConfig.HANDLER.instance().dimensionalWisdomRequiredLevel < 0
-            ? null : PERKS.register("dimensional_wisdom", () -> register(
+            registerPerk("dimensional_wisdom", () -> register(
                     "dimensional_wisdom",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().dimensionalWisdomRequiredLevel,
@@ -3268,8 +2984,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dimensionalWisdomPercent)
             ));
     public static final RegistryObject<Perk> ANCIENT_INSCRIPTIONS =
-            HandlerCommonConfig.HANDLER.instance().ancientInscriptionsRequiredLevel < 0
-            ? null : PERKS.register("ancient_inscriptions", () -> register(
+            registerPerk("ancient_inscriptions", () -> register(
                     "ancient_inscriptions",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().ancientInscriptionsRequiredLevel,
@@ -3277,26 +2992,16 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ancientInscriptionsPercent)
             ));
     public static final RegistryObject<Perk> ARS_SAVANT =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().arsSavantRequiredLevel < 0
-            ? null : PERKS.register("ars_savant", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("ars_savant", () -> register(
                     "ars_savant",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().arsSavantRequiredLevel,
                     HandlerResources.ARS_SAVANT_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().arsSavantPercent)
             ));
-    public static final RegistryObject<Perk> NATURE_SAGE =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().natureSageRequiredLevel < 0
-            ? null : PERKS.register("nature_sage", () -> register(
-                    "nature_sage",
-                    RegistrySkills.WISDOM,
-                    HandlerCommonConfig.HANDLER.instance().natureSageRequiredLevel,
-                    HandlerResources.NATURE_SAGE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().natureSagePercent)
-            ));
     public static final RegistryObject<Perk> SPELL_INSCRIPTION =
-            HandlerCommonConfig.HANDLER.instance().spellInscriptionRequiredLevel < 0
-            ? null : PERKS.register("spell_inscription", () -> register(
+            registerPerk("spell_inscription", () -> register(
                     "spell_inscription",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().spellInscriptionRequiredLevel,
@@ -3304,8 +3009,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellInscriptionPercent)
             ));
     public static final RegistryObject<Perk> ELDER_KNOWLEDGE =
-            HandlerCommonConfig.HANDLER.instance().elderKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("elder_knowledge", () -> register(
+            registerPerk("elder_knowledge", () -> register(
                     "elder_knowledge",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().elderKnowledgeRequiredLevel,
@@ -3313,8 +3017,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().elderKnowledgePercent)
             ));
     public static final RegistryObject<Perk> BOOKCRAFT =
-            HandlerCommonConfig.HANDLER.instance().bookcraftRequiredLevel < 0
-            ? null : PERKS.register("bookcraft", () -> register(
+            registerPerk("bookcraft", () -> register(
                     "bookcraft",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().bookcraftRequiredLevel,
@@ -3322,16 +3025,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().bookcraftPercent)
             ));
     public static final RegistryObject<Perk> MYSTIC_SIGHT =
-            HandlerCommonConfig.HANDLER.instance().mysticSightRequiredLevel < 0
-            ? null : PERKS.register("mystic_sight", () -> register(
+            registerPerk("mystic_sight", () -> register(
                     "mystic_sight",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().mysticSightRequiredLevel,
                     HandlerResources.MYSTIC_SIGHT_PERK
             ));
     public static final RegistryObject<Perk> LAPIS_CONSERVATION =
-            HandlerCommonConfig.HANDLER.instance().lapisConservationRequiredLevel < 0
-            ? null : PERKS.register("lapis_conservation", () -> register(
+            registerPerk("lapis_conservation", () -> register(
                     "lapis_conservation",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().lapisConservationRequiredLevel,
@@ -3339,8 +3040,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lapisConservationPercent)
             ));
     public static final RegistryObject<Perk> ENLIGHTENMENT =
-            HandlerCommonConfig.HANDLER.instance().enlightenmentRequiredLevel < 0
-            ? null : PERKS.register("enlightenment", () -> register(
+            registerPerk("enlightenment", () -> register(
                     "enlightenment",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().enlightenmentRequiredLevel,
@@ -3348,16 +3048,14 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enlightenmentPercent)
             ));
     public static final RegistryObject<Perk> CURSE_BREAKER =
-            HandlerCommonConfig.HANDLER.instance().curseBreakerRequiredLevel < 0
-            ? null : PERKS.register("curse_breaker", () -> register(
+            registerPerk("curse_breaker", () -> register(
                     "curse_breaker",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().curseBreakerRequiredLevel,
                     HandlerResources.CURSE_BREAKER_PERK
             ));
     public static final RegistryObject<Perk> ENCHANTMENT_AMPLIFIER =
-            HandlerCommonConfig.HANDLER.instance().enchantmentAmplifierRequiredLevel < 0
-            ? null : PERKS.register("enchantment_amplifier", () -> register(
+            registerPerk("enchantment_amplifier", () -> register(
                     "enchantment_amplifier",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().enchantmentAmplifierRequiredLevel,
@@ -3365,8 +3063,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantmentAmplifierPercent)
             ));
     public static final RegistryObject<Perk> RUNE_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().runeMasteryRequiredLevel < 0
-            ? null : PERKS.register("rune_mastery", () -> register(
+            registerPerk("rune_mastery", () -> register(
                     "rune_mastery",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().runeMasteryRequiredLevel,
@@ -3374,8 +3071,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runeMasteryPercent)
             ));
     public static final RegistryObject<Perk> DRUIDIC_KNOWLEDGE =
-            HandlerCommonConfig.HANDLER.instance().druidicKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("druidic_knowledge", () -> register(
+            registerPerk("druidic_knowledge", () -> register(
                     "druidic_knowledge",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().druidicKnowledgeRequiredLevel,
@@ -3383,8 +3079,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().druidicKnowledgePercent)
             ));
     public static final RegistryObject<Perk> TEMPORAL_WISDOM =
-            HandlerCommonConfig.HANDLER.instance().temporalWisdomRequiredLevel < 0
-            ? null : PERKS.register("temporal_wisdom", () -> register(
+            registerPerk("temporal_wisdom", () -> register(
                     "temporal_wisdom",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().temporalWisdomRequiredLevel,
@@ -3392,8 +3087,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().temporalWisdomPercent)
             ));
     public static final RegistryObject<Perk> GRAND_SAGE =
-            HandlerCommonConfig.HANDLER.instance().grandSageRequiredLevel < 0
-            ? null : PERKS.register("grand_sage", () -> register(
+            registerPerk("grand_sage", () -> register(
                     "grand_sage",
                     RegistrySkills.WISDOM,
                     HandlerCommonConfig.HANDLER.instance().grandSageRequiredLevel,
@@ -3403,8 +3097,8 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - MAGIC ==========
     public static final RegistryObject<Perk> MANA_REGENERATION =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaRegenerationRequiredLevel < 0
-            ? null : PERKS.register("mana_regeneration", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("mana_regeneration", () -> register(
                     "mana_regeneration",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().manaRegenerationRequiredLevel,
@@ -3412,8 +3106,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaRegenerationPercent)
             ));
     public static final RegistryObject<Perk> SPELL_AMPLIFIER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellAmplifierRequiredLevel < 0
-            ? null : PERKS.register("spell_amplifier", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spell_amplifier", () -> register(
                     "spell_amplifier",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().spellAmplifierRequiredLevel,
@@ -3421,8 +3115,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellAmplifierPercent)
             ));
     public static final RegistryObject<Perk> SOURCE_WELL =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().sourceWellRequiredLevel < 0
-            ? null : PERKS.register("source_well", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("source_well", () -> register(
                     "source_well",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().sourceWellRequiredLevel,
@@ -3430,8 +3124,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sourceWellPercent)
             ));
     public static final RegistryObject<Perk> POTION_SPLASH =
-            HandlerCommonConfig.HANDLER.instance().potionSplashRequiredLevel < 0
-            ? null : PERKS.register("potion_splash", () -> register(
+            registerPerk("potion_splash", () -> register(
                     "potion_splash",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().potionSplashRequiredLevel,
@@ -3439,8 +3132,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().potionSplashPercent)
             ));
     public static final RegistryObject<Perk> TELEKINESIS =
-            HandlerCommonConfig.HANDLER.instance().telekinesisRequiredLevel < 0
-            ? null : PERKS.register("telekinesis", () -> register(
+            registerPerk("telekinesis", () -> register(
                     "telekinesis",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().telekinesisRequiredLevel,
@@ -3448,8 +3140,8 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().telekinesisAmplifier)
             ));
     public static final RegistryObject<Perk> ELEMENTAL_MASTER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().elementalMasterRequiredLevel < 0
-            ? null : PERKS.register("elemental_master", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("elemental_master", () -> register(
                     "elemental_master",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().elementalMasterRequiredLevel,
@@ -3457,8 +3149,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().elementalMasterPercent)
             ));
     public static final RegistryObject<Perk> ARCANE_BARRIER =
-            HandlerCommonConfig.HANDLER.instance().arcaneBarrierRequiredLevel < 0
-            ? null : PERKS.register("arcane_barrier", () -> register(
+            registerPerk("arcane_barrier", () -> register(
                     "arcane_barrier",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().arcaneBarrierRequiredLevel,
@@ -3466,8 +3157,8 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().arcaneBarrierAmplifier)
             ));
     public static final RegistryObject<Perk> SPELL_QUICKENING =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().spellQuickeningRequiredLevel < 0
-            ? null : PERKS.register("spell_quickening", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("spell_quickening", () -> register(
                     "spell_quickening",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().spellQuickeningRequiredLevel,
@@ -3475,8 +3166,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().spellQuickeningPercent)
             ));
     public static final RegistryObject<Perk> SOURCE_ATTUNEMENT =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().sourceAttunementRequiredLevel < 0
-            ? null : PERKS.register("source_attunement", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("source_attunement", () -> register(
                     "source_attunement",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().sourceAttunementRequiredLevel,
@@ -3484,8 +3175,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().sourceAttunementPercent)
             ));
     public static final RegistryObject<Perk> SUMMONER =
-            !ArsNouveauIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().summonerRequiredLevel < 0
-            ? null : PERKS.register("summoner", () -> register(
+            !ArsNouveauIntegration.isModLoaded()
+            ? null : registerPerk("summoner", () -> register(
                     "summoner",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().summonerRequiredLevel,
@@ -3493,8 +3184,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().summonerPercent)
             ));
     public static final RegistryObject<Perk> MYSTIC_SHIELD =
-            HandlerCommonConfig.HANDLER.instance().mysticShieldRequiredLevel < 0
-            ? null : PERKS.register("mystic_shield", () -> register(
+            registerPerk("mystic_shield", () -> register(
                     "mystic_shield",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().mysticShieldRequiredLevel,
@@ -3502,8 +3192,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mysticShieldPercent)
             ));
     public static final RegistryObject<Perk> ASTRAL_PROJECTION =
-            HandlerCommonConfig.HANDLER.instance().astralProjectionRequiredLevel < 0
-            ? null : PERKS.register("astral_projection", () -> register(
+            registerPerk("astral_projection", () -> register(
                     "astral_projection",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().astralProjectionRequiredLevel,
@@ -3511,8 +3200,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().astralProjectionAmplifier)
             ));
     public static final RegistryObject<Perk> PHILOSOPHERS_STONE =
-            HandlerCommonConfig.HANDLER.instance().philosophersStoneRequiredLevel < 0
-            ? null : PERKS.register("philosophers_stone", () -> register(
+            registerPerk("philosophers_stone", () -> register(
                     "philosophers_stone",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().philosophersStoneRequiredLevel,
@@ -3520,8 +3208,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().philosophersStonePercent)
             ));
     public static final RegistryObject<Perk> MANA_SHIELD =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().manaShieldRequiredLevel < 0
-            ? null : PERKS.register("mana_shield", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("mana_shield", () -> register(
                     "mana_shield",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().manaShieldRequiredLevel,
@@ -3529,8 +3217,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().manaShieldPercent)
             ));
     public static final RegistryObject<Perk> DRAGON_MAGIC =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonMagicRequiredLevel < 0
-            ? null : PERKS.register("dragon_magic", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_magic", () -> register(
                     "dragon_magic",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().dragonMagicRequiredLevel,
@@ -3538,8 +3226,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonMagicPercent)
             ));
     public static final RegistryObject<Perk> ELDRITCH_POWER =
-            !IronsSpellbooksIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().eldritchPowerRequiredLevel < 0
-            ? null : PERKS.register("eldritch_power", () -> register(
+            !IronsSpellbooksIntegration.isModLoaded()
+            ? null : registerPerk("eldritch_power", () -> register(
                     "eldritch_power",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().eldritchPowerRequiredLevel,
@@ -3547,8 +3235,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().eldritchPowerPercent)
             ));
     public static final RegistryObject<Perk> SOUL_MAGIC =
-            HandlerCommonConfig.HANDLER.instance().soulMagicRequiredLevel < 0
-            ? null : PERKS.register("soul_magic", () -> register(
+            registerPerk("soul_magic", () -> register(
                     "soul_magic",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().soulMagicRequiredLevel,
@@ -3556,8 +3243,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().soulMagicPercent)
             ));
     public static final RegistryObject<Perk> DUAL_CASTING =
-            HandlerCommonConfig.HANDLER.instance().dualCastingRequiredLevel < 0
-            ? null : PERKS.register("dual_casting", () -> register(
+            registerPerk("dual_casting", () -> register(
                     "dual_casting",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().dualCastingRequiredLevel,
@@ -3565,26 +3251,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dualCastingPercent)
             ));
     public static final RegistryObject<Perk> ENCHANTED_MISSILES =
-            HandlerCommonConfig.HANDLER.instance().enchantedMissilesRequiredLevel < 0
-            ? null : PERKS.register("enchanted_missiles", () -> register(
+            registerPerk("enchanted_missiles", () -> register(
                     "enchanted_missiles",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().enchantedMissilesRequiredLevel,
                     HandlerResources.ENCHANTED_MISSILES_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantedMissilesPercent)
             ));
-    public static final RegistryObject<Perk> AURA_MANIPULATION =
-            !NaturesAuraIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().auraManipulationRequiredLevel < 0
-            ? null : PERKS.register("aura_manipulation", () -> register(
-                    "aura_manipulation",
-                    RegistrySkills.MAGIC,
-                    HandlerCommonConfig.HANDLER.instance().auraManipulationRequiredLevel,
-                    HandlerResources.AURA_MANIPULATION_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().auraManipulationPercent)
-            ));
     public static final RegistryObject<Perk> VOID_MAGIC =
-            HandlerCommonConfig.HANDLER.instance().voidMagicRequiredLevel < 0
-            ? null : PERKS.register("void_magic", () -> register(
+            registerPerk("void_magic", () -> register(
                     "void_magic",
                     RegistrySkills.MAGIC,
                     HandlerCommonConfig.HANDLER.instance().voidMagicRequiredLevel,
@@ -3594,8 +3269,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - FORTUNE ==========
     public static final RegistryObject<Perk> TREASURE_SENSE =
-            HandlerCommonConfig.HANDLER.instance().treasureSenseRequiredLevel < 0
-            ? null : PERKS.register("treasure_sense", () -> register(
+            registerPerk("treasure_sense", () -> register(
                     "treasure_sense",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().treasureSenseRequiredLevel,
@@ -3603,8 +3277,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().treasureSensePercent)
             ));
     public static final RegistryObject<Perk> DOUBLE_DOWN =
-            HandlerCommonConfig.HANDLER.instance().doubleDownRequiredLevel < 0
-            ? null : PERKS.register("double_down", () -> register(
+            registerPerk("double_down", () -> register(
                     "double_down",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().doubleDownRequiredLevel,
@@ -3612,8 +3285,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().doubleDownPercent)
             ));
     public static final RegistryObject<Perk> GOLDEN_TOUCH =
-            HandlerCommonConfig.HANDLER.instance().goldenTouchRequiredLevel < 0
-            ? null : PERKS.register("golden_touch", () -> register(
+            registerPerk("golden_touch", () -> register(
                     "golden_touch",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().goldenTouchRequiredLevel,
@@ -3621,8 +3293,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().goldenTouchPercent)
             ));
     public static final RegistryObject<Perk> FORTUNES_FAVOR =
-            HandlerCommonConfig.HANDLER.instance().fortunesFavorRequiredLevel < 0
-            ? null : PERKS.register("fortunes_favor", () -> register(
+            registerPerk("fortunes_favor", () -> register(
                     "fortunes_favor",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().fortunesFavorRequiredLevel,
@@ -3630,8 +3301,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fortunesFavorPercent)
             ));
     public static final RegistryObject<Perk> LUCKY_FISHING =
-            HandlerCommonConfig.HANDLER.instance().luckyFishingRequiredLevel < 0
-            ? null : PERKS.register("lucky_fishing", () -> register(
+            registerPerk("lucky_fishing", () -> register(
                     "lucky_fishing",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyFishingRequiredLevel,
@@ -3639,8 +3309,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().luckyFishingPercent)
             ));
     public static final RegistryObject<Perk> PROSPECTORS_LUCK =
-            HandlerCommonConfig.HANDLER.instance().prospectorsLuckRequiredLevel < 0
-            ? null : PERKS.register("prospectors_luck", () -> register(
+            registerPerk("prospectors_luck", () -> register(
                     "prospectors_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().prospectorsLuckRequiredLevel,
@@ -3648,8 +3317,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().prospectorsLuckPercent)
             ));
     public static final RegistryObject<Perk> SCAVENGER =
-            HandlerCommonConfig.HANDLER.instance().scavengerRequiredLevel < 0
-            ? null : PERKS.register("scavenger", () -> register(
+            registerPerk("scavenger", () -> register(
                     "scavenger",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().scavengerRequiredLevel,
@@ -3657,8 +3325,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().scavengerPercent)
             ));
     public static final RegistryObject<Perk> CRITICAL_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().criticalMasteryRequiredLevel < 0
-            ? null : PERKS.register("critical_mastery", () -> register(
+            registerPerk("critical_mastery", () -> register(
                     "critical_mastery",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().criticalMasteryRequiredLevel,
@@ -3666,8 +3333,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().criticalMasteryPercent)
             ));
     public static final RegistryObject<Perk> LOOTER =
-            HandlerCommonConfig.HANDLER.instance().looterRequiredLevel < 0
-            ? null : PERKS.register("looter", () -> register(
+            registerPerk("looter", () -> register(
                     "looter",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().looterRequiredLevel,
@@ -3675,8 +3341,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().looterAmplifier)
             ));
     public static final RegistryObject<Perk> JACKPOT =
-            HandlerCommonConfig.HANDLER.instance().jackpotRequiredLevel < 0
-            ? null : PERKS.register("jackpot", () -> register(
+            registerPerk("jackpot", () -> register(
                     "jackpot",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().jackpotRequiredLevel,
@@ -3684,8 +3349,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().jackpotPercent)
             ));
     public static final RegistryObject<Perk> ENCHANTED_FORTUNE =
-            HandlerCommonConfig.HANDLER.instance().enchantedFortuneRequiredLevel < 0
-            ? null : PERKS.register("enchanted_fortune", () -> register(
+            registerPerk("enchanted_fortune", () -> register(
                     "enchanted_fortune",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().enchantedFortuneRequiredLevel,
@@ -3693,8 +3357,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantedFortunePercent)
             ));
     public static final RegistryObject<Perk> DRAGON_HOARD =
-            !IceAndFireIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().dragonHoardRequiredLevel < 0
-            ? null : PERKS.register("dragon_hoard", () -> register(
+            !IceAndFireIntegration.isModLoaded()
+            ? null : registerPerk("dragon_hoard", () -> register(
                     "dragon_hoard",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().dragonHoardRequiredLevel,
@@ -3702,8 +3366,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().dragonHoardPercent)
             ));
     public static final RegistryObject<Perk> CATACLYSM_SPOILS =
-            !CataclysmIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().cataclysmSpoilsRequiredLevel < 0
-            ? null : PERKS.register("cataclysm_spoils", () -> register(
+            !CataclysmIntegration.isModLoaded()
+            ? null : registerPerk("cataclysm_spoils", () -> register(
                     "cataclysm_spoils",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().cataclysmSpoilsRequiredLevel,
@@ -3711,8 +3375,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().cataclysmSpoilsPercent)
             ));
     public static final RegistryObject<Perk> RUNIC_FORTUNE =
-            HandlerCommonConfig.HANDLER.instance().runicFortuneRequiredLevel < 0
-            ? null : PERKS.register("runic_fortune", () -> register(
+            registerPerk("runic_fortune", () -> register(
                     "runic_fortune",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().runicFortuneRequiredLevel,
@@ -3720,8 +3383,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicFortunePercent)
             ));
     public static final RegistryObject<Perk> APOTHEOSIS_GEMS =
-            !ApotheosisIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().apotheosisGemsRequiredLevel < 0
-            ? null : PERKS.register("apotheosis_gems", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("apotheosis_gems", () -> register(
                     "apotheosis_gems",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().apotheosisGemsRequiredLevel,
@@ -3729,8 +3392,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().apotheosisGemsPercent)
             ));
     public static final RegistryObject<Perk> LUCKY_CHARM =
-            HandlerCommonConfig.HANDLER.instance().luckyCharmRequiredLevel < 0
-            ? null : PERKS.register("lucky_charm", () -> register(
+            registerPerk("lucky_charm", () -> register(
                     "lucky_charm",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyCharmRequiredLevel,
@@ -3738,8 +3400,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().luckyCharmPercent)
             ));
     public static final RegistryObject<Perk> COIN_FLIP =
-            HandlerCommonConfig.HANDLER.instance().coinFlipRequiredLevel < 0
-            ? null : PERKS.register("coin_flip", () -> register(
+            registerPerk("coin_flip", () -> register(
                     "coin_flip",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().coinFlipRequiredLevel,
@@ -3747,8 +3408,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().coinFlipPercent)
             ));
     public static final RegistryObject<Perk> SALVAGE_LUCK =
-            HandlerCommonConfig.HANDLER.instance().salvageLuckRequiredLevel < 0
-            ? null : PERKS.register("salvage_luck", () -> register(
+            registerPerk("salvage_luck", () -> register(
                     "salvage_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().salvageLuckRequiredLevel,
@@ -3756,8 +3416,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().salvageLuckPercent)
             ));
     public static final RegistryObject<Perk> ADVENTURERS_LUCK =
-            !StalwartDungeonsIntegration.isModLoaded() || HandlerCommonConfig.HANDLER.instance().adventurersLuckRequiredLevel < 0
-            ? null : PERKS.register("adventurers_luck", () -> register(
+            !StalwartDungeonsIntegration.isModLoaded()
+            ? null : registerPerk("adventurers_luck", () -> register(
                     "adventurers_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().adventurersLuckRequiredLevel,
@@ -3765,8 +3425,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().adventurersLuckPercent)
             ));
     public static final RegistryObject<Perk> MIDAS_TOUCH =
-            HandlerCommonConfig.HANDLER.instance().midasTouchRequiredLevel < 0
-            ? null : PERKS.register("midas_touch", () -> register(
+            registerPerk("midas_touch", () -> register(
                     "midas_touch",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().midasTouchRequiredLevel,
@@ -3774,8 +3433,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().midasTouchPercent)
             ));
     public static final RegistryObject<Perk> LUCKY_BREAK =
-            HandlerCommonConfig.HANDLER.instance().luckyBreakRequiredLevel < 0
-            ? null : PERKS.register("lucky_break", () -> register(
+            registerPerk("lucky_break", () -> register(
                     "lucky_break",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyBreakRequiredLevel,
@@ -3783,8 +3441,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().luckyBreakPercent)
             ));
     public static final RegistryObject<Perk> JEWELERS_EYE =
-            HandlerCommonConfig.HANDLER.instance().jewelersEyeRequiredLevel < 0
-            ? null : PERKS.register("jewelers_eye", () -> register(
+            registerPerk("jewelers_eye", () -> register(
                     "jewelers_eye",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().jewelersEyeRequiredLevel,
@@ -3792,8 +3449,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().jewelersEyePercent)
             ));
     public static final RegistryObject<Perk> FORTUNE_COOKIE =
-            !CulinaryIntegration.isAnyLoaded() || HandlerCommonConfig.HANDLER.instance().fortuneCookieRequiredLevel < 0
-            ? null : PERKS.register("fortune_cookie", () -> register(
+            !CulinaryIntegration.isAnyLoaded()
+            ? null : registerPerk("fortune_cookie", () -> register(
                     "fortune_cookie",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().fortuneCookieRequiredLevel,
@@ -3801,8 +3458,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fortuneCookiePercent)
             ));
     public static final RegistryObject<Perk> ETHEREAL_LUCK =
-            HandlerCommonConfig.HANDLER.instance().etherealLuckRequiredLevel < 0
-            ? null : PERKS.register("ethereal_luck", () -> register(
+            registerPerk("ethereal_luck", () -> register(
                     "ethereal_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().etherealLuckRequiredLevel,
@@ -3810,8 +3466,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().etherealLuckPercent)
             ));
     public static final RegistryObject<Perk> RARE_FIND =
-            HandlerCommonConfig.HANDLER.instance().rareFindRequiredLevel < 0
-            ? null : PERKS.register("rare_find", () -> register(
+            registerPerk("rare_find", () -> register(
                     "rare_find",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().rareFindRequiredLevel,
@@ -3819,8 +3474,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().rareFindPercent)
             ));
     public static final RegistryObject<Perk> LUCKY_STAR =
-            HandlerCommonConfig.HANDLER.instance().luckyStarRequiredLevel < 0
-            ? null : PERKS.register("lucky_star", () -> register(
+            registerPerk("lucky_star", () -> register(
                     "lucky_star",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyStarRequiredLevel,
@@ -3828,8 +3482,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().luckyStarPercent)
             ));
     public static final RegistryObject<Perk> SERENDIPITY =
-            HandlerCommonConfig.HANDLER.instance().serendipityRequiredLevel < 0
-            ? null : PERKS.register("serendipity", () -> register(
+            registerPerk("serendipity", () -> register(
                     "serendipity",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().serendipityRequiredLevel,
@@ -3837,8 +3490,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().serendipityPercent)
             ));
     public static final RegistryObject<Perk> GREED =
-            HandlerCommonConfig.HANDLER.instance().greedRequiredLevel < 0
-            ? null : PERKS.register("greed", () -> register(
+            registerPerk("greed", () -> register(
                     "greed",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().greedRequiredLevel,
@@ -3846,8 +3498,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().greedPercent)
             ));
     public static final RegistryObject<Perk> RAINBOW_LOOT =
-            HandlerCommonConfig.HANDLER.instance().rainbowLootRequiredLevel < 0
-            ? null : PERKS.register("rainbow_loot", () -> register(
+            registerPerk("rainbow_loot", () -> register(
                     "rainbow_loot",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().rainbowLootRequiredLevel,
@@ -3855,8 +3506,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().rainbowLootPercent)
             ));
     public static final RegistryObject<Perk> FISHERMANS_LUCK =
-            HandlerCommonConfig.HANDLER.instance().fishermansLuckRequiredLevel < 0
-            ? null : PERKS.register("fishermans_luck", () -> register(
+            registerPerk("fishermans_luck", () -> register(
                     "fishermans_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().fishermansLuckRequiredLevel,
@@ -3864,8 +3514,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().fishermansLuckPercent)
             ));
     public static final RegistryObject<Perk> LUCKY_EXPLORER =
-            HandlerCommonConfig.HANDLER.instance().luckyExplorerRequiredLevel < 0
-            ? null : PERKS.register("lucky_explorer", () -> register(
+            registerPerk("lucky_explorer", () -> register(
                     "lucky_explorer",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().luckyExplorerRequiredLevel,
@@ -3873,8 +3522,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().luckyExplorerPercent)
             ));
     public static final RegistryObject<Perk> CHAOS_ROLL =
-            HandlerCommonConfig.HANDLER.instance().chaosRollRequiredLevel < 0
-            ? null : PERKS.register("chaos_roll", () -> register(
+            registerPerk("chaos_roll", () -> register(
                     "chaos_roll",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().chaosRollRequiredLevel,
@@ -3882,8 +3530,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().chaosRollPercent)
             ));
     public static final RegistryObject<Perk> CRITICAL_FORTUNE =
-            HandlerCommonConfig.HANDLER.instance().criticalFortuneRequiredLevel < 0
-            ? null : PERKS.register("critical_fortune", () -> register(
+            registerPerk("critical_fortune", () -> register(
                     "critical_fortune",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().criticalFortuneRequiredLevel,
@@ -3891,8 +3538,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().criticalFortunePercent)
             ));
     public static final RegistryObject<Perk> MASTER_LOOTER =
-            HandlerCommonConfig.HANDLER.instance().masterLooterRequiredLevel < 0
-            ? null : PERKS.register("master_looter", () -> register(
+            registerPerk("master_looter", () -> register(
                     "master_looter",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().masterLooterRequiredLevel,
@@ -3900,8 +3546,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterLooterPercent)
             ));
     public static final RegistryObject<Perk> BLESSING_OF_LUCK =
-            HandlerCommonConfig.HANDLER.instance().blessingOfLuckRequiredLevel < 0
-            ? null : PERKS.register("blessing_of_luck", () -> register(
+            registerPerk("blessing_of_luck", () -> register(
                     "blessing_of_luck",
                     RegistrySkills.FORTUNE,
                     HandlerCommonConfig.HANDLER.instance().blessingOfLuckRequiredLevel,
@@ -3911,8 +3556,7 @@ public class RegistryPerks {
 
     // ========== NEW PERKS - TINKERING ==========
     public static final RegistryObject<Perk> REPAIR_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().repairExpertRequiredLevel < 0
-            ? null : PERKS.register("repair_expert", () -> register(
+            registerPerk("repair_expert", () -> register(
                     "repair_expert",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().repairExpertRequiredLevel,
@@ -3920,8 +3564,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().repairExpertPercent)
             ));
     public static final RegistryObject<Perk> DISASSEMBLER =
-            HandlerCommonConfig.HANDLER.instance().disassemblerRequiredLevel < 0
-            ? null : PERKS.register("disassembler", () -> register(
+            registerPerk("disassembler", () -> register(
                     "disassembler",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().disassemblerRequiredLevel,
@@ -3929,8 +3572,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().disassemblerPercent)
             ));
     public static final RegistryObject<Perk> AUTO_REPAIR =
-            HandlerCommonConfig.HANDLER.instance().autoRepairRequiredLevel < 0
-            ? null : PERKS.register("auto_repair", () -> register(
+            registerPerk("auto_repair", () -> register(
                     "auto_repair",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().autoRepairRequiredLevel,
@@ -3938,8 +3580,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().autoRepairPercent)
             ));
     public static final RegistryObject<Perk> GADGETEER =
-            HandlerCommonConfig.HANDLER.instance().gadgeteerRequiredLevel < 0
-            ? null : PERKS.register("gadgeteer", () -> register(
+            registerPerk("gadgeteer", () -> register(
                     "gadgeteer",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().gadgeteerRequiredLevel,
@@ -3947,17 +3588,18 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().gadgeteerPercent)
             ));
     public static final RegistryObject<Perk> TRAP_MAKER =
-            HandlerCommonConfig.HANDLER.instance().trapMakerRequiredLevel < 0
-            ? null : PERKS.register("trap_maker", () -> register(
+            registerPerk("trap_maker", () -> register(
                     "trap_maker",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().trapMakerRequiredLevel,
                     HandlerResources.TRAP_MAKER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().trapMakerPercent)
             ));
+    // Gated on Locks Reforged since 2.0.0: both lock perks act on that mod's locks and picks, and
+    // vanilla has no lock of any kind for them to act on instead (RS10-004).
     public static final RegistryObject<Perk> LOCK_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().lockExpertRequiredLevel < 0
-            ? null : PERKS.register("lock_expert", () -> register(
+            !LocksIntegration.isModLoaded()
+            ? null : registerPerk("lock_expert", () -> register(
                     "lock_expert",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().lockExpertRequiredLevel,
@@ -3965,8 +3607,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().lockExpertPercent)
             ));
     public static final RegistryObject<Perk> KEY_FORGE =
-            HandlerCommonConfig.HANDLER.instance().keyForgeRequiredLevel < 0
-            ? null : PERKS.register("key_forge", () -> register(
+            registerPerk("key_forge", () -> register(
                     "key_forge",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().keyForgeRequiredLevel,
@@ -3974,8 +3615,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().keyForgePercent)
             ));
     public static final RegistryObject<Perk> MECHANICAL_KNOWLEDGE =
-            HandlerCommonConfig.HANDLER.instance().mechanicalKnowledgeRequiredLevel < 0
-            ? null : PERKS.register("mechanical_knowledge", () -> register(
+            registerPerk("mechanical_knowledge", () -> register(
                     "mechanical_knowledge",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().mechanicalKnowledgeRequiredLevel,
@@ -3983,8 +3623,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mechanicalKnowledgePercent)
             ));
     public static final RegistryObject<Perk> SIEGE_MECHANIC =
-            HandlerCommonConfig.HANDLER.instance().siegeMechanicRequiredLevel < 0
-            ? null : PERKS.register("siege_mechanic", () -> register(
+            registerPerk("siege_mechanic", () -> register(
                     "siege_mechanic",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().siegeMechanicRequiredLevel,
@@ -3992,8 +3631,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().siegeMechanicPercent)
             ));
     public static final RegistryObject<Perk> WEAPON_SMITH =
-            HandlerCommonConfig.HANDLER.instance().weaponSmithRequiredLevel < 0
-            ? null : PERKS.register("weapon_smith", () -> register(
+            registerPerk("weapon_smith", () -> register(
                     "weapon_smith",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().weaponSmithRequiredLevel,
@@ -4001,8 +3639,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().weaponSmithPercent)
             ));
     public static final RegistryObject<Perk> ARMOR_SMITH =
-            HandlerCommonConfig.HANDLER.instance().armorSmithRequiredLevel < 0
-            ? null : PERKS.register("armor_smith", () -> register(
+            registerPerk("armor_smith", () -> register(
                     "armor_smith",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().armorSmithRequiredLevel,
@@ -4010,8 +3647,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().armorSmithPercent)
             ));
     public static final RegistryObject<Perk> TOOL_SMITH =
-            HandlerCommonConfig.HANDLER.instance().toolSmithRequiredLevel < 0
-            ? null : PERKS.register("tool_smith", () -> register(
+            registerPerk("tool_smith", () -> register(
                     "tool_smith",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().toolSmithRequiredLevel,
@@ -4019,8 +3655,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().toolSmithPercent)
             ));
     public static final RegistryObject<Perk> SALVAGE_MASTER =
-            HandlerCommonConfig.HANDLER.instance().salvageMasterRequiredLevel < 0
-            ? null : PERKS.register("salvage_master", () -> register(
+            registerPerk("salvage_master", () -> register(
                     "salvage_master",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().salvageMasterRequiredLevel,
@@ -4028,26 +3663,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().salvageMasterPercent)
             ));
     public static final RegistryObject<Perk> ENCHANTMENT_TRANSFER =
-            HandlerCommonConfig.HANDLER.instance().enchantmentTransferRequiredLevel < 0
-            ? null : PERKS.register("enchantment_transfer", () -> register(
+            registerPerk("enchantment_transfer", () -> register(
                     "enchantment_transfer",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().enchantmentTransferRequiredLevel,
                     HandlerResources.ENCHANTMENT_TRANSFER_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().enchantmentTransferPercent)
             ));
-    public static final RegistryObject<Perk> GADGET_UPGRADE =
-            HandlerCommonConfig.HANDLER.instance().gadgetUpgradeRequiredLevel < 0
-            ? null : PERKS.register("gadget_upgrade", () -> register(
-                    "gadget_upgrade",
-                    RegistrySkills.TINKERING,
-                    HandlerCommonConfig.HANDLER.instance().gadgetUpgradeRequiredLevel,
-                    HandlerResources.GADGET_UPGRADE_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().gadgetUpgradePercent)
-            ));
     public static final RegistryObject<Perk> OVERCLOCK =
-            HandlerCommonConfig.HANDLER.instance().overclockRequiredLevel < 0
-            ? null : PERKS.register("overclock", () -> register(
+            registerPerk("overclock", () -> register(
                     "overclock",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().overclockRequiredLevel,
@@ -4055,8 +3679,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().overclockPercent)
             ));
     public static final RegistryObject<Perk> RUNIC_ENGINEERING =
-            HandlerCommonConfig.HANDLER.instance().runicEngineeringRequiredLevel < 0
-            ? null : PERKS.register("runic_engineering", () -> register(
+            registerPerk("runic_engineering", () -> register(
                     "runic_engineering",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().runicEngineeringRequiredLevel,
@@ -4064,8 +3687,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().runicEngineeringPercent)
             ));
     public static final RegistryObject<Perk> BREWING_APPARATUS =
-            HandlerCommonConfig.HANDLER.instance().brewingApparatusRequiredLevel < 0
-            ? null : PERKS.register("brewing_apparatus", () -> register(
+            registerPerk("brewing_apparatus", () -> register(
                     "brewing_apparatus",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().brewingApparatusRequiredLevel,
@@ -4073,8 +3695,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().brewingApparatusPercent)
             ));
     public static final RegistryObject<Perk> MECHANICAL_ARM =
-            HandlerCommonConfig.HANDLER.instance().mechanicalArmRequiredLevel < 0
-            ? null : PERKS.register("mechanical_arm", () -> register(
+            registerPerk("mechanical_arm", () -> register(
                     "mechanical_arm",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().mechanicalArmRequiredLevel,
@@ -4082,8 +3703,7 @@ public class RegistryPerks {
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().mechanicalArmAmplifier)
             ));
     public static final RegistryObject<Perk> PRECISION_TOOLS =
-            HandlerCommonConfig.HANDLER.instance().precisionToolsRequiredLevel < 0
-            ? null : PERKS.register("precision_tools", () -> register(
+            registerPerk("precision_tools", () -> register(
                     "precision_tools",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().precisionToolsRequiredLevel,
@@ -4091,8 +3711,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().precisionToolsPercent)
             ));
     public static final RegistryObject<Perk> ASSEMBLY_LINE =
-            HandlerCommonConfig.HANDLER.instance().assemblyLineRequiredLevel < 0
-            ? null : PERKS.register("assembly_line", () -> register(
+            registerPerk("assembly_line", () -> register(
                     "assembly_line",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().assemblyLineRequiredLevel,
@@ -4100,44 +3719,27 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().assemblyLinePercent)
             ));
     public static final RegistryObject<Perk> EXPLOSIVE_ORDINANCE =
-            HandlerCommonConfig.HANDLER.instance().explosiveOrdinanceRequiredLevel < 0
-            ? null : PERKS.register("explosive_ordinance", () -> register(
+            registerPerk("explosive_ordinance", () -> register(
                     "explosive_ordinance",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().explosiveOrdinanceRequiredLevel,
                     HandlerResources.EXPLOSIVE_ORDINANCE_PERK,
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().explosiveOrdinancePercent)
             ));
-    public static final RegistryObject<Perk> CIRCUIT_BREAKER =
-            HandlerCommonConfig.HANDLER.instance().circuitBreakerRequiredLevel < 0
-            ? null : PERKS.register("circuit_breaker", () -> register(
-                    "circuit_breaker",
-                    RegistrySkills.TINKERING,
-                    HandlerCommonConfig.HANDLER.instance().circuitBreakerRequiredLevel,
-                    HandlerResources.CIRCUIT_BREAKER_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().circuitBreakerAmplifier)
-            ));
+    // Gated on Apotheosis since 2.0.0: "equipment modification slots" describes Apotheosis's
+    // sockets and nothing else in this build, so in a pack without it the perk had no slot system
+    // to enlarge and would have been permanently inert (RS10-004).
     public static final RegistryObject<Perk> MODULAR_EQUIPMENT =
-            HandlerCommonConfig.HANDLER.instance().modularEquipmentRequiredLevel < 0
-            ? null : PERKS.register("modular_equipment", () -> register(
+            !ApotheosisIntegration.isModLoaded()
+            ? null : registerPerk("modular_equipment", () -> register(
                     "modular_equipment",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().modularEquipmentRequiredLevel,
                     HandlerResources.MODULAR_EQUIPMENT_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().modularEquipmentAmplifier)
             ));
-    public static final RegistryObject<Perk> CLOCKWORK_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().clockworkMasteryRequiredLevel < 0
-            ? null : PERKS.register("clockwork_mastery", () -> register(
-                    "clockwork_mastery",
-                    RegistrySkills.TINKERING,
-                    HandlerCommonConfig.HANDLER.instance().clockworkMasteryRequiredLevel,
-                    HandlerResources.CLOCKWORK_MASTERY_PERK,
-                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().clockworkMasteryPercent)
-            ));
     public static final RegistryObject<Perk> FORGE_MASTER =
-            HandlerCommonConfig.HANDLER.instance().forgeMasterRequiredLevel < 0
-            ? null : PERKS.register("forge_master", () -> register(
+            registerPerk("forge_master", () -> register(
                     "forge_master",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().forgeMasterRequiredLevel,
@@ -4145,8 +3747,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().forgeMasterPercent)
             ));
     public static final RegistryObject<Perk> INVENTOR =
-            HandlerCommonConfig.HANDLER.instance().inventorRequiredLevel < 0
-            ? null : PERKS.register("inventor", () -> register(
+            registerPerk("inventor", () -> register(
                     "inventor",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().inventorRequiredLevel,
@@ -4154,8 +3755,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().inventorPercent)
             ));
     public static final RegistryObject<Perk> SPRING_LOADED =
-            HandlerCommonConfig.HANDLER.instance().springLoadedRequiredLevel < 0
-            ? null : PERKS.register("spring_loaded", () -> register(
+            registerPerk("spring_loaded", () -> register(
                     "spring_loaded",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().springLoadedRequiredLevel,
@@ -4163,8 +3763,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().springLoadedPercent)
             ));
     public static final RegistryObject<Perk> BALLISTIC_EXPERT =
-            HandlerCommonConfig.HANDLER.instance().ballisticExpertRequiredLevel < 0
-            ? null : PERKS.register("ballistic_expert", () -> register(
+            registerPerk("ballistic_expert", () -> register(
                     "ballistic_expert",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().ballisticExpertRequiredLevel,
@@ -4172,8 +3771,8 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ballisticExpertPercent)
             ));
     public static final RegistryObject<Perk> SAFE_BUILDER =
-            HandlerCommonConfig.HANDLER.instance().safeBuilderRequiredLevel < 0
-            ? null : PERKS.register("safe_builder", () -> register(
+            !LocksIntegration.isModLoaded()
+            ? null : registerPerk("safe_builder", () -> register(
                     "safe_builder",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().safeBuilderRequiredLevel,
@@ -4181,8 +3780,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().safeBuilderPercent)
             ));
     public static final RegistryObject<Perk> TINKERS_TOUCH =
-            HandlerCommonConfig.HANDLER.instance().tinkersTouchRequiredLevel < 0
-            ? null : PERKS.register("tinkers_touch", () -> register(
+            registerPerk("tinkers_touch", () -> register(
                     "tinkers_touch",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().tinkersTouchRequiredLevel,
@@ -4190,8 +3788,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tinkersTouchPercent)
             ));
     public static final RegistryObject<Perk> ALLOY_MASTER =
-            HandlerCommonConfig.HANDLER.instance().alloyMasterRequiredLevel < 0
-            ? null : PERKS.register("alloy_master", () -> register(
+            registerPerk("alloy_master", () -> register(
                     "alloy_master",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().alloyMasterRequiredLevel,
@@ -4199,8 +3796,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().alloyMasterPercent)
             ));
     public static final RegistryObject<Perk> MECHANISM_MASTERY =
-            HandlerCommonConfig.HANDLER.instance().mechanismMasteryRequiredLevel < 0
-            ? null : PERKS.register("mechanism_mastery", () -> register(
+            registerPerk("mechanism_mastery", () -> register(
                     "mechanism_mastery",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().mechanismMasteryRequiredLevel,
@@ -4208,26 +3804,15 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().mechanismMasteryPercent)
             ));
     public static final RegistryObject<Perk> POWER_TOOLS =
-            HandlerCommonConfig.HANDLER.instance().powerToolsRequiredLevel < 0
-            ? null : PERKS.register("power_tools", () -> register(
+            registerPerk("power_tools", () -> register(
                     "power_tools",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().powerToolsRequiredLevel,
                     HandlerResources.POWER_TOOLS_PERK,
                     new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().powerToolsAmplifier)
             ));
-    public static final RegistryObject<Perk> BACKPACK_ENGINEER =
-            HandlerCommonConfig.HANDLER.instance().backpackEngineerRequiredLevel < 0
-            ? null : PERKS.register("backpack_engineer", () -> register(
-                    "backpack_engineer",
-                    RegistrySkills.TINKERING,
-                    HandlerCommonConfig.HANDLER.instance().backpackEngineerRequiredLevel,
-                    HandlerResources.BACKPACK_ENGINEER_PERK,
-                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().backpackEngineerAmplifier)
-            ));
     public static final RegistryObject<Perk> WAYSTONE_TINKER =
-            HandlerCommonConfig.HANDLER.instance().waystoneTinkerRequiredLevel < 0
-            ? null : PERKS.register("waystone_tinker", () -> register(
+            registerPerk("waystone_tinker", () -> register(
                     "waystone_tinker",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().waystoneTinkerRequiredLevel,
@@ -4235,8 +3820,7 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().waystoneTinkerPercent)
             ));
     public static final RegistryObject<Perk> MASTER_ARTIFICER =
-            HandlerCommonConfig.HANDLER.instance().masterArtificerRequiredLevel < 0
-            ? null : PERKS.register("master_artificer", () -> register(
+            registerPerk("master_artificer", () -> register(
                     "master_artificer",
                     RegistrySkills.TINKERING,
                     HandlerCommonConfig.HANDLER.instance().masterArtificerRequiredLevel,
@@ -4247,6 +3831,40 @@ public class RegistryPerks {
     private static Perk register(String name, Supplier<Skill> skillSupplier, int requiredLvl, ResourceLocation texture, Value... configValues) {
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
         return new Perk(key, skillSupplier, requiredLvl, texture, configValues);
+    }
+
+
+    /** Registers a perk and records how to rebuild it from the current configuration. */
+    private static RegistryObject<Perk> registerPerk(String path, Supplier<Perk> factory) {
+        REBUILDERS.put(path, factory);
+        return PERKS.register(path, factory);
+    }
+
+    /**
+     * Re-reads every perk's configuration-derived values from the config in force right now.
+     *
+     * <p>On a server that is the file just reloaded by {@code /skillsreload}; on a client it is the
+     * snapshot the server just sent. Either way the registered instances — the ones the UI, the
+     * tooltips and the eligibility checks read — stop being frozen at their startup values
+     * (RS10-005).
+     *
+     * @return how many perks were refreshed
+     */
+    public static int refreshFromConfig() {
+        int refreshed = 0;
+        for (Perk perk : getCachedValues()) {
+            Supplier<Perk> factory = REBUILDERS.get(perk.getName());
+            if (factory == null) continue;
+            try {
+                perk.adoptTunables(factory.get());
+                refreshed++;
+            } catch (RuntimeException e) {
+                // One perk whose rebuild throws must not abort the refresh for the other 461.
+                RunicSkills.getLOGGER().warn("Could not refresh perk {} from config: {}",
+                        perk.getName(), e.toString());
+            }
+        }
+        return refreshed;
     }
 
     public static void load(IEventBus eventBus) {

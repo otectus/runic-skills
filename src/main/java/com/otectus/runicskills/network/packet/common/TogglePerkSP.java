@@ -1,5 +1,7 @@
 package com.otectus.runicskills.network.packet.common;
 
+import com.otectus.runicskills.common.util.PacketBounds;
+import io.netty.handler.codec.DecoderException;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.event.PerkToggleEvent;
 import com.otectus.runicskills.network.PacketRateLimiter;
@@ -34,12 +36,15 @@ public class TogglePerkSP {
     }
 
     public TogglePerkSP(FriendlyByteBuf buffer) {
-        this.perk = buffer.readUtf();
+        this.perk = buffer.readUtf(PacketBounds.MAX_CONTENT_ID_CHARS);
+        if (!PacketBounds.isContentIdValid(this.perk)) {
+            throw new DecoderException("TogglePerkSP: malformed perk id");
+        }
         this.targetRank = buffer.readVarInt();
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeUtf(this.perk);
+        buffer.writeUtf(this.perk, PacketBounds.MAX_CONTENT_ID_CHARS);
         buffer.writeVarInt(this.targetRank);
     }
 

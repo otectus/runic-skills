@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "大師範",
  "skill.runicskills.rank.8" : "伝説",
 
- "tooltip.skill.level_up" : "%s レベル（%s 経験値）を消費して %s をレベルアップ。",
+ "tooltip.skill.level_up" : "%1$s 経験値を消費して %2$s をレベルアップ。",
  "tooltip.skill.max_level" : "%s の最大レベルに到達しました。",
  "tooltip.skill.global_max_level": "グローバルスキルレベルの上限 %s に到達しました。",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "プレイヤーとブロックとの距離。",
  "passive.runicskills.break_speed.description" : "ツールでブロックを壊す速度。（ツルハシ、斧、シャベルのみに影響）",
  "passive.runicskills.beneficial_effect.description" : "プレイヤーに有益なポーションの持続時間。",
- "passive.runicskills.magic_resist.description" : "魔法ダメージの一部を無効化：ダメージポーション、エヴォーカーの牙、ウィザーの頭蓋骨、棘の鎧エンチャント、ガーディアンビームなど。",
  "passive.runicskills.fortune.description" : "釣りや自然生成されたチェストから高品質な戦利品を見つける確率を上昇。",
  "passive.runicskills.critical_damage.description" : "通常攻撃より多くのダメージを与える攻撃。（プレイヤーが走っているか、ジャンプ中の落下時に適用）",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "%s のアイテムを使うには幸運 %s が必要です！",
  "overlay.runicskills.gem_attunement_saved": "宝石同調が宝石を保存しました！",
 
- "perk.runicskills.blood_mastery": "血の熟達",
- "perk.runicskills.blood_mastery.description": "あなたの体力が血の犠牲のコストから身を守り、体力コストを %s 軽減します。",
- "perk.runicskills.ritual_sage": "儀式の賢者",
- "perk.runicskills.ritual_sage.description": "血の儀式への深い知恵により、LP消費を %s 軽減します。",
- "perk.runicskills.crimson_bond": "紅蓮の絆",
- "perk.runicskills.crimson_bond.description": "血のネットワークとの絆により、シジルを使用する際 %s 分の1の確率でLPを消費しません。",
 
  "perk.runicskills.dragon_slayer": "竜殺し",
  "perk.runicskills.dragon_slayer.description": "あなたの筋力によりドラゴンと神話の生物に %s のボーナスダメージを与えます。",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "カタクリズム耐性",
  "perk.runicskills.cataclysm_resistance.description": "あなたの耐久力が大災害の力に対して強固になり、ボスダメージを %s 軽減します。",
 
- "perk.runicskills.curse_ward": "呪い結界",
- "perk.runicskills.curse_ward.description": "あなたの知恵が呪いのエネルギーから身を守り、呪いダメージを %s 軽減します。",
 
  "perk.runicskills.boss_hunter": "ボスハンター",
  "perk.runicskills.boss_hunter.description": "あなたの筋力が強力なボスに対して優位をもたらし、%s のボーナスダメージを与えます。",
 
- "perk.runicskills.aura_attunement": "オーラ同調",
- "perk.runicskills.aura_attunement.description": "自然との同調により、周囲のオーラ効果の効率が %s 増加します。",
 
  "perk.runicskills.master_chef": "料理の達人",
  "perk.runicskills.master_chef.description": "あなたの体力により食べ物からより多くを吸収でき、効果の持続時間が %s 増加します。",

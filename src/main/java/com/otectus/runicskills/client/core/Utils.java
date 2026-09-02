@@ -3,6 +3,7 @@ package com.otectus.runicskills.client.core;
 import com.otectus.runicskills.common.util.ExperienceMath;
 import com.otectus.runicskills.registry.RegistrySounds;
 import com.mojang.authlib.GameProfile;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.awt.Color;
 import java.text.DecimalFormat;
@@ -70,6 +71,20 @@ public class Utils {
      */
     public static boolean checkMouse(int x, int y, int mouseX, int mouseY, int width, int height) {
         return (mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height);
+    }
+
+    /**
+     * Restores the global render state this mod's GUI code borrows.
+     *
+     * <p>Twelve {@code RenderSystem.enableBlend()} calls existed against two
+     * {@code disableBlend()}, so whatever Minecraft (or another mod) drew after one of our
+     * overlays inherited blending and a possibly non-white shader colour. Every borrow site now
+     * calls this from a {@code finally}, which also means new draw code inherits the discipline
+     * instead of having to remember two calls (RS-163).
+     */
+    public static void resetRenderState() {
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
     }
 
     public static String numberFormat(int number) {

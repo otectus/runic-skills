@@ -26,6 +26,16 @@ public class RegistryCommonEvents {
     private final CraftingEventHandler craftingHandler = new CraftingEventHandler();
     private final TickEventHandler tickHandler = new TickEventHandler();
     private final PerkEffectsHandler perkEffectsHandler = new PerkEffectsHandler();
+    private final StealthPerkHandler stealthHandler = new StealthPerkHandler();
+    private final StationPerkHandler stationHandler = new StationPerkHandler();
+    private final AnvilPerkHandler anvilHandler = new AnvilPerkHandler();
+    private final EnchantingLorePerkHandler enchantingLoreHandler = new EnchantingLorePerkHandler();
+    private final ExplosionPerkHandler explosionHandler = new ExplosionPerkHandler();
+    private final WorkshopPerkHandler workshopHandler = new WorkshopPerkHandler();
+    private final ArcanePerkHandler arcaneHandler = new ArcanePerkHandler();
+    private final ScholarPerkHandler scholarHandler = new ScholarPerkHandler();
+    private final MobilityPerkHandler mobilityHandler = new MobilityPerkHandler();
+    private final FortunePerkHandler fortuneHandler = new FortunePerkHandler();
 
     // NOTE on registration: each handler below ALSO carries @Mod.EventBusSubscriber, which Forge
     // applies to the CLASS — that only registers the handler's STATIC @SubscribeEvent methods.
@@ -41,5 +51,15 @@ public class RegistryCommonEvents {
         MinecraftForge.EVENT_BUS.register(craftingHandler);
         MinecraftForge.EVENT_BUS.register(tickHandler);
         MinecraftForge.EVENT_BUS.register(perkEffectsHandler);
+        MinecraftForge.EVENT_BUS.register(stealthHandler);
+        MinecraftForge.EVENT_BUS.register(stationHandler);
+        MinecraftForge.EVENT_BUS.register(anvilHandler);
+        MinecraftForge.EVENT_BUS.register(enchantingLoreHandler);
+        MinecraftForge.EVENT_BUS.register(explosionHandler);
+        MinecraftForge.EVENT_BUS.register(workshopHandler);
+        MinecraftForge.EVENT_BUS.register(arcaneHandler);
+        MinecraftForge.EVENT_BUS.register(scholarHandler);
+        MinecraftForge.EVENT_BUS.register(mobilityHandler);
+        MinecraftForge.EVENT_BUS.register(fortuneHandler);
     }
 }

@@ -62,6 +62,61 @@ public class LocksIntegration {
         }
     }
 
+    /**
+     * Safe Builder — "Built locks are more secure".
+     *
+     * <p>A lock's security in Locks Reforged is its material: a wooden lock yields to the crudest
+     * pick and a netherite one does not. There is no separate strength value to raise, so the perk
+     * raises the material — a lock you craft may come out of the bench one tier better than the one
+     * you paid for, which is the only thing "more secure" can mean here.
+     *
+     * <p>Substituted the same way Key Forge substitutes a master key, so a full inventory drops the
+     * result at the player's feet rather than losing it.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onLockCrafted(PlayerEvent.ItemCraftedEvent event) {
+        if (!isModLoaded()) return;
+        Player player = event.getEntity();
+        if (player == null || player instanceof FakePlayer) return;
+        if (RegistryPerks.SAFE_BUILDER == null || !RegistryPerks.SAFE_BUILDER.get().isEnabled(player)) return;
+
+        ItemStack crafted = event.getCrafting();
+        if (crafted.isEmpty()) return;
+        ResourceLocation craftedId = ForgeRegistries.ITEMS.getKey(crafted.getItem());
+        if (craftedId == null || !MOD_ID.equals(craftedId.getNamespace())) return;
+        if (!craftedId.getPath().endsWith("_lock")) return;
+
+        int chance = HandlerCommonConfig.HANDLER.instance().safeBuilderPercent;
+        if (chance <= 0 || ThreadLocalRandom.current().nextInt(100) >= chance) return;
+
+        Item stronger = nextLockTier(craftedId.getPath());
+        if (stronger == null) return;
+
+        int count = crafted.getCount();
+        crafted.setCount(0);
+        ItemStack upgraded = new ItemStack(stronger, count);
+        if (!player.getInventory().add(upgraded)) {
+            player.drop(upgraded, false);
+        }
+    }
+
+    /**
+     * The lock one material tier above {@code lockPath}, or {@code null} if there is none.
+     *
+     * <p>Walks the same tier table the lock-item generator uses, so the two cannot disagree about
+     * what "one tier up" means, and returns nothing at the top of the table — a netherite lock is
+     * already as secure as the mod gets.
+     */
+    private static Item nextLockTier(String lockPath) {
+        MaterialTier[] tiers = MaterialTier.values();
+        for (int i = 0; i < tiers.length - 1; i++) {
+            if (!lockPath.equals(tiers[i].name + "_lock")) continue;
+            ResourceLocation next = new ResourceLocation(MOD_ID, tiers[i + 1].name + "_lock");
+            return ForgeRegistries.ITEMS.getValue(next);
+        }
+        return null;
+    }
+
     // --- Material Tiers ---
 
     private enum MaterialTier {

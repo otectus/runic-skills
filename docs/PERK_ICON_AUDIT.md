@@ -1,5 +1,21 @@
 # Perk Icon Audit — 1.5.x Icon Overhaul
 
+> **Historical document — the 1.5.x icon generation pass.** Kept for provenance. It records how the
+> icon set was produced, not what the perks currently do, and two things in it are now wrong:
+>
+> - **Seventeen** of the perks catalogued below no longer exist, not ten. The six Nature's Aura
+>   perks, `backpack_engineer`, `gadget_upgrade`, `circuit_breaker` and `clockwork_mastery` went when
+>   the effect-coverage backlog was closed — and so did seven build/colony perks
+>   (`colony_advisor`, `colony_builder`, `construction_haste`, `dimensional_builder`, `master_mason`,
+>   `scaffold_master`, `structural_engineer`), which this note originally missed. Their PNGs are gone
+>   with them; their rows below are not.
+> - **The tooltip text quoted in the table is pre-2.0.0.** Forty-nine perk tooltips were rewritten
+>   when the perks behind them were reinterpreted, so a description here may describe behaviour the
+>   perk no longer has. [`PERK_AUDIT.md`](PERK_AUDIT.md) is authoritative.
+>
+> The current counts are 445 perks and 38 passives. The audit's own recommendation — regenerate this
+> from `tools/icongen/specs.tsv` rather than maintaining it by hand — still stands.
+
 Every registered perk icon was replaced with an original, generated 16x16 pixel-art
 texture in a consistent Runic Skills visual style (shared outline color, 3-tone cel
 shading, per-theme palettes, corner badge overlays encoding the effect modifier:
@@ -120,7 +136,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `anglers_bounty` | constitution | base | Fish you consume provide N more nourishment. | Hearty fish — more nourishment | `textures/skill/constitution/anglers_bounty.png` | ✅ generated, resolves |
 | `armor_of_faith` | constitution | base | When below N health, gain Resistance I. | Blessed armor — low-health resistance | `textures/skill/constitution/armor_of_faith.png` | ✅ generated, resolves |
 | `athletics` | constitution | base | Your breathing will increase by N, now you will be able to breathe underwater longer. | Air bubbles — longer breath underwater | `textures/skill/constitution/athletics.png` | ✅ generated, resolves |
-| `aura_of_vitality` | constitution | base | Nature's Aura healing effects are N stronger near you. | Nature-touched heart — aura healing stronger | `textures/skill/constitution/aura_of_vitality.png` | ✅ generated, resolves |
 | `battle_recovery` | constitution | base | After 5 seconds without taking damage, regenerate N HP per second. | Heart regenerating after combat lull | `textures/skill/constitution/battle_recovery.png` | ✅ generated, resolves |
 | `colonial_nourishment` | constitution | base | Colony food items provide N bonus effects. | Colony meal with bonus effects | `textures/skill/constitution/colonial_nourishment.png` | ✅ generated, resolves |
 | `culinary_expert` | constitution | base | Farmer's Delight food provides N bonus saturation. | Roast with bonus saturation | `textures/skill/constitution/culinary_expert.png` | ✅ generated, resolves |
@@ -200,7 +215,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `adaptation` | endurance | base | Consecutive hits from the same source deal N less damage. | Adaptive shield — repeat hits weaker | `textures/skill/endurance/adaptation.png` | ✅ generated, resolves |
 | `ancient_guardian` | endurance | base | Boss attacks deal N less damage to you. | Ancient bastion vs bosses | `textures/skill/endurance/ancient_guardian.png` | ✅ generated, resolves |
 | `arcane_shield` | endurance | base | Your endurance protects you from arcane forces, reducing incoming spell damage by N. | Arcane shield — spell damage down | `textures/skill/endurance/arcane_shield.png` | ✅ generated, resolves |
-| `aura_shield` | endurance | base | Nearby aura reduces incoming damage by N. | Aura buckler — ambient damage reduction | `textures/skill/endurance/aura_shield.png` | ✅ generated, resolves |
 | `blast_resistance` | endurance | base | Explosion damage reduced by N. | Dud bomb — explosion damage down | `textures/skill/endurance/blast_resistance.png` | ✅ generated, resolves |
 | `blood_warded` | endurance | Iron's Spellbooks | The crimson ward holds. Incoming blood magic damage reduced by N. | Crimson ward vs blood magic | `textures/skill/endurance/blood_warded.png` | ✅ generated, resolves |
 | `bulwark` | endurance | base | While blocking, reflect N of damage back to attackers. | Bulwark reflecting damage | `textures/skill/endurance/bulwark.png` | ✅ generated, resolves |
@@ -314,7 +328,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `master_researcher` | intelligence | base | Recipe discovery rate increased by N. | Research sheet — recipe discovery | `textures/skill/intelligence/master_researcher.png` | ✅ generated, resolves |
 | `monster_compendium` | intelligence | base | Studied mobs take N more damage. | Studied monster weak points | `textures/skill/intelligence/monster_compendium.png` | ✅ generated, resolves |
 | `mystic_analysis` | intelligence | base | Identify enemy weaknesses for N bonus type damage. | Analytic eye — typed bonus damage | `textures/skill/intelligence/mystic_analysis.png` | ✅ generated, resolves |
-| `natures_wisdom` | intelligence | base | Nature's Aura generation increased by N. | Aura generation increased | `textures/skill/intelligence/natures_wisdom.png` | ✅ generated, resolves |
 | `potion_brewing_expert` | intelligence | base | Brewed potions are N levels stronger. | Stronger brewed potions | `textures/skill/intelligence/potion_brewing_expert.png` | ✅ generated, resolves |
 | `progressive_mastery` | intelligence | base | Each difficulty level grants N more XP. | Difficulty star — scaling XP | `textures/skill/intelligence/progressive_mastery.png` | ✅ generated, resolves |
 | `quick_learner` | intelligence | base | Skill XP gain increased by N. | Fast-learning XP orb | `textures/skill/intelligence/quick_learner.png` | ✅ generated, resolves |
@@ -347,7 +360,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `ars_stormcaller` | magic | Ars Nouveau | The wind speaks your name. Air-school glyphs deal N more damage. | Stormcaller bolt — air glyphs | `textures/skill/magic/ars_stormcaller.png` | ✅ generated, resolves |
 | `ars_wild_manipulation` | magic | Ars Nouveau | Manipulation glyphs answer your pull. Manipulation-school glyph spells cost N less mana. | Wild weave — manipulation cost down | `textures/skill/magic/ars_wild_manipulation.png` | ✅ generated, resolves |
 | `astral_projection` | magic | base | View the area around you in a N block radius. | Astral eye — remote viewing | `textures/skill/magic/astral_projection.png` | ✅ generated, resolves |
-| `aura_manipulation` | magic | base | Nature's Aura effects are N stronger. | Amplified nature aura | `textures/skill/magic/aura_manipulation.png` | ✅ generated, resolves |
 | `blood_attunement` | magic | base | Attune to the Blood school, allowing you to cast Blood spells. | Blood school runestone | `textures/skill/magic/blood_attunement.png` | ✅ generated, resolves |
 | `blood_catalyst` | magic | Iron's Spellbooks | Your blood spells tear open wounds. N chance to apply Rend to victims for N. | Rending proc drop | `textures/skill/magic/blood_catalyst.png` | ✅ generated, resolves |
 | `blood_mancer` | magic | Iron's Spellbooks | Blood is your ink. Blood spell damage increased by N. | Hemomancer drop — blood damage | `textures/skill/magic/blood_mancer.png` | ✅ generated, resolves |
@@ -464,16 +476,12 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `armor_smith` | tinkering | base | Repaired armor gains N bonus protection. | Smithed armor bonus protection | `textures/skill/tinkering/armor_smith.png` | ✅ generated, resolves |
 | `assembly_line` | tinkering | base | Batch crafting produces N more items. | Assembly gear — batch output | `textures/skill/tinkering/assembly_line.png` | ✅ generated, resolves |
 | `auto_repair` | tinkering | base | Equipped items passively repair at N rate. | Self-repairing gear | `textures/skill/tinkering/auto_repair.png` | ✅ generated, resolves |
-| `backpack_engineer` | tinkering | base | Backpack capacity increased by N slots. | Expanded backpack slots | `textures/skill/tinkering/backpack_engineer.png` | ✅ generated, resolves |
 | `ballistic_expert` | tinkering | base | Ranged mechanical weapons deal N more damage. | Mechanical ranged damage | `textures/skill/tinkering/ballistic_expert.png` | ✅ generated, resolves |
 | `brewing_apparatus` | tinkering | base | Brewing stand speed increased by N. | Tuned brewing stand speed | `textures/skill/tinkering/brewing_apparatus.png` | ✅ generated, resolves |
-| `circuit_breaker` | tinkering | base | Redstone signal range increased by N blocks. | Extended redstone signal | `textures/skill/tinkering/circuit_breaker.png` | ✅ generated, resolves |
-| `clockwork_mastery` | tinkering | base | Timed mechanisms are N more accurate. | Precise clockwork timing | `textures/skill/tinkering/clockwork_mastery.png` | ✅ generated, resolves |
 | `disassembler` | tinkering | base | You have a N chance to recover components from items. | Disassembled component recovery | `textures/skill/tinkering/disassembler.png` | ✅ generated, resolves |
 | `enchantment_transfer` | tinkering | base | You have a N chance to transfer enchantments between items. | Enchant transfer chance | `textures/skill/tinkering/enchantment_transfer.png` | ✅ generated, resolves |
 | `explosive_ordinance` | tinkering | base | TNT blast radius increased by N. | Bigger TNT blast radius | `textures/skill/tinkering/explosive_ordinance.png` | ✅ generated, resolves |
 | `forge_master` | tinkering | base | Smelting yields N more output. | Forge yields more output | `textures/skill/tinkering/forge_master.png` | ✅ generated, resolves |
-| `gadget_upgrade` | tinkering | base | Backpack upgrades are N more effective. | Upgraded pack modules | `textures/skill/tinkering/gadget_upgrade.png` | ✅ generated, resolves |
 | `gadgeteer` | tinkering | base | Mechanical items are N more effective. | Gadgets more effective | `textures/skill/tinkering/gadgeteer.png` | ✅ generated, resolves |
 | `inventor` | tinkering | base | You have a N chance to discover improved recipe variants. | Inventive recipe variants | `textures/skill/tinkering/inventor.png` | ✅ generated, resolves |
 | `key_forge` | tinkering | base | Crafted keys have a N chance to be master keys. | Forged master key chance | `textures/skill/tinkering/key_forge.png` | ✅ generated, resolves |
@@ -505,7 +513,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `arcane_linguist` | wisdom | base | Reading spell types grants N bonus effectiveness. | Spell text fluency | `textures/skill/wisdom/arcane_linguist.png` | ✅ generated, resolves |
 | `arcane_ward` | wisdom | base | Your knowledge of arcane constructs provides protection, reducing incoming Ars Nouveau spell damage by N. | Ward vs Ars constructs | `textures/skill/wisdom/arcane_ward.png` | ✅ generated, resolves |
 | `ars_savant` | wisdom | base | Ars Nouveau familiar abilities improved by N. | Savant familiar abilities | `textures/skill/wisdom/ars_savant.png` | ✅ generated, resolves |
-| `aura_attunement` | wisdom | base | Your attunement to nature increases the efficiency of aura effects near you by N. | Attuned aura efficiency | `textures/skill/wisdom/aura_attunement.png` | ✅ generated, resolves |
 | `bookcraft` | wisdom | base | Enchanted books sell for N more to villagers. | Enchanted books sell higher | `textures/skill/wisdom/bookcraft.png` | ✅ generated, resolves |
 | `curse_breaker` | wisdom | base | You can remove curses from items at the grindstone. | Curses ground away | `textures/skill/wisdom/curse_breaker.png` | ✅ generated, resolves |
 | `dimensional_wisdom` | wisdom | base | Enchantments work N better in other dimensions. | Enchants stronger off-world | `textures/skill/wisdom/dimensional_wisdom.png` | ✅ generated, resolves |
@@ -526,7 +533,6 @@ irregular names `passive_luck.png` (id `fortune`) and `passive_ars_mana.png`
 | `mending_boost` | wisdom | base | Mending repair rate increased by N. | Faster mending repair | `textures/skill/wisdom/mending_boost.png` | ✅ generated, resolves |
 | `mystic_attunement` | wisdom | base | All magical items gain N effectiveness. | Magical items attuned | `textures/skill/wisdom/mystic_attunement.png` | ✅ generated, resolves |
 | `mystic_sight` | wisdom | base | You can see enchantments on items within a short radius. | See enchantments at a glance | `textures/skill/wisdom/mystic_sight.png` | ✅ generated, resolves |
-| `nature_sage` | wisdom | base | Nature's Aura infusions last N longer. | Longer aura infusions | `textures/skill/wisdom/nature_sage.png` | ✅ generated, resolves |
 | `rune_mastery` | wisdom | base | Rune-based enchantments are N more effective. | Rune enchantments effective | `textures/skill/wisdom/rune_mastery.png` | ✅ generated, resolves |
 | `runic_enchantment` | wisdom | base | Enchantments on runic gear are N stronger. | Runic gear enchants stronger | `textures/skill/wisdom/runic_enchantment.png` | ✅ generated, resolves |
 | `scroll_scribe` | wisdom | base | You can create scrolls that replicate enchantments. | Scribe enchantment scrolls | `textures/skill/wisdom/scroll_scribe.png` | ✅ generated, resolves |

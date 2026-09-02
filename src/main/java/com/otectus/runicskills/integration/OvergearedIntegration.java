@@ -30,6 +30,21 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public class OvergearedIntegration {
 
+    /**
+     * Whether this integration should do anything right now: Overgeared is installed
+     * <em>and</em> {@code enableOvergearedIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableOvergearedIntegration;
+    }
+
+
     private static final String MOD_ID = "overgeared";
     private static final String QUALITY_TAG = "ForgingQuality";
     /** Blueprint progress NBT (see Overgeared BlueprintItem / AbstractSmithingAnvilBlockEntity). */
@@ -44,6 +59,7 @@ public class OvergearedIntegration {
 
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
         if (player == null || player instanceof FakePlayer || player.level().isClientSide()) return;
         if (!isModLoaded()) return;
@@ -90,6 +106,7 @@ public class OvergearedIntegration {
     // same bonus-copy idiom as PerkEffectsHandler.onCraft, so quick-move transfers stay dupe-safe.
     @SubscribeEvent
     public void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
         if (player == null || player instanceof FakePlayer || player.level().isClientSide()) return;
         if (!isModLoaded()) return;

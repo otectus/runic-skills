@@ -5,6 +5,7 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
+import com.otectus.runicskills.registry.RunicAttributeModifiers;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
 import io.redspace.ironsspellbooks.api.events.*;
@@ -42,6 +43,21 @@ import java.util.UUID;
 
 public class IronsSpellbooksIntegration {
 
+    /**
+     * Whether this integration should do anything right now: Iron's Spells 'n Spellbooks is installed
+     * <em>and</em> {@code enableIronsSpellbooksIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableIronsSpellbooksIntegration;
+    }
+
+
     // School-to-secondary-skill mapping for school-specific bonuses
     private static final Map<String, RegistryObject<Skill>> SCHOOL_SKILL_MAP = Map.of(
             "fire", RegistrySkills.STRENGTH,
@@ -62,6 +78,7 @@ public class IronsSpellbooksIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellPreCast(SpellPreCastEvent event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
 
         String spellId = event.getSpellId();
@@ -102,6 +119,7 @@ public class IronsSpellbooksIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellCast(SpellOnCastEvent event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
         if (player == null || player.isCreative()) return;
 
@@ -148,6 +166,7 @@ public class IronsSpellbooksIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellDamage(SpellDamageEvent event) {
+        if (!isActive()) return;
         // Spell Damage Scaling: if the caster is a player, scale damage up
         if (HandlerCommonConfig.HANDLER.instance().ironsEnableSpellDamageScaling) {
             Entity sourceEntity = event.getSpellDamageSource().getEntity();
@@ -255,6 +274,7 @@ public class IronsSpellbooksIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onModifySpellLevel(ModifySpellLevelEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().ironsEnableSpellLevelBonus) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
@@ -282,6 +302,7 @@ public class IronsSpellbooksIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onChangeMana(ChangeManaEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen) return;
 
         // Only boost mana regeneration (when mana is going up), not mana spending
@@ -350,36 +371,40 @@ public class IronsSpellbooksIntegration {
     // Stable UUIDs for each permanent modifier so we can idempotently
     // add/remove per-perk. Generated once; do NOT change — loaded worlds
     // store these UUIDs in player attribute NBT.
-    private static final UUID WELLSPRING_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-1e6b4f9a3c8d");
-    private static final UUID QUICKENING_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-2e6b4f9a3c8d");
-    private static final UUID RESERVOIR_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-3e6b4f9a3c8d");
-    private static final UUID TEMPO_UUID          = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-4e6b4f9a3c8d");
-    private static final UUID MANA_SURGE_SP_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-5e6b4f9a3c8d");
-    private static final UUID MANA_SURGE_MR_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-6e6b4f9a3c8d");
+    private static final UUID MANA_REGENERATION_UUID    = RunicAttributeModifiers.MANA_REGENERATION;
+    private static final UUID SPELL_QUICKENING_UUID     = RunicAttributeModifiers.SPELL_QUICKENING;
+    private static final UUID SPELLCRAFT_KNOWLEDGE_UUID = RunicAttributeModifiers.SPELLCRAFT_KNOWLEDGE;
+    private static final UUID ARCANE_LINGUIST_UUID      = RunicAttributeModifiers.ARCANE_LINGUIST;
+    private static final UUID WELLSPRING_UUID     = RunicAttributeModifiers.WELLSPRING;
+    private static final UUID QUICKENING_UUID     = RunicAttributeModifiers.QUICKENING;
+    private static final UUID RESERVOIR_UUID      = RunicAttributeModifiers.RESERVOIR;
+    private static final UUID TEMPO_UUID          = RunicAttributeModifiers.TEMPO;
+    private static final UUID MANA_SURGE_SP_UUID  = RunicAttributeModifiers.MANA_SURGE_SP;
+    private static final UUID MANA_SURGE_MR_UUID  = RunicAttributeModifiers.MANA_SURGE_MR;
 
     // Phase 1b: per-school mancer/warded modifier UUIDs. Two per school, nine
     // schools = 18 stable UUIDs. Do NOT reorder — stored in player attribute NBT.
-    private static final UUID FIRE_MANCER_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c01");
-    private static final UUID FIRE_WARDED_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c02");
-    private static final UUID ICE_MANCER_UUID        = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c03");
-    private static final UUID ICE_WARDED_UUID        = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c04");
-    private static final UUID LIGHTNING_MANCER_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c05");
-    private static final UUID LIGHTNING_WARDED_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c06");
-    private static final UUID HOLY_MANCER_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c07");
-    private static final UUID HOLY_WARDED_UUID       = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c08");
-    private static final UUID ENDER_MANCER_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c09");
-    private static final UUID ENDER_WARDED_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0a");
-    private static final UUID BLOOD_MANCER_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0b");
-    private static final UUID BLOOD_WARDED_UUID      = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0c");
-    private static final UUID EVOCATION_MANCER_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0d");
-    private static final UUID EVOCATION_WARDED_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0e");
-    private static final UUID NATURE_MANCER_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c0f");
-    private static final UUID NATURE_WARDED_UUID     = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c10");
-    private static final UUID ELDRITCH_MANCER_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c11");
-    private static final UUID ELDRITCH_WARDED_UUID   = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-a00b4f9a3c12");
+    private static final UUID FIRE_MANCER_UUID       = RunicAttributeModifiers.FIRE_MANCER;
+    private static final UUID FIRE_WARDED_UUID       = RunicAttributeModifiers.FIRE_WARDED;
+    private static final UUID ICE_MANCER_UUID        = RunicAttributeModifiers.ICE_MANCER;
+    private static final UUID ICE_WARDED_UUID        = RunicAttributeModifiers.ICE_WARDED;
+    private static final UUID LIGHTNING_MANCER_UUID  = RunicAttributeModifiers.LIGHTNING_MANCER;
+    private static final UUID LIGHTNING_WARDED_UUID  = RunicAttributeModifiers.LIGHTNING_WARDED;
+    private static final UUID HOLY_MANCER_UUID       = RunicAttributeModifiers.HOLY_MANCER;
+    private static final UUID HOLY_WARDED_UUID       = RunicAttributeModifiers.HOLY_WARDED;
+    private static final UUID ENDER_MANCER_UUID      = RunicAttributeModifiers.ENDER_MANCER;
+    private static final UUID ENDER_WARDED_UUID      = RunicAttributeModifiers.ENDER_WARDED;
+    private static final UUID BLOOD_MANCER_UUID      = RunicAttributeModifiers.BLOOD_MANCER;
+    private static final UUID BLOOD_WARDED_UUID      = RunicAttributeModifiers.BLOOD_WARDED;
+    private static final UUID EVOCATION_MANCER_UUID  = RunicAttributeModifiers.EVOCATION_MANCER;
+    private static final UUID EVOCATION_WARDED_UUID  = RunicAttributeModifiers.EVOCATION_WARDED;
+    private static final UUID NATURE_MANCER_UUID     = RunicAttributeModifiers.NATURE_MANCER;
+    private static final UUID NATURE_WARDED_UUID     = RunicAttributeModifiers.NATURE_WARDED;
+    private static final UUID ELDRITCH_MANCER_UUID   = RunicAttributeModifiers.ELDRITCH_MANCER;
+    private static final UUID ELDRITCH_WARDED_UUID   = RunicAttributeModifiers.ELDRITCH_WARDED;
 
     // Phase 1c
-    private static final UUID LORD_OF_THE_DEAD_UUID  = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-b00c4f9a3c01");
+    private static final UUID LORD_OF_THE_DEAD_UUID  = RunicAttributeModifiers.LORD_OF_THE_DEAD;
 
     // Per-player transient state.
     private static final Map<UUID, Integer> spellweaverCount = new HashMap<>();
@@ -387,13 +412,24 @@ public class IronsSpellbooksIntegration {
     private static final Map<UUID, Long> arcaneReprieveLastUse = new HashMap<>();
 
     /**
-     * Idempotently reconciles a permanent attribute modifier with the perk's
-     * current enabled state. If enabled, ensures the modifier is present with
-     * the given value and operation; if disabled, removes it.
+     * Idempotently reconciles a transient attribute modifier with the perk's current enabled
+     * state. If enabled, ensures the modifier is present with the given value and operation; if
+     * disabled, removes it.
+     *
+     * <p>Transient, not permanent. A permanent modifier is serialised into the player's own
+     * attribute NBT, and this handler is only registered when Iron's Spells is installed and the
+     * integration toggle is on — so disabling either one used to strand the bonus in the save with
+     * nothing left able to remove it. That is the whole of RS10-002. Nothing needs to persist:
+     * every value here is re-derived on the reconciliation tick below, and
+     * {@code RegistryAttributes} re-derives on login.
      */
     private static void reconcileModifier(Player player, RegistryObject<Attribute> attrObj, UUID uuid,
                                           String name, boolean wanted, double value,
                                           AttributeModifier.Operation op) {
+        // Gated here rather than by an early return in the tick handlers that call this: turning
+        // the integration off has to actively REMOVE the modifiers it owns, and a handler that
+        // returned early would strand them until the player next logged out (RS10-011).
+        wanted = wanted && isActive();
         if (attrObj == null || !attrObj.isPresent()) return;
         AttributeInstance inst = player.getAttribute(attrObj.get());
         if (inst == null) return;
@@ -401,7 +437,7 @@ public class IronsSpellbooksIntegration {
         if (wanted) {
             if (existing != null && existing.getAmount() == value && existing.getOperation() == op) return;
             if (existing != null) inst.removeModifier(existing);
-            inst.addPermanentModifier(new AttributeModifier(uuid, name, value, op));
+            inst.addTransientModifier(new AttributeModifier(uuid, name, value, op));
         } else if (existing != null) {
             inst.removeModifier(existing);
         }
@@ -446,6 +482,47 @@ public class IronsSpellbooksIntegration {
                 ? HandlerCommonConfig.HANDLER.instance().tempoPercent / 100.0 : 0;
         reconcileModifier(player, AttributeRegistry.COOLDOWN_REDUCTION, TEMPO_UUID,
                 "runicskills:tempo", tempo, tempoValue,
+                AttributeModifier.Operation.ADDITION);
+
+        // The four perks completed in 2.0.0. Each was registered with a config value, a texture and
+        // a tooltip naming an Iron's Spells stat, and none of them touched that stat or anything
+        // else (RS10-004). They reconcile on the same clock and through the same helper as the
+        // perks above, so switching the integration off removes them rather than stranding them.
+
+        // Mana Regeneration → MANA_REGEN (base 1.0; ADDITION of 0.15 = +15%)
+        boolean manaRegeneration = RegistryPerks.MANA_REGENERATION != null
+                && RegistryPerks.MANA_REGENERATION.get().isEnabled(player);
+        reconcileModifier(player, AttributeRegistry.MANA_REGEN, MANA_REGENERATION_UUID,
+                "runicskills:mana_regeneration", manaRegeneration,
+                manaRegeneration ? HandlerCommonConfig.HANDLER.instance().manaRegenerationPercent / 100.0 : 0,
+                AttributeModifier.Operation.ADDITION);
+
+        // Spell Quickening and Spellcraft Knowledge → CAST_TIME_REDUCTION. Both tooltips describe
+        // the same thing from opposite ends — "cast time reduced" and "casting speed increased" —
+        // so both land on the one number Iron's Spells has for it and stack, rather than one of them
+        // being handed a different stat purely to keep the two looking distinct.
+        boolean spellQuickening = RegistryPerks.SPELL_QUICKENING != null
+                && RegistryPerks.SPELL_QUICKENING.get().isEnabled(player);
+        reconcileModifier(player, AttributeRegistry.CAST_TIME_REDUCTION, SPELL_QUICKENING_UUID,
+                "runicskills:spell_quickening", spellQuickening,
+                spellQuickening ? HandlerCommonConfig.HANDLER.instance().spellQuickeningPercent / 100.0 : 0,
+                AttributeModifier.Operation.ADDITION);
+
+        boolean spellcraftKnowledge = RegistryPerks.SPELLCRAFT_KNOWLEDGE != null
+                && RegistryPerks.SPELLCRAFT_KNOWLEDGE.get().isEnabled(player);
+        reconcileModifier(player, AttributeRegistry.CAST_TIME_REDUCTION, SPELLCRAFT_KNOWLEDGE_UUID,
+                "runicskills:spellcraft_knowledge", spellcraftKnowledge,
+                spellcraftKnowledge ? HandlerCommonConfig.HANDLER.instance().spellcraftKnowledgePercent / 100.0 : 0,
+                AttributeModifier.Operation.ADDITION);
+
+        // Arcane Linguist → SPELL_POWER. "Reading spell types grants bonus effectiveness" is the
+        // scholar's version of the caster perks: what a spell is worth once it lands, which in
+        // Iron's Spells is spell power and nothing else.
+        boolean arcaneLinguist = RegistryPerks.ARCANE_LINGUIST != null
+                && RegistryPerks.ARCANE_LINGUIST.get().isEnabled(player);
+        reconcileModifier(player, AttributeRegistry.SPELL_POWER, ARCANE_LINGUIST_UUID,
+                "runicskills:arcane_linguist", arcaneLinguist,
+                arcaneLinguist ? HandlerCommonConfig.HANDLER.instance().arcaneLinguistPercent / 100.0 : 0,
                 AttributeModifier.Operation.ADDITION);
 
         // Mana Surge → transient SPELL_POWER + MANA_REGEN while HP% < threshold
@@ -526,6 +603,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent
     public void onSummonJoinLevel(EntityJoinLevelEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.LORD_OF_THE_DEAD == null) return;
         if (event.getLevel().isClientSide) return;
         if (!(event.getEntity() instanceof IMagicSummon summon)) return;
@@ -539,6 +617,12 @@ public class IronsSpellbooksIntegration {
         double bonus = HandlerCommonConfig.HANDLER.instance().lordOfTheDeadHealthPercent / 100.0;
         // MULTIPLY_BASE: final = base * (1 + sum(bonus)). Use a stable UUID so
         // re-spawning the same summon (e.g. via /reload) won't stack.
+        //
+        // The one deliberately PERMANENT modifier this mod applies, and the reason
+        // RunicAttributeModifiers has an OWNED_ENTITY scope: the target is a summoned entity, not
+        // a player. Its max health has to survive its own chunk save/load cycle independently of
+        // whether the summoner is online, and nothing re-derives it per tick the way the player
+        // paths do. Never route a player through here.
         if (maxHp.getModifier(LORD_OF_THE_DEAD_UUID) == null) {
             maxHp.addPermanentModifier(new AttributeModifier(LORD_OF_THE_DEAD_UUID,
                     "runicskills:lord_of_the_dead_hp", bonus,
@@ -553,6 +637,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSummonHurt(LivingHurtEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.LIFE_LEECH_BOUND == null) return;
         Entity attacker = event.getSource().getEntity();
         if (!(attacker instanceof IMagicSummon summon)) return;
@@ -580,6 +665,7 @@ public class IronsSpellbooksIntegration {
     /** Arcane Recovery — restore mana on kill, scaled by victim max HP. */
     @SubscribeEvent
     public void onLivingDeath(LivingDeathEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.ARCANE_RECOVERY == null) return;
         Entity killer = event.getSource().getEntity();
         if (!(killer instanceof Player player) || player.isCreative()) return;
@@ -599,6 +685,7 @@ public class IronsSpellbooksIntegration {
     /** Focus — 1-in-N chance to ignore a damage-source's cast-interrupt on a LONG cast. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onLivingAttackFocus(LivingAttackEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.FOCUS == null) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
         if (!RegistryPerks.FOCUS.get().isEnabled(player)) return;
@@ -623,6 +710,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onSpellCastBuffCatalyst(SpellOnCastEvent event) {
+        if (!isActive()) return;
         Player caster = event.getEntity();
         if (caster == null || caster.isCreative()) return;
         SchoolType school = event.getSchoolType();
@@ -654,6 +742,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onSpellDamageDebuffCatalyst(SpellDamageEvent event) {
+        if (!isActive()) return;
         Entity casterEntity = event.getSpellDamageSource().getEntity();
         if (!(casterEntity instanceof Player caster) || caster.isCreative()) return;
         LivingEntity victim = event.getEntity();
@@ -701,9 +790,9 @@ public class IronsSpellbooksIntegration {
     // ════════════════════════════════════════════════════════════════════════
 
     // Stable UUIDs for the three Triple Threat modifiers.
-    private static final UUID TT_MAX_MANA_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c01");
-    private static final UUID TT_MANA_REGEN_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c02");
-    private static final UUID TT_SPELL_POWER_UUID = UUID.fromString("a5d3f7c2-3d4e-4a8f-9c2d-200b4f9a3c03");
+    private static final UUID TT_MAX_MANA_UUID = RunicAttributeModifiers.TRIPLE_THREAT_MAX_MANA;
+    private static final UUID TT_MANA_REGEN_UUID = RunicAttributeModifiers.TRIPLE_THREAT_MANA_REGEN;
+    private static final UUID TT_SPELL_POWER_UUID = RunicAttributeModifiers.TRIPLE_THREAT_SPELL_POWER;
 
     /**
      * Triple Threat — when all three of Iron's, Ars, and Apotheosis are loaded
@@ -744,6 +833,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onModifySpellLevelAffixFocus(ModifySpellLevelEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.AFFIX_FOCUS == null) return;
         if (!ModList.get().isLoaded("apotheosis")) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
@@ -770,6 +860,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onModifySpellLevelSpellsocket(ModifySpellLevelEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.SPELLSOCKET == null) return;
         if (!ModList.get().isLoaded("apotheosis")) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
@@ -794,6 +885,7 @@ public class IronsSpellbooksIntegration {
      */
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public void onSpellDamageResonantAffixes(SpellDamageEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.RESONANT_AFFIXES == null) return;
         if (!ModList.get().isLoaded("apotheosis")) return;
         Entity src = event.getSpellDamageSource().getEntity();
@@ -816,6 +908,7 @@ public class IronsSpellbooksIntegration {
     /** Quickcast — cooldown reduction applied only to INSTANT-type spells. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onSpellCooldownQuickcast(SpellCooldownAddedEvent.Pre event) {
+        if (!isActive()) return;
         if (RegistryPerks.QUICKCAST == null) return;
         Player player = event.getEntity();
         if (player == null || player.isCreative()) return;
@@ -831,6 +924,7 @@ public class IronsSpellbooksIntegration {
     /** Mana Bulwark — redirect a % of incoming damage into mana at a 2:1 conversion. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onLivingHurtBulwark(LivingHurtEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.MANA_BULWARK == null) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
         if (!RegistryPerks.MANA_BULWARK.get().isEnabled(player)) return;

@@ -1,5 +1,7 @@
 package com.otectus.runicskills.network.packet.common;
 
+import com.otectus.runicskills.common.util.PacketBounds;
+import io.netty.handler.codec.DecoderException;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
@@ -25,11 +27,14 @@ public class SetPlayerTitleSP {
     }
 
     public SetPlayerTitleSP(FriendlyByteBuf buffer) {
-        this.title = buffer.readUtf();
+        this.title = buffer.readUtf(PacketBounds.MAX_CONTENT_ID_CHARS);
+        if (!PacketBounds.isContentIdValid(this.title)) {
+            throw new DecoderException("SetPlayerTitleSP: malformed title id");
+        }
     }
 
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeUtf(this.title);
+        buffer.writeUtf(this.title, PacketBounds.MAX_CONTENT_ID_CHARS);
     }
 
     public void handle(Supplier<NetworkEvent.Context> supplier) {
@@ -64,11 +69,11 @@ public class SetPlayerTitleSP {
             capability.setPlayerTitle(title);
             RunicQuestBridge.onTitleSelected(player, title);
 
-            if (HandlerCommonConfig.HANDLER.instance().titlesUseCustomName) {
-                player.setCustomName(Component.translatable(title.getKey()));
-                player.refreshDisplayName();
-                player.refreshTabListName();
-            }
+            // The title is a prefix composed in PlayerEvent.NameFormat, not a name this mod owns
+            // (RS10-010). Refreshing is still needed — it is what makes the server re-run that
+            // event and push the new prefix to chat and the tab list — but nothing is overwritten.
+            player.refreshDisplayName();
+            player.refreshTabListName();
 
             SyncSkillCapabilityCP.send(player);
         });

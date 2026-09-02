@@ -15,7 +15,9 @@ import javax.annotation.Nullable;
  * A Power is a passive-install / reactive-trigger ability from RUNIC_SKILLS_POWERS.md.
  * <p>
  * Powers are pure metadata: tier, school, governing skill, level gate, optional ICD, texture.
- * Behavior lives in {@link com.otectus.runicskills.registry.events.PowerEventDispatcher},
+ * Behavior lives in the Powers dispatchers —
+ * {@link com.otectus.runicskills.registry.events.VanillaPowerEventDispatcher} and
+ * {@link com.otectus.runicskills.registry.events.IronsSpellbooksPowerEventDispatcher} —
  * keyed by {@link #getName()}. This mirrors how
  * {@link com.otectus.runicskills.registry.perks.Perk} carries config values without owning
  * its own event handler — a single big subscriber dispatches all of them, matching the
@@ -30,7 +32,12 @@ public class Power {
     public final PowerTier tier;
     public final ResourceLocation schoolId;
     private final Supplier<Skill> governingSkillSupplier;
-    public final int requiredSkillLevel;
+    /**
+     * Governing-skill gate. Mutable for the same reason {@code Perk.requiredLevel} is: it derives
+     * from configuration, Forge freezes registries, and the value has to follow a reload rather
+     * than stay pinned to whatever the process booted with (RS10-005/RS10-006).
+     */
+    public volatile int requiredSkillLevel;
     public final ResourceLocation texture;
     /** Default internal cooldown in ticks (0 = no ICD). Datapack overrides win at runtime. */
     public final int defaultIcdTicks;
@@ -53,6 +60,12 @@ public class Power {
         this.texture = texture;
         this.defaultIcdTicks = Math.max(0, defaultIcdTicks);
         this.requiredModId = requiredModId;
+    }
+
+    /** Takes on a rebuilt Power's configuration-derived gate, keeping this instance's identity. */
+    public void adoptTunables(Power rebuilt) {
+        if (rebuilt == null || rebuilt == this) return;
+        this.requiredSkillLevel = rebuilt.requiredSkillLevel;
     }
 
     public Skill getGoverningSkill() {

@@ -59,6 +59,12 @@ import java.util.function.Predicate;
  * the perk's existing {@code *Percent}/{@code *Amplifier} config field, so a config-disabled or
  * unranked perk contributes nothing. Where a perk's described effect has no faithful vanilla-1.20.1
  * mechanic, the closest reasonable approximation is used and flagged with an APPROX comment.
+ *
+ * <p>As of 2.0.0 there are none left in this class. Every perk that carried one was reviewed
+ * against its tooltip and either implemented as written or, where the described mechanic genuinely
+ * has no vanilla equivalent, given a reinterpretation that is documented at the code and reflected
+ * in the tooltip. An APPROX note is a promise to come back, not a resting place — a tooltip that
+ * describes behaviour the code does not have is indistinguishable from a bug to the player.
  * <p>
  * Registered as an instance from {@link com.otectus.runicskills.registry.RegistryCommonEvents}.
  */
@@ -117,24 +123,59 @@ public class PerkEffectsHandler {
     // ── incoming-damage reduction ──────────────────────────────────────────────
     // A reduction entry: perk + damage-source predicate + config field accessor. Reductions stack
     // additively across all matching entries and are clamped at 80% so nothing grants invulnerability.
-    private record Reduce(RegistryObject<Perk> perk, Predicate<DamageSource> when, java.util.function.ToDoubleFunction<HandlerCommonConfig> pct) {}
+    private record Reduce(RegistryObject<Perk> perk,
+                          java.util.function.BiPredicate<Player, DamageSource> when,
+                          java.util.function.ToDoubleFunction<HandlerCommonConfig> pct) {}
 
     private static final java.util.List<Reduce> REDUCTIONS = java.util.List.of(
         // ── faithful: damage type matches the description ──
-        new Reduce(RegistryPerks.ACROBAT,          s -> s.is(DamageTypeTags.IS_FALL),       c -> c.acrobatPercent),
-        new Reduce(RegistryPerks.FIRE_RESISTANCE,  s -> s.is(DamageTypeTags.IS_FIRE),       c -> c.fireResistancePercent),
-        new Reduce(RegistryPerks.FIRE_PROOF,       s -> s.is(DamageTypeTags.IS_FIRE),       c -> c.fireProofPercent),       // APPROX: "fire duration" → fire damage
-        new Reduce(RegistryPerks.REINFORCED_CONSTRUCTION, s -> s.is(DamageTypeTags.IS_EXPLOSION), c -> c.reinforcedConstructionPercent),
-        new Reduce(RegistryPerks.ENDERIUM_RESILIENCE, s -> s.is(DamageTypes.MAGIC),          c -> c.enderiumResiliencePercent),
-        new Reduce(RegistryPerks.RUNIC_WARD,       s -> s.is(DamageTypes.MAGIC),            c -> c.runicWardPercent),
-        new Reduce(RegistryPerks.SPELL_SHIELD,     s -> s.is(DamageTypes.MAGIC),            c -> c.spellShieldPercent),     // Ars spells deal magic dmg
-        new Reduce(RegistryPerks.MYSTIC_SHIELD,    s -> s.is(DamageTypes.MAGIC),            c -> c.mysticShieldPercent),    // APPROX: "magical projectiles"
-        new Reduce(RegistryPerks.POISON_RESISTANCE, s -> s.is(DamageTypes.MAGIC),           c -> c.poisonResistancePercent),// APPROX: poison has no own type
-        new Reduce(RegistryPerks.DRAGONHIDE,       s -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.FREEZE), c -> c.dragonhidePercent),
-        new Reduce(RegistryPerks.DRACONIC_CONSTITUTION, s -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.FREEZE) || s.is(DamageTypes.LIGHTNING_BOLT) || s.is(DamageTypes.DRAGON_BREATH), c -> c.draconicConstitutionPercent),
+        new Reduce(RegistryPerks.ACROBAT,          (p, s) -> s.is(DamageTypeTags.IS_FALL),       c -> c.acrobatPercent),
+        new Reduce(RegistryPerks.FIRE_RESISTANCE,  (p, s) -> s.is(DamageTypeTags.IS_FIRE),       c -> c.fireResistancePercent),
+        // FIRE_PROOF is deliberately absent: "Fire duration reduced" is a duration effect, and
+        // reducing fire DAMAGE instead was a different perk wearing its name (RS10-004). See
+        // burnOffFireFaster().
+        new Reduce(RegistryPerks.REINFORCED_CONSTRUCTION, (p, s) -> s.is(DamageTypeTags.IS_EXPLOSION), c -> c.reinforcedConstructionPercent),
+        new Reduce(RegistryPerks.ENDERIUM_RESILIENCE, (p, s) -> s.is(DamageTypes.MAGIC),          c -> c.enderiumResiliencePercent),
+        new Reduce(RegistryPerks.RUNIC_WARD,       (p, s) -> s.is(DamageTypes.MAGIC),            c -> c.runicWardPercent),
+        new Reduce(RegistryPerks.SPELL_SHIELD,     (p, s) -> s.is(DamageTypes.MAGIC),            c -> c.spellShieldPercent),     // Ars spells deal magic dmg
+        // "Magical projectiles": magic damage that arrived on something thrown or fired, which is
+        // what a shield against them should stop — not a caster's direct touch, and not a mundane
+        // arrow.
+        new Reduce(RegistryPerks.MYSTIC_SHIELD,
+                (p, s) -> (s.is(DamageTypes.MAGIC) || s.is(DamageTypes.INDIRECT_MAGIC))
+                        && s.getDirectEntity() instanceof net.minecraft.world.entity.projectile.Projectile,
+                c -> c.mysticShieldPercent),
+        // Poison has no damage type of its own — MobEffects.POISON deals plain magic damage with no
+        // attacker. Requiring the victim to actually be poisoned is what separates it from every
+        // other magic source, which the previous rule reduced indiscriminately.
+        new Reduce(RegistryPerks.POISON_RESISTANCE,
+                (p, s) -> s.is(DamageTypes.MAGIC) && s.getEntity() == null && s.getDirectEntity() == null
+                        && p.hasEffect(MobEffects.POISON),
+                c -> c.poisonResistancePercent),
+        new Reduce(RegistryPerks.DRAGONHIDE,       (p, s) -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.FREEZE), c -> c.dragonhidePercent),
+        new Reduce(RegistryPerks.DRACONIC_CONSTITUTION, (p, s) -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.FREEZE) || s.is(DamageTypes.LIGHTNING_BOLT) || s.is(DamageTypes.DRAGON_BREATH), c -> c.draconicConstitutionPercent),
+        // ── dungeon-context reductions (RS10-004: implemented, not allowlisted) ──
+        // Both describe a place, so both check it. The shipped runicskills:dungeons structure tag
+        // decides what counts, and a pack can extend it.
+        new Reduce(RegistryPerks.EXPLORERS_VIGOR, (p, s) -> insideADungeon(p), c -> c.explorersVigorPercent),
+        // "Trap damage" is the harm a dungeon does with nothing alive behind it — pressure plates,
+        // dispensers, magma, fall damage down a shaft. A mob's attack is not a trap.
+        new Reduce(RegistryPerks.DUNGEON_RESILIENCE,
+                (p, s) -> insideADungeon(p) && s.getEntity() == null
+                        && !(s.getDirectEntity() instanceof LivingEntity),
+                c -> c.dungeonResiliencePercent),
+        // ── settlement / gear-context reductions (RS10-004) ──
+        // "While in colony territories" names MineColonies' claim system, which this mod cannot
+        // see and which most packs do not ship. What every pack does have is vanilla's own notion
+        // of an inhabited settlement — the same village test raids and the hero-of-the-village
+        // effect use — so that is what the perk protects you inside of, and the tooltip says so.
+        new Reduce(RegistryPerks.COLONY_GUARDIAN, (p, s) -> insideAVillage(p), c -> c.colonyGuardianPercent),
+        // Rune Mastery is the armour half of the runic trio: Runecrafter rewards the weapon,
+        // Runic Enchantment the enchantments on it, and this the protection runic plate affords.
+        new Reduce(RegistryPerks.RUNE_MASTERY, (p, s) -> wearingRunicArmour(p), c -> c.runeMasteryPercent),
         // ── conditional reductions ──
-        new Reduce(RegistryPerks.PAIN_SUPPRESSION, s -> s.getEntity() == null && s.getDirectEntity() == null, c -> c.painSuppressionPercent), // DoT/environmental
-        new Reduce(RegistryPerks.DRAGON_BREATH_SHIELD, s -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.DRAGON_BREATH), c -> c.dragonBreathShieldPercent)
+        new Reduce(RegistryPerks.PAIN_SUPPRESSION, (p, s) -> s.getEntity() == null && s.getDirectEntity() == null, c -> c.painSuppressionPercent), // DoT/environmental
+        new Reduce(RegistryPerks.DRAGON_BREATH_SHIELD, (p, s) -> s.is(DamageTypeTags.IS_FIRE) || s.is(DamageTypes.DRAGON_BREATH), c -> c.dragonBreathShieldPercent)
     );
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -162,14 +203,37 @@ public class PerkEffectsHandler {
         float reduction = 0.0f;
 
         for (Reduce r : REDUCTIONS) {
-            if (on(r.perk(), player) && r.when().test(src)) {
+            if (on(r.perk(), player) && r.when().test(player, src)) {
                 reduction += (float) (r.pct().applyAsDouble(c) / 100.0);
             }
         }
         // OBSIDIAN_SKIN — flat bonus damage reduction (all sources).
         if (on(RegistryPerks.OBSIDIAN_SKIN, player)) reduction += (float) (c.obsidianSkinPercent / 100.0);
-        // MANA_SHIELD — APPROX: with no mana pool to drain, treat as flat damage reduction.
-        if (on(RegistryPerks.MANA_SHIELD, player)) reduction += (float) (c.manaShieldPercent / 100.0);
+        // MANA_SHIELD — "absorbed by mana instead of health", so something has to actually be
+        // spent. It was a flat damage reduction with no cost at all, which is a strictly better
+        // and completely different perk (RS10-004).
+        //
+        // Where a magic mod supplies a mana pool the Powers layer already reads it; where none is
+        // installed the resource this mod itself runs on is vanilla XP — skill levels are bought
+        // with XP points — so that is what the shield drains. Either way the defining property
+        // holds: the damage is paid for, and when the player is empty the shield stops working.
+        if (on(RegistryPerks.MANA_SHIELD, player)) {
+            float share = (float) Math.min(0.95, c.manaShieldPercent / 100.0);
+            float wanted = event.getAmount() * share;
+            if (wanted > 0.0f) {
+                int perHalfHeart = Math.max(1, c.manaShieldXpPerHalfHeart);
+                int available = com.otectus.runicskills.network.packet.common.SkillLevelUpSP.getPlayerXP(player);
+                int cost = (int) Math.ceil(wanted * perHalfHeart);
+                if (available > 0) {
+                    // Partial absorption when the player cannot cover the whole hit: the shield
+                    // should thin out as the pool empties, not switch off at a cliff.
+                    int spent = Math.min(cost, available);
+                    float absorbed = spent / (float) perHalfHeart;
+                    com.otectus.runicskills.network.packet.common.SkillLevelUpSP.addPlayerXP(player, -spent);
+                    event.setAmount(Math.max(0.0f, event.getAmount() - absorbed));
+                }
+            }
+        }
         // STONEFLESH — reduction while standing still.
         if (on(RegistryPerks.STONEFLESH, player) && player.getDeltaMovement().horizontalDistanceSqr() < 1.0E-4)
             reduction += (float) (c.stonefleshPercent / 100.0);
@@ -250,13 +314,12 @@ public class PerkEffectsHandler {
     /**
      * Stable per-perk modifier UUID, cached. nameUUIDFromBytes is an MD5 hash + allocations;
      * computing it for ~40 entries per player every second showed up as pure waste — the id
-     * never changes for a given perk.
+     * never changes for a given perk. The derivation and its cache now live in the central owner
+     * table, so the id this handler applies and the id the migration purges cannot drift apart
+     * (RS10-002).
      */
-    private static final java.util.Map<String, java.util.UUID> MODIFIER_IDS = new java.util.concurrent.ConcurrentHashMap<>();
-
     private static java.util.UUID modifierId(String perkId) {
-        return MODIFIER_IDS.computeIfAbsent(perkId,
-                k -> java.util.UUID.nameUUIDFromBytes(("runicskills.perkattr." + k).getBytes()));
+        return com.otectus.runicskills.registry.RunicAttributeModifiers.perkModifierId(perkId);
     }
 
     private static java.util.List<Attr> ATTRS;
@@ -275,7 +338,7 @@ public class PerkEffectsHandler {
                 // movement
                 new Attr(RegistryPerks.SPRINT_MASTER, SPEED, MUL, 0.01, c -> c.sprintMasterPercent, ALWAYS),
                 new Attr(RegistryPerks.WIND_WALKER, SPEED, MUL, 0.01, c -> c.windWalkerPercent, p -> !p.onGround()),
-                new Attr(RegistryPerks.WIND_RUNNER, SPEED, MUL, 0.01, c -> c.windRunnerPercent, ALWAYS), // APPROX: "on paths"
+                new Attr(RegistryPerks.WIND_RUNNER, SPEED, MUL, 0.01, c -> c.windRunnerPercent, PerkEffectsHandler::standingOnAPath),
                 new Attr(RegistryPerks.UNDERGROUND_EXPLORER, SPEED, MUL, 0.01, c -> c.undergroundExplorerPercent, p -> p.getY() < 30),
                 new Attr(RegistryPerks.AGILE_CLIMBER, SPEED, MUL, 0.01, c -> c.agileClimberPercent, Player::onClimbable),
                 // armor (% perks scale equipment armor; flat perks add points/toughness)
@@ -292,31 +355,345 @@ public class PerkEffectsHandler {
                 new Attr(RegistryPerks.VITALITY, HEALTH, ADD, 2.0, c -> c.vitalityAmplifier, ALWAYS), // hearts → HP
                 new Attr(RegistryPerks.BRIDGE_BUILDER, net.minecraftforge.common.ForgeMod.BLOCK_REACH.get(), ADD, 1.0, c -> c.bridgeBuilderAmplifier, ALWAYS),
                 new Attr(RegistryPerks.LUCKY_STAR, LUCK, ADD, 0.01, c -> c.luckyStarPercent, p -> p.level().isNight()),
-                new Attr(RegistryPerks.BLESSING_OF_LUCK, LUCK, ADD, 0.01, c -> c.blessingOfLuckPercent, ALWAYS), // APPROX
+                // BLESSING_OF_LUCK is not here: it extends how long the Luck EFFECT lasts, which is
+                // not the same as granting more Luck. See extendLuckDuration() (RS10-004).
                 new Attr(RegistryPerks.TELEKINESIS, net.minecraftforge.common.ForgeMod.BLOCK_REACH.get(), ADD, 1.0, c -> c.telekinesisAmplifier, ALWAYS),
+                // "Block interaction range increased by N blocks" — the same attribute Telekinesis
+                // uses, which is what vanilla means by interaction range (RS10-004).
+                new Attr(RegistryPerks.MECHANICAL_ARM, net.minecraftforge.common.ForgeMod.BLOCK_REACH.get(), ADD, 1.0, c -> c.mechanicalArmAmplifier, ALWAYS),
                 new Attr(RegistryPerks.SWIMMERS_ENDURANCE, net.minecraftforge.common.ForgeMod.SWIM_SPEED.get(), MUL, 0.01, c -> c.swimmersEndurancePercent, ALWAYS),
                 new Attr(RegistryPerks.FLEET_FOOTED, SPEED, MUL, 0.01, c -> c.fleetFootedPercent, Player::isInWater),
-                new Attr(RegistryPerks.WAR_TACTICIAN, ATKSPD, MUL, 0.01, c -> c.warTacticianPercent, ALWAYS),       // APPROX: self, not allies
+                // WAR_TACTICIAN is not here: "Allies in range gain bonus attack speed" is a buff on
+                // OTHER entities, and granting it to the holder instead was a different perk wearing
+                // its name (RS10-004). See buffNearbyAllies().
                 new Attr(RegistryPerks.BLOODLUST, ATKSPD, MUL, 0.01, c -> c.bloodlustPercent, PerkEffectsHandler::inKillWindow),
                 // luck-driven loot perks: vanilla LUCK feeds loot-table quality/bonus rolls (same vehicle as LUCKY_STAR)
                 new Attr(RegistryPerks.TREASURE_SENSE, LUCK, ADD, 0.01, c -> c.treasureSensePercent, ALWAYS),
                 new Attr(RegistryPerks.SCAVENGER, LUCK, ADD, 0.01, c -> c.scavengerPercent, ALWAYS),
                 new Attr(RegistryPerks.RARE_FIND, LUCK, ADD, 0.01, c -> c.rareFindPercent, ALWAYS),
                 new Attr(RegistryPerks.MASTER_LOOTER, LUCK, ADD, 0.01, c -> c.masterLooterPercent, ALWAYS),
-                new Attr(RegistryPerks.LUCKY_EXPLORER, LUCK, ADD, 0.01, c -> c.luckyExplorerPercent, ALWAYS),       // APPROX: not limited to structure chests
+                new Attr(RegistryPerks.LUCKY_EXPLORER, LUCK, ADD, 0.01, c -> c.luckyExplorerPercent, PerkEffectsHandler::insideAnyStructure),
                 new Attr(RegistryPerks.LUCKY_FISHING, LUCK, ADD, 0.01, c -> c.luckyFishingPercent, ALWAYS),
-                new Attr(RegistryPerks.ADVENTURERS_LUCK, LUCK, ADD, 0.01, c -> c.adventurersLuckPercent, ALWAYS),  // APPROX: not limited to dungeons
+                new Attr(RegistryPerks.ADVENTURERS_LUCK, LUCK, ADD, 0.01, c -> c.adventurersLuckPercent, PerkEffectsHandler::insideADungeon),
                 // potion perks → BENEFICIAL_EFFECT (mod attribute: each point adds 1s to beneficial
                 // effect durations, read by MixLivingEntity). Domain-genuine "potions last longer".
                 new Attr(RegistryPerks.POTION_MASTERY, BENEFIT, ADD, 0.1, c -> c.potionMasteryPercent, ALWAYS),
                 new Attr(RegistryPerks.APOTHECARY, BENEFIT, ADD, 2.0, c -> c.apothecaryAmplifier, ALWAYS),
                 new Attr(RegistryPerks.POTION_BREWING_EXPERT, BENEFIT, ADD, 2.0, c -> c.potionBrewingExpertAmplifier, ALWAYS),
                 new Attr(RegistryPerks.BREWING_INNOVATION, BENEFIT, ADD, 2.0, c -> c.brewingInnovationAmplifier, ALWAYS),
-                new Attr(RegistryPerks.BREWING_APPARATUS, BENEFIT, ADD, 0.1, c -> c.brewingApparatusPercent, ALWAYS), // APPROX: "brew speed"
-                new Attr(RegistryPerks.POTION_SPLASH, BENEFIT, ADD, 0.1, c -> c.potionSplashPercent, ALWAYS)          // APPROX: "splash area"
+                // Soul Magic — soul sand and soul soil drag every other player backwards; an
+                // attunement to what they are made of is what stops them dragging you. Vanilla's
+                // own soul-speed block tag decides what counts, so a modded soul block is covered.
+                new Attr(RegistryPerks.SOUL_MAGIC, SPEED, MUL, 0.01, c -> c.soulMagicPercent,
+                        PerkEffectsHandler::standingOnSoulGround)
+                // BREWING_APPARATUS is not here: "brewing stand speed" is throughput at a block,
+                // not effect duration on the drinker. It speeds the stand itself in
+                // MixBrewingStandBlockEntity (RS10-004).
+                // POTION_SPLASH is not here: "splash area increased" is reach, not duration. It
+                // widens the actual affected box in MixThrownPotion (RS10-004).
             );
         }
         return ATTRS;
+    }
+
+    // -- Conditions the tooltips actually state (RS10-004) -----------------------------------
+    //
+    // Each of these perks had a working effect that did something materially different from what
+    // its tooltip promised: an unconditional movement bonus described as "on paths", flat Luck
+    // described as "structure chest loot", the holder's own attack speed described as a buff for
+    // allies. A tooltip describing behaviour the code does not have is indistinguishable from a bug
+    // to the player, so the behaviour moved to match the text.
+
+    /**
+     * True while the player is standing on a path.
+     *
+     * <p>Keyed on a block tag rather than {@code DIRT_PATH} alone, so a pack that adds paved roads
+     * can extend {@code runicskills:paths} without touching code.
+     */
+    /**
+     * Whether a projectile struck the top of the target — the closest vanilla has to a headshot.
+     *
+     * <p>Measured as a band at the top of the hitbox rather than against {@code getEyeY()}: eye
+     * height varies with pose (a sneaking or swimming target's eyes sit far down its box), and a
+     * hit to the top of the model is what a player reads as a headshot regardless of stance.
+     */
+    private static boolean isHeadshot(net.minecraft.world.entity.Entity projectile, LivingEntity target) {
+        if (!(projectile instanceof net.minecraft.world.entity.projectile.Projectile)) return false;
+        double height = target.getBbHeight();
+        if (height <= 0.0) return false;
+        return projectile.getY() >= target.getY() + height * 0.8;
+    }
+
+    /**
+     * Blessing of Luck — extends how long the Luck effect lasts.
+     *
+     * <p>Used to add to the LUCK attribute, which raises the *strength* of your luck and does
+     * nothing at all to its duration. Hooked where the effect arrives, so it applies to whatever
+     * granted it — a potion, a beacon, another mod.
+     */
+    @SubscribeEvent
+    public void onLuckApplied(net.minecraftforge.event.entity.living.MobEffectEvent.Added event) {
+        if (!(event.getEntity() instanceof Player player) || player instanceof FakePlayer) return;
+        if (player.level().isClientSide()) return;
+        net.minecraft.world.effect.MobEffectInstance added = event.getEffectInstance();
+        if (added == null || added.getEffect() != MobEffects.LUCK) return;
+        if (!on(RegistryPerks.BLESSING_OF_LUCK, player)) return;
+
+        double extra = cfg().blessingOfLuckPercent / 100.0;
+        if (extra <= 0 || added.isInfiniteDuration()) return;
+        // Re-add rather than mutate: MobEffectInstance's duration is not safely writable from here,
+        // and re-adding with a longer duration is the same path any other source would take.
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                MobEffects.LUCK, (int) (added.getDuration() * (1.0 + extra)),
+                added.getAmplifier(), added.isAmbient(), added.isVisible()));
+    }
+
+    /**
+     * Hearty Feast — makes the effects a food grants last longer.
+     *
+     * <p>Used to add saturation, which is a different resource and does nothing for effect
+     * duration. Gated on the effect arriving while an edible item is being finished, which is the
+     * narrow "this came from the food" context rather than the blanket "player is using something"
+     * check the audit criticised elsewhere.
+     */
+    @SubscribeEvent
+    public void onFoodEffectApplied(net.minecraftforge.event.entity.living.MobEffectEvent.Added event) {
+        if (!(event.getEntity() instanceof Player player) || player instanceof FakePlayer) return;
+        if (player.level().isClientSide()) return;
+        if (!player.isUsingItem() || !player.getUseItem().isEdible()) return;
+        net.minecraft.world.effect.MobEffectInstance added = event.getEffectInstance();
+        if (added == null || added.isInfiniteDuration()) return;
+        if (added.getEffect() == MobEffects.LUCK) return;   // Blessing of Luck owns that one
+        if (!on(RegistryPerks.HEARTY_FEAST, player)) return;
+
+        double extra = cfg().heartyFeastPercent / 100.0;
+        if (extra <= 0) return;
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                added.getEffect(), (int) (added.getDuration() * (1.0 + extra)),
+                added.getAmplifier(), added.isAmbient(), added.isVisible()));
+    }
+
+    /**
+     * Serendipity — "a chance to find rare items while mining".
+     *
+     * <p>Was a duplicate of the block just broken, which is what the Fortune-style perks already do
+     * and is not what "rare items" means. Draws from a small table of genuinely scarce materials
+     * instead, so the perk produces something the player was not already getting.
+     */
+    private static void dropSerendipityFind(ServerPlayer player, ServerLevel level,
+                                            net.minecraft.core.BlockPos pos, double pct) {
+        if (!on(RegistryPerks.SERENDIPITY, player) || pct <= 0) return;
+        if (player.getRandom().nextDouble() >= pct / 100.0) return;
+
+        net.minecraft.world.item.Item[] finds = {
+                net.minecraft.world.item.Items.DIAMOND,
+                net.minecraft.world.item.Items.EMERALD,
+                net.minecraft.world.item.Items.LAPIS_LAZULI,
+                net.minecraft.world.item.Items.AMETHYST_SHARD,
+                net.minecraft.world.item.Items.GOLD_NUGGET,
+        };
+        net.minecraft.world.item.Item found = finds[player.getRandom().nextInt(finds.length)];
+        Block.popResource(level, pos, new ItemStack(found));
+    }
+
+    /**
+     * Whether this damage came from a mechanical ranged weapon: a crossbow, or a gun from one of the
+     * supported gun mods.
+     *
+     * <p>A drawn bow, a thrown trident and a snowball are all ranged, but none of them is
+     * mechanical — which is the distinction the tooltip draws and the previous implementation
+     * ignored. Gun projectiles are recognised by namespace rather than by class, so no optional
+     * mod's types enter this class's constant pool.
+     */
+    private static boolean isMechanicalRanged(DamageSource src, Player player) {
+        net.minecraft.world.entity.Entity direct = src.getDirectEntity();
+        if (direct instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+            if (arrow.shotFromCrossbow()) return true;
+        }
+        if (direct != null) {
+            ResourceLocation type = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES
+                    .getKey(direct.getType());
+            if (ns(type, "tacz") || ns(type, "cgm") || ns(type, "scguns")) return true;
+        }
+        // A gun mod that deals damage without a projectile entity still identifies itself by the
+        // weapon in hand.
+        ResourceLocation held = heldId(player);
+        return ns(held, "tacz") || ns(held, "cgm") || ns(held, "scguns");
+    }
+
+    /**
+     * The bonus an attacker receives because a nearby ally holds an aura perk.
+     *
+     * <p>Scans for allies rather than checking the attacker, because that is what these perks say:
+     * the holder inspires the people around them. Only the strongest contributor counts, so a party
+     * of five carrying the same perk does not multiply it.
+     */
+    private static double alliedAuraBonus(Player attacker, RegistryObject<Perk> perk, double percent) {
+        if (perk == null || percent <= 0) return 0.0;
+        double radius = cfg().warTacticianRadiusBlocks > 0 ? cfg().warTacticianRadiusBlocks : 8.0;
+        net.minecraft.world.phys.AABB around = attacker.getBoundingBox().inflate(radius);
+        for (Player ally : attacker.level().getEntitiesOfClass(Player.class, around)) {
+            if (ally == attacker) continue;
+            if (!com.otectus.runicskills.common.powers.PowerRuntime.AllyDetector.isAlly(attacker, ally)) continue;
+            if (on(perk, ally)) return percent / 100.0;
+        }
+        return 0.0;
+    }
+
+    /**
+     * Whether {@code target} has not yet noticed {@code attacker} — the condition that makes a blow
+     * an ambush rather than just a crouched swing.
+     *
+     * <p>Anything that cannot hold a target at all counts as unaware, since it can never have
+     * noticed anyone.
+     */
+    private static boolean isUnaware(LivingEntity target, Player attacker) {
+        if (!(target instanceof net.minecraft.world.entity.Mob mob)) return true;
+        return mob.getTarget() != attacker;
+    }
+
+    /** Food level at which vanilla begins regenerating health. Matches {@code FoodData#tick}. */
+    private static final int VANILLA_REGEN_FOOD_THRESHOLD = 18;
+
+    /** Whether a tool carries Fortune, which is the enchantment Fortune's Favor improves. */
+    /**
+     * True for a block that grows: crops, leaves, saplings and flowers.
+     *
+     * <p>Tag-based, so a pack's own plants are covered — the same reasoning the ore perks use for
+     * {@code forge:ores}.
+     */
+    private static boolean isPlant(net.minecraft.world.level.block.state.BlockState state) {
+        return state.is(net.minecraft.tags.BlockTags.CROPS)
+                || state.is(net.minecraft.tags.BlockTags.LEAVES)
+                || state.is(net.minecraft.tags.BlockTags.SAPLINGS)
+                || state.is(net.minecraft.tags.BlockTags.FLOWERS);
+    }
+
+    private static boolean hasFortune(ItemStack tool) {
+        return tool != null && !tool.isEmpty()
+                && net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                        net.minecraft.world.item.enchantment.Enchantments.BLOCK_FORTUNE, tool) > 0;
+    }
+
+    private static boolean standingOnAPath(Player player) {
+        return player.level().getBlockState(player.blockPosition().below())
+                .is(com.otectus.runicskills.registry.RegistryTags.Blocks.PATHS);
+    }
+
+    /**
+     * True while the player stands on soul sand or soul soil.
+     *
+     * <p>Keyed on {@code minecraft:soul_speed_blocks}, the tag vanilla itself uses to decide where
+     * the Soul Speed enchantment applies, so a modded soul block counts without a code change.
+     */
+    private static boolean standingOnSoulGround(Player player) {
+        return player.level().getBlockState(player.blockPosition().below())
+                .is(net.minecraft.tags.BlockTags.SOUL_SPEED_BLOCKS);
+    }
+
+    /**
+     * True while the player stands inside a village.
+     *
+     * <p>{@code ServerLevel#isVillage} is vanilla's own answer to "is this place inhabited" — it is
+     * what decides where a raid can start and where the hero-of-the-village discount applies — so a
+     * perk about being inside a settlement asks the game rather than inventing its own test.
+     */
+    private static boolean insideAVillage(Player player) {
+        return player.level() instanceof ServerLevel level && level.isVillage(player.blockPosition());
+    }
+
+    /** True if an item's registry id marks it as runic, matching Runic Might's own test. */
+    private static boolean isRunicItem(ItemStack stack) {
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+        return id != null && (id.getPath().contains("runic") || id.getPath().contains("rune"));
+    }
+
+    /** True while at least one piece of armour the player is wearing is runic. */
+    private static boolean wearingRunicArmour(Player player) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
+            if (isRunicItem(player.getItemBySlot(slot))) return true;
+        }
+        return false;
+    }
+
+    /** True while the player stands inside the bounds of any generated structure. */
+    private static boolean insideAnyStructure(Player player) {
+        if (!(player.level() instanceof net.minecraft.server.level.ServerLevel level)) return false;
+        return !level.structureManager().getAllStructuresAt(player.blockPosition()).isEmpty();
+    }
+
+    /**
+     * True while the player stands inside a structure tagged as a dungeon.
+     *
+     * <p>Vanilla has no "dungeon" concept, so the shipped {@code runicskills:dungeons} structure
+     * tag names the ones that read as one — mineshafts, strongholds, ancient cities, fortresses —
+     * and a pack can add its own.
+     */
+    private static boolean insideADungeon(Player player) {
+        if (!(player.level() instanceof net.minecraft.server.level.ServerLevel level)) return false;
+        return level.structureManager()
+                .getStructureWithPieceAt(player.blockPosition(),
+                        com.otectus.runicskills.registry.RegistryTags.Structures.DUNGEONS)
+                .isValid();
+    }
+
+    /**
+     * War Tactician — grants attack speed to the holder's ALLIES, not to the holder.
+     *
+     * <p>Reconciled rather than simply applied, and reconciled for allies who have walked out of
+     * range too, so the buff follows the tactician instead of sticking to whoever once stood near
+     * them. Runs on the same once-per-second clock as the rest of the attribute pass.
+     */
+    private static void buffNearbyAllies(net.minecraft.server.level.ServerPlayer player,
+                                         HandlerCommonConfig c) {
+        double radius = c.warTacticianRadiusBlocks > 0 ? c.warTacticianRadiusBlocks : 8.0;
+        double amount = on(RegistryPerks.WAR_TACTICIAN, player) ? c.warTacticianPercent / 100.0 : 0.0;
+        java.util.UUID id = com.otectus.runicskills.registry.RunicAttributeModifiers.WAR_TACTICIAN_ALLY;
+
+        net.minecraft.world.phys.AABB around = player.getBoundingBox().inflate(radius);
+        for (Player ally : player.level().getEntitiesOfClass(Player.class, around)) {
+            if (ally == player) continue;
+            net.minecraft.world.entity.ai.attributes.AttributeInstance inst =
+                    ally.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED);
+            if (inst == null) continue;
+            net.minecraft.world.entity.ai.attributes.AttributeModifier existing = inst.getModifier(id);
+            if (amount <= 0.0) {
+                if (existing != null) inst.removeModifier(existing);
+                continue;
+            }
+            if (existing != null && existing.getAmount() == amount) continue;
+            if (existing != null) inst.removeModifier(existing);
+            inst.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                    id, "runicskills:war_tactician", amount,
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE));
+        }
+    }
+
+    /** Fractional fire ticks carried between ticks by {@link #burnOffFireFaster}. */
+    private static final java.util.Map<java.util.UUID, Double> FIRE_DEBT =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Fire Proof — burns off fire faster, which is what "Fire duration reduced" means.
+     *
+     * <p>An accumulator rather than a flat per-tick percentage: fire ticks are integers, so shaving
+     * a fraction off each one rounds to nothing for any value below 100%. Carrying the remainder
+     * makes a 30% perk remove three ticks in every ten, which is the stated reduction.
+     */
+    private static void burnOffFireFaster(Player player, HandlerCommonConfig c) {
+        int remaining = player.getRemainingFireTicks();
+        if (remaining <= 0) {
+            FIRE_DEBT.remove(player.getUUID());
+            return;
+        }
+        double share = Math.min(0.95, c.fireProofPercent / 100.0);
+        if (share <= 0) return;
+        double debt = FIRE_DEBT.merge(player.getUUID(), share, Double::sum);
+        int burnOff = (int) debt;
+        if (burnOff <= 0) return;
+        FIRE_DEBT.put(player.getUUID(), debt - burnOff);
+        player.setRemainingFireTicks(Math.max(0, remaining - burnOff));
     }
 
     @SubscribeEvent
@@ -324,6 +701,10 @@ public class PerkEffectsHandler {
         if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
         if (event.side != net.minecraftforge.fml.LogicalSide.SERVER) return;
         if (!(event.player instanceof net.minecraft.server.level.ServerPlayer player)) return;
+        // Fire Proof runs before the throttle: burning off fire is a per-tick job, and sampling it
+        // once a second would remove whole seconds of fire at a time.
+        if (on(RegistryPerks.FIRE_PROOF, player)) burnOffFireFaster(player, cfg());
+
         if (player.tickCount % 20 != 0) return; // throttle: re-evaluate once per second
         HandlerCommonConfig c = cfg();
         for (Attr a : attrs()) {
@@ -343,10 +724,23 @@ public class PerkEffectsHandler {
             if (amount != 0.0) inst.addTransientModifier(
                     new net.minecraft.world.entity.ai.attributes.AttributeModifier(id, "runicskills.perk", amount, a.op()));
         }
+        buffNearbyAllies(player, c);
+
         // ── regen / barrier perks (re-evaluated ~once per second) ──
+        // NATURAL_RECOVERY — "your natural health regeneration is increased by X%", so it is a
+        // proportion of what vanilla is already doing, under the conditions vanilla already
+        // requires. It used to heal a flat amount on a food threshold of its own invention, which
+        // made it roughly four times the stated strength and let it heal when vanilla would not
+        // have regenerated at all (RS10-004).
         if (on(RegistryPerks.NATURAL_RECOVERY, player) && player.getHealth() < player.getMaxHealth()
-                && player.getFoodData().getFoodLevel() > 6)
-            player.heal((float) (c.naturalRecoveryPercent / 100.0)); // APPROX: periodic top-up
+                && player.getFoodData().getFoodLevel() >= VANILLA_REGEN_FOOD_THRESHOLD) {
+            // Vanilla heals 1 HP per 80 ticks normally, and per 10 while saturated. This pass runs
+            // once a second, so scale that rate to the interval and take the perk's share of it.
+            boolean saturated = player.getFoodData().getSaturationLevel() > 0.0f
+                    && player.getFoodData().getFoodLevel() >= 20;
+            float vanillaPerSecond = 20.0f / (saturated ? 10.0f : 80.0f);
+            player.heal(vanillaPerSecond * (float) (c.naturalRecoveryPercent / 100.0));
+        }
         if (on(RegistryPerks.SECOND_WIND, player) && player.getHealth() < player.getMaxHealth() * 0.25f)
             player.heal((float) val(RegistryPerks.SECOND_WIND, player, 0));
         if (on(RegistryPerks.BATTLE_RECOVERY, player)
@@ -365,7 +759,7 @@ public class PerkEffectsHandler {
                     || below.is(net.minecraft.tags.BlockTags.CROPS))
                 player.heal((float) c.naturesBlessingAmplifier);
         }
-        // ── passive item repair (durability perks; most are APPROX of their specific mechanic) ──
+        // ── passive item repair (perks that genuinely mend gear over time) ──
         double repairRate = 0.0;
         if (on(RegistryPerks.AUTO_REPAIR, player))       repairRate += c.autoRepairPercent;
         if (on(RegistryPerks.PRECISION_TOOLS, player))   repairRate += c.precisionToolsPercent;
@@ -376,8 +770,10 @@ public class PerkEffectsHandler {
         if (on(RegistryPerks.WEAPON_SMITH, player))      repairRate += c.weaponSmithPercent;
         if (on(RegistryPerks.LUCKY_BREAK, player))       repairRate += c.luckyBreakPercent;
         if (on(RegistryPerks.HERITAGE_BUILDER, player))  repairRate += c.heritageBuilderPercent;
-        if (on(RegistryPerks.UNBREAKABLE, player))       repairRate += c.unbreakablePercent;       // APPROX: reduced durability loss ≈ slow repair
-        if (on(RegistryPerks.UNBREAKING_MASTERY, player)) repairRate += c.unbreakingMasteryPercent; // APPROX: same
+        // UNBREAKABLE and UNBREAKING_MASTERY are not here. Both promise reduced durability LOSS,
+        // which is a different thing from periodic repair: repair cannot save an item that is about
+        // to break on its next use, and it silently mends gear the player never damaged. They apply
+        // where durability is actually spent instead (RS10-004).
         if (repairRate > 0) {
             int amt = Math.max(1, (int) Math.round(repairRate / 100.0 * 4));
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -395,8 +791,10 @@ public class PerkEffectsHandler {
         HandlerCommonConfig c = cfg();
         double mult = 1.0;
         if (on(RegistryPerks.BOOKWORM, player))     mult += c.bookwormPercent / 100.0;        // all XP sources
-        if (on(RegistryPerks.ENLIGHTENMENT, player)) mult += c.enlightenmentPercent / 100.0;   // APPROX: "skill XP"
-        if (on(RegistryPerks.QUICK_LEARNER, player)) mult += c.quickLearnerPercent / 100.0;     // APPROX: "skill XP"
+        // ENLIGHTENMENT and QUICK_LEARNER are not here. Both promise increased SKILL XP, and
+        // multiplying mob XP is a general bonus that also feeds enchanting, anvils and mending
+        // while doing nothing for a player spending XP they had already banked. They discount the
+        // skill level-up cost instead — see SkillLevelUpSP.requiredPoints(Player, int) (RS10-004).
         if (on(RegistryPerks.DIMENSIONAL_SCHOLAR, player) && player.level().dimension() != Level.OVERWORLD)
             mult += c.dimensionalScholarPercent / 100.0;
         if (on(RegistryPerks.PROGRESSIVE_MASTERY, player))
@@ -540,8 +938,20 @@ public class PerkEffectsHandler {
         // material multiplier that an auto-clicker could run unattended (RS-012).
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.DOUBLE_DOWN, c.doubleDownPercent);
         oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.PROSPECTOR, c.prospectorPercent);
-        oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.FORTUNES_FAVOR, c.fortunesFavorPercent); // APPROX: Fortune effectiveness ≈ bonus ore
-        oreDrop(player, level, pos, state, tool, isOre,                 RegistryPerks.SERENDIPITY, c.serendipityPercent);     // APPROX: "rare items" ≈ bonus ore
+        // Requires the tool to actually carry Fortune: the perk improves that enchantment, and
+        // granting bonus ore to an unenchanted pick was a different perk entirely (RS10-004).
+        oreDrop(player, level, pos, state, tool, isOre && hasFortune(tool),  RegistryPerks.FORTUNES_FAVOR, c.fortunesFavorPercent);
+        // DRUIDIC_KNOWLEDGE — "Nature enchantments are stronger". The enchantment that acts on
+        // growing things is Fortune, which vanilla's own crop and leaf loot tables read, so the
+        // perk makes it yield more there and nowhere else. It requires the tool to actually carry
+        // Fortune for the same reason Fortune's Favor does: a perk that improves an enchantment
+        // must not pay out on gear that lacks it.
+        oreDrop(player, level, pos, state, tool, isPlant(state) && hasFortune(tool),
+                RegistryPerks.DRUIDIC_KNOWLEDGE, c.druidicKnowledgePercent);
+        // SERENDIPITY is not an extra copy of the block just broken — that is what the other ore
+        // perks do, and "rare items" means something better than what you were already getting.
+        // See dropSerendipityFind().
+        dropSerendipityFind(player, level, pos, c.serendipityPercent);
         // SILK_TOUCH_MASTERY — chance to drop the block itself, silk-touch style.
         // This REPLACES the normal drop. Popping the block item on top of the vanilla loot (which
         // is what happened before, because BreakEvent fires ahead of the break and nothing
@@ -653,9 +1063,16 @@ public class PerkEffectsHandler {
 
         if (melee) {
             if (on(RegistryPerks.STRATEGIC_MIND, player))   bonus += c.strategicMindPercent / 100.0;
-            if (on(RegistryPerks.TACTICAL_GENIUS, player))  bonus += c.tacticalGeniusPercent / 100.0;   // APPROX: self, not allies
-            if (on(RegistryPerks.WARLORDS_PRESENCE, player)) bonus += c.warlordsPresencePercent / 100.0; // APPROX: self, not allies
-            if (on(RegistryPerks.AMBUSH, player) && player.isCrouching()) bonus += c.ambushPercent / 100.0; // APPROX: stealth ≈ sneak
+            // "Nearby allies gain bonus damage" — so the attacker benefits from an ALLY who has the
+            // perk, not from having it themselves. Both used to add their own bonus to the holder,
+            // which is the opposite of what they describe (RS10-004).
+            bonus += alliedAuraBonus(player, RegistryPerks.TACTICAL_GENIUS, c.tacticalGeniusPercent);
+            bonus += alliedAuraBonus(player, RegistryPerks.WARLORDS_PRESENCE, c.warlordsPresencePercent);
+            // "First attack from stealth": crouching alone is not an ambush if the target was
+            // already coming for you. Requiring that it had not yet noticed the attacker makes the
+            // perk pay out once, on the opening blow, as the tooltip describes.
+            if (on(RegistryPerks.AMBUSH, player) && player.isCrouching() && isUnaware(target, player))
+                bonus += c.ambushPercent / 100.0;
             if (on(RegistryPerks.MOUNTED_COMBAT, player) && player.isPassenger()) bonus += c.mountedCombatPercent / 100.0;
             if (on(RegistryPerks.SIEGE_BREAKER, player) && isBoss(target)) bonus += c.siegeBreakerPercent / 100.0;
             if (on(RegistryPerks.BRUTAL_SWING, player) && player.getMainHandItem().getItem() instanceof AxeItem) bonus += c.brutalSwingPercent / 100.0;
@@ -672,16 +1089,60 @@ public class PerkEffectsHandler {
             // MYTHICAL_BERSERKER — bonus damage during the post-survival window.
             if (on(RegistryPerks.MYTHICAL_BERSERKER, player) && player.tickCount < BERSERK_UNTIL.getOrDefault(player.getUUID(), 0))
                 bonus += c.mythicalBerserkerPercent / 100.0;
+            // RUNECRAFTER — "Runic items gain bonus stats". The stat a weapon has is its damage,
+            // and runic gear is identified the same way Runic Might identifies it: by the item's
+            // own registry id, so runic-ore weapons from any mod qualify without an allow-list.
+            if (on(RegistryPerks.RUNECRAFTER, player) && isRunicItem(player.getMainHandItem()))
+                bonus += c.runecrafterPercent / 100.0;
+            // RUNIC_ENCHANTMENT — "Enchantments on runic gear are stronger", so it pays only for
+            // what is actually enchanted onto the runic weapon and scales with how much of it
+            // there is. Capped, because a heavily enchanted weapon must not compound without end.
+            if (on(RegistryPerks.RUNIC_ENCHANTMENT, player) && isRunicItem(player.getMainHandItem())) {
+                int levels = 0;
+                for (int level : net.minecraft.world.item.enchantment.EnchantmentHelper
+                        .getEnchantments(player.getMainHandItem()).values()) {
+                    levels += level;
+                }
+                if (levels > 0) {
+                    // Ten total enchantment levels reach the full bonus, and nothing goes past it:
+                    // the tooltip promises "up to" a figure, so that figure is the ceiling.
+                    double full = c.runicEnchantmentPercent / 100.0;
+                    bonus += Math.min(full, levels * full / 10.0);
+                }
+            }
+            // MYSTIC_ATTUNEMENT — "All magical items gain effectiveness". A weapon's magic is its
+            // enchantments, so carrying an enchanted one is what the perk rewards; an unenchanted
+            // sword is not a magical item and gains nothing.
+            if (on(RegistryPerks.MYSTIC_ATTUNEMENT, player) && player.getMainHandItem().isEnchanted())
+                bonus += c.mysticAttunementPercent / 100.0;
         }
+        // MYSTIC_ANALYSIS — "Identify enemy weaknesses for bonus type damage". Vanilla's own
+        // classification of a creature is its MobType: it is what Smite and Bane of Arthropods
+        // read, and it is exactly "this thing has a known weakness". A creature vanilla files as
+        // UNDEFINED has none to identify, so the perk pays nothing against it.
+        if (on(RegistryPerks.MYSTIC_ANALYSIS, player)
+                && target.getMobType() != net.minecraft.world.entity.MobType.UNDEFINED)
+            bonus += c.mysticAnalysisPercent / 100.0;
         if (src.is(DamageTypes.MAGIC)) {
             if (on(RegistryPerks.ELDRITCH_POWER, player)) bonus += c.eldritchPowerPercent / 100.0;
-            if (on(RegistryPerks.ENCHANTED_MISSILES, player)) bonus += c.enchantedMissilesPercent / 100.0; // APPROX: magic missile ≈ magic dmg
+            // A "magic missile" is something magical that was fired, not any magical harm — the same
+            // distinction Mystic Shield draws on the defensive side.
+            if (on(RegistryPerks.ENCHANTED_MISSILES, player)
+                    && src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.Projectile)
+                bonus += c.enchantedMissilesPercent / 100.0;
         }
         // THORNS_MASTERY — amplify the thorns damage you reflect.
         if (src.is(DamageTypes.THORNS) && on(RegistryPerks.THORNS_MASTERY, player)) bonus += c.thornsMasteryPercent / 100.0;
         if (ranged) {
-            if (on(RegistryPerks.BALLISTIC_EXPERT, player)) bonus += c.ballisticExpertPercent / 100.0; // APPROX: ranged ≈ "mechanical ranged"
-            if (on(RegistryPerks.SHARPSHOOTER, player))     bonus += c.sharpshooterPercent / 100.0;     // APPROX: ranged ≈ headshot
+            // "Ranged MECHANICAL weapons": a crossbow, or a gun from one of the supported gun mods.
+            // A hand-thrown trident or snowball is ranged but not mechanical, and a plain bow is
+            // drawn rather than mechanised.
+            if (on(RegistryPerks.BALLISTIC_EXPERT, player) && isMechanicalRanged(src, player))
+                bonus += c.ballisticExpertPercent / 100.0;
+            // "Headshots deal bonus damage" — so it has to be a headshot. Rewarding every ranged
+            // hit was a different perk wearing this one's name (RS10-004).
+            if (on(RegistryPerks.SHARPSHOOTER, player) && isHeadshot(src.getDirectEntity(), target))
+                bonus += c.sharpshooterPercent / 100.0;
             if (on(RegistryPerks.ARCHERY_EXPANSION, player)) bonus += c.archeryExpansionPercent / 100.0;
             if (on(RegistryPerks.PRECISION_SHOT, player)
                     && src.getDirectEntity() instanceof AbstractArrow aa && aa.isCritArrow())
@@ -689,8 +1150,10 @@ public class PerkEffectsHandler {
         }
         if (bonus != 0.0) event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
 
-        // BLOOD_FURY — life-steal a fraction of melee damage dealt. APPROX: not gated to crits.
-        if (melee && on(RegistryPerks.BLOOD_FURY, player)) {
+        // BLOOD_FURY — "Critical hits steal a share of the damage dealt as health", so it requires
+        // a critical hit. It used to fire on every melee blow, which is a strictly stronger and
+        // quite different perk (RS10-004).
+        if (melee && isCriticalSwing(player) && on(RegistryPerks.BLOOD_FURY, player)) {
             float steal = event.getAmount() * (float) (c.bloodFuryPercent / 100.0);
             if (steal > 0) player.heal(steal);
         }
@@ -731,13 +1194,20 @@ public class PerkEffectsHandler {
 
         double satBonus = 0.0;
         if (on(RegistryPerks.GOURMET, player))      satBonus += c.gourmetPercent / 100.0;
-        if (on(RegistryPerks.HEARTY_FEAST, player)) satBonus += c.heartyFeastPercent / 100.0; // APPROX: more saturation ≈ effects last longer
+        // HEARTY_FEAST no longer adds saturation: "Food effects last longer" is a duration, and
+        // saturation is a different resource entirely. See extendFoodEffectDuration() (RS10-004).
         if (fish && on(RegistryPerks.ANGLERS_BOUNTY, player))    satBonus += c.anglersBountyPercent / 100.0;
         if (fish && on(RegistryPerks.AQUATIC_KNOWLEDGE, player)) satBonus += c.aquaticKnowledgePercent / 100.0;
         // Since 1.6.0 CULINARY_EXPERT covers every configured culinary namespace (FD addons, Let's Do),
         // falling back to farmersdelight-only when the culinary integration master toggle is off.
         if (on(RegistryPerks.CULINARY_EXPERT, player)
                 && com.otectus.runicskills.integration.CulinaryIntegration.isCulinaryFood(food)) satBonus += c.culinaryExpertPercent / 100.0;
+        // COLONIAL_NOURISHMENT — "colony food" named MineColonies' own produce, which this mod
+        // cannot identify and most packs do not ship. A meal eaten in a settlement is the part of
+        // that idea vanilla can actually answer, using the same village test Colony Guardian uses,
+        // and it keeps the perk about being somewhere rather than about owning another mod.
+        if (on(RegistryPerks.COLONIAL_NOURISHMENT, player) && insideAVillage(player))
+            satBonus += c.colonialNourishmentPercent / 100.0;
         if (satBonus > 0) {
             var props = food.getFoodProperties(player);
             if (props != null) player.getFoodData().eat((int) Math.ceil(props.getNutrition() * satBonus), props.getSaturationModifier());
@@ -809,6 +1279,13 @@ public class PerkEffectsHandler {
         double red = 0.0;
         if (on(RegistryPerks.REPAIR_EXPERT, player))  red += c.repairExpertPercent / 100.0;
         if (on(RegistryPerks.WISDOM_OF_AGES, player)) red += c.wisdomOfAgesPercent / 100.0;
+        // SPELL_INSCRIPTION — "Inscribed spells cost less mana". This mod runs on no mana pool, and
+        // the perk is not gated on a mod that has one. What an enchanted book is, in vanilla's
+        // vocabulary, is an inscribed spell: a prepared effect written down and paid for in levels
+        // when you apply it. So the perk discounts exactly that — applying a book at an anvil, and
+        // nothing else, which is what keeps it distinct from the two general repair discounts.
+        if (on(RegistryPerks.SPELL_INSCRIPTION, player) && event.getRight().is(Items.ENCHANTED_BOOK))
+            red += c.spellInscriptionPercent / 100.0;
         if (red > 0 && event.getCost() > 0)
             event.setCost(Math.max(1, (int) Math.round(event.getCost() * (1.0 - Math.min(0.9, red)))));
     }
@@ -838,6 +1315,23 @@ public class PerkEffectsHandler {
         if (!event.isVanillaCritical() && on(RegistryPerks.CRITICAL_MASTERY, player)
                 && player.getRandom().nextDouble() < cfg().criticalMasteryPercent / 100.0)
             event.setResult(Event.Result.ALLOW);
+
+        // Remember that this swing crit, so BLOOD_FURY can require one. The damage event that
+        // follows carries no crit flag, and this handler runs immediately before it for the same
+        // attack — so the tick number is an exact marker, not a heuristic.
+        if (event.isVanillaCritical() || event.getResult() == Event.Result.ALLOW) {
+            LAST_CRIT_TICK.put(player.getUUID(), player.tickCount);
+        }
+    }
+
+    /** Tick of each player's most recent critical hit, for perks that require one. */
+    private static final java.util.Map<java.util.UUID, Integer> LAST_CRIT_TICK =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Whether the swing being resolved right now was a critical hit. */
+    private static boolean isCriticalSwing(Player player) {
+        Integer at = LAST_CRIT_TICK.get(player.getUUID());
+        return at != null && at == player.tickCount;
     }
 
     // ── bow / crossbow draw speed ─────────────────────────────────────────────────────
@@ -852,6 +1346,18 @@ public class PerkEffectsHandler {
             event.setDuration(event.getDuration() - 1);
         if (item instanceof net.minecraft.world.item.CrossbowItem && on(RegistryPerks.CROSSBOW_EXPERT, player)
                 && player.getRandom().nextDouble() < c.crossbowExpertPercent / 100.0)
+            event.setDuration(event.getDuration() - 1);
+        // SIEGE_MECHANIC — "Siege machines reload faster" described a mod this build cannot see.
+        // The reloading siege weapon vanilla has is the crossbow, so that is what winds faster;
+        // it stacks with Crossbow Expert, which is a Dexterity perk about the same motion.
+        if (item instanceof net.minecraft.world.item.CrossbowItem && on(RegistryPerks.SIEGE_MECHANIC, player)
+                && player.getRandom().nextDouble() < c.siegeMechanicPercent / 100.0)
+            event.setDuration(event.getDuration() - 1);
+        // SAGES_FOCUS — "Channeled abilities are faster". Vanilla's channelled action is an item
+        // held down over time: drawing a bow, eating, drinking, winding a crossbow, raising a
+        // spyglass. Every one of them finishes sooner, which is what focus buys.
+        if (on(RegistryPerks.SAGES_FOCUS, player)
+                && player.getRandom().nextDouble() < c.sagesFocusPercent / 100.0)
             event.setDuration(event.getDuration() - 1);
     }
 
@@ -875,14 +1381,49 @@ public class PerkEffectsHandler {
         sl.addFreshEntity(extra);
     }
 
+    /**
+     * Dual Casting — "a chance to cast a spell twice".
+     *
+     * <p>The perk is not gated on any spell mod, so it cannot be written against one: in a pack
+     * without Iron's Spells or Ars Nouveau it would never fire at all. What every pack has is the
+     * throwable magic vanilla ships — a splash or lingering potion is a prepared effect you hurl at
+     * something, which is what a cast is here — so a proc throws a second one.
+     *
+     * <p>The duplicate carries a marker so it cannot itself be doubled, the same guard the extra
+     * arrow above uses; without it a proc chain could fan out without limit.
+     */
+    @SubscribeEvent
+    public void onPotionThrown(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide) return;
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.projectile.ThrownPotion potion)) return;
+        if (!(potion.getOwner() instanceof Player player) || player instanceof FakePlayer) return;
+        if (potion.getPersistentData().getBoolean("rs_dualcast")) return;
+        if (!on(RegistryPerks.DUAL_CASTING, player)) return;
+        if (player.getRandom().nextDouble() >= cfg().dualCastingPercent / 100.0) return;
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
+
+        net.minecraft.world.entity.projectile.ThrownPotion second =
+                new net.minecraft.world.entity.projectile.ThrownPotion(level, player);
+        second.setItem(potion.getItem().copy());
+        second.setPos(potion.getX(), potion.getY(), potion.getZ());
+        // Nudged off the original's line so the two clouds do not land perfectly on top of each
+        // other, which would read as one throw rather than two.
+        second.setDeltaMovement(potion.getDeltaMovement().yRot((float) (Math.PI / 36.0)));
+        second.getPersistentData().putBoolean("rs_dualcast", true);
+        level.addFreshEntity(second);
+    }
+
     // ── death: survive-lethal (victim) and on-kill rewards (killer) ─────────────────────
     @SubscribeEvent
     public void onDeath(LivingDeathEvent event) {
         if (event.getSource().getEntity() instanceof Player killer && !(killer instanceof FakePlayer)) {
             if (on(RegistryPerks.BLOODLUST, killer)) LAST_KILL_TICK.put(killer.getUUID(), killer.tickCount);
-            // STALWART_STRIKER — killing a hostile mob restores health. APPROX: hostile ≈ "dungeon mob".
+            // STALWART_STRIKER — "Killing dungeon mobs restores health", so the kill has to happen
+            // in one. Any hostile anywhere was the earlier approximation; the shipped
+            // runicskills:dungeons structure tag now answers the question properly.
             if (on(RegistryPerks.STALWART_STRIKER, killer)
-                    && event.getEntity() instanceof net.minecraft.world.entity.monster.Monster)
+                    && event.getEntity() instanceof net.minecraft.world.entity.monster.Monster
+                    && insideADungeon(killer))
                 killer.heal((float) val(RegistryPerks.STALWART_STRIKER, killer, 0));
         }
         if (event.getEntity() instanceof Player player && !(player instanceof FakePlayer)) {

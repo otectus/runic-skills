@@ -1,0 +1,23 @@
+# Power effect-coverage backlog (machine-checked by PowerEffectCoverageTest).
+#
+# Every name here is a Power registered in RegistryPowers that currently has NO runtime effect
+# site — no source file outside RegistryPowers references RegistryPowers.<NAME>. It is the same
+# enforced, transparent backlog that perk_no_effect_allowlist.txt keeps for perks, created
+# because the 1.9.0 audit found 44 of 75 Powers registered, selectable, and doing nothing, with
+# nothing in the build that would ever say so (RS10-004/RS10-006).
+#
+# Rules enforced by the test:
+#   1. A registered Power MUST either have an effect site or appear here — a new Power cannot
+#      silently join the inert pile.
+#   2. Once a Power gains an effect, its line MUST be deleted (the test fails on a stale entry),
+#      so the backlog can only shrink.
+#   3. Entries must name real registered Powers (no typos or dead names).
+#
+# EMPTY, and that is the point: every one of the 75 Powers now has an effect site. The last
+# nineteen were the Iron's Spells school Powers, closed by
+# IronsSpellbooksSchoolPowerDispatcher. Their behaviour still cannot be exercised by the
+# GameTest server — Iron's Spells is a compileOnly dependency, so no spell, spell entity or
+# spell event exists there — which is exactly why this file and ContentStatusIndex are the
+# machine-checked record instead of a test.
+#
+# Grouped by school. Blank lines and #-comments are ignored.

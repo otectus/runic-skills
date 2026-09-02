@@ -1,6 +1,7 @@
 package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.context.CommandContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.command.arguments.TitleArgument;
@@ -17,8 +18,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 
 public class TitleCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register((Commands.literal("titles")
+    public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        return dispatcher.register((Commands.literal("titles")
                 .requires(source -> source.hasPermission(2)))
                 .then(Commands.argument("player", EntityArgument.player())
                         .then(Commands.argument("title", TitleArgument.getArgument())

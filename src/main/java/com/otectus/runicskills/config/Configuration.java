@@ -21,6 +21,9 @@ public class Configuration {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, HandlerConfigClient.SPEC, clientConfigPath.toString());
 
         reloadAll();
+        // Snapshot the values this process starts with, so /skillsreload can name the
+        // restart-required settings an operator has edited since (RS10-005).
+        com.otectus.runicskills.config.snapshot.GameplayConfigSnapshot.captureStartupBaseline();
     }
 
     /**

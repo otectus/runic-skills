@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "Großmeister",
  "skill.runicskills.rank.8" : "Legendär",
 
- "tooltip.skill.level_up" : "Gib %s Stufen (%s XP) aus, um %s aufzuleveln.",
+ "tooltip.skill.level_up" : "Gib %1$s XP aus, um %2$s aufzuleveln.",
  "tooltip.skill.max_level" : "Du hast die maximale Stufe von %s erreicht.",
  "tooltip.skill.global_max_level": "Globale maximale Fähigkeitsstufe von %s erreicht.",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "Entfernung zwischen dem Spieler und dem Block.",
  "passive.runicskills.break_speed.description" : "Geschwindigkeit, mit der ein Block mit Werkzeugen abgebaut wird. (betrifft nur Spitzhacke, Axt und Schaufel)",
  "passive.runicskills.beneficial_effect.description" : "Dauer von Tränken, die dem Spieler zugutekommen.",
- "passive.runicskills.magic_resist.description" : "Neutralisiert einen Teil des magischen Schadens, verursacht durch: Schadenströänke, Magierreißzähne, Witherschädel, Dornen-Verzauberungen, Wächterstrahlen, usw.",
  "passive.runicskills.fortune.description" : "Erhöht die Wahrscheinlichkeit, hochwertige Beute beim Angeln oder in natürlich generierten Truhen zu finden.",
  "passive.runicskills.critical_damage.description" : "Ein Angriff, der im Vergleich zu einem normalen Angriff zusätzlichen Schaden verursacht. (wird angewendet, wenn der Spieler rennt oder beim Sprung fällt)",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "Du brauchst Glück %s, um %s Gegenstände zu benutzen!",
  "overlay.runicskills.gem_attunement_saved": "Die Edelstein-Einstimmung hat den Edelstein bewahrt!",
 
- "perk.runicskills.blood_mastery": "Blutmeisterschaft",
- "perk.runicskills.blood_mastery.description": "Deine Konstitution stärkt dich gegen die Kosten des Blutopfers und reduziert die Gesundheitskosten um %s.",
- "perk.runicskills.ritual_sage": "Ritual-Weiser",
- "perk.runicskills.ritual_sage.description": "Dein tiefes Wissen über Blutrituale reduziert den LP-Verbrauch um %s.",
- "perk.runicskills.crimson_bond": "Karmesinband",
- "perk.runicskills.crimson_bond.description": "Deine Verbindung zum Blutnetzwerk gewährt eine Chance von 1 zu %s, keine LP beim Verwenden von Siegeln zu verbrauchen.",
 
  "perk.runicskills.dragon_slayer": "Drachentöter",
  "perk.runicskills.dragon_slayer.description": "Deine Stärke ermöglicht es dir, %s Bonusschaden an Drachen und mythischen Kreaturen zu verursachen.",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "Kataklysmus-Resistenz",
  "perk.runicskills.cataclysm_resistance.description": "Deine Ausdauer härtet dich gegen kataklysmische Kräfte ab und reduziert Boss-Schaden um %s.",
 
- "perk.runicskills.curse_ward": "Fluch-Schutz",
- "perk.runicskills.curse_ward.description": "Deine Weisheit schützt dich vor verfluchten Energien und reduziert Fluchschaden um %s.",
 
  "perk.runicskills.boss_hunter": "Boss-Jäger",
  "perk.runicskills.boss_hunter.description": "Deine Stärke verschafft dir einen Vorteil gegen mächtige Bosse und verursacht %s Bonusschaden.",
 
- "perk.runicskills.aura_attunement": "Aura-Einstimmung",
- "perk.runicskills.aura_attunement.description": "Deine Einstimmung auf die Natur erhöht die Effizienz von Aura-Effekten in deiner Nähe um %s.",
 
  "perk.runicskills.master_chef": "Meisterkoch",
  "perk.runicskills.master_chef.description": "Deine Konstitution ermöglicht es dir, mehr aus Nahrung herauszuholen, und erhöht die Effektdauer um %s.",

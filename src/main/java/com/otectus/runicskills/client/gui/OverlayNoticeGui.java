@@ -56,22 +56,28 @@ public class OverlayNoticeGui implements IGuiOverlay {
         int halfWidth = this.client.font.width(message) / 2;
 
         matrixStack.pose().pushPose();
-        RenderSystem.enableBlend();
-        float alpha = (showTicks < 20) ? (showTicks / 20.0F) : 1.0F;
+        try {
+            RenderSystem.enableBlend();
+            float alpha = (showTicks < 20) ? (showTicks / 20.0F) : 1.0F;
 
-        // Semi-transparent backdrop sized to the text.
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha * 0.6F);
-        matrixStack.fill(xOff - halfWidth - 8, yOff - 6, xOff + halfWidth + 8, yOff + 14, Color.BLACK.getRGB());
+            // Semi-transparent backdrop sized to the text.
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha * 0.6F);
+            matrixStack.fill(xOff - halfWidth - 8, yOff - 6, xOff + halfWidth + 8, yOff + 14, Color.BLACK.getRGB());
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-        Utils.drawCenterWithShadow(matrixStack, message, xOff, yOff, 16733525);
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        matrixStack.pose().popPose();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+            Utils.drawCenterWithShadow(matrixStack, message, xOff, yOff, 16733525);
+        } finally {
+            Utils.resetRenderState();
+            matrixStack.pose().popPose();
+        }
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        // ClientTickEvent fires twice per tick (START and END). Without this guard the
+        // countdown ran at 2 ticks/tick and every overlay vanished in half its configured
+        // duration. OverlayTitleGui has always guarded correctly; these two did not.
+        if (event.phase != TickEvent.Phase.END) return;
         if (showTicks > 0) showTicks--;
     }
 

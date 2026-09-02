@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "대달인",
  "skill.runicskills.rank.8" : "전설",
 
- "tooltip.skill.level_up" : "%s 레벨 (%s 경험치)을 소모하여 %s을(를) 레벨업합니다.",
+ "tooltip.skill.level_up" : "%1$s 경험치를 소모하여 %2$s을(를) 레벨업합니다.",
  "tooltip.skill.max_level" : "%s의 최대 레벨에 도달했습니다.",
  "tooltip.skill.global_max_level": "글로벌 스킬 레벨 상한 %s에 도달했습니다.",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "플레이어와 블록 사이의 거리.",
  "passive.runicskills.break_speed.description" : "도구로 블록을 부수는 속도. (곡괭이, 도끼, 삽에만 영향)",
  "passive.runicskills.beneficial_effect.description" : "플레이어에게 이로운 포션의 지속 시간.",
- "passive.runicskills.magic_resist.description" : "마법 피해의 일부를 무효화: 고통의 포션, 소환사의 송곳니, 위더 해골, 가시 마법부여, 가디언 빔 등.",
  "passive.runicskills.fortune.description" : "낚시나 자연 생성된 상자에서 고품질 전리품을 찾을 확률 증가.",
  "passive.runicskills.critical_damage.description" : "일반 공격보다 더 많은 피해를 주는 공격. (플레이어가 달리거나 점프 후 낙하 시 적용)",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "%s 아이템을 사용하려면 행운 %s이(가) 필요합니다!",
  "overlay.runicskills.gem_attunement_saved": "보석 동조가 보석을 보존했습니다!",
 
- "perk.runicskills.blood_mastery": "피의 숙련",
- "perk.runicskills.blood_mastery.description": "당신의 체력이 피의 희생 비용으로부터 보호하여, 체력 소비를 %s 감소시킵니다.",
- "perk.runicskills.ritual_sage": "의식의 현자",
- "perk.runicskills.ritual_sage.description": "피의 의식에 대한 깊은 지혜로 LP 소비를 %s 감소시킵니다.",
- "perk.runicskills.crimson_bond": "진홍의 유대",
- "perk.runicskills.crimson_bond.description": "피의 네트워크와의 유대로 인장 사용 시 %s분의 1 확률로 LP를 소모하지 않습니다.",
 
  "perk.runicskills.dragon_slayer": "용 사냥꾼",
  "perk.runicskills.dragon_slayer.description": "당신의 힘으로 드래곤과 신화적 생물에게 %s 보너스 피해를 줍니다.",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "대재앙 저항",
  "perk.runicskills.cataclysm_resistance.description": "당신의 지구력이 대재앙의 힘에 대항하여 단련되어, 보스 피해를 %s 감소시킵니다.",
 
- "perk.runicskills.curse_ward": "저주 결계",
- "perk.runicskills.curse_ward.description": "당신의 지혜가 저주 에너지로부터 보호하여, 저주 피해를 %s 감소시킵니다.",
 
  "perk.runicskills.boss_hunter": "보스 사냥꾼",
  "perk.runicskills.boss_hunter.description": "당신의 힘이 강력한 보스에 대해 우위를 제공하여, %s 보너스 피해를 줍니다.",
 
- "perk.runicskills.aura_attunement": "오라 동조",
- "perk.runicskills.aura_attunement.description": "자연과의 동조로 주변 오라 효과의 효율이 %s 증가합니다.",
 
  "perk.runicskills.master_chef": "요리의 달인",
  "perk.runicskills.master_chef.description": "당신의 체력으로 음식에서 더 많은 것을 추출하여, 효과 지속 시간이 %s 증가합니다.",

@@ -78,6 +78,7 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
                 RenderSystem.enableBlend();
                 matrixStack.blit(new ResourceLocation(RunicSkills.MOD_ID, "textures/skill/ender_chest_button.png"), buttonX, buttonY, 0.0F, checkButton, 20, 18, 20, 36);
             } finally {
+                Utils.resetRenderState();
                 matrixStack.pose().popPose();
             }
         }
@@ -90,9 +91,9 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
         DrawTabs.mouseClicked(button);
     }
 
-    public void onClose() {
-        this.this$checkMouse = false;
-        DrawTabs.onClose();
-        super.onClose();
-    }
+    // The DrawTabs click latch is cleared on close by
+    // com.otectus.runicskills.client.event.InventoryTabsCloseHandler, not from here. A
+    // `public void onClose()` on this mixin is an implicit overwrite of an inherited method, which
+    // Mixin drops outright when another mod's InventoryScreen mixin declares one too — Highlighter
+    // does, and ours was the one being skipped. See that class for the full account.
 }

@@ -2,6 +2,7 @@ package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -35,8 +36,8 @@ import java.util.List;
  */
 public class PowersCommand {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("powers")
+    public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        return dispatcher.register(Commands.literal("powers")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("list")
                         .executes(ctx -> listAll(ctx, null))
@@ -151,16 +152,32 @@ public class PowersCommand {
         }
         String name = StringArgumentType.getString(ctx, "power");
         Power p = RegistryPowers.getPower(name);
-        if (p == null) {
-            ctx.getSource().sendFailure(Component.literal("Unknown power: " + name));
-            return 0;
-        }
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return 0;
 
+        if (p == null) {
+            // An id that no longer resolves still occupies a slot — an addon was uninstalled, or a
+            // Power was renamed. Unequipping by raw id is the escape hatch; before this, the only
+            // way out was a full respec, which resets every skill to 1 (RS10-006).
+            if (!equipFlag && cap.unequipUnknownPower(name)) {
+                ctx.getSource().sendSuccess(() -> Component.literal(
+                        "Cleared unavailable Power '" + name + "' from its slot.")
+                        .withStyle(ChatFormatting.YELLOW), true);
+                SyncSkillCapabilityCP.send(player);
+                return Command.SINGLE_SUCCESS;
+            }
+            ctx.getSource().sendFailure(Component.literal("Unknown power: " + name));
+            return 0;
+        }
+
         if (equipFlag) {
-            if (RegistryPowers.isDisabled(p)) {
-                ctx.getSource().sendFailure(Component.literal(name + " is disabled in config."));
+            // The same evaluation the equip packet runs, so the command cannot grant a loadout the
+            // UI would refuse.
+            com.otectus.runicskills.registry.powers.PowerEligibility.Result verdict =
+                    com.otectus.runicskills.registry.powers.PowerEligibility.evaluateEquip(player, p);
+            if (!verdict.eligible()) {
+                ctx.getSource().sendFailure(Component.literal("Cannot equip " + name + " — ")
+                        .append(verdict.describe(p)));
                 return 0;
             }
             if (!cap.equipPower(p)) {

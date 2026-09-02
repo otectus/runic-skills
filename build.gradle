@@ -27,6 +27,18 @@ apply plugin: 'org.spongepowered.mixin'
 group = mod_group_id
 version = mod_version
 
+// One build stamp for every archive this project produces. SOURCE_DATE_EPOCH is the
+// cross-ecosystem convention for "the timestamp a reproducible build should claim"; release CI
+// sets it from the commit date so two clean builds of one commit hash identically (RS10-023).
+ext.reproducibleTimestamp = {
+    def epoch = System.getenv('SOURCE_DATE_EPOCH')
+    def instant = epoch ? java.time.Instant.ofEpochSecond(epoch as long) : java.time.Instant.EPOCH
+    java.time.format.DateTimeFormatter
+            .ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
+            .withZone(java.time.ZoneOffset.UTC)
+            .format(instant)
+}()
+
 base {
     archivesName = mod_id
 }
@@ -35,8 +47,31 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
+// Compile-only source set holding a hand-written signature mirror of the Legendary Tabs 2.0
+// API (src/legendarytabsApi/java). Runic Skills' tab genuinely subclasses TabBase, so the
+// dependency cannot be reflected away — but pulling it from a flat-dir jar meant a fresh
+// clone could not build, because that jar is not (and, being a whole third-party mod, should
+// not be) tracked here (RS10-001). Compiling our own stub keeps the build self-contained: it
+// is on the compile classpath only, so it never enters the shipped jar or any run
+// configuration, and the real Legendary Tabs classes are what load at runtime.
+sourceSets {
+    legendarytabsApi
+
+    // Forge GameTests (src/gametest/java). Separate from src/main so behavioural test code never
+    // ships in the mod jar, and separate from src/test because these need a real Minecraft server
+    // — the unit-test classpath is deliberately Forge-free (RS10-003).
+    gametest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations {
+    // Give the stub the Minecraft/Forge classes its signatures reference.
+    legendarytabsApiCompileOnly.extendsFrom(minecraft)
+}
+
 minecraft {
-    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+    mappings channel: mapping_channel, version: mapping_version
 
     // This property allows configuring Gradle's ProcessResources task(s) to run on IDE output locations before launching the game.
     // It is REQUIRED to be set to true for this template to function.
@@ -79,6 +114,9 @@ minecraft {
             mods {
                 "${mod_id}" {
                     source sourceSets.main
+                    // GameTests are part of the mod only inside a run configuration; the jar task
+                    // packages sourceSets.main.output alone, so they never reach a release.
+                    source sourceSets.gametest
                 }
             }
         }
@@ -208,11 +246,11 @@ dependencies {
     compileOnly fg.deobf("maven.modrinth:l2library:2.4.28")
     compileOnly fg.deobf("dev.xkmc.l2tabs:l2tabs:0.3.3")
 
-    // Legendary Tabs (Sfiomn) — compile-time only; resolved from local libs/.
-    // Drop the jar at libs/legendarytabs-1.20.1-2.0.jar (matches the runtime mod).
-    // 2.0 is a breaking API change: TabBase gained abstract getId()/getIconTexture()
-    // and render() took three more parameters, so 1.x jars will not compile here.
-    compileOnly fg.deobf("sfiomn.legendarytabs:legendarytabs:1.20.1-2.0")
+    // Legendary Tabs (Sfiomn) — compiled against the in-repo API stub declared above, not a
+    // local jar, so a fresh clone builds. 2.0 is a breaking API change from 1.x: TabBase gained
+    // abstract getId()/getIconTexture() and render() took three more parameters. The stub
+    // mirrors 2.0; keep it and the legendarytabs versionRange in mods.toml in step.
+    compileOnly sourceSets.legendarytabsApi.output
 
     // ClothConfig implementation (Required by BetterCombat)
     implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.118")
@@ -325,12 +363,26 @@ tasks.named('jar', Jar).configure {
                 "Implementation-Title": project.name,
                 "Implementation-Version": project.jar.archiveVersion,
                 "Implementation-Vendor": mod_authors,
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                // Reproducibility: the same commit must produce the same jar bytes, so this
+                // is the SOURCE_DATE_EPOCH the release container supplies rather than "now"
+                // (RS10-023). Absent that variable it falls back to the Unix epoch, which is
+                // still deterministic; it is only ever a build stamp, never a runtime input.
+                "Implementation-Timestamp": project.ext.reproducibleTimestamp
         ])
     }
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
+}
+
+// Same goal as the manifest timestamp: identical inputs, identical archive bytes. Applied to
+// EVERY archive rather than to `jar` alone — jarJar produces the -all bundle, and normalising only
+// the plain jar left the artifact a release actually ships carrying wall-clock entry timestamps,
+// so the reproducible-build job would have compared one normalised jar against one that could
+// never match (RS10-023).
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -501,10 +553,24 @@ tasks.register('checkVersionConsistency') {
     def versionFile = file('VERSION')
     def changelogFile = file('CHANGELOG.md')
     def yaclBridge = file('src/main/java/com/otectus/runicskills/client/config/YaclConfigUiBuilder.java')
+    def updateManifest = file('update.json')
+    // The documents. 2.0.0 reached release candidate with the network protocol printed as 7 in one
+    // README section and 5 in another, where the code said 10, a download link naming a jar three
+    // minor versions old, and CLAUDE.md declaring the mod to be 1.7.0. Nothing checked any of it,
+    // which is the whole reason it drifted for three releases (RS-187 / RS10-024).
+    def readmeFile = file('README.md')
+    def storePageFile = file('CURSEFORGE_DESCRIPTION.md')
+    def agentGuideFile = file('CLAUDE.md')
+    def networkingSource = file('src/main/java/com/otectus/runicskills/network/ServerNetworking.java')
 
     inputs.file versionFile
     inputs.file changelogFile
     inputs.file yaclBridge
+    inputs.file updateManifest
+    inputs.file readmeFile
+    inputs.file storePageFile
+    inputs.file agentGuideFile
+    inputs.file networkingSource
     inputs.property 'modVersion', project.mod_version
     inputs.property 'yaclVersion', project.yacl_version
 
@@ -522,6 +588,23 @@ tasks.register('checkVersionConsistency') {
             mismatches << "CHANGELOG.md top entry is '${changelogTop}' but gradle.properties mod_version is '${declared}'"
         }
 
+        // update.json is what Forge's update checker fetches (RS10-018). It is a hand-maintained
+        // file in a repository, served to every user, and nothing at runtime can notice when it
+        // falls behind a release — which is precisely how the checker it replaced spent its whole
+        // life pointing at a repository that did not exist. So the promos are checked here, where
+        // being wrong stops a release instead of misinforming players.
+        def promoMatcher = updateManifest.getText('UTF-8') =~ /"1\.20\.1-(latest|recommended)"\s*:\s*"([^"]*)"/
+        def promos = [:]
+        while (promoMatcher.find()) promos[promoMatcher.group(1)] = promoMatcher.group(2)
+        if (promos.isEmpty()) {
+            mismatches << "update.json declares no 1.20.1-latest / 1.20.1-recommended promo"
+        }
+        promos.each { promo, promoted ->
+            if (promoted != declared) {
+                mismatches << "update.json '1.20.1-${promo}' is '${promoted}' but gradle.properties mod_version is '${declared}'"
+            }
+        }
+
         // YaclConfigUiBuilder quotes YACL_COMPILED_VERSION verbatim in its "your YACL is
         // incompatible" error. If that hand-copied literal drifts from the version we actually
         // compile against, the error sends players chasing the wrong jar - which is how the
@@ -531,15 +614,166 @@ tasks.register('checkVersionConsistency') {
         if (pinned != project.yacl_version.toString().trim()) {
             mismatches << "YaclConfigUiBuilder.YACL_COMPILED_VERSION is '${pinned}' but gradle.properties yacl_version is '${project.yacl_version}'"
         }
+        // The protocol number in the README is what a server owner reads before deciding whether a
+        // mixed-version server is safe, so it being wrong is worse than it being absent.
+        def protocolMatcher = networkingSource.getText('UTF-8') =~ /PROTOCOL_VERSION\s*=\s*"(\d+)"/
+        def actualProtocol = protocolMatcher.find() ? protocolMatcher.group(1) : '<no PROTOCOL_VERSION literal found>'
+        def readmeText = readmeFile.getText('UTF-8')
+        def documentedProtocols = [] as Set
+        def readmeProtocolMatcher = readmeText =~ /PROTOCOL_VERSION\s*=\s*`?(\d+)`?/
+        while (readmeProtocolMatcher.find()) documentedProtocols << readmeProtocolMatcher.group(1)
+        documentedProtocols.findAll { it != actualProtocol }.each {
+            mismatches << "README.md documents PROTOCOL_VERSION=${it} but ServerNetworking says ${actualProtocol}"
+        }
+
+        // A download link naming a jar that was never built is the first thing a new player hits.
+        [readme: readmeFile, storePage: storePageFile].each { label, docFile ->
+            def jarMatcher = docFile.getText('UTF-8') =~ /runicskills-(\d+\.\d+\.\d+)(?:-all)?\.jar/
+            def named = [] as Set
+            while (jarMatcher.find()) named << jarMatcher.group(1)
+            named.findAll { it != declared }.each {
+                mismatches << "${docFile.name} names runicskills-${it}.jar but mod_version is '${declared}'"
+            }
+        }
+
+        // CLAUDE.md is the first file an agent reads, so a stale version there is inherited by
+        // every change made from it.
+        def guideMatcher = agentGuideFile.getText('UTF-8') =~ /(?m)^-\s*\*\*Version\*\*:\s*`?([\w.\-+]+)`?\s*$/
+        if (guideMatcher.find()) {
+            if (guideMatcher.group(1) != declared) {
+                mismatches << "CLAUDE.md says version '${guideMatcher.group(1)}' but mod_version is '${declared}'"
+            }
+        } else {
+            mismatches << "CLAUDE.md has no '- **Version**: x.y.z' line to check"
+        }
+
         if (!mismatches.isEmpty()) {
             throw new GradleException(
-                    "Version drift (stale VERSION breaks the runtime update checker for all users):\n  " +
+                    "Version drift (a stale VERSION breaks the runtime update checker for all users;\n" +
+                            "stale docs send players and server owners to the wrong answer):\n  " +
                             mismatches.join('\n  ') +
-                            "\nUpdate VERSION, the CHANGELOG heading, and YACL_COMPILED_VERSION to match before building a release.")
+                            "\nUpdate VERSION, the CHANGELOG heading, YACL_COMPILED_VERSION, and the\n" +
+                            "README / store page / CLAUDE.md references to match before building a release.")
         }
     }
 }
 tasks.named('check').configure { dependsOn 'checkVersionConsistency' }
+
+// Locale parity. `tooltip.skill.level_up` spent an unknown number of releases carrying the
+// three-argument wording from before its call site changed to two, in ALL SIXTEEN non-English
+// locales: vanilla catches the resulting TranslatableFormatException and falls back to the raw
+// template, so every one of those players saw a literal "%s" in a core tooltip and nothing
+// anywhere noticed. Ten keys from perks deleted in 1.5.0 were still shipping too.
+//
+// Missing keys are NOT an error -- Minecraft falls back to en_us and the translation backlog is
+// real content work. They are recorded in intentional_fallbacks.json so the gap is declared
+// rather than silent, and so a NEW gap is visible against a known baseline.
+tasks.register('checkLangParity') {
+    group = 'verification'
+    description = 'Fails the build on a stale locale key or a format-placeholder count mismatch against en_us'
+
+    def langDir = file('src/main/resources/assets/runicskills/lang')
+    // Outside src/main/resources deliberately: it is a build input, not a game asset, and has no
+    // business shipping in the jar.
+    def fallbackManifest = file('tools/lang/intentional_fallbacks.json')
+    inputs.dir langDir
+    inputs.file fallbackManifest
+
+    doLast {
+        def slurper = new groovy.json.JsonSlurper()
+        def english = slurper.parse(new File(langDir, 'en_us.json'), 'UTF-8')
+
+        // Counts %s, %d and %1$s style specifiers; %% is an escaped literal and is not one.
+        def placeholderCount = { String value ->
+            int count = 0
+            def matcher = value =~ /%(?:(\d+)\$)?([A-Za-z%])/
+            while (matcher.find()) {
+                if (matcher.group(2) != '%') count++
+            }
+            return count
+        }
+
+        def problems = []
+        def fallbackCounts = [:]
+        langDir.listFiles({ File f -> f.name.endsWith('.json') && f.name != 'en_us.json' } as FileFilter)
+                .sort { it.name }
+                .each { localeFile ->
+            def locale = localeFile.name - '.json'
+            def translated = slurper.parse(localeFile, 'UTF-8')
+
+            translated.keySet().findAll { !english.containsKey(it) }.sort().each {
+                problems << "${locale}: stale key '${it}' does not exist in en_us -- delete it"
+            }
+            translated.each { key, value ->
+                if (!english.containsKey(key)) return
+                int expected = placeholderCount(english[key] as String)
+                int actual = placeholderCount(value as String)
+                if (expected != actual) {
+                    problems << "${locale}: '${key}' has ${actual} format placeholder(s) but en_us has ${expected}" +
+                            " -- Minecraft renders the raw template when they disagree"
+                }
+            }
+            fallbackCounts[locale] = english.keySet().findAll { !translated.containsKey(it) }.size()
+        }
+
+        if (!problems.isEmpty()) {
+            throw new GradleException("Localisation parity:\n  " + problems.join('\n  '))
+        }
+
+        // Record, do not fail: the manifest is the declared translation debt.
+        def declared = fallbackManifest.exists()
+                ? (slurper.parse(fallbackManifest, 'UTF-8').missingKeysPerLocale ?: [:])
+                : [:]
+        fallbackCounts.each { locale, missing ->
+            def baseline = declared[locale]
+            if (baseline != null && missing > (baseline as int)) {
+                problems << "${locale}: ${missing} keys fall back to en_us, up from the declared ${baseline}" +
+                        " -- translate them or raise the baseline in intentional_fallbacks.json deliberately"
+            }
+        }
+        if (!problems.isEmpty()) {
+            throw new GradleException("Localisation coverage regressed:\n  " + problems.join('\n  '))
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'checkLangParity' }
+
+// CLAUDE.md's mixin list is the single fact in that file most likely to drift, because a mixin is
+// added in one place and documented in another. It said "14 total: 4 client, 10 common" while
+// runicskills.mixins.json declared 28.
+tasks.register('checkMixinInventory') {
+    group = 'verification'
+    description = "Fails the build if CLAUDE.md's mixin count disagrees with runicskills.mixins.json"
+
+    def mixinConfig = file('src/main/resources/runicskills.mixins.json')
+    def agentGuide = file('CLAUDE.md')
+    inputs.file mixinConfig
+    inputs.file agentGuide
+
+    doLast {
+        def parsed = new groovy.json.JsonSlurper().parse(mixinConfig, 'UTF-8')
+        int clientCount = (parsed.client ?: []).size()
+        int commonCount = (parsed.mixins ?: []).size()
+        int total = clientCount + commonCount
+
+        def matcher = agentGuide.getText('UTF-8') =~ /Mixins \((\d+) total: (\d+) client, (\d+) common\)/
+        if (!matcher.find()) {
+            throw new GradleException(
+                    "CLAUDE.md has no 'Mixins (N total: N client, N common)' line to check against " +
+                            "runicskills.mixins.json, which declares ${total} (${clientCount} client, ${commonCount} common).")
+        }
+        if (matcher.group(1) as int != total
+                || matcher.group(2) as int != clientCount
+                || matcher.group(3) as int != commonCount) {
+            throw new GradleException(
+                    "CLAUDE.md says ${matcher.group(1)} mixins (${matcher.group(2)} client, ${matcher.group(3)} common) " +
+                            "but runicskills.mixins.json declares ${total} (${clientCount} client, ${commonCount} common). " +
+                            "Update the Quick Reference and the Mixin Targets section together.")
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'checkMixinInventory' }
+
 
 // YACL autogen enforcement: YACL's ListGroupImpl rejects any @ListGroup field whose @AutoGen
 // declares a non-empty group ("@ListGroup fields cannot be inside a group as lists act as

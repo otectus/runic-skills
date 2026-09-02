@@ -2,6 +2,7 @@ package com.otectus.runicskills.integration;
 
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
+import com.otectus.runicskills.registry.RunicAttributeModifiers;
 import dev.shadowsoffire.attributeslib.api.ALObjects;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -25,26 +26,53 @@ import java.util.UUID;
  */
 public class ApothicAttributesPerksIntegration {
 
-    // Stable UUIDs for each permanent modifier on attributeslib attributes.
-    private static final UUID APOTH_CRIT_CHANCE_UUID   = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c01");
-    private static final UUID APOTH_CRIT_DAMAGE_UUID   = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c02");
-    private static final UUID APOTH_LIFE_STEAL_UUID    = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c03");
-    private static final UUID APOTH_CURR_HP_DMG_UUID   = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c04");
-    private static final UUID APOTH_DODGE_UUID         = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c05");
-    private static final UUID APOTH_ARROW_DMG_UUID     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c06");
-    private static final UUID APOTH_ARROW_VEL_UUID     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c07");
-    private static final UUID APOTH_MINING_SPEED_UUID  = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c08");
-    private static final UUID APOTH_XP_GAINED_UUID     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c09");
-    private static final UUID APOTH_PROT_PIERCE_UUID   = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0a");
-    private static final UUID APOTH_PROT_SHRED_UUID    = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0b");
-    private static final UUID APOTH_GHOST_HP_UUID      = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0c");
-    private static final UUID APOTH_HEAL_RECV_UUID     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0d");
-    private static final UUID APOTH_OVERHEAL_UUID      = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0e");
+    /**
+     * Whether this integration should do anything right now: Apothic Attributes is installed
+     * <em>and</em> {@code enableApotheosisIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return ApotheosisIntegration.isModLoaded() && ApothicAttributesIntegration.isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableApotheosisIntegration;
+    }
 
-    /** Idempotent permanent-modifier reconciliation, mirroring the ISS integration helper. */
+
+    // Stable UUIDs for each modifier on attributeslib attributes, owned centrally so the
+    // migration purge cannot miss them (RS10-002).
+    private static final UUID APOTH_CRIT_CHANCE_UUID   = RunicAttributeModifiers.APOTH_CRIT_CHANCE;
+    private static final UUID APOTH_CRIT_DAMAGE_UUID   = RunicAttributeModifiers.APOTH_CRIT_DAMAGE;
+    private static final UUID APOTH_LIFE_STEAL_UUID    = RunicAttributeModifiers.APOTH_LIFE_STEAL;
+    private static final UUID APOTH_CURR_HP_DMG_UUID   = RunicAttributeModifiers.APOTH_CURR_HP_DMG;
+    private static final UUID APOTH_DODGE_UUID         = RunicAttributeModifiers.APOTH_DODGE;
+    private static final UUID APOTH_ARROW_DMG_UUID     = RunicAttributeModifiers.APOTH_ARROW_DMG;
+    private static final UUID APOTH_ARROW_VEL_UUID     = RunicAttributeModifiers.APOTH_ARROW_VEL;
+    private static final UUID APOTH_MINING_SPEED_UUID  = RunicAttributeModifiers.APOTH_MINING_SPEED;
+    private static final UUID APOTH_XP_GAINED_UUID     = RunicAttributeModifiers.APOTH_XP_GAINED;
+    private static final UUID APOTH_PROT_PIERCE_UUID   = RunicAttributeModifiers.APOTH_PROT_PIERCE;
+    private static final UUID APOTH_PROT_SHRED_UUID    = RunicAttributeModifiers.APOTH_PROT_SHRED;
+    private static final UUID APOTH_GHOST_HP_UUID      = RunicAttributeModifiers.APOTH_GHOST_HP;
+    private static final UUID APOTH_HEAL_RECV_UUID     = RunicAttributeModifiers.APOTH_HEAL_RECV;
+    private static final UUID APOTH_OVERHEAL_UUID      = RunicAttributeModifiers.APOTH_OVERHEAL;
+
+    /**
+     * Idempotent transient-modifier reconciliation, mirroring the ISS integration helper.
+     *
+     * <p>Transient, not permanent. This handler only exists when Apotheosis and AttributesLib are
+     * both installed and the integration toggle is on; a permanent modifier would be serialised
+     * into the player's attribute NBT and then survive removing any of those three, with nothing
+     * left able to take it back off (RS10-002). The values below are re-derived every tenth tick,
+     * so none of them needs to persist.
+     */
     private static void reconcile(Player player, RegistryObject<Attribute> attrObj, UUID uuid,
                                   String name, boolean wanted, double value,
                                   AttributeModifier.Operation op) {
+        // See IronsSpellbooksIntegration.reconcileModifier: gating here rather than at the tick
+        // handler is what makes disabling the integration take the bonuses back off (RS10-011).
+        wanted = wanted && isActive();
         if (attrObj == null || !attrObj.isPresent()) return;
         AttributeInstance inst = player.getAttribute(attrObj.get());
         if (inst == null) return;
@@ -52,7 +80,7 @@ public class ApothicAttributesPerksIntegration {
         if (wanted) {
             if (existing != null && existing.getAmount() == value && existing.getOperation() == op) return;
             if (existing != null) inst.removeModifier(existing);
-            inst.addPermanentModifier(new AttributeModifier(uuid, name, value, op));
+            inst.addTransientModifier(new AttributeModifier(uuid, name, value, op));
         } else if (existing != null) {
             inst.removeModifier(existing);
         }

@@ -1,0 +1,11 @@
+# Workflow actions are pinned to commit SHAs (RS10-023) so a moved tag cannot silently change
+# what CI runs. Pinning without automation rots, so let Dependabot propose the bumps: it
+# rewrites the SHA and the trailing "# vX.Y.Z" comment together, and the change arrives as a
+# reviewable PR rather than an invisible upstream retag.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

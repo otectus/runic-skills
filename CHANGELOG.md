@@ -1,5 +1,521 @@
 # Changelog
 
+## [2.0.3] - 2026-09-02 — Every Iron's Spells Power now does something
+
+No protocol, config, or save-data change; 2.0.2 and 2.0.3 pair freely. Network protocol stays at 11.
+
+### Added
+
+- **The 19 Iron's Spells school Powers that shipped inert now have real effects.** Marrow Sense,
+  Kinetic Affinity, Piercing Insight, Arcane Echo, Black Hole Resonance, Creeper Cascade Mastery,
+  Fang Follow-Through, Shield Wall, Ember Trail, Heat Haze, Scorched Earth, Wings of Judgment,
+  Frost Echo, Reforge the Shadow, Shatter, Conduit Mark, Static Cling, Blight Spread and Venomous
+  Harvest each gained a server-side handler in the new `IronsSpellbooksSchoolPowerDispatcher`,
+  implementing what their tooltips promise. `docs/CONTENT_STATUS.md` now lists zero inert Powers,
+  and the build-time allowlist that tracked them is empty. Eighteen are exact; one is a documented
+  substitution:
+  - **Reforge the Shadow** is `APPROXIMATE`: Iron's Spells 3.16.3 has no "Ice Shadow" summon, so
+    the +40% health and the Chill burst on death apply to the Summon Polar Bear, its only Ice-school
+    summon. The tooltip says so.
+- **Every magnitude, duration and chance is a datapack tunable** under the existing
+  `data/<namespace>/powers/<power>.json` `values` map, with the tooltip numbers as defaults.
+- **Two optional mixins into Iron's Spells**, both gated on the mod being present:
+  `MixAbstractMagicProjectile` publishes ice-projectile block hits for Frost Echo (Forge's
+  `ProjectileImpactEvent` is only posted for entity hits), and `MixCreeperHeadProjectile` exposes
+  the chain count so Creeper Cascade Mastery can add a hop.
+- **Static Cling's "Shocked"** is an internal 4-second mark (Lightning-school spell damage taken
+  +20%, plus Slowness I so the victim visibly shows it), not a registered effect.
+
+### Changed
+
+- `IronsSpellbooksPowerCompat` gained the wrappers the new Powers need (spell ids on damage
+  events, spell resist, cast-time attribute, Telekinesis target, AoE duration, summoner lookup, and
+  spawners for phantom missiles, extra creeper heads and shield panels), keeping every Iron's Spells
+  import quarantined in that one file.
+- `PowerRuntime` gained `TimedModifiers` (expiring transient attribute modifiers) and `Counters`
+  (expiring per-key integers), both cleared on server stop.
+
+## [2.0.2] - 2026-09-02 — The inventory tab strip stops losing a fight it should not have been in
+
+No protocol, config, or save-data change; 2.0.1 and 2.0.2 pair freely.
+
+### Fixed
+
+- **The inventory tab strip's close reset never ran alongside Highlighter.** `MixInventoryScreen`
+  cleared `DrawTabs`' click latch from a plain `public void onClose()`. `InventoryScreen` inherits
+  `onClose` rather than declaring it, so that method was an implicit *overwrite* and not an
+  injection — and when a second mod's `InventoryScreen` mixin declares one too, Mixin keeps exactly
+  one and drops the rest. Highlighter's does, and ours was the one dropped, logged on every start as
+  `Method overwrite conflict for m_7379_ in runicskills.mixins.json:MixInventoryScreen, previously
+  written by com.anthonyhilyard.highlighter.mixin.InventoryScreenMixin. Skipping method.` The
+  visible symptom was a click that closed the inventory arming a tab switch that then fired in the
+  next screen that drew the strip. The reset now lives in
+  `client/event/InventoryTabsCloseHandler`, listening to Forge's `ScreenEvent.Closing` — the funnel
+  every close path reaches — so it composes with other mods instead of competing with them, and the
+  startup warning is gone.
+
+## [2.0.1] - 2026-09-01 — Powers you can see, and documents that describe the code
+
+2.0.0 closed the gap between what the mod claimed and what it did. This closes the gap between
+what it does and what you can *see* it doing — and between the code and the documents describing
+it, several of which had been wrong for three releases with nothing in the build able to notice.
+
+### Breaking changes
+
+- **Network protocol 10 → 11. Client and server must both be on 2.0.1.** The proc packet's payload
+  changed shape and a new configuration field changes the config schema hash, so a 2.0.0 peer would
+  agree on the protocol number and then misread the wire. A mismatch is refused at connect with a
+  named error, which is the whole reason the number exists.
+- **Discovered item locks classify differently.** Keyword matching moved from bare substring to
+  `_`-delimited segments, so items that were being locked by accident — bowls, `waxed_*` blocks,
+  fishing rods — are no longer gated. A pack that had worked around this by disabling a mod's
+  locks entirely can re-enable them, and can now opt out one item at a time with
+  `disabledDiscoveredLockItems`. No save data is affected.
+
+### Powers you can see
+
+- **Every Power has its own icon.** Both registration helpers passed `HandlerResources.NULL_PERK`,
+  so all seventy-five shared one placeholder square and the panel could not tell you what anything
+  was before you read its name. The set is generated by `tools/icongen/powers.py` from
+  `RegistryPowers` itself, so tier and school in the art cannot drift from tier and school in the
+  code, and `PowerIconCoverageTest` fails the build if one goes missing, is orphaned by a rename, or
+  duplicates another.
+
+- **A proc is now a thing that happened somewhere.** `PowerProcCP` carried a Power name and a
+  game-time stamp; the client used neither, ignoring the stamp entirely and spawning eight randomly
+  placed vanilla `ENCHANT` particles around **the local player** whatever the Power was and wherever
+  it had actually occurred. It was sent only to the caster, so a proc was invisible to everyone else
+  in the fight, and the name was decoded with the `readUtf` default of 32,767 characters for a value
+  that is never more than about thirty.
+
+  It now carries source, optional target, origin, variant, intensity, a seed and presentation flags,
+  bounded and validated on both sides, and goes to every client tracking the area. A damage
+  amplifier brands **the mob**; a chain detonation draws at **each corpse**. `intensity` is
+  normalised 0-255 and is never raw damage - sending damage would publish balance numbers to every
+  client in range and make the visual scale with gear rather than with the Power.
+
+- **A visual grammar, not more particles.** Tier is the glyph silhouette - broken ring, closed ring,
+  triple ring - plus count and duration, so Mark, Seal and Crown are tellable apart **in grayscale**.
+  School is colour, motion motif and sound. Nothing is carried by hue alone, so a colour-vision
+  deficiency, a grayscale display or a muted client each costs one channel out of three.
+
+- **Capped, not best-effort.** 64 tracked procs, 128 particles, 8 concurrent sounds, 3 HUD cards.
+  Past a cap it coalesces - a repeat increments a counter on its card instead of adding one - and
+  never allocates through. A server-side throttle collapses repeats of the same
+  `(caster, power, target)` first, so a Power that keys off every hit does not multiply by the crowd.
+
+- **The HUD card is the channel that always works.** Particles are off at `OFF` quality, sound is off
+  for a muted or deaf player, and both are useless when the effect happened behind you.
+
+- **Accessibility is configuration, and the safe values are the defaults.** `powerVfxQuality`
+  (`OFF`/`REDUCED`/`FULL`), `powerHudFeedback`, `powerProcSounds`, `highContrastRunes` and a particle
+  multiplier - with `powerScreenShake` and `powerFlashes` **defaulting off**, because both are common
+  migraine and photosensitivity triggers and neither carries information the silhouette and the card
+  do not.
+
+- **`PowerProcEvent` is public API**, fired after a Power's behaviour commits. The built-in
+  presentation is just its first subscriber.
+
+- **The Powers panel is reachable and readable.** A button on the Skills screen opens it - the
+  keybind ships unbound, because no default can be chosen safely without testing against a real
+  pack's controls, which left a whole shipped screen reachable only by someone who already knew it
+  existed. Rows show the Power's icon, pulse when **your** Power fires, and say **why** a Power
+  cannot be equipped: the server has produced structured denial reasons since earlier in this
+  release, and the screen previously just declined to light up. Every literal is localised, and the
+  row label is composed rather than concatenated, so a translated name keeps its styling.
+
+### Items, commands and correctness
+
+- **Discovered item locks stopped gating unrelated items.** `LockGen` matched keywords by bare
+  substring across every item of a scanned namespace, so `bow` claimed `bowl` and `rainbow`, `axe`
+  claimed every `waxed_*` block, and `rod` claimed fishing and lightning rods. Matching is on
+  `_`-delimited segments now, with a short never-gear list for the collisions a segment match cannot
+  resolve - a mushroom cap really is a `cap`. New `disabledDiscoveredLockItems` opts out one item;
+  previously the only remedy was disabling a whole mod's locks. Covered by `LockGenTest`.
+
+- **Commands are namespaced.** All nine literals - `/skills`, `/titles`, `/powers`, `/respec` among
+  them - were generic top-level words, and Brigadier resolves a collision by letting whichever mod
+  registered last own the name. A `/runicskills <sub>` root now mirrors every one of them by
+  redirect, carrying the same permission predicate. The short forms are unchanged.
+
+- **Two overlays ran at double speed.** `OverlayNoticeGui` and `OverlaySkillGui` decremented on both
+  client tick phases, so every notice and skill-lock overlay lasted half its configured duration.
+
+- **Blend state is no longer leaked.** Twelve `enableBlend()` calls against two `disableBlend()`;
+  whatever rendered after one of this mod's overlays inherited blending and a possibly non-white
+  shader colour.
+
+- **The KubeJS level-up veto is authoritative.** It was posted from the Skills screen's click
+  handler, on the client, so a script cancelling it only suppressed that one packet - a command or a
+  hand-sent packet walked straight past. It fires from `ProgressionService` now, and the shim's
+  removal has a version rather than an open-ended promise: 2.1.0.
+
+- **Power runtime state is bounded.** Expired proc windows and internal cooldowns were read for
+  expiry but never removed, so a key accumulated per Power per player for the rest of the session.
+  The unused `SummonRegistry` was deleted; `DamageTypeMemory` is documented as reserved for the
+  deferred half of The Grove Remembers rather than left looking abandoned.
+
+- Two silent failures now log: a mana grant that fails inside the Iron's Spells compat layer, and
+  Angler's Luck when its upstream loot table is renamed away.
+
+### Documentation and repository
+
+- **The documents describe the code again.** `CLAUDE.md` said the mod was 1.7.0 and counted 14
+  mixins where there are 28; the README gave the network protocol as `7` in one place and `5` in
+  another where it is `10`, offered a `1.5.4` download, documented a `setCustomName` title mechanism
+  this release deleted, and said `/respec` preserved skill levels when it sets every one to 1; the
+  store page headlined 1.8.1 and told players the protocol was unchanged from 1.7.0.
+  `docs/API_EVENTS.md` named two packet classes that no longer exist and a KubeJS example class that
+  never did. `docs/INTEGRATION_MATRIX.md` omitted eight lock providers and is now generated from the
+  registry.
+
+- **New guards, because nothing checked any of that.** `checkVersionConsistency` now covers the
+  README's protocol literal and jar filename and `CLAUDE.md`'s version; `checkLangParity` fails on a
+  stale locale key or a placeholder-count mismatch; `checkMixinInventory` keeps `CLAUDE.md`'s mixin
+  list honest against `runicskills.mixins.json`.
+
+- **A core tooltip was broken in all sixteen non-English locales.** `tooltip.skill.level_up` still
+  carried the three-argument wording from before the call site changed to two, so vanilla fell back
+  to the raw template and those players saw a literal `%s`. Fixed, and switched to indexed
+  placeholders so languages that order the arguments differently can. Ten stale keys left over from
+  the Blood Magic removal in 1.5.0 were dropped from all sixteen.
+
+- **The repository has a reading order.** `docs/README.md` indexes what is current, what is a
+  historical snapshot, and which asset paths are authored versus generated. Five point-in-time
+  documents moved to `docs/history/` with dated banners saying what has since changed; two
+  byte-identical duplicates carrying AI research-tool residue and a committed AI prompt were deleted,
+  along with a 9.8 MB untracked clone of the repository that had been sitting inside the working tree
+  making every local search return doubled hits.
+
+- The five `[Unreleased]` sections that had sat in this file since the 1.3.x line are grouped and
+  labelled for what they are, and `[1.3.7]` no longer appears above `[1.3.8]`.
+
+### Known limitations
+
+- **The VFX and accessibility matrix in `docs/SMOKE_TESTS.md` §8 is written but not yet run.** The
+  presentation path is compile- and logic-verified, and the caps, coalescing and validation are
+  covered by construction, but the grayscale tier-recognition check and the proc-storm budget test
+  need a real client. Treat the rendering as unverified until §8 is walked and recorded.
+- **The proc sound palette is vanilla sound events chosen per tier and school**, not the bespoke
+  layered stems the design describes. Vanilla's palette is wide enough to give every school an
+  audibly distinct character and every event already carries a translated subtitle, so the
+  accessibility requirement is met rather than deferred — but it is a substitution, and recorded
+  here as one.
+- **Non-English locales remain roughly a quarter translated.** This release fixes the one key that
+  was actively broken and deletes ten stale ones; the 1,731-key gap per locale is declared in
+  `tools/lang/intentional_fallbacks.json` and guarded against regression, not closed.
+- The integration matrix that would validate the nineteen inert Iron's Spells Powers still has not
+  run. Unchanged from 2.0.0.
+
+---
+
+## [2.0.0] - 2026-08-28 — Everything the mod claims, it now does
+
+This is the remediation release for the 1.10 audit, and it is a correctness and trust release rather
+than a content expansion. The headline is simple: **at 1.9.0, 129 of 462 registered perks and 44 of
+75 Powers did nothing at all** — registered, selectable, with config, icons and tooltips, and no
+gameplay hook anywhere. A player could spend a scarce rank or Power slot on any of them and find out
+only by noticing that nothing happened. That backlog is now empty, and the build fails if it ever
+reopens.
+
+Alongside it: the server's configuration is finally authoritative over the client's, player data is
+bounded and migrated, the effect mixin no longer replaces vanilla's semantics for every player in the
+game, and titles stopped overwriting other mods' names every ten seconds.
+
+### Breaking changes
+
+- **Network protocol 9 → 10.** Client and server must both be on 2.0.0. A mismatch is refused at
+  connect with a named error rather than misinterpreted.
+- **17 perks were removed.** Their ids are retained dormantly in existing saves (the capability's
+  orphan-retention store preserves unrecognised keys), so nothing is corrupted and they would return
+  if a pack ever re-added them. See *Removed* below for the list and the reasoning.
+- **The two hand-written config sync packets are gone.** `CommonConfigSyncCP` and
+  `DynamicConfigSyncCP` are replaced by a generated schema; see *Configuration authority*.
+- **`PassiveLevelUpSP` and `PassiveLevelDownSP` are replaced by `AdjustPassiveSP`**, which carries a
+  signed amount instead of one level per packet.
+- **`titlesUseCustomName` is deprecated and ignored.** Titles are never written to a player's vanilla
+  custom name now, so the conflict the option existed to work around cannot occur.
+- **`magicResistValue`'s bound changed from 0–10000 to 0–0.95.** It is a fraction of damage resisted,
+  and the old ceiling let a hand-edited config turn a hit into healing. Existing values above 0.95
+  are clamped on load.
+- **The KubeJS content-registration claim is withdrawn** from the README and store page. It was never
+  wired; see *Documentation*.
+
+### Perks — the inert backlog is closed
+
+**129 → 0.** 112 perks were given the effect their tooltip describes, and 17 were removed because the
+mechanic they described does not exist in this build and could not be reached from it.
+`PerkEffectCoverageTest` now runs against an empty allowlist, so a newly registered perk with no
+effect site fails the build unless somebody deliberately adds a line and says why.
+
+Where a perk named a system this build cannot see — a colony mod, a backpack mod, a zipline, a mana
+pool in a pack that has none — it was pointed at the nearest mechanic the game really has **and its
+tooltip was rewritten to say so**. A reinterpretation that leaves the old wording in place is not an
+implementation; it is a second bug. Forty-nine perk tooltips were rewritten in the final pass alone.
+A few examples:
+
+| Perk | Was | Now |
+| --- | --- | --- |
+| Colony Guardian | "…while in colony territories" | "…while inside a village" (vanilla's own village test) |
+| Zipline Expert | "Zipline travel speed increased" | "Minecarts you ride travel faster" |
+| Waystone Tinker | "Waystone teleportation cost reduced" | "Ender pearls deal less damage on arrival" |
+| Architect | "Placed blocks gain bonus hardness" | "Blocks around you have a chance to survive each explosion" |
+| Grand Sage | "All wisdom-based bonuses are amplified" | "Raising Wisdom costs less experience" |
+| Soul Binding | "Items with Soul Bound never drop on death" | "The item in your hand goes to your ender chest on death" |
+| Mechanical Knowledge | "Redstone devices work faster" | "Hoppers near you move items faster" |
+| Lock Expert | "All locks take less time to pick" | "Lock picks lose less durability" |
+
+The implementations reach for the mechanism each perk actually describes rather than a generic stat
+bonus: explosion block-lists for the blast perks, the anvil's update event for the enchantment perks,
+Forge global loot modifiers for the Fortune-tree loot perks, the villager trade generator for
+Linguist and Bookcraft, the recipe book for Master Researcher and Inventor, the stonecutter's result
+slot, hopper transfer cooldowns, dispenser scheduling, brewing-stand ingredient consumption, and the
+grindstone — which carries no player at all, so a small mixin publishes the interacting player for
+the duration of a container click and every future container perk gets it for free.
+
+Three perks were kept but gated on the mod that gives them meaning, so they no longer register at all
+in a pack that cannot support them: **Modular Equipment** (Apotheosis sockets), **Lock Expert** and
+**Safe Builder** (Locks Reforged).
+
+#### Removed
+
+Seventeen perks described a mechanic that does not exist here and could not be reached. Each had a
+config value, an icon and a tooltip promising something the game had no way to deliver, which is
+worse than not shipping the perk at all.
+
+| Perks | Why |
+| --- | --- |
+| Colony Advisor, Colony Builder, Construction Haste, Dimensional Builder, Master Mason, Scaffold Master, Structural Engineer | All seven describe block-placement or build speed. Minecraft has no placement-speed mechanic to accelerate. |
+| Aura Attunement, Aura Manipulation, Aura of Vitality, Aura Shield, Nature Sage, Nature's Wisdom | All six act on Nature's Aura's aura value. That mod is not a dependency of this build at any scope, so there is no API to call and nothing that could be tested. `NaturesAuraIntegration` went with them. |
+| Backpack Engineer, Gadget Upgrade | Both describe backpack slots. No backpack mod is a dependency, and vanilla has no expandable container to enlarge. |
+| Circuit Breaker | "Redstone signal range increased by N blocks." Redstone power is a block-state property bounded at 15; there is no range to extend. |
+| Clockwork Mastery | "Timed mechanisms are N% more accurate." Vanilla's timings are exact. There is no inaccuracy to reduce. |
+
+If Nature's Aura is ever added as a dependency, those six are the natural first candidates to
+restore — their config fields, icons and lang keys are recoverable from this commit's parent.
+
+### Powers — split, gated, and honest about what they do
+
+- **The dispatcher was split in two.** All behaviour used to live in one class that imports Iron's
+  Spells event types, so it could only be registered when that mod was installed — while all thirty
+  cross-cutting Powers register unconditionally. In a pack without Iron's Spells they were visible,
+  selectable and guaranteed to do nothing, and per-player Power state was never released either
+  because the logout handler lived in the gated class too. `VanillaPowerEventDispatcher` now carries
+  the cross-cutting half and triggers on the vanilla action as well as the spell: an arrow is a
+  projectile, an ender pearl is a teleport, a drawn bow is a channel. **25 Powers gained behaviour.**
+
+- **Eligibility is a real, single answer.** The tier gates were hardcoded at Mark 30 / Seal 60 /
+  Crown 90, taken from a design document written for a 100-per-skill scale — against this mod's
+  default cap of 32, every Seal and Crown was permanently unreachable and no configuration fixed it.
+  Thresholds are now percentages of whatever caps the pack uses. The secondary-skill gate, the
+  total-skill gate, the same-school prerequisite chain and the Power Point budget — all documented,
+  all advertised as "checked server-side", none of them implemented — now exist, and every proc
+  re-checks them, so losing a skill stops the effect immediately instead of at the next relog.
+  Denials carry a structured reason, so the UI can say *why*.
+
+- **Content status is declared and enforced.** `ContentStatus` gives every definition one of `FULL`,
+  `PARTIAL`, `APPROXIMATE`, `INERT` or `UNAVAILABLE_DEPENDENCY`, and `ContentStatusIndex` is the
+  whole list of exceptions — short enough to read in one sitting. The **19 Iron's Spells Powers with
+  no dispatcher case are declared inert**: not equippable, not shown, and costing no Power Points if
+  one is sitting in a slot from an older save, while the id itself is retained. A new
+  `powerEnableExperimentalContent` (default off) brings them back for development.
+
+- **Nine Powers implemented through a documented substitution are declared `APPROXIMATE`**, badged in
+  the list and explained in the tooltip, with the tooltip rewritten to describe the lever that ships:
+  Step Between gives damage rather than cast time, Herald of Dawn triggers on *your* health rather
+  than an ally's, Thunder Lord has no cooldown half, Glacial Sovereign extends Chilled and nothing
+  else. An approximation the player is told about is a design decision; one they are not told about
+  is a bug.
+
+- `ContentStatusTest` asserts the runtime status table and the build-time coverage allowlist name the
+  same Powers in both directions, and that the equip path, the UI and the budget all still consult
+  it. Two mechanisms describing one fact are only useful while they agree.
+
+- **Power overrides are datapack-driven** (`PowerOverridesManager`), so a pack can retune internal
+  cooldowns, windows and required levels without a code change.
+
+### Player data and progression
+
+- **Loaded capability data is bounded.** Deserialization used to accept saved skill levels, passive
+  levels, perk ranks, perk cooldowns, Power cooldowns and Power windows with no range or entry-count
+  check at all. A negative level breaks eligibility maths and overflows the global-level sum; an
+  `Integer.MAX_VALUE` rank bypasses every rank limit; a corrupt compound with a million entries
+  becomes permanent per-tick work for as long as that player is online. `CapabilitySanitizer` runs as
+  the **1 → 2 data migration** and defensively after every load, reporting one summary per player
+  rather than one line per bad key.
+
+  These are **corruption bounds, not balance caps**: lowering `skillMaxLevel` from 32 to 20 must not
+  destroy players' earned progress, so effective caps stay a use-time concern and the stored bounds
+  only reject what no legitimate configuration could have produced.
+
+- **Every attribute modifier this mod applies is inventoried and transient.** Modifiers used to be
+  identified by display name, and the cleanup sweep matched only the exact string `"runicskills"` —
+  missing `"runicskills:wellspring"`, `"runicskills.perk"` and every integration modifier. Combined
+  with integrations that wrote them permanently, a player could disable a perk, turn off an
+  integration, or uninstall Iron's Spells entirely and keep the mana, spell power, crit, dodge,
+  lifesteal and healing bonuses forever, with nothing left in the game able to reach them.
+  `RunicAttributeModifiers` is now the single table, keyed by UUID, and `RunicAttributeOwnershipTest`
+  fails the build if a modifier is applied that is not declared in it.
+
+- **One mutation path for skill levels.** `ProgressionService` replaces four paths that disagreed
+  about almost everything. The admin commands wrote straight into the capability — no event, no
+  attribute reconciliation, no title re-evaluation, no quest notification — and validated against a
+  Brigadier range captured *at command registration*, so after `/skillsreload` changed the cap the
+  command was checking a number the server no longer used. `/skills set|add|subtract` and the
+  level-up packet now share one path that clamps against the live configuration, fires the public
+  `SkillLevelUpEvent`, and reconciles once. Relative moves saturate instead of overflowing —
+  `add 2147483647` used to wrap negative and write a negative level into the save.
+
+- **Bulk passive levelling works.** The skills screen advertises Shift for 5, Ctrl for 10, Alt for the
+  rest, and implemented it by sending that many packets in a loop — while the rate limiter admits one
+  packet of a given type every two ticks. Every packet after the first was discarded in silence, so a
+  Ctrl-click reliably bought exactly one level and said nothing. `AdjustPassiveSP` sends the amount
+  once and the server decides the outcome, applying it atomically. `PassiveLevelUpEvent` fires once
+  per accepted request carrying before and after, not once per level crossed.
+
+### Configuration authority
+
+- **All 1,133 config fields now reach the client, by construction.** Two hand-written packets carried
+  128 of them across ~800 lines of boilerplate; the other 1,005 were never sent, so a connected
+  client resolved perk requirements, budgets, disabled-content lists and integration behaviour from
+  its own file — and nothing existed that would ever notice a new field had been forgotten.
+  `ConfigSchema` derives the payload from the class by reflection behind a schema hash, and
+  `ConfigSchemaCoverageTest` fails the build on a field type the format cannot carry.
+
+- **`GameplayConfigSnapshot` makes the server's values authoritative** at all 1,909 places that read
+  gameplay configuration, without any of them changing. Publication is a single reference swap, so no
+  tick or render pass sees a half-updated configuration. The local file applies again before a world
+  is open and after disconnecting, which is what the singleplayer setup screens need.
+
+- **`/skillsreload` reports honestly.** Every field is classified `LIVE_SERVER` (the default),
+  `RESTART_REQUIRED` or client-local, so an operator can tell which of their edits took effect.
+
+- **Config values are clamped on load** (`ConfigClamps`). 1,042 fields declared a range through YACL
+  annotations and only 9 enforced one, so a hand-edited file — the only way to configure a dedicated
+  server, where YACL is absent entirely — put every other value straight into runtime maths
+  unchecked. `ClampCoverageTest` keeps that closed.
+
+- **Packet counts are validated before allocation** (`PacketBounds`): a negative varint count crashes
+  the decode thread and a huge one is an allocation DoS.
+
+### Mixins and mod compatibility
+
+- **The effect mixin no longer replaces vanilla's semantics for every player.** It used to cancel
+  *both* public `addEffect` overloads and reimplement the method body — rebuilding the instance with
+  a three-argument constructor, so **ambient state, particle visibility, icon visibility, the
+  hidden-effect chain and Forge's curative-item list were silently dropped from every effect a player
+  received**, and passing the affected player to Forge's event as the source, so a splash potion
+  thrown by somebody else reported its victim as its cause. It is now one narrow argument
+  modification at the merge point; when neither perk applies the original instance is returned
+  untouched, so a player with both perks off is byte-for-byte vanilla.
+
+- **Magic Resist is actually a magic classifier.** The test was `DamageSource#isIndirect()` — true
+  for a mundane arrow and a thrown trident, false for a mob's direct magical touch — so players were
+  resisting archery and taking spells at full price. It is now a shipped, datapack-extensible
+  `runicskills:affected_by_magic_resistance` damage-type tag, clamped at 0.95 at the point of use with
+  non-finite values rejected, and the tooltip rewritten to name exactly what the tag contains.
+
+- **The crafting lock no longer leaves a ghost result.** The result slot was cleared *after* vanilla
+  had computed it, recorded the client as up to date, and sent it — so the client kept displaying an
+  item the server did not have, and `broadcastChanges` could not correct it. The clear now
+  synchronizes the menu, and because a display filter is not enforcement, an authoritative refusal
+  sits at `mayPickup`, which covers ordinary clicks, shift-clicks and the quick-move loop alike.
+
+- **Enchanting discounts no longer compound.** The discount was applied where offers are *spent*, so
+  repeating a rejected button — which a client can do freely — walked any offer down to 1 before
+  vanilla validated the action, and the price shown disagreed with the price paid. It moved to where
+  offers are *generated*.
+
+- **Optional dependencies are declared with real ranges.** Nine mods this jar links against directly
+  — Iron's Spells, Placebo, Curios, Better Combat, L2Tabs, and four gun mods — had no `mods.toml`
+  entry at all, so `ModList.isLoaded` was satisfied by any version and an API change surfaced as a
+  `NoSuchMethodError` deep in gameplay rather than a clean refusal at load. Each range starts at the
+  version this build compiles against, taken from that jar's own metadata.
+
+- New mixins this release: crafting result take, stonecutter output, hopper cooldown, dispenser
+  scheduling, minecart speed, player exertion and swap timing, brewing-stand ingredients, thrown
+  potion area, furnace, grindstone, container-click attribution, and two Apotheosis menus (applied
+  only when Apotheosis is present).
+
+### Titles
+
+- **Titles no longer own player names.** `RegistryTitles.syncTitles` called `setCustomName`
+  unconditionally — on join, on clone, on every passive change and on a 200-tick timer — ignoring the
+  `titlesUseCustomName` option that was supposed to govern it, so a nickname, chat, team or tab-list
+  mod had its name overwritten every ten seconds and the option to stop it did nothing. The name
+  formatter also flattened the incoming display name with `getString()` and rebuilt it with
+  `String.format`, discarding every style, hover event, click event and translatable child another
+  mod had put there.
+
+  Nothing touches a custom name now. The title is composed as a prefix with `Component`
+  concatenation in `PlayerEvent.NameFormat`, so a styled nickname keeps its structure. A name this
+  mod wrote in an earlier version is cleared once on login — and **only** when the component is
+  provably one of this mod's own title keys.
+
+### Client
+
+- **The perk tooltip reported three different states as one.** A perk you had earned but not yet
+  switched on said "Perk Disabled" in red, because the status line was driven by a check that is
+  false both for an unmet skill requirement *and* for a met requirement with rank still 0. Those are
+  opposite situations — the first needs levelling, the second needs a click. Since every perk starts
+  at rank 0, a new character saw "Perk Disabled" on all 445 of them. The tooltip now distinguishes
+  **Perk Enabled**, **Perk Available — click to activate**, **Perk Locked** and **Perk Disabled**,
+  and only the last is a state the player cannot act on.
+
+  The level-requirement line also never said whether the requirement was satisfied — it printed
+  "Available at level N." identically at level 1 and level 10 — and a rank-0 multi-rank perk showed
+  "I" in its title and "-" in its rank line, so one tooltip gave two answers. Both fixed. Server-side
+  gating was already correct; this was entirely about what the client said.
+
+- **Ore Detector renders.** Blocks cannot glow — the outline vanilla draws through walls is an entity
+  effect — so the perk draws its own, entirely client-side with no packets, using the block data the
+  client already has. Depth testing is off, which is what "through walls" means; every vanilla line
+  type bakes depth testing into its render state, so borrowing one would have drawn outlines that
+  stone hides.
+
+- The Powers screen badges non-`FULL` content and explains the denial reason rather than simply
+  refusing to light up.
+
+### Update checking and metadata
+
+- **The update checker is Forge's now.** The home-grown one fetched a bare `VERSION` file from
+  `otectus/runicskills` — a repository that does not exist; the real one is `otectus/runic-skills` —
+  so it silently failed for every user who ever ran it. Had it worked, it compared with `!equals`, so
+  it would have told anyone on a newer development build that an "update" was available. `mods.toml`
+  now carries an `updateJSONURL` and the repository serves `update.json`, and
+  `checkVersionConsistency` fails the build if that manifest falls behind `mod_version` — the exact
+  way the old checker rotted unnoticed.
+
+### Build, tests and documentation
+
+- New build-time invariants, in the style of the existing ones: perk and **Power** effect coverage,
+  content-status agreement, attribute-modifier ownership, config schema coverage, clamp coverage, and
+  version/update-manifest consistency.
+- Forge GameTests for capability lifecycle, config authority and Power eligibility
+  (`src/gametest`).
+- Legendary Tabs builds from an in-repo API source set, so a fresh clone needs no manually supplied
+  jar.
+- Dependabot, and `docs/BUILD_REPRODUCIBILITY.md`.
+- New documents: `docs/PERK_AUDIT.md` (the closed backlog and the removal reasoning) and
+  `docs/CONTENT_STATUS.md` (what the mod admits it is not doing).
+- **The KubeJS content-registration claim is gone.** The README and store page advertised registering
+  custom skills, perks, passives, titles and conditions from scripts. It was never wired, and the
+  obstacle is not a missing binding: this content is Forge `DeferredRegister` content, frozen before
+  any script runs. Making it real needs a startup registry event feeding a data-driven catalog — a
+  feature, not a binding. The event bridge that does work is documented as the whole of it.
+
+### Known limitations
+
+- The perks and Powers gated on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai
+  Dynasty, Locks Reforged and Siege Machines are written against those mods' APIs or registry ids,
+  and every one of those mods is `compileOnly` or detected by namespace. **This build compiles them
+  but has never executed them.** They are covered by the integration-matrix work that still gates the
+  nineteen inert Iron's Spells Powers, and should be treated as unverified until that runs.
+- An inert Power already sitting in a slot from an older save still occupies that slot until the
+  player removes it. Freeing it automatically would let them fill the slot and then exceed the cap
+  the moment that Power is implemented; evicting it would delete a saved choice. It is labelled, it
+  costs no Power Points, and one click reclaims it.
+
 ## [1.9.0] - 2026-08-25 — Death no longer wipes progression; spell attunement removed
 
 **Every player who died since 1.7.0 lost their character.** That is fixed here. This release also
@@ -835,28 +1351,6 @@ describe effects with no faithful vanilla-1.20.1 hook (mod-pool mechanics, encha
 stamina/zipline/colony/dynamic-light/ore-X-ray features) that require the optional mod's API or custom
 client rendering — these stay transparently allowlisted rather than faked.
 
-## [1.3.7] - 2026-06-10 — Configuration reliability audit
-
-Audit pass focused on config lifecycle, the YACL config screen, item locking, and integration gating. Driven by two user reports: "disabling item locking does nothing" and "the YACL config screen does nothing."
-
-### Fixed
-
-- **`/skillsreload` now reloads every config file, not just lock items.** `HandlerSkill.ForceRefresh()` previously re-read only `runicskills.lockItems.json5`, so edits to `runicskills.common.json5` — including the `enableItemLocks` master toggle, the disabled perk/passive/power lists, integration toggles and multipliers — never took effect until a full restart (and the command re-synced the stale in-memory values to clients). A new `Configuration.reloadAll()` reloads all four holders before rebuilding the lock cache and re-syncing. (Root cause of "disabling item locking does nothing.")
-- **The config screen no longer silently no-ops on a YACL version mismatch.** `YaclConfigUiBuilder.buildScreen` caught only `NoClassDefFoundError | RuntimeException`; a present-but-incompatible YACL (e.g. installing "the latest" YACL whose API drifted from the 3.5.0 build) throws `LinkageError` subtypes that escaped the catch, so clicking *Configure* did nothing. It now catches `LinkageError | RuntimeException`, logs one actionable ERROR naming the installed YACL version, and shows a vanilla fallback screen pointing at the log instead of a blank no-op. (Root cause of "the YACL config screen does nothing.")
-- **Integration master toggles now gate lock-item generation.** Disabling e.g. `enableSpartanIntegration` previously still injected that integration's generated locks (only the finer `spartanEnableLockItems` was checked). Setting `enableItemLocks = false` now also stops *all* integration lock generation, not just enforcement.
-- **`disabledPowers` is now editable in the config screen** — it was persisted but missing its `@AutoGen` annotation, unlike `disabledPerks`/`disabledPassives`.
-- Config (re)generation now logs at INFO naming the file; an unparseable config is backed up to `<name>.invalid` before defaults are rewritten, so a typo never silently destroys a hand-edited file.
-- Hardened registry lookups (`canUseItem/Block/Entity`, the lock tooltip, `/registeritem`) against `NullPointerException` for unregistered/modded entries.
-- Defensive `ResourceLocation` parsing for user-supplied config strings (lock-item ids, advancement title conditions) — a malformed entry is logged and skipped instead of crashing config load.
-- Replaced production-disabled `assert x != null` guards (Shulker-bullet mixin, client message packet) with real null checks.
-- Added the 17 missing YACL config-group translation keys; documented the intentionally file-only config fields.
-- Resolved an unresolved git merge conflict in `gradle.properties` and synced the version across `gradle.properties`, `VERSION`, and `CLAUDE.md`.
-
-### Added
-
-- JUnit test suite for config round-trip/recovery, JSON5 comment stripping, and lock-evaluation gating.
-- `AUDIT.md`, `VERIFICATION.md`, and `FOLLOW_UPS.md`; a "Disabling item locking" section in the README/CurseForge description.
-
 ## [1.3.8] - 2026-06-11 — Scaled perk cap, centralized lock providers, perk-coverage guard
 
 Builds on the perk audit (522 registered perks, 340 still inert at the start of this pass) and the
@@ -886,7 +1380,38 @@ silently inert again. See [`docs/PERK_AUDIT.md`](docs/PERK_AUDIT.md) and
 - `TITANS_GRIP` and `GLADIATOR` approximate their lang text (Spartan two-handed bypass / shield bash) without invasive mixins into Spartan internals; see `docs/PERK_AUDIT.md`.
 - Lock providers for mods not present locally are compiled and registered but only runtime-verified when that mod is installed.
 
-## [Unreleased] — Phase 1 dead-perk wiring
+## [1.3.7] - 2026-06-10 — Configuration reliability audit
+
+Audit pass focused on config lifecycle, the YACL config screen, item locking, and integration gating. Driven by two user reports: "disabling item locking does nothing" and "the YACL config screen does nothing."
+
+### Fixed
+
+- **`/skillsreload` now reloads every config file, not just lock items.** `HandlerSkill.ForceRefresh()` previously re-read only `runicskills.lockItems.json5`, so edits to `runicskills.common.json5` — including the `enableItemLocks` master toggle, the disabled perk/passive/power lists, integration toggles and multipliers — never took effect until a full restart (and the command re-synced the stale in-memory values to clients). A new `Configuration.reloadAll()` reloads all four holders before rebuilding the lock cache and re-syncing. (Root cause of "disabling item locking does nothing.")
+- **The config screen no longer silently no-ops on a YACL version mismatch.** `YaclConfigUiBuilder.buildScreen` caught only `NoClassDefFoundError | RuntimeException`; a present-but-incompatible YACL (e.g. installing "the latest" YACL whose API drifted from the 3.5.0 build) throws `LinkageError` subtypes that escaped the catch, so clicking *Configure* did nothing. It now catches `LinkageError | RuntimeException`, logs one actionable ERROR naming the installed YACL version, and shows a vanilla fallback screen pointing at the log instead of a blank no-op. (Root cause of "the YACL config screen does nothing.")
+- **Integration master toggles now gate lock-item generation.** Disabling e.g. `enableSpartanIntegration` previously still injected that integration's generated locks (only the finer `spartanEnableLockItems` was checked). Setting `enableItemLocks = false` now also stops *all* integration lock generation, not just enforcement.
+- **`disabledPowers` is now editable in the config screen** — it was persisted but missing its `@AutoGen` annotation, unlike `disabledPerks`/`disabledPassives`.
+- Config (re)generation now logs at INFO naming the file; an unparseable config is backed up to `<name>.invalid` before defaults are rewritten, so a typo never silently destroys a hand-edited file.
+- Hardened registry lookups (`canUseItem/Block/Entity`, the lock tooltip, `/registeritem`) against `NullPointerException` for unregistered/modded entries.
+- Defensive `ResourceLocation` parsing for user-supplied config strings (lock-item ids, advancement title conditions) — a malformed entry is logged and skipped instead of crashing config load.
+- Replaced production-disabled `assert x != null` guards (Shulker-bullet mixin, client message packet) with real null checks.
+- Added the 17 missing YACL config-group translation keys; documented the intentionally file-only config fields.
+- Resolved an unresolved git merge conflict in `gradle.properties` and synced the version across `gradle.properties`, `VERSION`, and `CLAUDE.md`.
+
+### Added
+
+- JUnit test suite for config round-trip/recovery, JSON5 comment stripping, and lock-evaluation gating.
+- `AUDIT.md`, `VERIFICATION.md`, and `FOLLOW_UPS.md`; a "Disabling item locking" section in the README/CurseForge description.
+
+## Development notes — the 1.2.x / 1.3.x line
+
+Five sections below were headed `[Unreleased]` for two years. Their content shipped somewhere
+across 1.2.0–1.3.6, but which heading landed in which release was never recorded, so they are
+grouped and labelled here rather than attributed to versions that would be a guess. They are kept
+for provenance — the perk-wiring and multi-rank work they describe is the ancestry of the backlog
+that 2.0.0 finally closed. Treat every "deferred" and "in progress" note in them as historical:
+`docs/PERK_AUDIT.md` is the current state.
+
+### Phase 1 dead-perk wiring
 
 Implementation of Phase 1 from the 2026-05 perk audit (`~/.claude/plans/you-are-a-senior-zazzy-thompson.md`). The audit confirmed five user-reported "active but ineffective" perks (Mowzie's Might, Sniper, Eagle Eye, Spell Quickening, Key Forge) as part of a wider pattern: 358 of 522 registered perks had zero references outside `RegistryPerks.java`. Phase 1 wires the five named perks; Phases 2-9 cover the remaining trees in subsequent commits.
 
@@ -922,7 +1447,7 @@ Four additional Strength perks wired into the existing [`CombatEventHandler.onLi
 - **Phase 4 (Magic tree, 35 dead perks)** — most are ISS attribute reconciliations via the existing `reconcileModifier` pattern.
 - Phases 5-9 — remaining aptitudes (Constitution, Endurance, Intelligence, Wisdom, Building, Tinkering, Fortune).
 
-## [Unreleased] — R0 Hardening
+### R0 Hardening
 
 Implementation of the R0 hardening release from `plan-the-full-implementation-floofy-quokka.md` against findings in `perk-audit-2026-05-18.md`. Surgical bug fixes only; no perk content added.
 
@@ -949,7 +1474,7 @@ Implementation of the R0 hardening release from `plan-the-full-implementation-fl
 - B3 + B4 (Apotheosis rarity ordinal + interactor race): rolling out in R2.
 - The 373 inert perks: rolling out per-tree in R3–R12.
 
-## [Unreleased] — R1 Multi-rank rollout (B2)
+### R1 Multi-rank rollout (B2)
 
 Implementation of the R1 multi-rank rollout from `plan-the-full-implementation-floofy-quokka.md`. Strategy (a): mechanical replacement of every `perk.getValue()[N]` callsite with `perk.getActiveValue(player)[N]` so rank-aware values flow through to gameplay.
 
@@ -961,7 +1486,7 @@ Implementation of the R1 multi-rank rollout from `plan-the-full-implementation-f
 
 - **`TreasureHunterPerk.drop()` signature.** Now takes a `Player` argument so rank-aware value lookup has a player context. Only caller (`CraftingEventHandler.java:49`) was updated.
 
-## [Unreleased] — R3 Strength tree (in progress, 15 of 35 perks)
+### R3 Strength tree (in progress, 15 of 35 perks)
 
 Per-tree perk-content rollout from `plan-the-full-implementation-floofy-quokka.md`, continued. Batch 1 closed the trivial weapon/armor modifiers; batch 2 closes the always-available, no-new-integration subset (state-bearing perks: target-HP gates, last-attacker memo, recent-hit ring buffer, save-from-fatal); batch 3 scaffolds the four new mod-integration classes; batch 4 wires the mod-gated Strength perks through those scaffolds via reflective namespace matching (no new build deps). 20 perks remain in R3: 6 vague-batch (deferred for clarification) + 10 in existing integrations (deferred to a follow-up cleanup batch) + 4 cosmetic/system-rewrite perks audit-flagged out of plan scope.
 
@@ -1035,7 +1560,7 @@ Implementation lives in [`CombatEventHandler.onLivingHurtStrengthAttacker`](src/
 
 - **`IllegalArgumentException: Invalid message PowerOverridesSyncCP` on world entry (same "Invalid player data" disconnect message).** Pre-existing latent bug unmasked by the 1.3.5 title-NPE fix. The 1.1.0 CHANGELOG entry claimed `PROTOCOL_VERSION` was bumped from 3 → 5 and that three new Powers packets (`PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP`) were added, but [`ServerNetworking.init`](src/main/java/com/otectus/runicskills/network/ServerNetworking.java#L21) had `PROTOCOL_VERSION = "4"` and zero `registerMessage(...)` calls for the three Powers packets. `PlayerLifecycleHandler.onPlayerLoggedInEvent` calls `PowerOverridesSyncCP.sendToPlayer` on join, which made Forge's `IndexedMessageCodec.build` throw `Invalid message …`; Forge's `firePlayerLoggedIn` propagated the exception and the server aborted player placement. The 1.3.4 title NPE was firing earlier in the same player-join code path and masked this — once 1.3.5 fixed the NPE, this surfaced. Fix: register `PowerOverridesSyncCP` (PLAY_TO_CLIENT), `PowerProcCP` (PLAY_TO_CLIENT), and `PowerEquipSP` (PLAY_TO_SERVER) in `ServerNetworking.init`, and bump `PROTOCOL_VERSION` to `"5"` to match the documented 1.1.0 wire format. No new build dependencies; no wire-format change beyond what 1.1.0 already documented.
 
-## [Unreleased] — R2 Apotheosis hardening (B3 + B4)
+### R2 Apotheosis hardening (B3 + B4)
 
 Implementation of the R2 Apotheosis hardening release from `plan-the-full-implementation-floofy-quokka.md`.
 
@@ -1129,7 +1654,7 @@ A new tiered abilities subsystem (Marks / Seals / Crowns) sits as a peer to the 
 
 **`/powers` admin command** (op-2 gated, mirrors `/titles`): `/powers list [mark|seal|crown]` (color-coded by equipped/disabled/grey), `/powers view` (caller's slot counter + equipped names), `/powers equip <power>` (tab-completion, bypasses skill-level gate for testing but respects tier slots and `disabledPowers`), `/powers unequip <power>` (suggestions narrow to equipped names).
 
-**`OPEN_POWERS_SCREEN` keybind** (default `U`, sits next to the existing `Y` for Skills). Registered in `RunicSkillsClient.ClientProxy.registerKeys`.
+**`OPEN_POWERS_SCREEN` keybind** (unbound by default, alongside the existing `Y` for Skills; assign it under Options → Controls). Registered in `RunicSkillsClient.ClientProxy.registerKeys`.
 
 **75 new lang keys** in `en_us.json`: `power.runicskills.<id>` + `power.runicskills.<id>.description` for every Power, plus `key.runicskills.open_powers`, `screen.runicskills.powers.{title,equip,unequip,no_capability}`, 3 `tier.runicskills.*`, 6 `school.runicskills.*`. Other locales fall back to en_us pending native translations.
 

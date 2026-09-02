@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:mineshaft",
+    "minecraft:mineshaft_mesa",
+    "minecraft:stronghold",
+    "minecraft:ancient_city",
+    "minecraft:fortress",
+    "minecraft:bastion_remnant",
+    "minecraft:monument",
+    "minecraft:ocean_ruin_cold",
+    "minecraft:ocean_ruin_warm",
+    "minecraft:buried_treasure",
+    "minecraft:end_city"
+  ]
+}

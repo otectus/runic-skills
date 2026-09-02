@@ -36,6 +36,21 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public class StarcatcherIntegration {
 
+    /**
+     * Whether this integration should do anything right now: Starcatcher is installed
+     * <em>and</em> {@code enableStarcatcherIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableStarcatcherIntegration;
+    }
+
+
     private static final String MOD_ID = "starcatcher";
     private static final ResourceLocation TREASURE_TABLE =
             new ResourceLocation(MOD_ID, "gameplay/fishing/treasure");
@@ -47,6 +62,7 @@ public class StarcatcherIntegration {
 
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event) {
+        if (!isActive()) return;
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (!isModLoaded() || !(player.level() instanceof ServerLevel level)) return;
         if (!hasStarcatcherDrop(event)) return;
@@ -87,7 +103,13 @@ public class StarcatcherIntegration {
     private static void rollBonusTreasure(ServerLevel level, ServerPlayer player) {
         try {
             LootTable table = level.getServer().getLootData().getLootTable(TREASURE_TABLE);
-            if (table == LootTable.EMPTY) return; // table renamed upstream → silently no-op
+            if (table == LootTable.EMPTY) {
+                // Starcatcher renamed or removed the table. Angler's Luck then grants nothing,
+                // which is the right behaviour but was previously indistinguishable from bad luck
+                // because nothing was logged at any level.
+                RunicSkills.getLOGGER().debug("Angler's Luck: treasure table {} is missing; bonus roll skipped.", TREASURE_TABLE);
+                return;
+            }
             LootParams params = new LootParams.Builder(level)
                     .withParameter(LootContextParams.ORIGIN, player.position())
                     .withParameter(LootContextParams.TOOL, player.getMainHandItem())

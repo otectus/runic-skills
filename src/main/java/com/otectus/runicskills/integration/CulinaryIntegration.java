@@ -29,6 +29,21 @@ import java.util.List;
  */
 public class CulinaryIntegration {
 
+    /**
+     * Whether this integration should do anything right now: the culinary mod family is installed
+     * <em>and</em> {@code enableCulinaryIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isAnyLoaded() && HandlerCommonConfig.HANDLER.instance().enableCulinaryIntegration;
+    }
+
+
     /** True when any configured culinary namespace belongs to a loaded mod. */
     public static boolean isAnyLoaded() {
         for (String ns : namespaces()) {
@@ -60,6 +75,7 @@ public class CulinaryIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onItemUseFinish(LivingEntityUseItemEvent.Finish event) {
+        if (!isActive()) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         ItemStack item = event.getItem();

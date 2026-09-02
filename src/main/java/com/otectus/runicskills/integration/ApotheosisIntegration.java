@@ -7,6 +7,7 @@ import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
+import com.otectus.runicskills.registry.RunicAttributeModifiers;
 import com.otectus.runicskills.registry.RegistrySkills;
 import dev.shadowsoffire.apotheosis.adventure.affix.AffixHelper;
 import dev.shadowsoffire.apotheosis.adventure.event.GetItemSocketsEvent;
@@ -45,6 +46,21 @@ import java.util.concurrent.ConcurrentHashMap;
  * Provides: affix rarity gating, gem socket bonus, gem attunement perk.
  */
 public class ApotheosisIntegration {
+
+    /**
+     * Whether this integration should do anything right now: Apotheosis is installed
+     * <em>and</em> {@code enableApotheosisIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableApotheosisIntegration;
+    }
+
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -183,6 +199,7 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onEquipAffixItem(LivingEquipmentChangeEvent event) {
+        if (!isActive()) return;
         if (!(event.getEntity() instanceof Player player)) return;
         if (player.isCreative() || player instanceof FakePlayer) return;
         if (event.getSlot().getType() != EquipmentSlot.Type.ARMOR) return;
@@ -223,6 +240,7 @@ public class ApotheosisIntegration {
     // line identifies the gate source so players can tell it apart from manual / integration locks.
     @SubscribeEvent
     public void onItemTooltip(net.minecraftforge.event.entity.player.ItemTooltipEvent event) {
+        if (!isActive()) return;
         ItemStack stack = event.getItemStack();
         if (stack.isEmpty()) return;
         if (!HandlerCommonConfig.HANDLER.instance().apothEnableAffixRarityGating) return;
@@ -243,6 +261,7 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onUseAffixItem(PlayerInteractEvent.RightClickItem event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
 
@@ -259,11 +278,13 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!isActive()) return;
         recordInteraction(event.getEntity());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onAttackWithAffixItem(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+        if (!isActive()) return;
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
 
@@ -282,6 +303,7 @@ public class ApotheosisIntegration {
     // @HasResult event consumed by Apotheosis's SocketingRecipe; setting DENY blocks the socket.
     @SubscribeEvent
     public void onCanSocketGem(ItemSocketingEvent.CanSocket event) {
+        if (!isActive()) return;
         Player player = resolveInteractor();
         if (player == null || player.isRemoved() || player.isCreative() || player instanceof FakePlayer) return;
         int required = getRequiredFortuneLevelForGem(event.getInputGem());
@@ -302,6 +324,7 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent
     public void onGetItemSockets(GetItemSocketsEvent event) {
+        if (!isActive()) return;
         ItemStack stack = event.getStack();
         if (stack.isEmpty()) return;
         Player owner = findItemOwner(stack);
@@ -329,6 +352,62 @@ public class ApotheosisIntegration {
             int bonus = HandlerCommonConfig.HANDLER.instance().apothicApprenticeBonus;
             if (bonus > 0) event.setSockets(event.getSockets() + bonus);
         }
+
+        // Modular Equipment — "Equipment modification slots increased". Vanilla has no such slot and
+        // no mod this build compiles against has one either, save this: an Apotheosis socket is
+        // exactly a slot you put a modification into, and Apotheosis asks how many an item has
+        // through this event. The perk is gated on Apotheosis for that reason (see RegistryPerks) —
+        // without it there is no slot system for it to describe.
+        if (RegistryPerks.MODULAR_EQUIPMENT != null && RegistryPerks.MODULAR_EQUIPMENT.get().isEnabled(owner)) {
+            int bonus = Math.round(HandlerCommonConfig.HANDLER.instance().modularEquipmentAmplifier);
+            if (bonus > 0) event.setSockets(event.getSockets() + bonus);
+        }
+    }
+
+    // ── Rarity upgrades (Apotheosis Gems, Arcane Reforging) ──
+    //
+    // Both perks promise the same thing about different objects: one more tier than you would have
+    // had. Apotheosis stores an item's rarity once, in its affix data, and derives every affix's
+    // strength from it — so raising that one value is what "upgraded by one tier" means, and it is
+    // the same operation for a gem out of a chest and for a freshly reforged weapon.
+    //
+    // Both entry points are static and take only Minecraft types so the callers — a loot modifier
+    // and a mixin — can reach them without pulling Apotheosis classes into their own signatures.
+
+    /**
+     * Raises {@code stack}'s rarity by one tier if it is an Apotheosis gem that has one to spare.
+     *
+     * @return true if the gem was upgraded
+     */
+    public static boolean upgradeGemRarity(ItemStack stack) {
+        if (!isActive() || stack.isEmpty()) return false;
+        GemInstance gem = GemInstance.unsocketed(stack);
+        if (!gem.isValidUnsocketed() || gem.isMaxRarity()) return false;
+        DynamicHolder<LootRarity> rarity = gem.rarity();
+        if (!rarity.isBound()) return false;
+        LootRarity next = rarity.get().next();
+        if (next == null || next == rarity.get()) return false;
+        AffixHelper.setRarity(stack, next);
+        return true;
+    }
+
+    /**
+     * Raises the rarity of a freshly reforged item by one tier.
+     *
+     * <p>Applied to the finished item rather than to the rarity the table was asked to reforge at,
+     * deliberately: that figure also chooses the recipe and therefore the price, so raising it there
+     * would have charged the player for the upgrade the perk is supposed to be giving them.
+     *
+     * @return true if the item was upgraded
+     */
+    public static boolean upgradeItemRarity(ItemStack stack) {
+        if (!isActive() || stack.isEmpty() || !AffixHelper.hasAffixes(stack)) return false;
+        DynamicHolder<LootRarity> rarity = AffixHelper.getRarity(stack);
+        if (rarity == null || !rarity.isBound()) return false;
+        LootRarity next = rarity.get().next();
+        if (next == null || next == rarity.get()) return false;
+        AffixHelper.setRarity(stack, next);
+        return true;
     }
 
     // ── APOTHEOSIS_WISDOM — raise the effective enchantment cap on the holder's gear ──
@@ -340,6 +419,7 @@ public class ApotheosisIntegration {
     // only the stack, so we attribute via the existing recent-interactor owner lookup.
     @SubscribeEvent
     public void onGetEnchantmentLevel(GetEnchantmentLevelEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.APOTHEOSIS_WISDOM == null) return;
         ItemStack stack = event.getStack();
         if (stack.isEmpty() || event.getEnchantments().isEmpty()) return;
@@ -352,7 +432,7 @@ public class ApotheosisIntegration {
     }
 
     // ── 1.2.0: Gem-Threaded Armor — apply transient ARMOR modifier scaling with equipped socket count ──
-    private static final UUID APOTH_GEM_THREADED_UUID = UUID.fromString("3a8b1c5d-9f7e-4d2a-8b1c-5d9f7e4d2a8b");
+    private static final UUID APOTH_GEM_THREADED_UUID = RunicAttributeModifiers.APOTH_GEM_THREADED;
 
     @SubscribeEvent
     public void onEquipChangeGemThreaded(LivingEquipmentChangeEvent event) {
@@ -362,7 +442,9 @@ public class ApotheosisIntegration {
         if (armor == null) return;
 
         AttributeModifier existing = armor.getModifier(APOTH_GEM_THREADED_UUID);
-        if (!RegistryPerks.GEM_THREADED_ARMOR.get().isEnabled(player)) {
+        // isActive() folded into the enabled test rather than guarding the whole method, so
+        // switching the integration off removes the modifier instead of freezing it (RS10-011).
+        if (!isActive() || !RegistryPerks.GEM_THREADED_ARMOR.get().isEnabled(player)) {
             if (existing != null) armor.removeModifier(existing);
             return;
         }
@@ -427,6 +509,7 @@ public class ApotheosisIntegration {
 
     @SubscribeEvent
     public void onItemSocketing(ItemSocketingEvent.ModifyResult event) {
+        if (!isActive()) return;
         if (RegistryPerks.GEM_ATTUNEMENT == null) return;
 
         // B4 fix: attribute socketing to the most-recent interactor within the 1-second
@@ -467,7 +550,7 @@ public class ApotheosisIntegration {
     // only Apotheosis-typed work: Affix Affinity (vanilla ATTACK_DAMAGE, but counts affixed
     // gear via AffixHelper) and the periodic recentInteractors prune.
 
-    private static final UUID APOTH_AFFIX_AFFINITY_DMG_UUID = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0f");
+    private static final UUID APOTH_AFFIX_AFFINITY_DMG_UUID = RunicAttributeModifiers.APOTH_AFFIX_AFFINITY;
 
     @SubscribeEvent
     public void onPlayerTickPhase2a(TickEvent.PlayerTickEvent event) {
@@ -484,22 +567,29 @@ public class ApotheosisIntegration {
 
         // Affix Affinity → count rare+ equipped items, apply per-item damage bonus
         // on ATTACK_DAMAGE. Reduction side is handled in onLivingHurtAffixAffinity.
-        if (RegistryPerks.AFFIX_AFFINITY != null && RegistryPerks.AFFIX_AFFINITY.get().isEnabled(player)) {
-            int rareCount = countRareAffixItems(player);
-            double bonus = rareCount * (c.affixAffinityDamagePercent / 100.0);
-            AttributeInstance attack = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-            if (attack != null) {
-                AttributeModifier existing = attack.getModifier(APOTH_AFFIX_AFFINITY_DMG_UUID);
-                if (bonus > 0) {
-                    if (existing == null || existing.getAmount() != bonus) {
-                        if (existing != null) attack.removeModifier(existing);
-                        attack.addTransientModifier(new AttributeModifier(APOTH_AFFIX_AFFINITY_DMG_UUID,
-                                "runicskills:affix_affinity", bonus,
-                                AttributeModifier.Operation.MULTIPLY_BASE));
-                    }
-                } else if (existing != null) {
-                    attack.removeModifier(existing);
+        //
+        // The reconcile runs unconditionally and the *amount* carries the state, rather than the
+        // whole block sitting inside the enabled test. Previously the removal branch was reachable
+        // only while the perk was enabled, so disabling the perk — or, now, the integration — left
+        // the damage bonus applied for the rest of the session (RS10-011).
+        AttributeInstance attack = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        if (attack != null) {
+            boolean wanted = isActive()
+                    && RegistryPerks.AFFIX_AFFINITY != null
+                    && RegistryPerks.AFFIX_AFFINITY.get().isEnabled(player);
+            double bonus = wanted
+                    ? countRareAffixItems(player) * (c.affixAffinityDamagePercent / 100.0)
+                    : 0.0;
+            AttributeModifier existing = attack.getModifier(APOTH_AFFIX_AFFINITY_DMG_UUID);
+            if (bonus > 0) {
+                if (existing == null || existing.getAmount() != bonus) {
+                    if (existing != null) attack.removeModifier(existing);
+                    attack.addTransientModifier(new AttributeModifier(APOTH_AFFIX_AFFINITY_DMG_UUID,
+                            "runicskills:affix_affinity", bonus,
+                            AttributeModifier.Operation.MULTIPLY_BASE));
                 }
+            } else if (existing != null) {
+                attack.removeModifier(existing);
             }
         }
     }
@@ -523,6 +613,7 @@ public class ApotheosisIntegration {
     /** Affix Affinity damage-reduction side: apply on incoming damage. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onLivingHurtAffixAffinity(LivingHurtEvent event) {
+        if (!isActive()) return;
         if (RegistryPerks.AFFIX_AFFINITY == null) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
         if (!RegistryPerks.AFFIX_AFFINITY.get().isEnabled(player)) return;

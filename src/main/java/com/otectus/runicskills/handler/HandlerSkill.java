@@ -62,6 +62,13 @@ public class HandlerSkill {
         // without this rebind, every title is skipped as "desynced" until a restart. Also
         // re-runs the default-merge so newly shipped built-in titles surface on reload.
         com.otectus.runicskills.registry.RegistryTitles.rebindAfterReload();
+        // Perks and passives captured their requirement levels and per-level values when the
+        // registry was filled. Without this the reload changed only what the event handlers read
+        // live, leaving the registered metadata the UI, tooltips and eligibility checks use frozen
+        // at the values the server booted with (RS10-005).
+        com.otectus.runicskills.registry.RegistryPerks.refreshFromConfig();
+        com.otectus.runicskills.registry.RegistryPassives.refreshFromConfig();
+        com.otectus.runicskills.registry.RegistryPowers.refreshFromConfig();
         Skills = getSkill();
         ConvergencePerk.items = null;
         TreasureHunterPerk.invalidateCache();

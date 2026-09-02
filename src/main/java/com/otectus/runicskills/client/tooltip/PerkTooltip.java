@@ -18,17 +18,49 @@ public final class PerkTooltip {
 
     public static List<Component> tooltip(Perk perk) {
         List<Component> list = new ArrayList<>();
-        int currentRank = perk.canPerk() ? perk.getPlayerRank() : 0;
+        SkillCapability localCap = SkillCapability.getLocal();
 
+        // Three states, not two. canPerk() is false both for a perk the player cannot have yet and
+        // for one they have unlocked but never switched on, and rendering a single red "Perk
+        // Disabled" for both told a player at Tinkering 10 that a level-2 perk was unavailable —
+        // the state that actually applied was "unspent", and nothing on the tooltip said so.
+        boolean perkActive = perk.canPerk();
+        boolean unavailable = perk.requiredLevel < 1 || RegistryPerks.isDisabled(perk);
+        boolean levelMet = !unavailable && perk.getToggle();
+        int playerLevel = localCap != null ? localCap.getSkillLevel(perk.getSkill()) : 0;
+
+        int currentRank = perkActive ? perk.getPlayerRank() : 0;
+
+        // Rank 0 used to render as "I" here (Math.max(1, currentRank)) while the rank line below
+        // rendered "-", so one tooltip gave two answers for the same perk. An unspent perk now
+        // carries no numeral at all.
         list.add(Component.translatable("tooltip.perk.title").append(Component.translatable(perk.getKey()))
-                .append(perk.getMaxRank() > 1 ? Component.literal(" " + Utils.intToRoman(Math.max(1, currentRank))).withStyle(ChatFormatting.LIGHT_PURPLE) : Component.empty())
+                .append(perk.getMaxRank() > 1 && currentRank > 0
+                        ? Component.literal(" " + Utils.intToRoman(currentRank)).withStyle(ChatFormatting.LIGHT_PURPLE)
+                        : Component.empty())
                 .withStyle(ChatFormatting.AQUA));
-        list.add(Component.translatable("tooltip.perk.description." + (perk.canPerk() ? "on" : "off")).withStyle(perk.canPerk() ? ChatFormatting.GREEN : ChatFormatting.RED));
+
+        String statusKey;
+        ChatFormatting statusColour;
+        if (perkActive) {
+            statusKey = "tooltip.perk.description.on";
+            statusColour = ChatFormatting.GREEN;
+        } else if (unavailable) {
+            statusKey = "tooltip.perk.description.off";
+            statusColour = ChatFormatting.RED;
+        } else if (levelMet) {
+            // The case the player is overwhelmingly likely to be looking at: earned, not yet spent.
+            statusKey = "tooltip.perk.description.unspent";
+            statusColour = ChatFormatting.YELLOW;
+        } else {
+            statusKey = "tooltip.perk.description.locked";
+            statusColour = ChatFormatting.RED;
+        }
+        list.add(Component.translatable(statusKey).withStyle(statusColour));
 
         // Active-perk cap feedback. Only shown when a cap is actually in effect (flat maxActivePerks
         // and/or the scaled perksPerGlobalLevel, scaled by EARNED global level). effectivePerkCap
         // returns 0 when unlimited.
-        SkillCapability localCap = SkillCapability.getLocal();
         if (localCap != null) {
             int effectiveCap = RegistryPerks.effectivePerkCap(localCap);
             if (effectiveCap > 0) {
@@ -64,6 +96,13 @@ public final class PerkTooltip {
             list.add(Component.translatable("tooltip.perk.description.level_requirement").withStyle(ChatFormatting.DARK_PURPLE));
             if (perk.requiredLevel > 0) {
                 list.add(Component.literal(" ").append(Component.translatable("tooltip.perk.description.available", Component.literal(String.valueOf(perk.getLvl())).withStyle(ChatFormatting.GREEN))).withStyle(ChatFormatting.DARK_AQUA));
+                // Whether the requirement is satisfied was never stated, so "Available at level 2"
+                // read as a pending gate to a player who had passed it eight levels ago.
+                list.add(Component.literal(" ").append(Component.translatable(
+                        levelMet ? "tooltip.perk.description.requirement_met"
+                                 : "tooltip.perk.description.requirement_unmet",
+                        String.valueOf(playerLevel)))
+                        .withStyle(levelMet ? ChatFormatting.GREEN : ChatFormatting.RED));
             } else {
                 list.add(Component.translatable("tooltip.perk.description.off").withStyle(ChatFormatting.RED));
             }

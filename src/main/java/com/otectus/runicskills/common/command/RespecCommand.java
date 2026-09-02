@@ -2,6 +2,7 @@ package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.context.CommandContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.integration.quests.RunicQuestBridge;
@@ -21,8 +22,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class RespecCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(
+    public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        return dispatcher.register(
                 Commands.literal("respec")
                 // Respeccing SOMEONE ELSE stays operator-only; the permission check moved off the
                 // root literal onto this branch so the self-service form below is reachable.

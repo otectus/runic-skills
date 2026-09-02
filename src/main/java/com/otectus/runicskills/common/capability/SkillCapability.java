@@ -1,6 +1,7 @@
 package com.otectus.runicskills.common.capability;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.util.CapabilityBounds;
 import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.common.util.LockCheck;
 import com.otectus.runicskills.handler.HandlerSkill;
@@ -53,8 +54,13 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      *
      * <p>1 — first versioned schema. Identical in layout to the unversioned form; the bump exists
      * so later migrations have a floor to work from.
+     *
+     * <p>2 — same layout, but every stored value is now range- and count-checked on the way in by
+     * {@link CapabilitySanitizer}. The bump is what makes the repair observable: a save at version
+     * 2 has been through the sanitizer at least once, so support can tell "this data was never
+     * validated" apart from "this data was validated and is still odd" (RS10-017).
      */
-    public static final int DATA_VERSION = 1;
+    public static final int DATA_VERSION = 2;
 
     private static final String KEY_DATA_VERSION = "dataVersion";
     private static final String KEY_ORPHANS = "runicskills:retained";
@@ -256,8 +262,20 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         this.skillLevel.put(skill.getName(), lvl);
     }
 
+    /**
+     * Sum of every skill level. Saturating rather than wrapping: this used to be a plain
+     * {@code int} sum over values loaded straight from NBT, so a corrupt save could overflow it
+     * into a negative number — which then reads as "below every requirement" at every site that
+     * compares against it, silently locking a player out of their own content (RS10-013).
+     * {@link CapabilitySanitizer} makes the inputs sane; this makes the sum safe regardless.
+     */
     public int getGlobalLevel(){
-        return this.skillLevel.values().stream().mapToInt(Integer::intValue).sum();
+        int total = 0;
+        for (Integer level : this.skillLevel.values()) {
+            if (level == null) continue;
+            total = com.otectus.runicskills.common.util.CapabilityBounds.addSaturating(total, level);
+        }
+        return total;
     }
 
     /**
@@ -353,6 +371,29 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
                 this.equippedCrown = name;
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Removes a Power id from whichever slot holds it, without needing the id to resolve.
+     *
+     * <p>Unknown ids are deliberately retained on load — uninstalling an addon for one session must
+     * not silently clear a player's loadout. But retention left them unclearable: the equip packet
+     * looked the id up in the registry to decide which tier's list to touch, so an id that no
+     * longer resolved occupied a slot with no way to reclaim it short of a full respec, which
+     * resets every skill to 1 (RS10-006). Searching all three lists costs nothing and closes that
+     * trap.
+     *
+     * @return true if a slot was freed
+     */
+    public boolean unequipUnknownPower(String powerName) {
+        if (powerName == null || powerName.isEmpty()) return false;
+        if (this.equippedMarks.remove(powerName)) return true;
+        if (this.equippedSeals.remove(powerName)) return true;
+        if (this.equippedCrown.equals(powerName)) {
+            this.equippedCrown = "";
+            return true;
         }
         return false;
     }
@@ -571,6 +612,12 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         // 0 -> 1: the legacy perk-rank byte/int sniffing and the three hardcoded cooldown key
         // names are still handled inline below, because saves at version 0 are the common case
         // and the inline handling is already correct for them.
+        //
+        // 1 -> 2: no NBT rewriting is needed here. The change is a validation pass over the loaded
+        // values, which has to run after they are read rather than before — see the
+        // CapabilitySanitizer call at the end of deserializeNBT. It runs on every load, not only
+        // on the version transition, so a save corrupted after migrating is still repaired; the
+        // version bump exists to record that validation happened at all.
     }
 
     /**
@@ -604,6 +651,29 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      * discarded — removing an addon should not silently unequip a player's loadout — and are
      * filtered at use time instead.
      */
+    /**
+     * Reads a timer compound without letting the save decide how much memory and per-tick work to
+     * commit to. Entry count and key length are bounded here rather than only afterwards, because
+     * the cost this guards against is incurred while building the map: a hostile or corrupt
+     * compound with a million keys used to become a million live map entries walked every tick for
+     * as long as that player stayed online (RS10-017).
+     *
+     * @param toValue reads one entry's value; values are range-clamped later by the sanitizer
+     */
+    private static <V> int readBoundedTimers(CompoundTag source, Map<String, V> target,
+                                             java.util.function.Function<String, V> toValue) {
+        int skipped = 0;
+        for (String key : source.getAllKeys()) {
+            if (target.size() >= CapabilityBounds.MAX_TIMER_ENTRIES
+                    || !CapabilityBounds.isStorableKey(key)) {
+                skipped++;
+                continue;
+            }
+            target.put(key, toValue.apply(key));
+        }
+        return skipped;
+    }
+
     private static void readPowerSlots(ListTag source, List<String> target, int maxSlots) {
         for (int i = 0; i < source.size() && target.size() < maxSlots; i++) {
             String name = source.getString(i);
@@ -661,12 +731,11 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         retainOrphans(nbt, consumed);
 
         // Load generic perk cooldowns
+        int skippedTimers = 0;
         this.perkCooldowns.clear();
         if (nbt.contains("perkCooldowns", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
             CompoundTag cooldownsTag = nbt.getCompound("perkCooldowns");
-            for (String key : cooldownsTag.getAllKeys()) {
-                this.perkCooldowns.put(key, cooldownsTag.getInt(key));
-            }
+            skippedTimers += readBoundedTimers(cooldownsTag, this.perkCooldowns, cooldownsTag::getInt);
         }
         // Migrate legacy hardcoded cooldowns
         if (nbt.contains("counterAttackTimer")) {
@@ -700,16 +769,27 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         this.powerCooldowns.clear();
         if (nbt.contains("powerCooldowns", Tag.TAG_COMPOUND)) {
             CompoundTag cdTag = nbt.getCompound("powerCooldowns");
-            for (String key : cdTag.getAllKeys()) this.powerCooldowns.put(key, cdTag.getLong(key));
+            skippedTimers += readBoundedTimers(cdTag, this.powerCooldowns, cdTag::getLong);
         }
         this.powerWindows.clear();
         if (nbt.contains("powerWindows", Tag.TAG_COMPOUND)) {
             CompoundTag winTag = nbt.getCompound("powerWindows");
-            for (String key : winTag.getAllKeys()) this.powerWindows.put(key, winTag.getLong(key));
+            skippedTimers += readBoundedTimers(winTag, this.powerWindows, winTag::getLong);
         }
 
         this.playerTitle = nbt.contains("playerTitle") ? nbt.getString("playerTitle") : RegistryTitles.getTitle("titleless").getName();
         this.betterCombatEntityRange = nbt.getDouble("betterCombatEntityRange");
+
+        // Defensive on every load, not only on the version transition: data can be corrupted or
+        // hand-edited after it has already been migrated, and the rest of the mod assumes these
+        // ranges everywhere (RS10-017). One summarised line per player, never one per bad key.
+        CapabilitySanitizer.Report report = CapabilitySanitizer.sanitize(this);
+        if (report.changedAnything() || skippedTimers > 0) {
+            RunicSkills.getLOGGER().warn(
+                    "Repaired out-of-range Runic Skills player data (save version {}): {}{}.",
+                    fromVersion, report.summary(),
+                    skippedTimers > 0 ? "; " + skippedTimers + " timer entr(y/ies) refused at read" : "");
+        }
     }
 
     public void copyFrom(SkillCapability source) {

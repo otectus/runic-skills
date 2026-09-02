@@ -34,14 +34,14 @@ Forked from JustLevelingFork in v0.9.0, rebranded and reworked as Runic Skills i
 
 ## Overview
 
-Runic Skills adds an unobtrusive, vanilla-respecting progression layer on top of Minecraft. Every swing, craft, mine, and spell contributes to one of ten core skills. Each skill levels up independently and funds two kinds of rewards:
+Runic Skills adds an unobtrusive, vanilla-respecting progression layer on top of Minecraft. Ten core skills level independently, each bought with the vanilla experience you already earn: you spend XP on a skill from the Skills screen, at a cost that climbs with its level. Each skill funds two kinds of rewards:
 
 - **Perks** — discrete, toggleable abilities you unlock at specific skill levels (some with multi-rank tiers — e.g. *Haggler I/II/III* for progressively deeper villager discounts).
 - **Passives** — permanent stat modifiers you spend skill points into, e.g. +Attack Damage, +Max Health, +Mana Regen, +Armor Toughness.
 
 On top of the skill system sits a **titles** subsystem: ~50 earnable prefixes with configurable requirements (kill the Ender Dragon 10 times, mine a Netherite Block, craft 100 Totems) that players can pick to display above their name.
 
-The mod is designed to feel flexible in custom modpacks — almost every number lives in a YACL-backed config, condition types can be registered by other mods, and the skill/perk/passive data can be extended via KubeJS scripting.
+The mod is designed to feel flexible in custom modpacks — almost every number lives in a YACL-backed config, condition types can be registered by other mods, and titles, perk groups and skill artwork are datapack-driven.
 
 ---
 
@@ -86,26 +86,26 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-1.5.4.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
-3. Install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.4.2+ — required client-side for the configuration UI.
+2. Drop the `runicskills-2.0.3.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+3. Optionally install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.5.0+ — it powers the in-game configuration screen. Without it the mod runs normally and the Configure button explains that the screen needs YACL; every setting remains editable in `config/RunicSkills/`.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
 No client-side-only nor server-side-only variants; one jar on both sides.
 
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=7`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=11`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
 
 ## Supported mod integrations
 
-Runic Skills detects installed mods at runtime and enables matching content without needing a config tweak. All integrations are reflectively loaded, so **missing dependencies never crash the mod**.
+Runic Skills detects installed mods at runtime and enables matching content without needing a config tweak. Integrations that link against another mod's API are loaded reflectively through `tryLoadIntegration`, so their classes never enter the main constant pool; integrations that only need Forge events are instantiated directly. Either way a **missing dependency leaves that integration inert rather than crashing the mod**, and the nine mods this jar links against directly are declared in `mods.toml` with version ranges, so an incompatible version is refused at load with a clear message.
 
 | Integration | Effect when present |
 |---|---|
-| **KubeJS** / Rhino | `SKILL_LEVELUP` event, plus ability to register custom skills, perks, passives, titles, and conditions from scripts |
+| **KubeJS** / Rhino | Progression events — `SKILL_LEVELUP` plus the four public Forge events, subscribable from scripts. **Not** content registration: see the note below. |
 | **Ars Nouveau** | 11 form/school perks (Form Focus: Projectile/Touch/Self, Wild Manipulation, per-school Hedgewitch/Emberforged/Stormcaller/Geomancer/Conjurer/Abjurer/Arcane Weaver) on top of the existing spell-damage scaling, mana regen passives, glyph mastery, and familiar gating |
 | **Irons Spellbooks** | 37 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch — including the blood-school perks Blood-mancer / Blood-Warded / Blood Catalyst and Blood Fury), summon perks (Lord of the Dead, Life Leech Bound), plus Spell Echo, Arcane Shield, and Magic-level spell gating |
 | **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item), Apotheosis Wisdom (enchantment-cap boost via Placebo's GetEnchantmentLevelEvent), plus gem rarity gating — socketing a gem requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), toggled by `apothEnableGemRarityGating` (default on) |
@@ -141,7 +141,7 @@ All `/skills*` operator commands require OP level 2.
 | `/skills <player> <skill> add <amount>` | Add (or subtract, with negative) to a player's skill. |
 | `/listskills <player>` | Dump all ten skill levels for a player. |
 | `/skillsreload` | Re-read the datapack-side config (lock items, titles, conditions) without a server restart. |
-| `/respec <player>` | Reset all passives and perks (skill levels preserved) and refund points. |
+| `/respec [player]` | Full progression reset: **every skill back to level 1**, all passives, perks and Powers cleared, perk cooldowns and Power runtime state dropped. With no argument it resets the caller and needs no permission — lowering a perk budget can otherwise strand a whole playerbase behind an operator. Naming another player requires permission level 2. |
 | `/registeritem <item-id>` | Register an item as level-gated at runtime (persisted to config on reload). |
 | `/globallimit <cap>` | Set the global-level cap. |
 | `/titles <player> <title> set true\|false` | Grant or revoke a title. |
@@ -198,13 +198,9 @@ Since 1.3.0, the overview-grid icon, detail-page icon, and detail-page backgroun
 
 **Client-asset caveat.** Texture ids must point at assets the **client** actually has. Datapack overrides on a dedicated server don't conjure client textures out of thin air — ship the PNGs in a resource pack (or as part of the pack's overrides folder) alongside the JSON.
 
-KubeJS perk/passive scripts also accept namespaced texture ids since 1.3.0:
-
-```js
-// Before 1.3.0: had to ship the texture inside the runicskills namespace.
-// Since 1.3.0: any mod's texture works.
-Perk.add('test_perk', 'magic', 1, 'irons_spellbooks:textures/item/blank_rune.png', [Value.of(...)])
-```
+The same namespaced-texture rule applies to the `Perk.add` / `Passive.add` helpers, which take a
+fully-qualified id since 1.3.0. Those helpers are a Java-side convenience used by the registry
+itself — they are **not** reachable from a script; see the KubeJS note below.
 
 The progressive 4-tier "locked icon" array on each skill (the icon that fills in as you level up) is **not** part of the override — it's a single static slot per skill. Pack authors who want progressive art can replace the underlying `runicskills:textures/skill/<name>/locked_*.png` files via a resource pack instead.
 
@@ -248,9 +244,21 @@ Example task SNBT / JSON:
 
 ## Version matrix
 
-| Runic Skills | Minecraft | Forge | Java | FTB Quests Forge (optional) |
-|---|---|---|---|---|
-| 1.5.x | 1.20.1 | 47.3.0+ | 17 | `[2001.4,)` (tested against 2001.4.22) |
+| Runic Skills | Minecraft | Forge | Java | Network protocol | FTB Quests Forge (optional) |
+|---|---|---|---|---|---|
+| 2.0.3 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
+| 2.0.2 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
+| 2.0.1 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
+| 2.0.0 | 1.20.1 | 47.3.0+ | 17 | 10 | `[2001.4,2002.0)` |
+| 1.8.x – 1.9.x | 1.20.1 | 47.3.0+ | 17 | 9 | `[2001.4,)` |
+| 1.7.x | 1.20.1 | 47.3.0+ | 17 | 9 | `[2001.4,)` |
+| 1.5.x – 1.6.x | 1.20.1 | 47.3.0+ | 17 | 8 | `[2001.4,)` (tested against 2001.4.22) |
+
+The protocol column is the one that matters for a server: a client and server on different protocol
+numbers are refused at connect, by design. **2.0.0 and 2.0.1 are each a breaking bump** — every
+client and the server must be on the same one. 2.0.1 changed the shape of the Power proc packet and
+added a configuration field, both of which live inside protocol 10, so it could not keep that number
+without a 2.0.0 peer agreeing on the version and then misreading the wire.
 
 ---
 
@@ -268,11 +276,13 @@ Artifacts land in `build/libs/`:
 - `runicskills-<version>.jar` — mod jar for distribution.
 - `runicskills-<version>-all.jar` — jar-in-jar bundle (includes bundled deps).
 
-**Local-jar dependencies.** Two integrations compile against jars that aren't redistributed with this repo. Drop them into `libs/` before building:
-- `libs/legendarytabs-1.20.1-1.1.3.1.jar` — Sfiomn's Legendary Tabs.
-- `libs/l2tabs-0.3.3.jar` — Minecraft-LightLand's L2Tabs.
+**No manual setup.** A fresh clone builds as-is — nothing to download or drop into `libs/` first, and CI's `fresh-clone-build` job proves it on every push by building with an empty Gradle cache and refusing to start if the checkout contains any untracked file.
 
-If either jar is absent, Gradle will fail at dependency resolution with a `Could not find <coord>` error. See [`build.gradle`](build.gradle) lines 196–202 for the comments.
+Two tab integrations have no public Maven coordinate, so they compile against minimal API surfaces kept in the repo instead of against the real mods:
+- **Legendary Tabs** (Sfiomn) — a hand-written source stub in [`src/legendarytabsApi/java`](src/legendarytabsApi/java), compiled by the `legendarytabsApi` source set and placed on the compile classpath only. It never enters the shipped jar; the real Legendary Tabs classes load at runtime.
+- **L2Tabs** (Minecraft-LightLand) — a tracked compile-only stub jar at `libs/l2tabs-0.3.3.jar`, resolved through `flatDir('libs')`.
+
+Both mirror a specific upstream version (Legendary Tabs `1.20.1-2.0`, L2Tabs `0.3.3`). If upstream changes those APIs, update the stub and the matching `versionRange` in `mods.toml` together — the stub is deliberately minimal, so calling a method it does not declare is a compile error rather than a runtime `NoSuchMethodError`.
 
 **Other tasks:**
 - `./gradlew compileJava` — compile only (faster iteration).
@@ -305,15 +315,47 @@ ForgeEvents.onEvent('net.minecraftforge.event.entity.player.PlayerEvent$SkillLev
 
 **Legacy `SKILL_LEVELUP` event** (pre-1.2.0) still fires for backward compatibility via a deprecated shim in `KubeJSIntegration` — but new scripts should subscribe to the Forge event directly. The legacy reflection bridge is marked `@Deprecated(forRemoval = true)` and scheduled for removal in a future major.
 
+**What KubeJS cannot do: register content.** Earlier versions of this README advertised registering
+custom skills, perks, passives, titles and conditions from scripts. That was never wired up
+(RS10-016). The KubeJS plugin registers two bindings and the level-up event group and nothing else,
+and the underlying obstacle is not a missing binding: skills, perks, passives and Powers are Forge
+`DeferredRegister` content, frozen before any script runs. Making it real needs a startup registry
+event feeding one data-driven catalog, with manifest sync and texture rules to match — a feature,
+not a binding. Until that exists the claim is gone rather than left standing. Pack authors are not
+without options in the meantime: titles, perk groups, Power overrides and skill artwork are all
+datapack-driven, and every number is configurable.
+
 ---
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=5`; clients on an older Runic Skills version will be rejected at join. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=11`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills.common.json5` on the client is read for display defaults only.
-- **Title name custom display** — titles apply a display-name prefix via `setCustomName`. Set `titlesUseCustomName=false` in the common config to disable if you run a chat/nickname mod that collides.
+- **Title display** — titles are composed as a name prefix in `PlayerEvent.NameFormat`. **Nothing writes to a player's vanilla custom name**, so a nickname, chat, team or tab-list mod keeps ownership of the name and its styling; a name written by a pre-2.0.0 version is cleared once on login. `titlesUseCustomName` is deprecated and ignored — the conflict it existed to work around can no longer occur. Turn the prefix off entirely with `displayTitlesAsPrefix=false`.
 
 ---
+
+## Known limitations
+
+The mod keeps a machine-checked record of anything it does not fully deliver, and refuses to let
+you spend a scarce slot on it unknowingly. The full list is in
+[`docs/CONTENT_STATUS.md`](docs/CONTENT_STATUS.md); the shape of it:
+
+- **19 Iron's Spells Powers are `INERT`.** They are written against Iron's Spells' own events, which
+  this build compiles against but has never executed, so none of them has a dispatcher case. They are
+  **not equippable, not shown, and cost no Power Points** if one is sitting in a slot from an older
+  save — the id is retained so nothing is lost. `powerEnableExperimentalContent` brings them back
+  for development.
+- **9 Powers are `APPROXIMATE`.** Each ships a documented substitution for part of its design, is
+  badged in the Powers panel, and **has had its tooltip rewritten to describe the lever that
+  actually ships**. An approximation you are told about is a design decision; one you are not told
+  about is a bug.
+- **Perks: none.** That backlog is closed and `PerkEffectCoverageTest` fails the build if it reopens.
+- **Content gated on an absent mod** is resolved from the runtime mod list and hidden, never
+  advertised as available.
+- **Non-English locales are roughly a quarter translated.** Minecraft falls back to English for the
+  rest, so nothing renders as a raw key, but the breadth of the `lang/` directory overstates the
+  coverage. `checkLangParity` keeps the gap declared rather than silent.
 
 ## Reporting bugs
 

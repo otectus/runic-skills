@@ -105,6 +105,7 @@ public class DrawTabs {
                 matrixStack.pose().popPose();
             }
         } finally {
+            Utils.resetRenderState();
             matrixStack.pose().popPose();
         }
     }

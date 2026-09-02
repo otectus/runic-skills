@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.otectus.runicskills.client.capability.ClientCapabilityAccess;
 import com.otectus.runicskills.client.config.YaclConfigUiBuilder;
 import com.otectus.runicskills.client.gui.OverlayNoticeGui;
+import com.otectus.runicskills.client.gui.OverlayPowerProcGui;
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
@@ -44,6 +45,24 @@ public class RunicSkillsClient {
 
     @EventBusSubscriber(modid = RunicSkills.MOD_ID, value = {Dist.CLIENT})
     public static class ClientForgeEvents {
+
+        /**
+         * Drops the server's configuration when the connection ends.
+         *
+         * <p>While connected, every gameplay read resolves to the server's values (see
+         * {@code GameplayConfigSnapshot}). Keeping them afterwards would carry the last server's
+         * perk gates, budgets and disabled-content lists into the config screen and into whatever
+         * singleplayer world the player opens next.
+         */
+        @SubscribeEvent
+        public static void onLoggingOut(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+            com.otectus.runicskills.config.snapshot.GameplayConfigSnapshot.clear();
+            // Proc presentation is per-session too: coalescing keys reference entity ids from the
+            // world being left, and a HUD card outliving its world would name a Power the next
+            // world may not even register.
+            com.otectus.runicskills.client.vfx.PowerProcVfxManager.reset();
+        }
+
         @SubscribeEvent
         public static void checkKeyboard(InputEvent.Key event) {
             if (RunicSkillsClient.client.player == null || RunicSkillsClient.client.level == null) return;
@@ -95,6 +114,7 @@ public class RunicSkillsClient {
             MinecraftForge.EVENT_BUS.register(OverlaySkillGui.INSTANCE);
             MinecraftForge.EVENT_BUS.register(OverlayTitleGui.INSTANCE);
             MinecraftForge.EVENT_BUS.register(OverlayNoticeGui.INSTANCE);
+            MinecraftForge.EVENT_BUS.register(OverlayPowerProcGui.INSTANCE);
 
             if (L2TabsIntegration.isModLoaded()) {
                 // The dependency-free bridge probes the expected API, reflectively loads the
@@ -149,6 +169,7 @@ public class RunicSkillsClient {
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "skill_overlay", OverlaySkillGui.INSTANCE);
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "title_overlay", OverlayTitleGui.INSTANCE);
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "notice_overlay", OverlayNoticeGui.INSTANCE);
+            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "power_proc_overlay", OverlayPowerProcGui.INSTANCE);
         }
 
         @SubscribeEvent

@@ -21,7 +21,14 @@ version="${mod_version}" #mandatory
 # A display name for the mod
 displayName="${mod_name}" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://docs.minecraftforge.net/en/latest/misc/updatechecker/
-#updateJSONURL="https://change.me.example.invalid/updates.json" #optional
+#
+# Forge's own update checker replaces the home-grown one this mod used to run (RS10-018). That one
+# fetched a bare VERSION file from `otectus/runicskills` — a repository that does not exist; the
+# real one is `otectus/runic-skills` — and then treated ANY difference from the running version as
+# an update, so it would have told players on a newer development build to downgrade. Forge parses
+# real version ranges, knows the difference between newer and older, and reports through the mods
+# list instead of a chat line on every login.
+updateJSONURL="https://raw.githubusercontent.com/otectus/runic-skills/master/update.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
@@ -108,6 +115,80 @@ description='''${mod_description}'''
 # install loaded happily against a tab compiled for the 1.x TabBase API and then died with
 # an AbstractMethodError on the first frame the strip drew. The range makes that a clean
 # refusal at load time instead.
+# ── Optional mods this build links against directly ──────────────────────────────────────────
+#
+# Every entry below is a mod whose CLASSES this jar references — an API call, an event type, or a
+# mixin target — as opposed to the several integrations that only match registry namespaces and
+# genuinely work against any version. Until 2.0.0 none of these were declared at all, so
+# `ModList.isLoaded` was satisfied by any version whatsoever and an API change surfaced as a
+# NoSuchMethodError deep in gameplay rather than as a clean refusal at load (RS10-019).
+#
+# Each range starts at the version this build actually compiles against, taken from that jar's own
+# metadata, and is open-ended upward: a lower bound is a fact, an upper bound would be a guess.
+
+# Iron's Spells 'n Spellbooks. The largest API surface here by far — spell events, the attribute
+# registry, MagicData, and the whole Powers dispatcher. 3.15.0 is the floor because that is where
+# SpellCooldownAddedEvent appeared, which the Phase-1a perks subscribe to.
+[[dependencies."${mod_id}"]]
+    modId = "irons_spellbooks"
+    mandatory = false
+    versionRange = "[1.20.1-3.15.0,)"
+    ordering = "AFTER"
+    side = "BOTH"
+# Placebo — Apotheosis's library, used directly for GetEnchantmentLevelEvent and DynamicHolder.
+[[dependencies."${mod_id}"]]
+    modId = "placebo"
+    mandatory = false
+    versionRange = "[8.6.3,)"
+    ordering = "AFTER"
+    side = "BOTH"
+# Curios — the accessory slots the lock system reads.
+[[dependencies."${mod_id}"]]
+    modId = "curios"
+    mandatory = false
+    versionRange = "[5.9.1,)"
+    ordering = "AFTER"
+    side = "BOTH"
+# Better Combat — MixTargetFinder targets its collision code.
+[[dependencies."${mod_id}"]]
+    modId = "bettercombat"
+    mandatory = false
+    versionRange = "[1.8.5,)"
+    ordering = "AFTER"
+    side = "BOTH"
+# L2Tabs — the inventory tab strip. Client-only, like Legendary Tabs.
+[[dependencies."${mod_id}"]]
+    modId = "l2tabs"
+    mandatory = false
+    versionRange = "[0.3.3,)"
+    ordering = "AFTER"
+    side = "CLIENT"
+# The gun mods. Each supplies item classes the lock and combat perks inspect; Vic's Point Blank is
+# additionally a mixin target.
+[[dependencies."${mod_id}"]]
+    modId = "pointblank"
+    mandatory = false
+    versionRange = "[1.5.12,)"
+    ordering = "AFTER"
+    side = "BOTH"
+[[dependencies."${mod_id}"]]
+    modId = "tacz"
+    mandatory = false
+    versionRange = "[1.0.2,)"
+    ordering = "AFTER"
+    side = "BOTH"
+[[dependencies."${mod_id}"]]
+    modId = "cgm"
+    mandatory = false
+    versionRange = "[1.4.17,)"
+    ordering = "AFTER"
+    side = "BOTH"
+[[dependencies."${mod_id}"]]
+    modId = "scguns"
+    mandatory = false
+    versionRange = "[0.1.5,)"
+    ordering = "AFTER"
+    side = "BOTH"
 [[dependencies."${mod_id}"]]
     modId = "legendarytabs"
     mandatory = false

@@ -1,149 +1,22 @@
 # Perk effect-coverage backlog (machine-checked by PerkEffectCoverageTest).
 #
-# Every name here is a perk registered in RegistryPerks that currently has NO runtime effect
-# site (no other source file references RegistryPerks.<NAME>). This is the transparent,
-# enforced backlog from the 1.3.8 perk audit. Rules enforced by the test:
-#   1. A registered perk MUST either have an effect site or appear in this list — a NEW perk
-#      cannot silently join the inert pile.
-#   2. Once a perk gains an effect, it MUST be removed from this list (the test fails on a
-#      stale entry), so the backlog can only shrink.
+# THIS LIST IS EMPTY, AND THAT IS THE POINT.
+#
+# Every name that used to appear here was a perk registered in RegistryPerks with a config value, a
+# texture and a tooltip, and no runtime effect site at all — 340 of them at the 1.3.8 audit, 129
+# still left when the 1.10 audit re-counted them (RS10-004). As of 2.0.0 there are none: every
+# remaining entry was either implemented against the mechanic its tooltip describes, or removed
+# outright because the mechanic it described does not exist in this build and could not be reached
+# from it. The removals and the reasoning behind each are recorded in docs/PERK_AUDIT.md and in the
+# 2.0.0 changelog.
+#
+# The rules PerkEffectCoverageTest enforces are unchanged, and they are what keeps this file empty:
+#   1. A registered perk MUST either have an effect site or appear here — so a NEW perk cannot
+#      silently join the inert pile. Adding a line here is a deliberate, reviewable act.
+#   2. Once a perk gains an effect, its line MUST be deleted (the test fails on a stale entry).
 #   3. Entries must name real registered perks (no typos / dead names).
 #
-# Categories (informational; see docs/PERK_AUDIT.md): BOTANIA_*/APOTHEOSIS_*/APOTHIC_*/ARS_*/
-# BLOOD_* are mod-gated (their mod is optional/absent and the constant is null at runtime when
-# the mod is missing); the rest are pending native implementation.
+# If you add a line to this file, say why on the line above it. An entry with no explanation is a
+# perk somebody gave up on quietly, which is exactly what this file exists to prevent.
+#
 # Blank lines and #-comments are ignored.
-
-ALCHEMIC_TRANSMUTATION
-ANCIENT_INSCRIPTIONS
-ANCIENT_LANGUAGES
-# APOTHEOSIS_GEMS: gem rarity is rolled inside GemLootPoolEntry with no player-attributable
-# Forge event in Apotheosis 7.4.8 (verified via the deobf API). Only an ASM mixin into the
-# loot internals could influence it, and gem loot context lacks reliable player attribution,
-# so it stays allowlisted rather than faked.
-APOTHEOSIS_GEMS
-ARCANE_LINGUIST
-ARCANE_REFORGING
-ARCANE_SCHOLAR
-ARCHITECT
-ARS_SAVANT
-ASTRAL_PROJECTION
-AURA_ATTUNEMENT
-AURA_MANIPULATION
-AURA_OF_VITALITY
-AURA_SHIELD
-BACKPACK_ENGINEER
-BEAST_TAMER
-BLAST_MINING
-BOOKCRAFT
-CARTOGRAPHER
-CATACLYSM_SPOILS
-CHAOS_ROLL
-CIRCUIT_BREAKER
-CLOCKWORK_MASTERY
-COLONIAL_NOURISHMENT
-COLONY_ADVISOR
-COLONY_BUILDER
-COLONY_GUARDIAN
-CONSTRUCTION_HASTE
-CURSE_BREAKER
-DIMENSIONAL_BUILDER
-DIMENSIONAL_WISDOM
-DISASSEMBLER
-DISENCHANT_MASTERY
-DRAGON_HOARD
-DRAGON_LORE
-DRAGON_MAGIC
-DRAGON_RIDER
-DRUIDIC_KNOWLEDGE
-DUAL_CASTING
-DUNGEON_RESILIENCE
-ELDER_KNOWLEDGE
-ELEMENTAL_MASTER
-ENCHANTMENT_AMPLIFIER
-ENCHANTMENT_INSIGHT
-ENCHANTMENT_PRESERVATION
-ENCHANTMENT_STACKING
-ENCHANTMENT_TRANSFER
-ETHEREAL_LUCK
-EXPERIENCED_ENCHANTER
-EXPLORERS_VIGOR
-EXPLOSIVE_EXPERT
-EXPLOSIVE_ORDINANCE
-FAMILIAR_BOND
-FARMERS_HAND
-FISHERMANS_LUCK
-FORGE_MASTER
-FOUNDATION_LAYER
-GADGETEER
-GADGET_UPGRADE
-GLOWSTONE_SIGHT
-GOLEM_COMMANDER
-GRAND_SAGE
-INVENTOR
-IRRIGATION_EXPERT
-JACKPOT
-JEWELERS_EYE
-LAPIS_CONSERVATION
-LINGUIST
-LOCK_EXPERT
-LORE_KEEPER
-LUCKY_CHARM
-MANA_REGENERATION
-MASTER_ARTIFICER
-MASTER_MASON
-MASTER_RESEARCHER
-MECHANICAL_ARM
-MECHANICAL_KNOWLEDGE
-MECHANISM_MASTERY
-MODULAR_EQUIPMENT
-MONSTER_COMPENDIUM
-MYSTIC_ANALYSIS
-MYSTIC_ATTUNEMENT
-MYSTIC_SIGHT
-NATURE_SAGE
-NATURES_WISDOM
-NINJA_TRAINING
-ORE_DETECTOR
-OVERCLOCK
-PARKOUR_MASTER
-PHILOSOPHERS_STONE
-POWER_TOOLS
-QUICK_DRAW
-RESOURCE_EFFICIENCY
-RUNECRAFTER
-RUNE_MASTERY
-RUNIC_ENCHANTMENT
-RUNIC_SALVAGER
-SAFE_BUILDER
-SAGES_FOCUS
-SALVAGE_EXPERT
-SALVAGE_LUCK
-SALVAGE_MASTER
-SCAFFOLD_MASTER
-SCROLL_MASTERY
-SCROLL_SCRIBE
-SIEGE_ENGINEER
-SIEGE_MECHANIC
-SILENT_KILL
-SILENT_STEP
-SMELTER
-SOUL_BINDING
-SOUL_MAGIC
-SOURCE_ATTUNEMENT
-SOURCE_WELL
-SPELL_AMPLIFIER
-SPELLCRAFT_KNOWLEDGE
-SPELL_INSCRIPTION
-SPELL_QUICKENING
-SPRING_LOADED
-STONE_CUTTER_EFFICIENCY
-STRUCTURAL_ENGINEER
-SUMMONER
-TEMPORAL_WISDOM
-TOME_OF_KNOWLEDGE
-TRAP_MAKER
-VOID_MAGIC
-WARD_MASTER
-WAYSTONE_TINKER
-ZIPLINE_EXPERT

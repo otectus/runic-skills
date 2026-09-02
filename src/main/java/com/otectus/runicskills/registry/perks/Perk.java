@@ -18,16 +18,29 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Perk {
+    // Identity and presentation: fixed by the mod, never by configuration.
     public final ResourceLocation key;
     private final Supplier<Skill> skillSupplier;
-    public final int requiredLevel;
-    public final int maxRank;
-    public final int[] rankLevelRequirements;
     public final ResourceLocation texture;
-    private final Value[] configValues;
-    private final Value[][] rankedConfigValues;
-    private double[] cachedValues;
-    private double[][] cachedRankedValues;
+
+    // Tunables: everything below comes from the config file and therefore has to be able to change
+    // while the game is running. They were final, captured once when the registry was filled — so
+    // /skillsreload updated the values the event handlers read live while leaving the registered
+    // requirement levels, tooltip numbers and eligibility checks frozen at their startup values,
+    // and a client's own file decided them regardless of the server's (RS10-005). Forge registries
+    // are frozen after startup, so the entry cannot be replaced; instead the registration lambda is
+    // re-run and its results adopted in place by
+    // {@link com.otectus.runicskills.registry.RegistryPerks#refreshFromConfig()}.
+    //
+    // volatile: publication happens on the server thread (/skillsreload) or the client's network
+    // thread task, and readers are on the tick and render threads.
+    public volatile int requiredLevel;
+    public volatile int maxRank;
+    public volatile int[] rankLevelRequirements;
+    private volatile Value[] configValues;
+    private volatile Value[][] rankedConfigValues;
+    private volatile double[] cachedValues;
+    private volatile double[][] cachedRankedValues;
 
     // Single-rank constructor (backward compatible)
     public Perk(ResourceLocation perkKey, Supplier<Skill> skillSupplier, int levelRequirement, ResourceLocation perkTexture, Value... perkValues) {
@@ -71,6 +84,30 @@ public class Perk {
         }
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, perkName);
         return new Perk(key, () -> skill, rankLevelReqs, HandlerResources.parseTexture(texture), rankedValues);
+    }
+
+    /**
+     * Takes on {@code rebuilt}'s configuration-derived values, keeping this registered instance's
+     * identity.
+     *
+     * <p>Called with the result of re-running this perk's own registration lambda against the
+     * current configuration, so the mapping from config field to perk stays in exactly one place —
+     * the registration site — rather than being restated in a refresh routine that could drift
+     * from it.
+     *
+     * <p>The derived-value caches are dropped here rather than recomputed: nothing may read a
+     * tooltip number derived from the previous configuration, and recomputing eagerly would do the
+     * work for all 462 perks on every reload whether or not anything reads them.
+     */
+    public void adoptTunables(Perk rebuilt) {
+        if (rebuilt == null || rebuilt == this) return;
+        this.requiredLevel = rebuilt.requiredLevel;
+        this.maxRank = rebuilt.maxRank;
+        this.rankLevelRequirements = rebuilt.rankLevelRequirements;
+        this.configValues = rebuilt.configValues;
+        this.rankedConfigValues = rebuilt.rankedConfigValues;
+        this.cachedValues = null;
+        this.cachedRankedValues = null;
     }
 
     public Skill getSkill() {
@@ -125,25 +162,35 @@ public class Perk {
 
     // Returns values for Rank I (backward compatible)
     public double[] getValue() {
-        if (cachedValues == null) {
-            cachedValues = extractValues(this.configValues);
+        double[] cached = this.cachedValues;
+        if (cached == null) {
+            // Read the source through a local too: adoptTunables may swap configValues between
+            // these two statements, and recomputing from a stale array is better than a null
+            // dereference — the next call sees the new one.
+            cached = extractValues(this.configValues);
+            this.cachedValues = cached;
         }
-        return cachedValues;
+        return cached;
     }
 
     // Returns values for a specific rank (1-indexed)
     public double[] getValue(int rank) {
-        if (rankedConfigValues == null || rank < 1 || rank > rankedConfigValues.length) {
+        Value[][] ranked = this.rankedConfigValues;
+        if (ranked == null || rank < 1 || rank > ranked.length) {
             return getValue();
         }
-        if (cachedRankedValues == null) {
-            cachedRankedValues = new double[rankedConfigValues.length][];
+        double[][] cache = this.cachedRankedValues;
+        if (cache == null || cache.length != ranked.length) {
+            cache = new double[ranked.length][];
+            this.cachedRankedValues = cache;
         }
         int idx = rank - 1;
-        if (cachedRankedValues[idx] == null) {
-            cachedRankedValues[idx] = extractValues(rankedConfigValues[idx]);
+        double[] cached = cache[idx];
+        if (cached == null) {
+            cached = extractValues(ranked[idx]);
+            cache[idx] = cached;
         }
-        return cachedRankedValues[idx];
+        return cached;
     }
 
     // Returns values for the player's current rank
@@ -167,10 +214,14 @@ public class Perk {
     }
 
     public MutableComponent getMutableDescription(String description) {
-        Object[] newValue = new Object[this.configValues.length];
+        Value[] values = this.configValues;
+        double[] resolved = getValue();
+        Object[] newValue = new Object[values.length];
         for (int i = 0; i < newValue.length; i++) {
-            if (this.configValues[i] != null) {
-                newValue[i] = getParameter((this.configValues[i]).type, getValue()[i]);
+            // resolved is derived from a possibly newer configValues after a concurrent reload;
+            // guard the index rather than risking an out-of-bounds on a tooltip.
+            if (values[i] != null && i < resolved.length) {
+                newValue[i] = getParameter(values[i].type, resolved[i]);
             }
         }
         return Component.translatable(description, newValue);

@@ -59,12 +59,18 @@ public final class GenericNamespaceLockProvider implements LockItemProvider {
         float mult = cfg.discoveredLockLevelMultiplier;
         List<String> disabled = cfg.disabledDiscoveredLockMods != null
                 ? cfg.disabledDiscoveredLockMods : List.of();
+        // Per-item opt-out. Keyword classification is a heuristic over another mod's naming, so
+        // there will always be an item it reads wrongly; before this, the only remedy was
+        // disabling that mod's locks entirely.
+        List<String> disabledItems = cfg.disabledDiscoveredLockItems != null
+                ? cfg.disabledDiscoveredLockItems : List.of();
 
         List<LockItem> items = new ArrayList<>();
         for (ResourceLocation rl : ForgeRegistries.ITEMS.getKeys()) {
             String ns = rl.getNamespace();
             if (!namespaces.contains(ns)) continue;
             if (disabled.contains(ns) || disabled.contains(id)) continue;
+            if (disabledItems.contains(rl.toString())) continue;
             LockItem lock = LockGen.gearLock(rl.toString(), baseLevel, mult);
             if (lock != null) items.add(lock);
         }

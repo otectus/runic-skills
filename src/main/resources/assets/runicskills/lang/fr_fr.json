@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "Grand Maître",
  "skill.runicskills.rank.8" : "Légendaire",
 
- "tooltip.skill.level_up" : "Dépensez %s niveaux (%s xp) pour augmenter %s.",
+ "tooltip.skill.level_up" : "Dépensez %1$s xp pour augmenter %2$s.",
  "tooltip.skill.max_level" : "Vous avez atteint le niveau maximum de %s.",
  "tooltip.skill.global_max_level": "Niveau global maximum de %s atteint.",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "Distance entre le joueur et le bloc.",
  "passive.runicskills.break_speed.description" : "Vitesse pour casser un bloc avec des outils. (n'affecte que la pioche, la hache et la pelle)",
  "passive.runicskills.beneficial_effect.description" : "Durée des potions qui bénéficient au joueur.",
- "passive.runicskills.magic_resist.description" : "Annule une partie des dégâts magiques causés par : potions de dégâts, crocs d'évocateur, crânes de Wither, enchantements d'épines, rayons de gardien, etc.",
  "passive.runicskills.fortune.description" : "Augmente la probabilité de trouver du butin de haute qualité lors de la pêche ou dans les coffres générés naturellement.",
  "passive.runicskills.critical_damage.description" : "Une attaque qui inflige des dégâts supplémentaires par rapport à une attaque normale. (s'applique quand le joueur court ou tombe en sautant)",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "Vous avez besoin de Fortune %s pour utiliser les objets %s !",
  "overlay.runicskills.gem_attunement_saved": "L'harmonisation aux gemmes a préservé la gemme !",
 
- "perk.runicskills.blood_mastery": "Maîtrise du sang",
- "perk.runicskills.blood_mastery.description": "Votre constitution vous fortifie contre le coût du sacrifice de sang, réduisant le coût en santé de %s.",
- "perk.runicskills.ritual_sage": "Sage rituel",
- "perk.runicskills.ritual_sage.description": "Votre sagesse profonde des rituels de sang réduit la consommation de PV de %s.",
- "perk.runicskills.crimson_bond": "Lien pourpre",
- "perk.runicskills.crimson_bond.description": "Votre lien avec le réseau sanguin accorde une chance de 1 sur %s de ne pas consommer de PV lors de l'utilisation de sceaux.",
 
  "perk.runicskills.dragon_slayer": "Tueur de dragons",
  "perk.runicskills.dragon_slayer.description": "Votre force vous permet d'infliger %s de dégâts bonus aux dragons et créatures mythiques.",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "Résistance au cataclysme",
  "perk.runicskills.cataclysm_resistance.description": "Votre endurance vous endurcit contre les forces cataclysmiques, réduisant les dégâts de boss de %s.",
 
- "perk.runicskills.curse_ward": "Protection contre les malédictions",
- "perk.runicskills.curse_ward.description": "Votre sagesse vous protège des énergies maudites, réduisant les dégâts de malédiction de %s.",
 
  "perk.runicskills.boss_hunter": "Chasseur de boss",
  "perk.runicskills.boss_hunter.description": "Votre force vous donne un avantage contre les boss puissants, infligeant %s de dégâts bonus.",
 
- "perk.runicskills.aura_attunement": "Harmonisation d'aura",
- "perk.runicskills.aura_attunement.description": "Votre harmonisation avec la nature augmente l'efficacité des effets d'aura à proximité de %s.",
 
  "perk.runicskills.master_chef": "Maître cuisinier",
  "perk.runicskills.master_chef.description": "Votre constitution vous permet d'extraire davantage de la nourriture, augmentant la durée des effets de %s.",

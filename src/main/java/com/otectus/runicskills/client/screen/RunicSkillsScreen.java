@@ -11,11 +11,9 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerConfigClient;
 import com.otectus.runicskills.handler.HandlerResources;
-import com.otectus.runicskills.integration.KubeJSIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
-import com.otectus.runicskills.network.packet.common.PassiveLevelDownSP;
-import com.otectus.runicskills.network.packet.common.PassiveLevelUpSP;
+import com.otectus.runicskills.network.packet.common.AdjustPassiveSP;
 import com.otectus.runicskills.network.packet.common.SetPlayerTitleSP;
 import com.otectus.runicskills.common.util.SkillLevelUpMath;
 import com.otectus.runicskills.network.packet.common.SkillLevelUpSP;
@@ -31,6 +29,8 @@ import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -56,6 +56,10 @@ public class RunicSkillsScreen extends Screen {
     private static final int PANEL_WIDTH = 176;
     private static final int PANEL_HEIGHT = 194;
     private static final int PANEL_CENTER_X = PANEL_WIDTH / 2;
+
+    private static final int POWERS_BUTTON_WIDTH = 50;
+    private static final int POWERS_BUTTON_HEIGHT = 20;
+    private static final int POWERS_BUTTON_GAP = 4;
 
     private static final int HEADER_NAME_Y = 7;
     private static final int HEADER_LEVEL_Y = 17;
@@ -163,6 +167,22 @@ public class RunicSkillsScreen extends Screen {
         this.searchTitle.setValue(this.searchValue);
         this.searchTitle.setFocused(this.selectedPage == PAGE_TITLES);
         this.searchTitle.setVisible(this.selectedPage == PAGE_TITLES);
+
+        // A visible way into the Powers panel. Its keybind ships unbound -- no default key can be
+        // chosen safely without testing it against a real pack's controls -- which left a whole
+        // shipped screen reachable only by a player who already knew it existed and went to
+        // Options to bind it (RS-023). A real Button also gets focus order and narration for free,
+        // which the hand-drawn tab strip does not. It sits centred just below the panel rather
+        // than above its top-right corner, where it crowded the tab strip.
+        Button openPowers = Button.builder(
+                        Component.translatable("screen.runicskills.powers.open"),
+                        b -> this.minecraft.setScreen(new PowersScreen()))
+                .bounds(x + (PANEL_WIDTH - POWERS_BUTTON_WIDTH) / 2,
+                        y + PANEL_HEIGHT + POWERS_BUTTON_GAP,
+                        POWERS_BUTTON_WIDTH, POWERS_BUTTON_HEIGHT)
+                .tooltip(Tooltip.create(Component.translatable("screen.runicskills.powers.open.tooltip")))
+                .build();
+        this.addRenderableWidget(openPowers);
     }
 
     @Override
@@ -223,6 +243,7 @@ public class RunicSkillsScreen extends Screen {
         if (!L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
             DrawTabs.render(guiGraphics, mouseX, mouseY, PANEL_WIDTH, PANEL_HEIGHT, 0);
         }
+        Utils.resetRenderState();
         guiGraphics.pose().popPose();
     }
 
@@ -474,7 +495,7 @@ public class RunicSkillsScreen extends Screen {
                 ChatFormatting color = canLevelUpSkill ? ChatFormatting.GREEN : ChatFormatting.RED;
                 Utils.drawToolTip(guiGraphics,
                         Component.translatable("tooltip.skill.level_up",
-                                Component.literal(String.valueOf(SkillLevelUpSP.requiredPoints(skillLevel))).withStyle(color),
+                                Component.literal(String.valueOf(SkillLevelUpSP.requiredPoints(client.player, detailState.skill(), skillLevel))).withStyle(color),
                                 Component.translatable(detailState.skill().getKey()).withStyle(color)).withStyle(ChatFormatting.GRAY),
                         mouseX,
                         mouseY);
@@ -537,6 +558,7 @@ public class RunicSkillsScreen extends Screen {
             guiGraphics.blit(HandlerResources.PERK_ICONS, iconLayout.frameX(), iconLayout.frameY(), 0.0F, 48.0F, 24, 24, 72, 72);
             guiGraphics.blit(HandlerResources.PERK_PAGE[PAGE_DETAIL], iconLayout.frameX() + 2, iconLayout.frameY() + 2, 1, 167 + iconLessState, 9, 9);
             guiGraphics.blit(HandlerResources.PERK_PAGE[PAGE_DETAIL], iconLayout.frameX() + 13, iconLayout.frameY() + 2, 11, 167 + iconAddState, 9, 9);
+            Utils.resetRenderState();
             guiGraphics.pose().popPose();
         }
 
@@ -556,6 +578,7 @@ public class RunicSkillsScreen extends Screen {
             guiGraphics.pose().pushPose();
             RenderSystem.enableBlend();
             guiGraphics.blit(HandlerResources.PERK_ICONS, iconLayout.frameX(), iconLayout.frameY(), 24.0F, 48.0F, 24, 24, 72, 72);
+            Utils.resetRenderState();
             guiGraphics.pose().popPose();
         }
 
@@ -762,7 +785,7 @@ public class RunicSkillsScreen extends Screen {
         // Mirror the server gate exactly (SkillLevelUpMath.canAfford): XP points are the sole
         // authoritative currency, so the button's green/red state matches what the server enforces.
         return SkillLevelUpMath.canAfford(
-                client.player.isCreative(), Utils.getPlayerXP(client.player), SkillLevelUpSP.requiredPoints(skillLevel));
+                client.player.isCreative(), Utils.getPlayerXP(client.player), SkillLevelUpSP.requiredPoints(client.player, skill, skillLevel));
     }
 
     private void updateSearchBox(int panelX, int panelY) {
@@ -972,14 +995,11 @@ public class RunicSkillsScreen extends Screen {
                 && detailState.skillLevel() < HandlerCommonConfig.HANDLER.instance().skillMaxLevel
                 && canLevelUp(detailState.skill(), detailState.skillLevel())) {
             Utils.playSound();
-            if (KubeJSIntegration.isModLoaded()) {
-                boolean cancelled = new KubeJSIntegration().postLevelUpEvent(client.player, detailState.skill());
-                if (!cancelled) {
-                    SkillLevelUpSP.send(detailState.skill());
-                }
-            } else {
-                SkillLevelUpSP.send(detailState.skill());
-            }
+            // The legacy KubeJS veto used to be consulted here, on the client, where suppressing
+            // the packet was the whole of its enforcement. It moved to ProgressionService, beside
+            // the Forge event it duplicates, so a script cancellation now holds for commands and
+            // hand-sent packets too.
+            SkillLevelUpSP.send(detailState.skill());
             return true;
         }
 
@@ -994,19 +1014,21 @@ public class RunicSkillsScreen extends Screen {
                     if (iconLayout.decrementBounds().contains(mouseX, mouseY) && passive.getLevel() > 0) {
                         Utils.playSound();
                         // Bulk-level (since 1.2.0): Shift ×5, Ctrl ×10, Alt = clear (max remaining).
-                        int amount = bulkClickAmount(passive.getLevel());
-                        for (int i = 0; i < amount; i++) PassiveLevelDownSP.send(passive);
+                        // One request for the whole click. Sending one packet per level meant the
+                        // server's rate limiter silently dropped everything after the first, so a
+                        // Ctrl-click removed exactly one level (RS10-007).
+                        AdjustPassiveSP.send(passive, -bulkClickAmount(passive.getLevel()));
                         return true;
                     }
                     if (iconLayout.incrementBounds().contains(mouseX, mouseY)
                             && passive.getLevel() < passive.getMaxLevel()
                             && detailState.capability().getSkillLevel(passive.getSkill()) >= passive.getNextLevelUp()) {
                         Utils.playSound();
-                        // Bulk-level (since 1.2.0). Server validates each increment independently;
-                        // increments past the current skill-level cap are rejected silently.
+                        // Bulk-level (since 1.2.0). The requested amount is a ceiling: the server
+                        // decides how far the player can actually afford to go and applies it in
+                        // one step (RS10-007).
                         int remaining = passive.getMaxLevel() - passive.getLevel();
-                        int amount = bulkClickAmount(remaining);
-                        for (int i = 0; i < amount; i++) PassiveLevelUpSP.send(passive);
+                        AdjustPassiveSP.send(passive, bulkClickAmount(remaining));
                         return true;
                     }
                 } else if (item instanceof Perk perk && iconLayout.frameBounds().contains(mouseX, mouseY) && perk.getToggle()) {

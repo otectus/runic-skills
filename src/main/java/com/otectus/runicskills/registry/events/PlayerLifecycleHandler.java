@@ -1,5 +1,13 @@
 package com.otectus.runicskills.registry.events;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+
+import java.util.List;
+
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.capability.LazySkillCapability;
@@ -32,25 +40,40 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = RunicSkills.MOD_ID)
 public class PlayerLifecycleHandler {
 
+    /**
+     * Composes the title as a prefix on the player's display name.
+     *
+     * <p>This is the only place a title reaches a name, and it is deliberately the only one: the
+     * event exists so a mod can decorate a name without owning it, and whatever the previous
+     * listener produced is appended intact rather than flattened.
+     *
+     * <p>The previous version called {@code getString()} on the incoming display name and rebuilt
+     * it with {@code String.format}, which threw away every style, hover event, click event and
+     * translatable child a nickname mod had put there — and did the same to the title itself
+     * (RS10-010). {@code Component} concatenation keeps all of it.
+     */
     @SubscribeEvent
     public void onPlayerNameFormat(PlayerEvent.NameFormat event) {
-        if (RunicSkills.server != null && HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix) {
-            ServerPlayer serverPlayer = RunicSkills.server.getPlayerList().getPlayer(event.getEntity().getUUID());
-            if (serverPlayer == null) return;
-            SkillCapability capability = SkillCapability.get(serverPlayer);
-            if (capability == null) return;
-            Title titleKey = RegistryTitles.getTitle(capability.getPlayerTitle());
-            // Reuse titleKey: the previous code re-called getTitle() and dereferenced .getKey()
-            // on the (nullable) result even though the ternary only null-checked titleKey — an NPE
-            // if the stored title id was invalid. NameFormat fires often (chat, tab list).
-            String title = (titleKey != null) ? Component.translatable(titleKey.getKey()).getString() : "";
+        if (RunicSkills.server == null) return;
+        if (!HandlerCommonConfig.HANDLER.instance().displayTitlesAsPrefix) return;
 
-            event.setDisplayname(Component.literal(String.format("[%s] %s",
-                    title.isEmpty()
-                            ? Component.translatable(RegistryTitles.TITLELESS.get().getKey()).getString()
-                            : title,
-                    event.getDisplayname().getString())));
-        }
+        ServerPlayer serverPlayer = RunicSkills.server.getPlayerList().getPlayer(event.getEntity().getUUID());
+        if (serverPlayer == null) return;
+        SkillCapability capability = SkillCapability.get(serverPlayer);
+        if (capability == null) return;
+
+        // A stored id that no longer resolves falls back to the titleless title rather than to an
+        // empty bracket. NameFormat fires on chat and the tab list, so this runs often.
+        Title selected = RegistryTitles.getTitle(capability.getPlayerTitle());
+        String titleKey = selected != null
+                ? selected.getKey()
+                : RegistryTitles.TITLELESS.get().getKey();
+
+        event.setDisplayname(Component.empty()
+                .append(Component.literal("["))
+                .append(Component.translatable(titleKey))
+                .append(Component.literal("] "))
+                .append(event.getDisplayname()));
     }
 
     @SubscribeEvent
@@ -58,9 +81,16 @@ public class PlayerLifecycleHandler {
         Player player = event.getEntity();
         if (!player.level().isClientSide()) {
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
+                // One-shot cleanup for saves written before 2.0.0, when the title was stamped into
+                // the player's vanilla custom name. Deleting the code that wrote it does not delete
+                // what it wrote, and only a name this mod can prove it set is touched (RS10-010).
+                if (RegistryTitles.clearLegacyTitleCustomName(serverPlayer)) {
+                    RunicSkills.getLOGGER().debug(
+                            "Cleared a title left in {}'s custom name by a pre-2.0.0 version.",
+                            serverPlayer.getGameProfile().getName());
+                }
                 ConfigSyncCP.sendToPlayer(serverPlayer);
-                CommonConfigSyncCP.sendToPlayer(serverPlayer);
-                DynamicConfigSyncCP.sendToPlayer(serverPlayer);
+                GameplayConfigCP.sendToPlayer(serverPlayer);
                 PerkGroupsSyncCP.sendToPlayer(serverPlayer);
                 PowerOverridesSyncCP.sendToPlayer(serverPlayer);
             }
@@ -95,15 +125,48 @@ public class PlayerLifecycleHandler {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
-        SkillLevelCommand.register(event.getDispatcher());
-        TitleCommand.register(event.getDispatcher());
-        SkillsReloadCommand.register(event.getDispatcher());
-        RegisterItem.register(event.getDispatcher());
-        GlobalLimitCommand.register(event.getDispatcher());
-        UpdateSkillLevelCommand.register(event.getDispatcher());
-        RespecCommand.register(event.getDispatcher());
-        ListSkillsCommand.register(event.getDispatcher());
-        PowersCommand.register(event.getDispatcher());
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        List<LiteralCommandNode<CommandSourceStack>> roots = List.of(
+                SkillLevelCommand.register(dispatcher),
+                TitleCommand.register(dispatcher),
+                SkillsReloadCommand.register(dispatcher),
+                RegisterItem.register(dispatcher),
+                GlobalLimitCommand.register(dispatcher),
+                UpdateSkillLevelCommand.register(dispatcher),
+                RespecCommand.register(dispatcher),
+                ListSkillsCommand.register(dispatcher),
+                PowersCommand.register(dispatcher));
+        registerNamespacedAliases(dispatcher, roots);
+    }
+
+    /**
+     * Mirrors every command under a {@code /runicskills} root.
+     *
+     * <p>All nine literals are generic words — {@code skills}, {@code titles}, {@code powers},
+     * {@code respec} — registered at the top level, and Brigadier resolves a collision by letting
+     * whichever mod registered last own the name. In a large progression-heavy pack that is a real
+     * possibility, and when it happens the losing mod's commands are simply unreachable with no
+     * diagnostic (RS-122).
+     *
+     * <p>The short forms stay exactly as they were, so nothing anyone has typed or scripted breaks;
+     * this only adds an unambiguous path alongside them. Each alias redirects to the real node
+     * rather than rebuilding the tree, so the two can never describe different commands, and it
+     * carries the same permission predicate — the alias must not become a way around
+     * {@code requires}.
+     */
+    private static void registerNamespacedAliases(CommandDispatcher<CommandSourceStack> dispatcher,
+                                                  List<LiteralCommandNode<CommandSourceStack>> roots) {
+        LiteralArgumentBuilder<CommandSourceStack> namespaced = Commands.literal(RunicSkills.MOD_ID);
+        for (LiteralCommandNode<CommandSourceStack> root : roots) {
+            LiteralArgumentBuilder<CommandSourceStack> alias =
+                    Commands.literal(root.getName()).requires(root.getRequirement());
+            // A redirect only forwards when there is more input to consume, so a command that is
+            // executable at its own root (/respec) needs its action copied across as well.
+            if (root.getCommand() != null) alias.executes(root.getCommand());
+            if (!root.getChildren().isEmpty()) alias.redirect(root);
+            namespaced.then(alias);
+        }
+        dispatcher.register(namespaced);
     }
 
     @SubscribeEvent
@@ -167,11 +230,16 @@ public class PlayerLifecycleHandler {
                 RegistryTitles.syncTitles(serverPlayer);
                 com.otectus.runicskills.integration.quests.RunicQuestBridge.refreshAll(serverPlayer);
 
+                // Operators are told once, in chat, only when Forge itself has decided a newer
+                // version exists — `VersionChecker` compares real versions rather than testing for
+                // inequality, so an older or development build no longer produces a notice at all
+                // (RS10-018).
                 if (HandlerCommonConfig.HANDLER.instance().checkForUpdates
-                        && RunicSkills.UpdatesAvailable.left) {
-                    if (serverPlayer.hasPermissions(2)) {
-                        Component component = Component.literal(String.format("[Runic Skills] Version %s is available, it's recommended to update!", RunicSkills.UpdatesAvailable.right));
-                        serverPlayer.sendSystemMessage(component);
+                        && serverPlayer.hasPermissions(2)) {
+                    String available = RunicSkills.availableUpdate();
+                    if (available != null) {
+                        serverPlayer.sendSystemMessage(Component.translatable(
+                                "message.runicskills.update_available", available));
                     }
                 }
             }

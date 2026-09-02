@@ -76,6 +76,59 @@ public class SamuraiDynastyIntegration {
     }
 
     /**
+     * Ninja Training — "Ninja armor provides more stealth effectiveness".
+     *
+     * <p>Samurai Dynasty's ninja armour is cosmetically stealthy and mechanically ordinary: it has
+     * no stealth stat for a perk to raise. Vanilla's stealth, meanwhile, is entirely a question of
+     * whether a mob decides to come for you, which is what the Dexterity tree's Silent Step already
+     * acts on — so wearing the armour makes that decision go the player's way more often.
+     *
+     * <p>Scaled by how much of the set is worn, so a single ninja hood is a hint of stealth and the
+     * full set is the real thing. Only refuses acquisitions, never breaks an existing one: a ninja
+     * who has been seen has been seen.
+     */
+    @SubscribeEvent
+    public void onMobPicksTarget(net.minecraftforge.event.entity.living.LivingChangeTargetEvent event) {
+        if (!isModLoaded()) return;
+        if (!(event.getNewTarget() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.Mob mob)) return;
+        if (player.level().isClientSide()) return;
+        if (RegistryPerks.NINJA_TRAINING == null
+                || !RegistryPerks.NINJA_TRAINING.get().isEnabled(player)) {
+            return;
+        }
+
+        int worn = ninjaPiecesWorn(player);
+        if (worn <= 0) return;
+
+        double perPiece = HandlerCommonConfig.HANDLER.instance().ninjaTrainingPercent / 100.0;
+        double reduction = Math.min(0.95, perPiece * worn / 4.0);
+        if (reduction <= 0) return;
+
+        // Measured against the mob's own follow range, so one tuning behaves sensibly for
+        // everything from a zombie to a dragon — the same comparison Silent Step makes.
+        double follow = mob.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+        double effective = follow * (1.0 - reduction);
+        if (mob.distanceToSqr(player) > effective * effective) {
+            event.setCanceled(true);
+        }
+    }
+
+    /** How many pieces of Samurai Dynasty ninja armour the player is wearing. */
+    private static int ninjaPiecesWorn(Player player) {
+        int worn = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            if (slot.getType() != net.minecraft.world.entity.EquipmentSlot.Type.ARMOR) continue;
+            ItemStack piece = player.getItemBySlot(slot);
+            if (IntegrationHelpers.itemFromMod(piece, MOD_ID)
+                    && IntegrationHelpers.itemPathContains(piece, "ninja")) {
+                worn++;
+            }
+        }
+        return worn;
+    }
+
+    /**
      * True if the item's registry-id path matches a Samurai Dynasty katana-family
      * weapon name. Used by SAMURAIS_EDGE; intentionally narrow to exclude polearms
      * (naginata / kamayari), clubs (tetsubo), short blades (kunai / sai / kama),

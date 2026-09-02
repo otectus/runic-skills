@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       so no perk can render the purple/black missing-texture square.</li>
  *   <li>No <code>*_PERK</code> constant points at a foreign mod namespace — borrowed third-party
  *       item sprites were replaced in 1.5.x and must not creep back in.</li>
- *   <li>Every <code>PERKS.register("name", ...)</code> id has a matching
+ *   <li>Every <code>registerPerk("name", ...)</code> id has a matching
  *       <code>textures/skill/&lt;skill&gt;/name.png</code> on disk.</li>
  * </ol>
  *
@@ -40,7 +40,10 @@ class PerkTextureResolutionTest {
     private static final Pattern LITERAL_SKILL_PATH = Pattern.compile("(textures/skill/[\\w/]+\\.png)");
     private static final Pattern FOREIGN_PERK_CONST = Pattern.compile(
             "ResourceLocation\\s+\\w+_PERK\\s*=\\s*new\\s+ResourceLocation\\(\"(?!" + "runicskills" + ")");
-    private static final Pattern PERK_REGISTRATION = Pattern.compile("PERKS\\.register\\(\"(\\w+)\"");
+    // registerPerk(...) rather than PERKS.register(...): registration goes through a helper
+    // that records how to rebuild each perk from the current config, so /skillsreload can
+    // refresh the registered instances instead of leaving them frozen at startup (RS10-005).
+    private static final Pattern PERK_REGISTRATION = Pattern.compile("registerPerk\\(\"(\\w+)\"");
 
     private static File root() {
         return new File(System.getProperty("user.dir"));

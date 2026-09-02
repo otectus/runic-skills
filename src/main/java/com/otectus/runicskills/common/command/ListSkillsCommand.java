@@ -2,6 +2,7 @@ package com.otectus.runicskills.common.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.context.CommandContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.registry.RegistrySkills;
@@ -17,8 +18,8 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.List;
 
 public class ListSkillsCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(
+    public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        return dispatcher.register(
                 (Commands.literal("listskills").requires(source -> source.hasPermission(2)))
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(source -> listSkills(source, EntityArgument.getPlayer(source, "player")))

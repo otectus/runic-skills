@@ -173,14 +173,50 @@ public class RegistryTitles {
         return cachedByName.get(titleName);
     }
 
+    /**
+     * Re-evaluates which titles this player has unlocked.
+     *
+     * <p>It used to also write the selected title into the player's vanilla {@code CustomName}, on
+     * join, on clone, on every passive change and on a 200-tick timer — unconditionally, ignoring
+     * the {@code titlesUseCustomName} option that was supposed to govern it. A nickname, chat, team
+     * or tab-list mod therefore had its name overwritten every ten seconds, and the option to stop
+     * that did nothing (RS10-010).
+     *
+     * <p>Nothing here touches a player's name any more. The title is displayed as a prefix composed
+     * in {@code PlayerEvent.NameFormat}, which is the event that exists for exactly this and which
+     * leaves the name itself alone.
+     */
     public static void syncTitles(ServerPlayer serverPlayer) {
         serverPlayerTitles(serverPlayer);
-        serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(skillCapability -> {
-            Title title = getTitle(SkillCapability.get(serverPlayer).getPlayerTitle());
-            if (title != null) {
-                serverPlayer.setCustomName(Component.translatable(title.getKey()));
-            }
-        });
+    }
+
+    /**
+     * Clears a {@code CustomName} this mod set in an earlier version.
+     *
+     * <p>Removing the code that wrote it does not remove what it already wrote: a player who logged
+     * in under 1.9.0 or earlier has their title baked into their save, and it would have stayed
+     * there for good.
+     *
+     * <p>Only a name this mod can <em>prove</em> it owns is cleared — a translatable component whose
+     * key is one of this mod's own title keys. A literal name, a styled nickname, another mod's
+     * component, or a translatable from anywhere else is left exactly as it is. Guessing here would
+     * be a worse bug than the one being fixed.
+     *
+     * @return true if a name was cleared
+     */
+    public static boolean clearLegacyTitleCustomName(ServerPlayer serverPlayer) {
+        Component customName = serverPlayer.getCustomName();
+        if (customName == null) return false;
+        if (!(customName.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents translatable)) {
+            return false;
+        }
+        String key = translatable.getKey();
+        if (key == null || !key.startsWith("title." + RunicSkills.MOD_ID + ".")) return false;
+
+        serverPlayer.setCustomName(null);
+        serverPlayer.refreshDisplayName();
+        serverPlayer.refreshTabListName();
+        return true;
     }
 
     public static void serverPlayerTitles(ServerPlayer serverPlayer) {

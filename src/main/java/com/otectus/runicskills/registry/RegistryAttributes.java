@@ -20,9 +20,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class RegistryAttributes {
-    public static final UUID COUNTER_ATTACK_UUID = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15590");
-    public static final UUID ONE_HANDED_UUID = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15555");
-    public static final UUID DIAMOND_SKIN_UUID = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15556");
+    // Aliases onto the central owner table. These three are declared there, not here, so the
+    // migration purge and the code that applies them cannot drift apart (RS10-002).
+    public static final UUID COUNTER_ATTACK_UUID = RunicAttributeModifiers.COUNTER_ATTACK;
+    public static final UUID ONE_HANDED_UUID = RunicAttributeModifiers.ONE_HANDED;
+    public static final UUID DIAMOND_SKIN_UUID = RunicAttributeModifiers.DIAMOND_SKIN;
 
     private static final DeferredRegister<Attribute> REGISTER = DeferredRegister.create(ForgeRegistries.Keys.ATTRIBUTES, RunicSkills.MOD_ID);
 
@@ -73,7 +75,7 @@ public class RegistryAttributes {
     }
 
     public static void modifierAttributes(ServerPlayer serverPlayer) {
-        purgeLegacyPermanentModifiers(serverPlayer);
+        migrateLegacyModifiers(serverPlayer);
         serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(skillCapability -> {
             for (Passive passive : RegistryPassives.getCachedValues()) {
                 boolean enabled = !RegistryPassives.isDisabled(passive);
@@ -99,39 +101,62 @@ public class RegistryAttributes {
     }
 
     /**
-     * One-shot removal of the permanent attribute modifiers written by versions up to 1.6.1.
+     * Attribute-migration marker. Versioned rather than boolean because the first sweep was
+     * incomplete and its {@code true} flag would otherwise permanently mask the repair.
      *
-     * <p>Every modifier this mod applies used {@code addPermanentModifier}, so it was serialised
-     * into the player's attribute NBT and outlived whatever granted it. A perk disabled in config,
-     * a lost skill level, a Counter Attack window that never closed (RS-011) or a toggled Apothic
-     * delegation (RS-073) each left a bonus in the save that no code path could reach any more.
-     * Modifiers are transient now, but existing saves still carry the old ones, and they are
-     * indistinguishable from live ones except by the fact that nothing re-applies them.
-     *
-     * <p>Clearing everything this mod owns is safe precisely because it is all re-derived: passives
-     * immediately below, perk modifiers on the next player tick. Runs once per player, tracked in
-     * persistent data so a re-login does not repeat the sweep.
+     * <ul>
+     *   <li>{@code 0} — never migrated.</li>
+     *   <li>{@code 1} — the pre-2.0.0 sweep ran. It removed only modifiers whose display name was
+     *       exactly {@code "runicskills"}, so it missed every integration modifier
+     *       ({@code "runicskills:wellspring"} and friends) and every perk-attribute modifier
+     *       ({@code "runicskills.perk"}).</li>
+     *   <li>{@code 2} — the UUID-driven sweep in this class has run.</li>
+     * </ul>
      */
-    private static void purgeLegacyPermanentModifiers(ServerPlayer serverPlayer) {
-        final String flag = "rs_attr_transient_migrated";
-        if (serverPlayer.getPersistentData().getBoolean(flag)) return;
-        serverPlayer.getPersistentData().putBoolean(flag, true);
+    static final String ATTR_MIGRATION_VERSION_KEY = "rs_attr_migration_version";
 
-        int removed = 0;
-        for (Attribute attribute : ForgeRegistries.ATTRIBUTES) {
-            AttributeInstance instance = serverPlayer.getAttribute(attribute);
-            if (instance == null) continue;
-            for (AttributeModifier modifier : new java.util.ArrayList<>(instance.getModifiers())) {
-                if (RunicSkills.MOD_ID.equals(modifier.getName())) {
-                    instance.removeModifier(modifier);
-                    removed++;
-                }
-            }
+    /** The pre-2.0.0 boolean flag. Read only to recognise a partially-migrated save. */
+    private static final String LEGACY_MIGRATION_FLAG = "rs_attr_transient_migrated";
+
+    static final int ATTR_MIGRATION_VERSION = 2;
+
+    /**
+     * One-shot removal of every attribute modifier this mod ever persisted into a player's save.
+     *
+     * <p>Modifiers up to 1.6.1 were applied with {@code addPermanentModifier} and therefore
+     * serialised into the player's own attribute NBT, where they outlived whatever granted them:
+     * a perk disabled in config, a lost skill level, a Counter Attack window that never closed
+     * (RS-011) or a toggled Apothic delegation (RS-073) each left a bonus nothing could reach.
+     * 1.7.0 made the core modifiers transient and added a sweep — but that sweep matched on the
+     * modifier's <em>display name</em> being exactly {@code "runicskills"}, and the integration
+     * modifiers are named {@code "runicskills:<feature>"} while the perk-attribute pass names its
+     * own {@code "runicskills.perk"}. None of them matched, so mana, spell power, cooldown, crit,
+     * dodge, lifesteal, armour-pierce and healing bonuses stayed in saves permanently — including
+     * for players who had removed Iron's Spells or AttributesLib entirely (RS10-002).
+     *
+     * <p>This sweep matches on UUID from {@link RunicAttributeModifiers}, which is the actual
+     * identity of a modifier, and runs for anyone below migration version 2 — including the saves
+     * the 1.7.0 flag already marked as done. Clearing everything the mod owns is safe precisely
+     * because it is all re-derived: passives immediately below, perk and integration modifiers on
+     * their next reconciliation tick.
+     */
+    private static void migrateLegacyModifiers(ServerPlayer serverPlayer) {
+        var persisted = serverPlayer.getPersistentData();
+        int version = persisted.getInt(ATTR_MIGRATION_VERSION_KEY);
+        if (version == 0 && persisted.getBoolean(LEGACY_MIGRATION_FLAG)) {
+            version = 1;
         }
+        if (version >= ATTR_MIGRATION_VERSION) return;
+
+        int removed = RunicAttributeModifiers.removeAllPlayerOwned(serverPlayer);
+        persisted.putInt(ATTR_MIGRATION_VERSION_KEY, ATTR_MIGRATION_VERSION);
+        persisted.remove(LEGACY_MIGRATION_FLAG);
+
         if (removed > 0) {
             RunicSkills.getLOGGER().info(
-                    "Removed {} persisted attribute modifier(s) from {} left by a pre-1.7.0 version; "
-                    + "active bonuses are re-applied automatically.", removed, serverPlayer.getGameProfile().getName());
+                    "Removed {} persisted attribute modifier(s) from {} left by a pre-2.0.0 version "
+                    + "(migration v{} -> v{}); active bonuses are re-applied automatically.",
+                    removed, serverPlayer.getGameProfile().getName(), version, ATTR_MIGRATION_VERSION);
         }
     }
 

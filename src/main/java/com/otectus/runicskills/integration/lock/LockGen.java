@@ -76,9 +76,58 @@ public final class LockGen {
         return p.contains("quarterstaff") || p.contains("battlestaff") || p.contains("warstaff");
     }
 
+    /**
+     * Item paths that must never be classified as gear, whatever the keyword tables say.
+     *
+     * <p>These are the cases a keyword cannot separate on its own: {@code rod} is a genuine magic
+     * implement in a dozen mods and also the vanilla fishing and lightning rods, and a mod that
+     * follows vanilla's naming inherits the collision. Matched against the whole path, so a mod's
+     * own {@code blaze_rod} equivalent is caught while its {@code arcane_rod} is not.
+     */
+    private static final String[] NEVER_GEAR = {
+            "fishing_rod", "lightning_rod", "blaze_rod", "breeze_rod", "end_rod",
+            "mushroom_cap", "mushroom_stew", "brewing_stand", "cauldron", "lodestone",
+            "music_disc", "banner_pattern", "smithing_template", "pottery_sherd"
+    };
+
+    /**
+     * Whether {@code path} contains {@code needle} as a whole {@code _}-delimited segment.
+     *
+     * <p>This used to be a bare {@code String#contains}, which meant every keyword also matched
+     * the middle of an unrelated word: {@code bow} matched {@code bowl} and {@code rainbow},
+     * {@code axe} matched every {@code waxed_*} block, {@code cap} matched {@code mushroom_cap}.
+     * In a discovered namespace nothing curated the result, so those items were silently gated
+     * behind a weapon skill and the only escape hatch was disabling the whole mod (RS-049).
+     *
+     * <p>A needle that already carries its own anchoring — {@code _armor}, {@code _hoe},
+     * {@code spell_book} — is matched as a substring, because the underscore is the anchor.
+     */
+    private static boolean hasSegment(String path, String needle) {
+        if (needle.indexOf('_') >= 0) return path.contains(needle);
+        int from = 0;
+        while (true) {
+            int at = path.indexOf(needle, from);
+            if (at < 0) return false;
+            boolean startOk = (at == 0) || path.charAt(at - 1) == '_';
+            int end = at + needle.length();
+            boolean endOk = (end == path.length()) || path.charAt(end) == '_';
+            if (startOk && endOk) return true;
+            from = at + 1;
+        }
+    }
+
     private static boolean containsAny(String haystack, String[] needles) {
         for (String n : needles) {
-            if (haystack.contains(n)) return true;
+            if (hasSegment(haystack, n)) return true;
+        }
+        return false;
+    }
+
+    /** True if this path is on the never-gear list and must be left unlocked. */
+    public static boolean isNeverGear(String path) {
+        String p = path.toLowerCase(Locale.ROOT);
+        for (String n : NEVER_GEAR) {
+            if (p.contains(n)) return true;
         }
         return false;
     }
@@ -99,6 +148,7 @@ public final class LockGen {
     public static List<LockItem.Skill> classifyGear(String path, int base, float mult) {
         String p = path.toLowerCase(Locale.ROOT);
         List<LockItem.Skill> skills = new ArrayList<>();
+        if (isNeverGear(p)) return skills;
         int primary = scaled(base, mult);
         int secondary = scaled(Math.round(base * 0.7f), mult);
 

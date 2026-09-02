@@ -5,6 +5,8 @@ import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.common.PowerEquipSP;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
+import com.otectus.runicskills.registry.powers.PowerEligibility;
+import com.otectus.runicskills.client.vfx.ProcPulse;
 import com.otectus.runicskills.registry.powers.PowerSchool;
 import com.otectus.runicskills.registry.powers.PowerTier;
 import net.minecraft.ChatFormatting;
@@ -26,9 +28,11 @@ import java.util.List;
 /**
  * Minimum-viable Powers panel. Three tier columns (Marks / Seals / Crown), each listing every
  * registered Power with an Equip/Unequip button and a tooltip description on hover. Triggered
- * by the {@code key.runicskills.open_powers} keybind (default {@code U}) and by a button on
- * the existing {@link RunicSkillsScreen} (Phase 3 — not yet wired so as not to perturb that
- * screen's complex layout).
+ * by the {@code key.runicskills.open_powers} keybind, which ships <b>unbound</b>: no default key
+ * can be chosen safely without testing it against a real pack's control scheme, and a silent
+ * clash is worse than an unassigned key. Players bind it under Options → Controls. This javadoc
+ * previously claimed a default of {@code U}, which was never what
+ * {@link com.otectus.runicskills.RunicSkillsClient} registered.
  *
  * <p>Deliberately plain: no texture-blit chrome (the existing skill_panel_*.png assets target
  * a 176×194 layout that doesn't fit a three-column Powers panel), no drag-and-drop, no school
@@ -151,13 +155,12 @@ public class PowersScreen extends Screen {
         int markCount  = cap.equippedMarks.size();
         int sealCount  = cap.equippedSeals.size();
         int crownCount = cap.equippedCrown.isEmpty() ? 0 : 1;
-        Component counter = Component.literal("")
-                .copy()
-                .append(tierSegment("Marks", markCount, PowerTier.MARK.maxEquipped))
+        Component counter = Component.empty()
+                .append(tierSegment(PowerTier.MARK, markCount))
                 .append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(tierSegment("Seals", sealCount, PowerTier.SEAL.maxEquipped))
+                .append(tierSegment(PowerTier.SEAL, sealCount))
                 .append(Component.literal(" · ").withStyle(ChatFormatting.DARK_GRAY))
-                .append(tierSegment("Crown", crownCount, PowerTier.CROWN.maxEquipped));
+                .append(tierSegment(PowerTier.CROWN, crownCount));
         g.drawCenteredString(this.font, counter, this.width / 2, 20, 0xCCCCCC);
 
         // Three columns with translucent dark backings. The column header text and amber
@@ -184,8 +187,8 @@ public class PowersScreen extends Screen {
         // Footer hint band
         g.fill(0, this.height - 14, this.width, this.height, 0xC8000000);
         g.fill(0, this.height - 14, this.width, this.height - 13, 0xFFD9A03A);
-        Component hint = Component.literal("Esc to close · Scroll to navigate · Hover for details")
-                .copy().withStyle(ChatFormatting.GRAY);
+        Component hint = Component.translatable("screen.runicskills.powers.hint")
+                .withStyle(ChatFormatting.GRAY);
         g.drawCenteredString(this.font, hint, this.width / 2, this.height - 11, 0x999999);
 
         if (hoveredPower != null) {
@@ -193,11 +196,19 @@ public class PowersScreen extends Screen {
         }
     }
 
-    /** Counter segment "Marks 3/5" coloured red (full), green (free slot), or dim (empty). */
-    private static Component tierSegment(String label, int used, int cap) {
+    /**
+     * Counter segment "Marks 3/5", coloured red (full), green (free slot) or dim (empty).
+     *
+     * <p>The tier name was a hardcoded English string concatenated into a literal. It is the
+     * tier's own translation key now, so this reads correctly in every locale and picks up any
+     * rename of the tier for free.
+     */
+    private static Component tierSegment(PowerTier tier, int used) {
+        int cap = tier.maxEquipped;
         ChatFormatting colour = (used >= cap) ? ChatFormatting.RED
                 : (used > 0 ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY);
-        return Component.literal(label + " " + used + "/" + cap).withStyle(colour);
+        return Component.translatable("screen.runicskills.powers.slot_counter",
+                Component.translatable(tier.getKey()), used, cap).withStyle(colour);
     }
 
     /** Returns the Power being hovered in this column, or null. */
@@ -236,16 +247,41 @@ public class PowersScreen extends Screen {
                 hovered = p;
             }
 
-            String prefix = equipped ? "✓ " : "  ";
-            MutableComponent name = Component.translatable(p.getKey());
-            g.drawString(this.font, prefix + name.getString(), x + 4, rowY + 6, nameColor);
+            // Its own icon, at last. Every Power used to share HandlerResources.NULL_PERK, so the
+            // panel was seventy-five identical squares and the name was the only thing telling
+            // them apart.
+            int iconX = x + 4;
+            int iconY = rowY + 3;
+            g.blit(p.texture, iconX, iconY, 0.0F, 0.0F, 16, 16, 16, 16);
+            // A ring pulse on the icon when this Power has just fired, from the same descriptor
+            // the world VFX used, so the row and the effect are visibly the same event.
+            float pulse = ProcPulse.strength(p.getName());
+            if (pulse > 0.0F) {
+                int alpha = (int) (0xC0 * pulse) << 24;
+                g.fill(iconX - 1, iconY - 1, iconX + 17, iconY, alpha | 0xD9A03A);
+                g.fill(iconX - 1, iconY + 16, iconX + 17, iconY + 17, alpha | 0xD9A03A);
+                g.fill(iconX - 1, iconY, iconX, iconY + 16, alpha | 0xD9A03A);
+                g.fill(iconX + 16, iconY, iconX + 17, iconY + 16, alpha | 0xD9A03A);
+            }
+
+            // Composed rather than concatenated: drawString(prefix + name.getString() + suffix)
+            // flattened the translated name to plain text, discarding any style or nested
+            // translation another mod or a resource pack had put in it (RS-085).
+            MutableComponent label = Component.empty();
+            if (equipped) {
+                label.append(Component.literal("✓ ").withStyle(ChatFormatting.GOLD));
+            }
+            label.append(Component.translatable(p.getKey()));
+            // A Power that does not fully deliver its description is marked in the list itself,
+            // not only in the tooltip a player might never open (RS10-004). The tooltip says which
+            // kind of shortfall it is; the row only has to say that there is one.
+            if (com.otectus.runicskills.registry.content.ContentStatusIndex.effective(p)
+                    .needsUiLabel()) {
+                label.append(Component.literal(" *").withStyle(ChatFormatting.YELLOW));
+            }
+            g.drawString(this.font, label, iconX + 20, rowY + 6, nameColor);
         }
 
-        // Scroll indicator at the bottom of the column.
-        if (pool.size() > rowsVisible) {
-            String marker = String.format("%d/%d", start + 1, pool.size());
-            g.drawString(this.font, marker, x + 4, this.height - LIST_BOTTOM_PAD + 2, 0x888888);
-        }
         return hovered;
     }
 
@@ -268,11 +304,45 @@ public class PowersScreen extends Screen {
                 .copy().withStyle(ChatFormatting.GRAY));
         if (p.requiredSkillLevel > 0 && p.getGoverningSkill() != null) {
             lines.add(Component.literal(""));
-            lines.add(Component.literal("Requires " + p.getGoverningSkill().getName()
-                    + " " + p.requiredSkillLevel).withStyle(ChatFormatting.YELLOW));
+            // Was `"Requires " + skill.getName() + " " + level` -- English, and built from the
+            // registry path rather than the skill's own translated name.
+            lines.add(Component.translatable("screen.runicskills.powers.requires",
+                            Component.translatable(p.getGoverningSkill().getKey()),
+                            p.requiredSkillLevel)
+                    .withStyle(ChatFormatting.YELLOW));
         }
         if (RegistryPowers.isDisabled(p)) {
-            lines.add(Component.literal("[disabled in config]").withStyle(ChatFormatting.RED));
+            lines.add(Component.translatable("screen.runicskills.powers.disabled_in_config")
+                    .withStyle(ChatFormatting.RED));
+        }
+
+        // Why this Power cannot be equipped right now. The server has produced a structured denial
+        // reason since 2.0.0; until now the screen simply declined to light the row up, which told
+        // the player that something was wrong but never which of six things it was.
+        SkillCapability local = SkillCapability.getLocal();
+        if (Minecraft.getInstance().player != null && local != null && !local.isPowerEquipped(p)) {
+            PowerEligibility.Result verdict =
+                    PowerEligibility.evaluateEquip(Minecraft.getInstance().player, p);
+            if (!verdict.eligible()) {
+                lines.add(Component.literal(""));
+                lines.add(verdict.describe(p).copy().withStyle(ChatFormatting.RED));
+            }
+        }
+        // Say plainly when a Power is not the finished article. A player choosing between five
+        // Marks is spending a scarce slot, and "this one is an approximation of its description"
+        // is exactly the information that choice needs.
+        com.otectus.runicskills.registry.content.ContentStatus status =
+                com.otectus.runicskills.registry.content.ContentStatusIndex.effective(p);
+        if (status.needsUiLabel()) {
+            lines.add(Component.literal(""));
+            lines.add(Component.translatable(status.labelKey())
+                    .copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+            String explanation = status.labelKey() + ".tooltip";
+            // Only three of the four states carry an explanation; a missing dependency explains
+            // itself, and inventing a line for it would render the raw key.
+            if (status != com.otectus.runicskills.registry.content.ContentStatus.UNAVAILABLE_DEPENDENCY) {
+                lines.add(Component.translatable(explanation).copy().withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
         g.renderComponentTooltip(this.font, lines, mouseX, mouseY);
     }
@@ -299,8 +369,21 @@ public class PowersScreen extends Screen {
         if (mouseX < COL_PAD * 2 + colWidth) colIdx = 0;
         else if (mouseX < COL_PAD * 3 + 2 * colWidth) colIdx = 1;
         else colIdx = 2;
+        // Clamped at BOTH ends. The upper bound was missing, so scrolling past the last row kept
+        // incrementing an offset the render pass then clamped for display -- the list stopped
+        // moving while the wheel kept counting, and it took exactly as many clicks back to
+        // start moving again (RS-166).
         int dir = scrollDelta > 0 ? -1 : 1;
-        scroll[colIdx] = Math.max(0, scroll[colIdx] + dir);
+        List<Power> pool = switch (colIdx) {
+            case 0 -> markPool;
+            case 1 -> sealPool;
+            default -> crownPool;
+        };
+        int rowsVisible = Math.max(1, (this.height - LIST_TOP_Y - LIST_BOTTOM_PAD) / LIST_ROW_HEIGHT);
+        int maxScroll = Math.max(0, pool.size() - rowsVisible);
+        int next = Math.max(0, Math.min(maxScroll, scroll[colIdx] + dir));
+        if (next == scroll[colIdx]) return false;
+        scroll[colIdx] = next;
         rebuildButtons();
         return true;
     }

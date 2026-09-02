@@ -1,0 +1,29 @@
+{
+  "_comment": [
+    "Declared translation debt, so a locale gap is recorded rather than silent.",
+    "Minecraft falls back to en_us for a missing key, so these render as English rather than as a",
+    "raw key -- which is why they are a baseline and not a build failure. checkLangParity fails only",
+    "if a locale regresses past its number here, or if it carries a key en_us does not have, or if a",
+    "shared key's format-placeholder count disagrees with en_us.",
+    "Lower these as translations land. Raising one should be a deliberate, explained change."
+  ],
+  "englishKeyCount": 2276,
+  "missingKeysPerLocale": {
+    "ar_sa": 1731,
+    "de_de": 1731,
+    "es_ar": 1731,
+    "es_cl": 1731,
+    "es_ec": 1731,
+    "es_es": 1731,
+    "es_mx": 1731,
+    "es_uy": 1731,
+    "es_ve": 1731,
+    "fr_fr": 1731,
+    "hi_in": 1731,
+    "ja_jp": 1731,
+    "ko_kr": 1731,
+    "pt_br": 1731,
+    "ru_ru": 1731,
+    "zh_cn": 1731
+  }
+}

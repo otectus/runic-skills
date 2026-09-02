@@ -46,7 +46,9 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
         return switch (simple) {
             case "MixTargetFinder"           -> isModPresent("bettercombat");
             case "MixGunItem"                -> isModPresent("pointblank");
-            case "MixTrueInvisibilityEffect" -> isModPresent("irons_spellbooks");
+            case "MixTrueInvisibilityEffect", "MixAbstractMagicProjectile",
+                 "MixCreeperHeadProjectile" -> isModPresent("irons_spellbooks");
+            case "MixSalvagingMenu", "MixReforgingResultSlot" -> isModPresent("apotheosis");
             default                          -> true;
         };
     }

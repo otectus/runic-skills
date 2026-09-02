@@ -23,6 +23,21 @@ import java.util.Set;
 
 public class IceAndFireIntegration {
 
+    /**
+     * Whether this integration should do anything right now: Ice and Fire is installed
+     * <em>and</em> {@code enableIceAndFireIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableIceAndFireIntegration;
+    }
+
+
     private static final String MOD_ID = "iceandfire";
 
     private static final Set<String> DRAGON_DAMAGE_TYPES = Set.of(
@@ -238,6 +253,7 @@ public class IceAndFireIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingHurt(LivingHurtEvent event) {
+        if (!isActive()) return;
         if (!isModLoaded()) return;
         Entity source = event.getSource().getEntity();
 
@@ -265,6 +281,80 @@ public class IceAndFireIntegration {
                 }
             }
         }
+    }
+
+    /**
+     * Dragon Magic — "Dragon-based magical items are stronger".
+     *
+     * <p>Ice and Fire's magic is carried by items rather than by a spell system: a dragon staff, a
+     * dragon-bone wand, a sceptre. Whatever the player is swinging or channelling, its damage is the
+     * measurable thing "stronger" can mean, so an Ice and Fire item that is both dragon-themed and
+     * magical hits harder. Ordinary dragon-bone weapons are covered by Dragon Bone Mastery instead,
+     * which is why the match here requires the item to be one of the magical ones.
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public void onDragonMagicDamage(LivingHurtEvent event) {
+        if (!isActive() || !isModLoaded()) return;
+        if (!(event.getSource().getEntity() instanceof Player player) || player.isCreative()) return;
+        if (RegistryPerks.DRAGON_MAGIC == null || !RegistryPerks.DRAGON_MAGIC.get().isEnabled(player)) return;
+
+        ResourceLocation held = ForgeRegistries.ITEMS.getKey(player.getMainHandItem().getItem());
+        if (held == null || !MOD_ID.equals(held.getNamespace())) return;
+        if (!isMagicalDragonItem(held.getPath())) return;
+
+        float bonus = HandlerCommonConfig.HANDLER.instance().dragonMagicPercent / 100.0f;
+        if (bonus > 0) event.setAmount(event.getAmount() * (1.0f + bonus));
+    }
+
+    /** Ice and Fire items that are both dragon-themed and magical rather than merely sharp. */
+    private static boolean isMagicalDragonItem(String path) {
+        return path.contains("staff") || path.contains("sceptre") || path.contains("scepter")
+                || path.contains("wand") || path.contains("amulet") || path.contains("flute")
+                || path.contains("dragon_horn") || path.contains("summoning_crystal");
+    }
+
+    /**
+     * Beast Tamer and Dragon Lore — the two perks about persuading a mythical creature.
+     *
+     * <p>Ice and Fire tames a hatchling by feeding it, over and over, with its own internal counter
+     * that no event exposes. What is exposed is the interaction itself, and the tame state
+     * underneath it is plain vanilla: every one of these creatures is a {@link TamableAnimal}. So a
+     * feeding attempt that would otherwise only nudge that counter can instead finish the job
+     * outright, which is exactly what "easier taming" and "increases taming success" describe.
+     *
+     * <p>Restricted to hatchlings, because that is what Ice and Fire lets a player tame at all — the
+     * perks make an existing path faster, they do not open a new one on a grown dragon. The
+     * interaction is left to run afterwards rather than being cancelled, so the feeding animation,
+     * the sound and the item cost all still happen.
+     */
+    @SubscribeEvent
+    public void onTameAttempt(net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract event) {
+        if (!isActive() || !isModLoaded()) return;
+        Player player = event.getEntity();
+        if (player.level().isClientSide() || player.isCreative()) return;
+        if (event.getItemStack().isEmpty()) return;   // an empty hand is not a feeding attempt
+
+        if (!(event.getTarget() instanceof net.minecraft.world.entity.TamableAnimal creature)) return;
+        if (creature.isTame() || !creature.isBaby()) return;
+        ResourceLocation type = ForgeRegistries.ENTITY_TYPES.getKey(creature.getType());
+        if (type == null || !MOD_ID.equals(type.getNamespace())) return;
+
+        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        double chance = 0.0;
+        // Beast Tamer is written as odds — "a 1 in N chance" — so it is read as odds.
+        if (RegistryPerks.BEAST_TAMER != null && RegistryPerks.BEAST_TAMER.get().isEnabled(player)
+                && config.beastTamerProbability > 0) {
+            chance += 1.0 / config.beastTamerProbability;
+        }
+        // Dragon Lore is written as a percentage and applies only to dragons, so it stacks on top
+        // for those and does nothing for a hippogryph.
+        if (RegistryPerks.DRAGON_LORE != null && RegistryPerks.DRAGON_LORE.get().isEnabled(player)
+                && type.getPath().contains("dragon")) {
+            chance += config.dragonLorePercent / 100.0;
+        }
+        if (chance <= 0 || player.getRandom().nextDouble() >= Math.min(1.0, chance)) return;
+
+        creature.tame(player);
     }
 
     // --- Helpers ---

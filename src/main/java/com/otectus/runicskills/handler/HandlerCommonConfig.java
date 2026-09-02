@@ -2,6 +2,8 @@ package com.otectus.runicskills.handler;
 
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.StringListGroup;
+import com.otectus.runicskills.config.snapshot.ConfigScope;
+import com.otectus.runicskills.config.snapshot.Scope;
 import com.otectus.runicskills.config.storage.Clamp;
 import com.otectus.runicskills.config.storage.ConfigHolder;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
@@ -24,10 +26,19 @@ public class HandlerCommonConfig {
 
     @SerialEntry(comment = "Should the mod automatically check for updates on load?")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    // Read once during mod construction, before a world exists, so a reload cannot apply it.
+    @Scope(ConfigScope.RESTART_REQUIRED)
     public boolean checkForUpdates = true;
 
-    @SerialEntry(comment = "Use player.setCustomName for title display. Disable if conflicting with nick/chat/scoreboard mods.")
-    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    /**
+     * @deprecated Since 2.0.0 this has no effect and is kept only so existing config files parse.
+     *     Titles are never written to a player's vanilla custom name any more — they are composed as
+     *     a prefix in {@code PlayerEvent.NameFormat}, governed by {@code displayTitlesAsPrefix}, so
+     *     the conflict this option existed to work around cannot occur (RS10-010). A name this mod
+     *     set in an earlier version is cleared once, on login.
+     */
+    @Deprecated(forRemoval = true)
+    @SerialEntry(comment = "DEPRECATED and ignored since 2.0.0. Titles are no longer written to a player's custom name at all; they are composed as a name prefix, controlled by displayTitlesAsPrefix. Kept so existing config files still parse; it will be removed in a future major.")
     public boolean titlesUseCustomName = true;
 
     // General options
@@ -101,6 +112,71 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean hideDisabledPowers = false;
+
+    // ── Powers: tier gates ─────────────────────────────────────────────────────────────────
+    //
+    // Expressed as PERCENTAGES of the configured caps, not absolute levels, and this is a
+    // correction rather than a preference. RUNIC_SKILLS_POWERS.md was written against an Ultima
+    // Online scale — 100 per skill, 700 total — and the registry hardcoded its numbers directly:
+    // Mark 30, Seal 60, Crown 90, against a skillMaxLevel that defaults to 32. Every Seal and
+    // every Crown was therefore unreachable at default settings, and the doc's "total skill >= 500"
+    // and "14 Power Points at 1 per 50 total skill" could not be satisfied against a
+    // playersMaxGlobalLevel of 256 either. Percentages preserve the design's intent — a Mark is an
+    // early investment, a Crown is an endgame keystone — at whatever scale a pack chooses.
+    //
+    // At the shipped defaults (skillMaxLevel 32, playersMaxGlobalLevel 256) these resolve to:
+    // Mark 13, Seal 21 with Intelligence 10, Crown 29 with 180 total.
+
+    @SerialEntry(comment = "Governing-skill level required to equip a Mark (tier 1 Power), as a percentage of skillMaxLevel. Default 40 (level 13 at the default cap of 32).")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int powerMarkSkillPercent = 40;
+
+    @SerialEntry(comment = "Governing-skill level required to equip a Seal (tier 2 Power), as a percentage of skillMaxLevel. Default 65 (level 21 at the default cap of 32).")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int powerSealSkillPercent = 65;
+
+    @SerialEntry(comment = "Secondary Intelligence level required to equip a Seal, as a percentage of skillMaxLevel. Intelligence is this mod's equivalent of the design document's 'Evaluating Intelligence' gate on power magnitude. Default 30 (level 10 at the default cap of 32). Set 0 to remove the secondary gate.")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int powerSealSecondarySkillPercent = 30;
+
+    @SerialEntry(comment = "Governing-skill level required to equip the Crown (tier 3 Power), as a percentage of skillMaxLevel. Default 90 (level 29 at the default cap of 32).")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int powerCrownSkillPercent = 90;
+
+    @SerialEntry(comment = "Total earned skill required to equip the Crown, as a percentage of playersMaxGlobalLevel. Default 70 (180 total at the default cap of 256). Set 0 to remove the total-skill gate.")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int powerCrownTotalSkillPercent = 70;
+
+    @SerialEntry(comment = "If true, a Seal requires a Mark of the same school or category already equipped, and the Crown requires a Seal of the same school or category. This is the prerequisite chain from RUNIC_SKILLS_POWERS.md 3.1. Default true.")
+    @AutoGen(category = "common", group = "powers")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean powerRequirePrerequisiteChain = true;
+
+    @SerialEntry(comment = "If true, Powers declared INERT (registered for save compatibility but with no behaviour behind them) become visible and equippable, badged as experimental. For development and for testing dispatchers against an installed Iron's Spells; a normal server should leave this off, because inert content does nothing at all. Default false. Server-authoritative; synced to clients on join.")
+    @AutoGen(category = "common", group = "powers")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean powerEnableExperimentalContent = false;
+
+    @SerialEntry(comment = "If true, equipping a Power also costs Power Points (Mark 1, Seal 2, Crown 3) from a budget that grows with total earned skill up to powerPointBudgetMax. This is what makes the 5/3/1 slot limits bind DURING progression rather than only at the level cap. Default true.")
+    @AutoGen(category = "common", group = "powers")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean powerEnforcePointBudget = true;
+
+    @SerialEntry(comment = "Power Points available at maximum total skill. The default of 14 is exactly 5 Marks + 3 Seals + 1 Crown, so a fully levelled character can fill every slot and no other combination exceeds it.")
+    @AutoGen(category = "common", group = "powers")
+    @IntField(min = 0, max = 999)
+    @Clamp(min = 0, max = 999)
+    public int powerPointBudgetMax = 14;
 
     @SerialEntry(comment = "Per-player cooldown (in ticks, 20 = 1 second) between enabling perks. 0 = no cooldown (default). Applies only when going from disabled to enabled (not rank-ups, not disabling). Rejects server-side; clients attempting to enable during the cooldown are resynced.")
     @AutoGen(category = "common", group = "general")
@@ -188,6 +264,12 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Master toggle for the FTB Quests integration (since 1.3.0). When false, Runic Skills task types are not registered and quest progress is not updated by skill/perk/passive/title changes. Disable for packs that ship FTB Quests but don't want Runic Skills tasks to appear in the task editor.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    // The only integration toggle that genuinely cannot be live: FTB Quests task types have to be
+    // registered into FTB's own registry during startup, and there is no removal API to undo it.
+    // Every other enable<Mod>Integration flag is checked at each entry point and works live in
+    // both directions (RS10-011); this one is reported by /skillsreload as needing a restart
+    // rather than pretending to have taken effect.
+    @Scope(ConfigScope.RESTART_REQUIRED)
     public boolean enableFTBQuestsIntegration = true;
 
     @SerialEntry(comment = "Master toggle for the Jewelcraft integration. When false, item lock generation is skipped.")
@@ -236,6 +318,11 @@ public class HandlerCommonConfig {
     @AutoGen(category = "common")
     @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
     public List<String> disabledDiscoveredLockMods = Arrays.asList();
+
+    @SerialEntry(comment = "Individual item ids to EXCLUDE from registry-driven (discovered) item locking, e.g. [\"aquaculture:iron_fishing_rod\"]. Finer-grained than disabledDiscoveredLockMods, which excludes a whole mod: use this when keyword classification gets one item wrong and the rest of the mod is fine. Ids must be fully qualified (namespace:path). Has no effect on curated integrations or on manually configured locks.")
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> disabledDiscoveredLockItems = Arrays.asList();
 
     // Spartan Weaponry integration
     @SerialEntry(comment = "Enable automatic item locking for Spartan Weaponry, Spartan Shields, Spartan Cataclysm, and Spartan Fire items")
@@ -498,10 +585,10 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Beneficial effect passive levels. Don't modify the length of the array!")
     public int[] beneficialEffectPassiveLevels = new int[]{5, 8, 11, 14, 17, 20, 23, 26, 29, 32};
 
-    @SerialEntry(comment = "Magic Resist passive value at max level")
+    @SerialEntry(comment = "Magic Resist passive value at max level, as a fraction of the damage resisted (0.5 = half). Bounded at 0.95: the runtime formula is damage - damage * resist, so a value above 1 would turn a hit into healing. The same ceiling is enforced again at the point of use, because another mod's modifier on the same attribute never passes through this field.")
     @AutoGen(category = "common", group = "passives")
-    @FloatField(min = 0.0f, max = 10000.0f)
-    @Clamp(min = 0.0, max = 10000.0)
+    @FloatField(min = 0.0f, max = 0.95f)
+    @Clamp(min = 0.0, max = 0.95)
     public float magicResistValue = 0.5f;
 
     @SerialEntry(comment = "Magic resistance passive levels. Don't modify the length of the array!")
@@ -1041,12 +1128,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int explorersVigorPercent = 15;
 
-    @SerialEntry(comment = "Aura of Vitality perk healing aura percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int auraOfVitalityPercent = 20;
-
     @SerialEntry(comment = "Battle Recovery perk healing amplifier")
     @AutoGen(category = "common", group = "perks")
     @FloatField(min = 0.0f, max = 100.0f)
@@ -1487,12 +1568,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int prismarineShieldPercent = 15;
 
-    @SerialEntry(comment = "Aura Shield perk aura damage reduction percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int auraShieldPercent = 15;
-
     @SerialEntry(comment = "Pain Suppression perk damage reduction percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -1596,11 +1671,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0.0, max = 100.0)
     public float arcaneScholarAmplifier = 1.0f;
 
-    @SerialEntry(comment = "Colony Advisor perk colony efficiency percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int colonyAdvisorPercent = 15;
 
     @SerialEntry(comment = "Apothecary perk potion effect amplifier")
     @AutoGen(category = "common", group = "perks")
@@ -1625,12 +1695,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     @Clamp(min = 0, max = 100)
     public int tacticalGeniusPercent = 10;
-
-    @SerialEntry(comment = "Nature's Wisdom perk nature bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int naturesWisdomPercent = 15;
 
     @SerialEntry(comment = "Enchantment Insight perk enchanting amplifier")
     @AutoGen(category = "common", group = "perks")
@@ -1710,11 +1774,47 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int dimensionalScholarPercent = 15;
 
-    @SerialEntry(comment = "War Tactician perk tactical advantage percent")
+    @SerialEntry(comment = "War Tactician perk: bonus attack speed granted to nearby ALLIES (not to the holder), as a percentage.")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     @Clamp(min = 0, max = 100)
     public int warTacticianPercent = 10;
+
+    @SerialEntry(comment = "War Tactician perk: how far the ally buff reaches, in blocks.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 64)
+    @Clamp(min = 1, max = 64)
+    public int warTacticianRadiusBlocks = 8;
+
+    @SerialEntry(comment = "Mana Shield perk: XP points drained per half-heart of damage absorbed, when no magic mod supplies a mana pool. Higher values make the shield more expensive to sustain.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 100)
+    @Clamp(min = 1, max = 100)
+    public int manaShieldXpPerHalfHeart = 4;
+
+    @SerialEntry(comment = "Scroll Scribe perk: chance, as a percentage, that disenchanting at a grindstone also yields an enchanted book carrying one of the enchantments removed.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int scrollScribePercent = 25;
+
+    @SerialEntry(comment = "Temporal Wisdom perk: how long after taking or dealing damage a player still counts as in combat, in ticks.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 12000)
+    @Clamp(min = 1, max = 12000)
+    public int temporalWisdomCombatTicks = 200;
+
+    @SerialEntry(comment = "Mystic Sight perk: how far away enchanted items on the ground are outlined, in blocks.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 64)
+    @Clamp(min = 1, max = 64)
+    public int mysticSightRadiusBlocks = 12;
+
+    @SerialEntry(comment = "Glowstone Sight perk: how long the night vision granted by mining underground lasts, in ticks.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 12000)
+    @Clamp(min = 1, max = 12000)
+    public int glowstoneSightTicks = 200;
 
     @SerialEntry(comment = "Alchemic Transmutation perk transmutation chance percent")
     @AutoGen(category = "common", group = "perks")
@@ -1753,11 +1853,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int architectPercent = 15;
 
-    @SerialEntry(comment = "Master Mason perk masonry bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int masterMasonPercent = 15;
 
     @SerialEntry(comment = "Lumberjack perk woodcutting speed percent")
     @AutoGen(category = "common", group = "perks")
@@ -1777,11 +1872,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int quarryMasterPercent = 15;
 
-    @SerialEntry(comment = "Colony Builder perk colony building percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int colonyBuilderPercent = 15;
 
     @SerialEntry(comment = "Resource Efficiency perk resource savings percent")
     @AutoGen(category = "common", group = "perks")
@@ -1819,11 +1909,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int masterWoodworkerPercent = 15;
 
-    @SerialEntry(comment = "Scaffold Master perk scaffold building percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int scaffoldMasterPercent = 15;
 
     @SerialEntry(comment = "Deep Core Mining perk deep mining percent")
     @AutoGen(category = "common", group = "perks")
@@ -1855,11 +1940,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int foundationLayerPercent = 15;
 
-    @SerialEntry(comment = "Structural Engineer perk structural bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int structuralEngineerPercent = 15;
 
     @SerialEntry(comment = "Farmer's Hand perk farming speed percent")
     @AutoGen(category = "common", group = "perks")
@@ -1873,11 +1953,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int irrigationExpertPercent = 15;
 
-    @SerialEntry(comment = "Dimensional Builder perk dimensional building percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int dimensionalBuilderPercent = 15;
 
     @SerialEntry(comment = "Master Breaker perk block breaking percent")
     @AutoGen(category = "common", group = "perks")
@@ -1897,11 +1972,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int prospectorPercent = 10;
 
-    @SerialEntry(comment = "Construction Haste perk building speed percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int constructionHastePercent = 15;
 
     @SerialEntry(comment = "Underground Explorer perk underground speed percent")
     @AutoGen(category = "common", group = "perks")
@@ -2023,12 +2093,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     @Clamp(min = 0, max = 100)
     public int arsSavantPercent = 15;
-
-    @SerialEntry(comment = "Nature Sage perk nature wisdom percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int natureSagePercent = 15;
 
     @SerialEntry(comment = "Spell Inscription perk spell inscription percent")
     @AutoGen(category = "common", group = "perks")
@@ -2204,12 +2268,6 @@ public class HandlerCommonConfig {
     @IntField(min = 0, max = 100)
     @Clamp(min = 0, max = 100)
     public int enchantedMissilesPercent = 15;
-
-    @SerialEntry(comment = "Aura Manipulation perk aura bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int auraManipulationPercent = 15;
 
     @SerialEntry(comment = "Void Magic perk void damage percent")
     @AutoGen(category = "common", group = "perks")
@@ -2513,12 +2571,6 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int enchantmentTransferPercent = 10;
 
-    @SerialEntry(comment = "Gadget Upgrade perk upgrade bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int gadgetUpgradePercent = 15;
-
     @SerialEntry(comment = "Overclock perk overclock bonus percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -2561,23 +2613,11 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int explosiveOrdinancePercent = 15;
 
-    @SerialEntry(comment = "Circuit Breaker perk circuit break amplifier")
-    @AutoGen(category = "common", group = "perks")
-    @FloatField(min = 0.0f, max = 100.0f)
-    @Clamp(min = 0.0, max = 100.0)
-    public float circuitBreakerAmplifier = 2.0f;
-
     @SerialEntry(comment = "Modular Equipment perk equipment modularity amplifier")
     @AutoGen(category = "common", group = "perks")
     @FloatField(min = 0.0f, max = 100.0f)
     @Clamp(min = 0.0, max = 100.0)
     public float modularEquipmentAmplifier = 1.0f;
-
-    @SerialEntry(comment = "Clockwork Mastery perk clockwork bonus percent")
-    @AutoGen(category = "common", group = "perks")
-    @IntField(min = 0, max = 100)
-    @Clamp(min = 0, max = 100)
-    public int clockworkMasteryPercent = 15;
 
     @SerialEntry(comment = "Forge Master perk forging bonus percent")
     @AutoGen(category = "common", group = "perks")
@@ -2632,12 +2672,6 @@ public class HandlerCommonConfig {
     @FloatField(min = 0.0f, max = 100.0f)
     @Clamp(min = 0.0, max = 100.0)
     public float powerToolsAmplifier = 1.0f;
-
-    @SerialEntry(comment = "Backpack Engineer perk backpack size amplifier")
-    @AutoGen(category = "common", group = "perks")
-    @FloatField(min = 0.0f, max = 100.0f)
-    @Clamp(min = 0.0, max = 100.0)
-    public float backpackEngineerAmplifier = 3.0f;
 
     @SerialEntry(comment = "Waystone Tinker perk waystone efficiency percent")
     @AutoGen(category = "common", group = "perks")
@@ -2935,10 +2969,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int auraOfVitalityRequiredLevel = 18;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int battleRecoveryRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3232,10 +3262,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int auraShieldRequiredLevel = 25;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int painSuppressionRequiredLevel = 27;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3310,10 +3336,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int colonyAdvisorRequiredLevel = 11;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int apothecaryRequiredLevel = 12;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3327,10 +3349,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int tacticalGeniusRequiredLevel = 15;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int naturesWisdomRequiredLevel = 18;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3424,10 +3442,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int masterMasonRequiredLevel = 4;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int lumberjackRequiredLevel = 5;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3437,10 +3451,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int quarryMasterRequiredLevel = 7;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int colonyBuilderRequiredLevel = 14;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3472,10 +3482,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int scaffoldMasterRequiredLevel = 17;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int deepCoreMiningRequiredLevel = 18;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3500,19 +3506,11 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int structuralEngineerRequiredLevel = 25;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int farmersHandRequiredLevel = 14;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
     public int irrigationExpertRequiredLevel = 16;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int dimensionalBuilderRequiredLevel = 26;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3529,10 +3527,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int prospectorRequiredLevel = 31;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int constructionHasteRequiredLevel = 8;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3619,10 +3613,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int arsSavantRequiredLevel = 20;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int natureSageRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3754,10 +3744,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int enchantedMissilesRequiredLevel = 8;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int auraManipulationRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -3965,10 +3951,6 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int gadgetUpgradeRequiredLevel = 15;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int overclockRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
@@ -3997,15 +3979,7 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
-    public int circuitBreakerRequiredLevel = 19;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
     public int modularEquipmentRequiredLevel = 30;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int clockworkMasteryRequiredLevel = 21;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -4042,10 +4016,6 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int powerToolsRequiredLevel = 26;
-    @SerialEntry(comment = "Required level to unlock perk")
-    @IntField(min = 1)
-    @Clamp(min = 1)
-    public int backpackEngineerRequiredLevel = 16;
     @SerialEntry(comment = "Required level to unlock perk")
     @IntField(min = 1)
     @Clamp(min = 1)
@@ -5528,17 +5498,6 @@ public class HandlerCommonConfig {
     public int bossHunterRequiredLevel = 22;
 
     // ── Nature's Aura Integration - Perks ──
-    @SerialEntry(comment = "Aura Attunement: Percentage bonus to Nature's Aura effector efficiency near player")
-    @AutoGen(category = "common", group = "natures_aura")
-    @IntField(min = 1, max = 100)
-    @Clamp(min = 1, max = 100)
-    public int auraAttunementPercent = 15;
-
-    @SerialEntry(comment = "Wisdom level required for Aura Attunement perk (-1 to disable)")
-    @AutoGen(category = "common", group = "natures_aura")
-    @IntField(min = -1)
-    @Clamp(min = -1)
-    public int auraAttunementRequiredLevel = 18;
 
     // ── Farmer's Delight Integration - Perks ──
     @SerialEntry(comment = "Master Chef: Percentage increase to Farmer's Delight food effect durations")

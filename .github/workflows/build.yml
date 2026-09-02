@@ -3,23 +3,25 @@ name: Build
 on:
   push:
     branches: [master, main]
+    tags: ['v*']
   pull_request:
     branches: [master, main]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Cache Gradle caches
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.gradle/caches
@@ -40,7 +42,7 @@ jobs:
       # exit with the detail buried in the Gradle log (RS-115).
       - name: Publish test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-results
           path: |
@@ -50,7 +52,7 @@ jobs:
 
       - name: Upload jar
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: runicskills-jar
           path: build/libs/*.jar
@@ -67,16 +69,16 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Cache Gradle caches
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.gradle/caches
@@ -126,8 +128,199 @@ jobs:
 
       - name: Upload server log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dedicated-server-log
           path: server.log
+          retention-days: 7
+
+  # THE RELEASE GATE (RS10-001).
+  #
+  # The `build` job above is fast because it restores a warm Gradle cache — and a warm cache
+  # hides exactly the failure this project shipped in 1.9.0: build.gradle compiled against a
+  # Legendary Tabs jar that lives only on a maintainer's workstation, is excluded by
+  # .gitignore, and therefore does not exist in a clean checkout. Every cached run was green;
+  # no contributor or fresh runner could reproduce the build at all.
+  #
+  # So this job deliberately gives up every shortcut: no cache action, a GRADLE_USER_HOME
+  # inside the workspace so the runner image's own cache cannot leak in, and an explicit
+  # assertion that nothing was hand-placed into the tree before building. A warm developer
+  # cache is not release evidence; this is.
+  fresh-clone-build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-fresh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Prove the tree is exactly what git tracks. If a future change reintroduces a
+      # "drop this jar into libs/ first" step, this fails here with a readable message
+      # instead of an opaque "cannot resolve dependency" later.
+      - name: Assert the checkout is self-contained
+        run: |
+          set -euo pipefail
+          untracked="$(git ls-files --others --exclude-standard)"
+          if [ -n "$untracked" ]; then
+            echo "::error::Untracked files present in a fresh checkout:"; echo "$untracked"; exit 1
+          fi
+          for jar in libs/*.jar; do
+            [ -e "$jar" ] || continue
+            if ! git ls-files --error-unmatch "$jar" >/dev/null 2>&1; then
+              echo "::error::$jar is not tracked — a fresh clone cannot build against it."; exit 1
+            fi
+          done
+          echo "Checkout is self-contained."
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # --warning-mode all also records the Gradle 9 deprecation baseline (RS10-023).
+      - name: Clean build from an empty cache
+        run: ./gradlew --no-daemon clean build --warning-mode all 2>&1 | tee fresh-build.log
+
+      - name: Upload fresh-build log and test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fresh-clone-build
+          path: |
+            fresh-build.log
+            build/reports/tests/test/**
+            build/test-results/test/**
+          retention-days: 7
+
+  # Two independent containers build the same commit; their distributable hashes must match
+  # (RS10-023). Release-gated rather than per-push: it is two full cold builds.
+  reproducible-build:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        replica: [a, b]
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-fresh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # Both replicas claim the commit's own timestamp, so the manifest stamp is a property of
+      # the source rather than of when the build happened.
+      - name: Build with a deterministic timestamp
+        run: |
+          set -euo pipefail
+          export SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)"
+          echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"
+          ./gradlew --no-daemon clean build
+
+      - name: Hash the distributables
+        run: |
+          set -euo pipefail
+          # Hash every distributable, not "the first one ls returns": the build produces both
+          # runicskills-<v>.jar and the jarJar runicskills-<v>-all.jar, and -all sorts first, so
+          # picking one by ls order silently measures whichever happens to come out on top.
+          rm -f "hash-${{ matrix.replica }}.txt"
+          touch "hash-${{ matrix.replica }}.txt"
+          for jar in build/libs/*.jar; do
+            case "$jar" in *-sources.jar|*-dev.jar) continue;; esac
+            sha256sum "$jar" >> "hash-${{ matrix.replica }}.txt"
+          done
+          sort -k2 -o "hash-${{ matrix.replica }}.txt" "hash-${{ matrix.replica }}.txt"
+          if [ ! -s "hash-${{ matrix.replica }}.txt" ]; then
+            echo "::error::No distributable jars were produced."; exit 1
+          fi
+          cat "hash-${{ matrix.replica }}.txt"
+
+      - name: Upload hash
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: repro-hash-${{ matrix.replica }}
+          path: hash-${{ matrix.replica }}.txt
+          retention-days: 7
+
+  compare-reproducible-build:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    needs: reproducible-build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download hashes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: repro-hash-*
+          merge-multiple: true
+
+      - name: Compare
+        run: |
+          set -euo pipefail
+          echo "--- replica a ---"; cat hash-a.txt
+          echo "--- replica b ---"; cat hash-b.txt
+          if ! diff -u hash-a.txt hash-b.txt; then
+            echo "::error::Build is not reproducible — two clean builds of this commit differ."
+            exit 1
+          fi
+          echo "Reproducible: both clean builds produced identical artifacts."
+
+  # Runs the real Forge GameTestServer: actual server, actual entities, actual capability
+  # lifecycle (RS10-003).
+  #
+  # 1.9.0 fixed a bug that wiped every player's progression on death and shipped with the note
+  # "Not verified in a running game", because the only guard was a source-scanning invariant.
+  # Compiling proves nothing about whether PlayerEvent.Clone actually copies anything; only
+  # running it does.
+  gametest-server:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle caches
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Accept the Minecraft EULA for this run
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+
+      # GameTestServer exits non-zero when any test fails, so no log scraping is needed here.
+      - name: Run GameTests
+        run: ./gradlew --no-daemon runGameTestServer 2>&1 | tee gametest.log
+
+      - name: Upload GameTest log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gametest-log
+          path: gametest.log
           retention-days: 7

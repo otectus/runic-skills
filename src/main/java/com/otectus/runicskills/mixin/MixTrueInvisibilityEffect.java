@@ -2,7 +2,7 @@ package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
-import com.otectus.runicskills.registry.events.PowerEventDispatcher;
+import com.otectus.runicskills.registry.powers.PowerDispatch;
 import com.otectus.runicskills.registry.powers.Power;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +36,7 @@ public abstract class MixTrueInvisibilityEffect {
         if (event == null) return;
         Entity attacker = event.getSource().getEntity();
         if (!(attacker instanceof Player player)) return;
-        if (!PowerEventDispatcher.isEquipped(player, RegistryPowers.TRICKSTERS_ARIA)) return;
+        if (!PowerDispatch.isEquipped(player, RegistryPowers.TRICKSTERS_ARIA)) return;
         Power p = RegistryPowers.TRICKSTERS_ARIA.get();
         if (!PowerRuntime.ProcWindows.active(player.getUUID(),
                 p.getName() + ".suppress",

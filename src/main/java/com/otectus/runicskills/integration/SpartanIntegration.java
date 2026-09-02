@@ -20,6 +20,21 @@ import java.util.List;
 
 public class SpartanIntegration {
 
+    /**
+     * Whether this integration should do anything right now: the Spartan Weaponry family is installed
+     * <em>and</em> {@code enableSpartanIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isAnyLoaded() && HandlerCommonConfig.HANDLER.instance().enableSpartanIntegration;
+    }
+
+
     private static final String WEAPONRY = "spartanweaponry";
     private static final String SHIELDS = "spartanshields";
     private static final String CATACLYSM = "spartancataclysm";
@@ -352,6 +367,7 @@ public class SpartanIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLivingHurt(LivingHurtEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().spartanEnableWeaponMastery) return;
 
         if (event.getSource().getEntity() instanceof Player player && !player.isCreative()) {

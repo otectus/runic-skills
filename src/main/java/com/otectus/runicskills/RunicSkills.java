@@ -41,7 +41,23 @@ public class RunicSkills {
         return LOGGER;
     }
 
-    public static MutablePair<Boolean, String> UpdatesAvailable = new MutablePair<>(false, "");
+    /**
+     * The newer version Forge's update checker found, or {@code null} if there is none yet.
+     *
+     * <p>Asked at the moment it is needed rather than cached in a field. The old checker kept a
+     * mutable pair written on an async thread and read on the login thread with no publication
+     * boundary at all — a reader could see a new version string next to a stale flag. Forge already
+     * holds the result and publishes it safely, so the honest fix is to have no second copy
+     * (RS10-018).
+     */
+    public static String availableUpdate() {
+        return ModList.get().getModContainerById(MOD_ID)
+                .map(container -> net.minecraftforge.fml.VersionChecker.getResult(container.getModInfo()))
+                .filter(result -> result.status() == net.minecraftforge.fml.VersionChecker.Status.OUTDATED
+                        || result.status() == net.minecraftforge.fml.VersionChecker.Status.BETA_OUTDATED)
+                .map(result -> result.target() == null ? null : result.target().toString())
+                .orElse(null);
+    }
 
     // Required for the titles prefix
     public static MinecraftServer server;
@@ -61,43 +77,56 @@ public class RunicSkills {
         RegistrySounds.load(eventBus);
         RegistryArguments.load(eventBus);
         RegistryTitles.load(eventBus);
+        RegistryLootModifiers.load(eventBus);
 
         MinecraftForge.EVENT_BUS.register(new RegistryCommonEvents());
-        // Powers dispatcher imports ISS event types at class-load time, so gate its load on
-        // ISS presence to avoid NoClassDefFoundError — same rule as the other ISS-typed
-        // integration class. Powers that don't touch ISS (cross-cutting categories) are
-        // currently unimplemented Phase 2/3 work; when they land, split the dispatcher into
-        // an ISS half and a vanilla half so cross-cutting Powers still fire without ISS.
+        // The Powers system is split in two. The vanilla half touches no optional-mod types and is
+        // always registered: without it, a pack running no magic mod had every cross-cutting Power
+        // selectable and inert, and no handler at all to release per-player Power runtime state on
+        // logout (RS10-006). The Iron's Spells half imports that mod's event types at class-load
+        // time, so it stays gated on its presence to avoid NoClassDefFoundError.
+        MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.VanillaPowerEventDispatcher());
+        MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.ChannelPowerHandler());
+        MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.SummonPowerHandler());
+        MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.WeaponCasterPowerHandler());
+        MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.UtilityPowerHandler());
         if (IronsSpellbooksIntegration.isModLoaded()) {
-            MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.PowerEventDispatcher());
+            MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.IronsSpellbooksPowerEventDispatcher());
+            MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.registry.events.IronsSpellbooksSchoolPowerDispatcher());
         }
 
         // Integrations that import external mod APIs — loaded via Class.forName so the
         // integration class is never in RunicSkills' constant pool, preventing
         // NoClassDefFoundError when the dependency mod is absent.
         //
-        // Each load is now gated on its enable<Mod>Integration master toggle (since 1.2.0),
-        // so pack authors who want zero Runic Skills hooks into a given mod can soft-disable
-        // without removing the dep. Perks belonging to the integration remain in the registry
-        // (save data stable across toggle flips) but their effects are inert.
+        // Registered on MOD PRESENCE ALONE. The enable<Mod>Integration toggles used to be read
+        // here, once, at mod construction — which meant reloading one from true to false left the
+        // subscriber registered and firing, and reloading false to true could not register a
+        // subscriber that had been skipped. Every integration's toggle was therefore
+        // restart-only while being documented and synced as live (RS10-011). Each adapter now
+        // asks its own isActive() at every entry point, so both directions take effect
+        // immediately, and the attribute-owning ones actively remove their modifiers when
+        // switched off rather than freezing them in place.
+        //
+        // Perks belonging to a disabled integration stay registered, so save data is stable
+        // across toggle flips; their effects are simply inert.
         HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
 
         tryLoadIntegration("curios",           "com.otectus.runicskills.handler.HandlerCurios");
         tryLoadIntegration("tacz",             "com.otectus.runicskills.integration.TacZIntegration");
         tryLoadIntegration("cgm",              "com.otectus.runicskills.integration.CrayfishGunModIntegration");
         tryLoadIntegration("scguns",           "com.otectus.runicskills.integration.ScorchedGuns2Integration");
-        if (cfg.enableIronsSpellbooksIntegration)
-            tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
-        if (cfg.enableArsNouveauIntegration)
-            tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
-        if (cfg.enableApotheosisIntegration) {
-            tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
-            // The attributeslib-typed perks load as their own class so an AttributesLib version
-            // mismatch (NoClassDefFoundError during class init) degrades only these ten attribute
-            // perks instead of also killing affix-rarity and gem gating above.
-            if (ApothicAttributesIntegration.isModLoaded())
-                tryLoadIntegration("apotheosis",   "com.otectus.runicskills.integration.ApothicAttributesPerksIntegration");
-        }
+        tryLoadIntegration("irons_spellbooks", "com.otectus.runicskills.integration.IronsSpellbooksIntegration");
+        tryLoadIntegration("ars_nouveau",      "com.otectus.runicskills.integration.ArsNouveauIntegration");
+        tryLoadIntegration("apotheosis",       "com.otectus.runicskills.integration.ApotheosisIntegration");
+        // The attributeslib-typed perks load as their own class so an AttributesLib version
+        // mismatch (NoClassDefFoundError during class init) degrades only these ten attribute
+        // perks instead of also killing affix-rarity and gem gating above.
+        if (ApothicAttributesIntegration.isModLoaded())
+            tryLoadIntegration("apotheosis",   "com.otectus.runicskills.integration.ApothicAttributesPerksIntegration");
+        // FTB Quests is the one genuine exception: its task types must be registered into FTB's
+        // own registry during startup and there is no removal API, so this toggle is classified
+        // RESTART_REQUIRED and reported as such by /skillsreload rather than pretending to be live.
         if (cfg.enableFTBQuestsIntegration)
             tryLoadIntegration("ftbquests",        "com.otectus.runicskills.integration.quests.FTBQuestsIntegration");
         // Integration classes with live @SubscribeEvent landing sites for mod-gated Strength-tree
@@ -107,10 +136,11 @@ public class RunicSkills {
         tryLoadIntegration("nichirin_dynasty", "com.otectus.runicskills.integration.NichirinDynastyIntegration");
         tryLoadIntegration("samurai_dynasty",  "com.otectus.runicskills.integration.SamuraiDynastyIntegration");
 
-        // Integrations that use only Forge/MC APIs — safe for direct instantiation.
-        if (cfg.enableSpartanIntegration && SpartanIntegration.isAnyLoaded())
+        // Integrations that use only Forge/MC APIs — safe for direct instantiation. Same rule as
+        // above: presence decides registration, the toggle decides behaviour, checked live.
+        if (SpartanIntegration.isAnyLoaded())
             MinecraftForge.EVENT_BUS.register(new SpartanIntegration());
-        if (cfg.enableIceAndFireIntegration && IceAndFireIntegration.isModLoaded())
+        if (IceAndFireIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new IceAndFireIntegration());
         if (CataclysmIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new CataclysmIntegration());
@@ -118,62 +148,26 @@ public class RunicSkills {
             MinecraftForge.EVENT_BUS.register(new MowziesMobsIntegration());
         // Culinary layer (since 1.6.0): Farmer's Delight + addons + Let's Do series, detected by
         // registry namespace + FoodProperties. Replaces the farmersdelight-only FarmersDelightIntegration.
-        if (cfg.enableCulinaryIntegration && CulinaryIntegration.isAnyLoaded())
+        if (CulinaryIntegration.isAnyLoaded())
             MinecraftForge.EVENT_BUS.register(new CulinaryIntegration());
-        if (cfg.enableStarcatcherIntegration && StarcatcherIntegration.isModLoaded())
+        if (StarcatcherIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new StarcatcherIntegration());
-        if (cfg.enableOvergearedIntegration && OvergearedIntegration.isModLoaded())
+        if (OvergearedIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new OvergearedIntegration());
         if (LocksIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new LocksIntegration());
+        if (com.otectus.runicskills.integration.SiegeMachinesIntegration.isModLoaded())
+            MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.integration.SiegeMachinesIntegration());
 
         ServerNetworking.init();
 
-        // Check for new updates
-        if (HandlerCommonConfig.HANDLER.instance().checkForUpdates) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    String version = getLatestVersion();
-
-                    Optional<IModInfo> optionalModInfo = ModList.get().getMods()
-                            .stream()
-                            .filter(c -> Objects.equals(c.getModId(), MOD_ID))
-                            .findFirst();
-
-                    // Is this somehow isn't present then some really strange shit happen
-                    if (optionalModInfo.isPresent()) {
-                        ModInfo modInfo = (ModInfo) optionalModInfo.get();
-                        if (!Objects.equals(modInfo.getVersion().toString(), version)) {
-                            UpdatesAvailable.left = true;
-                            UpdatesAvailable.right = version;
-                            LOGGER.info(">> NEW VERSION AVAILABLE: {}", version);
-                        }
-                    }
-                } catch (java.io.FileNotFoundException | java.net.SocketTimeoutException | java.net.UnknownHostException e) {
-                    // Expected: VERSION file not published yet, no network, GitHub
-                    // unreachable. Don't spam the log with a full stack trace —
-                    // a single DEBUG line is enough for users who actually care.
-                    LOGGER.debug(">> Update check unavailable: {}", e.toString());
-                } catch (Exception e) {
-                    LOGGER.warn(">> Error checking for updates!", e);
-                }
-            });
-        }
-    }
-
-    @NotNull
-    private static String getLatestVersion() throws IOException {
-        URL u = new URL("https://raw.githubusercontent.com/otectus/runicskills/master/VERSION");
-        URLConnection conn = u.openConnection();
-        conn.setConnectTimeout(5000); // Q10: Prevent indefinite hangs
-        conn.setReadTimeout(5000);
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            StringBuilder buffer = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null)
-                buffer.append(inputLine);
-            return buffer.toString();
-        }
+        // The update check is Forge's now (RS10-018). `updateJSONURL` in mods.toml points at a
+        // version manifest Forge fetches, parses with real version ranges, and reports in the mods
+        // list. What used to be here fetched a bare VERSION file from `otectus/runicskills` — a
+        // repository that does not exist, so it silently failed for every user who ever ran it —
+        // and compared with `!equals`, so had it worked it would have told anyone on a newer
+        // development build that an "update" was available. `checkForUpdates` now governs only
+        // whether operators are told in chat; see PlayerLifecycleHandler.
     }
 
     private static void tryLoadIntegration(String modId, String className) {

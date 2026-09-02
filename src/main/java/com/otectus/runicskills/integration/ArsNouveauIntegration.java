@@ -21,6 +21,21 @@ import net.minecraftforge.fml.ModList;
 
 public class ArsNouveauIntegration {
 
+    /**
+     * Whether this integration should do anything right now: Ars Nouveau is installed
+     * <em>and</em> {@code enableArsNouveauIntegration} is on in the configuration in force.
+     *
+     * <p>The toggle used to be read once, in the mod constructor, to decide whether to register
+     * this subscriber at all — so turning it off on a running server left the handlers registered
+     * and firing, and turning it on could not register a subscriber that had been skipped
+     * (RS10-011). The adapter is now registered whenever its upstream mod is present and every
+     * entry point asks this instead, which makes the toggle work live in both directions.
+     */
+    public static boolean isActive() {
+        return isModLoaded() && HandlerCommonConfig.HANDLER.instance().enableArsNouveauIntegration;
+    }
+
+
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("ars_nouveau");
     }
@@ -29,6 +44,7 @@ public class ArsNouveauIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellResolve(SpellResolveEvent.Pre event) {
+        if (!isActive()) return;
         if (!(event.shooter instanceof Player player)) return;
         if (player.isCreative()) return;
 
@@ -55,6 +71,7 @@ public class ArsNouveauIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellDamage(SpellDamageEvent.Pre event) {
+        if (!isActive()) return;
         // Scale outgoing damage for caster
         if (HandlerCommonConfig.HANDLER.instance().arsEnableSpellDamageScaling) {
             if (event.caster instanceof Player caster && !caster.isCreative()) {
@@ -156,6 +173,7 @@ public class ArsNouveauIntegration {
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onSpellDamageSchoolbridge(SpellDamageEvent.Pre event) {
+        if (!isActive()) return;
         if (!IronsSpellbooksIntegration.isModLoaded()) return;
         if (!(event.caster instanceof Player caster) || caster.isCreative()) return;
         if (event.context == null || event.context.getSpell() == null) return;
@@ -210,6 +228,7 @@ public class ArsNouveauIntegration {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSpellResolveUnifiedArcana(SpellResolveEvent.Post event) {
+        if (!isActive()) return;
         if (!IronsSpellbooksIntegration.isModLoaded()) return;
         if (!(event.shooter instanceof Player caster) || caster.isCreative()) return;
         if (RegistryPerks.UNIFIED_ARCANA == null
@@ -228,6 +247,7 @@ public class ArsNouveauIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellCostCalc(SpellCostCalcEvent event) {
+        if (!isActive()) return;
         if (event.context == null) return;
         if (!(event.context.getUnwrappedCaster() instanceof Player player) || player.isCreative()) return;
 
@@ -285,6 +305,24 @@ public class ArsNouveauIntegration {
             int reduced = (int) (event.currentCost * (1.0 - c.arsConjurerPercent / 100.0));
             event.currentCost = Math.max(reduced, 1);
         }
+
+        // Arcane Scholar - "Ars Nouveau spell complexity limit increased".
+        //
+        // The limit itself is not per-player and cannot be: Ars validates spell length with a
+        // validator built once from the server config, so there is nothing for one player's perk to
+        // raise. What a scholar can be given instead is the thing the limit exists to ration -
+        // complexity is expensive, and long spells are what the cost curve punishes. Each glyph
+        // beyond the first now costs the scholar less, so the same spellbook reaches further on the
+        // same pool, and the tooltip says exactly that.
+        if (RegistryPerks.ARCANE_SCHOLAR != null
+                && RegistryPerks.ARCANE_SCHOLAR.get().isEnabled(player)
+                && spell.recipe != null) {
+            int glyphs = Math.max(0, spell.recipe.size() - 1);
+            int perGlyph = Math.round(c.arcaneScholarAmplifier);
+            if (glyphs > 0 && perGlyph > 0) {
+                event.currentCost = Math.max(event.currentCost - glyphs * perGlyph, 1);
+            }
+        }
     }
 
     private static boolean spellContainsSchool(Spell spell,
@@ -301,6 +339,7 @@ public class ArsNouveauIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onManaRegenCalc(ManaRegenCalcEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().arsEnableManaRegen) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
@@ -321,12 +360,22 @@ public class ArsNouveauIntegration {
                 event.setRegen(event.getRegen() + intBonus);
             }
         }
+
+        // Source Well - "Ars Nouveau source generation increased". Ars calls the pool mana and the
+        // player calls it source; this is the rate at which it refills, which is what generation
+        // means. Applied as a share of whatever the rate already is, so it compounds correctly with
+        // the level-scaled bonuses above rather than swamping them with a flat number.
+        if (RegistryPerks.SOURCE_WELL != null && RegistryPerks.SOURCE_WELL.get().isEnabled(player)) {
+            double share = HandlerCommonConfig.HANDLER.instance().sourceWellPercent / 100.0;
+            if (share > 0) event.setRegen(event.getRegen() * (1.0 + share));
+        }
     }
 
     // ── Max Mana Bonus ──
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onMaxManaCalc(MaxManaCalcEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().arsEnableMaxManaBonus) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
@@ -340,12 +389,22 @@ public class ArsNouveauIntegration {
         if (bonus > 0) {
             event.setMax(event.getMax() + bonus);
         }
+
+        // Source Attunement - "Ars Nouveau source pool increased". Applied after the level bonuses
+        // and to the total, so the perk enlarges the pool the player has actually built rather than
+        // a share of Ars's base figure.
+        if (RegistryPerks.SOURCE_ATTUNEMENT != null
+                && RegistryPerks.SOURCE_ATTUNEMENT.get().isEnabled(player)) {
+            double share = HandlerCommonConfig.HANDLER.instance().sourceAttunementPercent / 100.0;
+            if (share > 0) event.setMax((int) Math.round(event.getMax() * (1.0 + share)));
+        }
     }
 
     // ── Familiar Gating ──
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onFamiliarSummon(FamiliarSummonEvent event) {
+        if (!isActive()) return;
         if (!HandlerCommonConfig.HANDLER.instance().arsEnableFamiliarGating) return;
         if (!(event.owner instanceof Player player) || player.isCreative()) return;
 
@@ -368,11 +427,92 @@ public class ArsNouveauIntegration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellModifier(SpellModifierEvent event) {
+        if (!isActive()) return;
         if (!(event.caster instanceof Player player) || player.isCreative()) return;
 
         if (RegistryPerks.GLYPH_MASTERY != null && RegistryPerks.GLYPH_MASTERY.get().isEnabled(player)) {
             double amplification = HandlerCommonConfig.HANDLER.instance().arsGlyphMasteryAmplification;
             event.builder.addAmplification(amplification);
         }
+
+        // Ward Master - "Protective wards last longer". Ars's protective magic is the Abjuration
+        // school, and this event fires once per glyph with that glyph's own schools attached, so
+        // the extension lands on the warding part of a spell and not on whatever else is bolted to
+        // it. Duration is the modifier that matters: a ward's whole value is how long it stands.
+        if (RegistryPerks.WARD_MASTER != null && RegistryPerks.WARD_MASTER.get().isEnabled(player)
+                && event.spellPart != null && event.spellPart.spellSchools != null
+                && event.spellPart.spellSchools.contains(SpellSchools.ABJURATION)) {
+            double longer = HandlerCommonConfig.HANDLER.instance().wardMasterPercent / 100.0;
+            if (longer > 0) event.builder.addDurationModifier(longer);
+        }
+    }
+
+    // -- Familiars --
+
+    /**
+     * The three familiar perks, all of which are about a creature you summoned rather than about
+     * you: Familiar Bond and Golem Commander on what it deals, Ars Savant on what it survives.
+     *
+     * <p>Ars familiars implement {@link com.hollingsworth.arsnouveau.api.familiar.IFamiliar} and
+     * carry their owner's UUID, so "your familiar" is a question the mod already answers - no
+     * proximity guessing and no ownership heuristics. A familiar belonging to another player is
+     * correctly untouched.
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public void onFamiliarCombat(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
+        if (!isActive()) return;
+        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+
+        // Attacking side: a familiar you own is hitting something.
+        if (event.getSource().getEntity() instanceof com.hollingsworth.arsnouveau.api.familiar.IFamiliar attacker) {
+            Player owner = ownerOf(attacker);
+            if (owner != null) {
+                double bonus = 0.0;
+                if (RegistryPerks.FAMILIAR_BOND != null
+                        && RegistryPerks.FAMILIAR_BOND.get().isEnabled(owner)) {
+                    bonus += config.familiarBondPercent / 100.0;
+                }
+                // "Golem familiars" - matched on the familiar's own registry id, so the amethyst
+                // golem and any addon's golem both count without naming either.
+                if (RegistryPerks.GOLEM_COMMANDER != null
+                        && RegistryPerks.GOLEM_COMMANDER.get().isEnabled(owner)
+                        && isGolem(attacker)) {
+                    bonus += config.golemCommanderPercent / 100.0;
+                }
+                if (bonus > 0) event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+            }
+        }
+
+        // Defending side: something is hitting a familiar you own.
+        if (event.getEntity() instanceof com.hollingsworth.arsnouveau.api.familiar.IFamiliar victim) {
+            Player owner = ownerOf(victim);
+            if (owner != null && RegistryPerks.ARS_SAVANT != null
+                    && RegistryPerks.ARS_SAVANT.get().isEnabled(owner)) {
+                // "Familiar abilities improved" named no ability in particular, and Ars gives each
+                // familiar a different one - a starbuncle fetches, a drygmy harvests, a wixie
+                // brews - with no shared number to raise. What every familiar has in common is that
+                // it dies and has to be re-summoned, so the perk buys the one improvement that
+                // helps all of them: staying alive long enough to keep doing whatever they do.
+                double reduction = Math.min(0.90, config.arsSavantPercent / 100.0);
+                if (reduction > 0) event.setAmount((float) (event.getAmount() * (1.0 - reduction)));
+            }
+        }
+    }
+
+    /** The player who owns a familiar, or {@code null} if they are absent or it is unowned. */
+    private static Player ownerOf(com.hollingsworth.arsnouveau.api.familiar.IFamiliar familiar) {
+        java.util.UUID ownerId = familiar.getOwnerID();
+        if (ownerId == null) return null;
+        net.minecraft.world.entity.Entity self = familiar.getThisEntity();
+        if (self == null || self.level() == null) return null;
+        return self.level().getPlayerByUUID(ownerId);
+    }
+
+    private static boolean isGolem(com.hollingsworth.arsnouveau.api.familiar.IFamiliar familiar) {
+        net.minecraft.world.entity.Entity self = familiar.getThisEntity();
+        if (self == null) return false;
+        net.minecraft.resources.ResourceLocation id =
+                net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(self.getType());
+        return id != null && id.getPath().contains("golem");
     }
 }

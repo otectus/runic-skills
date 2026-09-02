@@ -62,46 +62,52 @@ public class OverlaySkillGui implements IGuiOverlay {
     private void draw(GuiGraphics matrixStack) {
         if (this.client.level != null && this.client.player != null && showTicks > 0 && skills != null && this.client.player.getCapability(RegistryCapabilities.SKILL).isPresent()) {
             matrixStack.pose().pushPose();
-            int xOff = this.client.getWindow().getGuiScaledWidth() / 2;
-            int yOff = this.client.getWindow().getGuiScaledHeight() / 4;
+            try {
+                int xOff = this.client.getWindow().getGuiScaledWidth() / 2;
+                int yOff = this.client.getWindow().getGuiScaledHeight() / 4;
 
-            MutableComponent overlayMessage = Component.translatable("overlay.skill.message");
-            int overlayWidth = this.client.font.width(overlayMessage) / 2;
-
-            RenderSystem.enableBlend();
-            for (int i = 0; i < 16; i++) {
-                float f = (showTicks < 40) ? (0.003F * i / 40.0F * showTicks) : (0.003F * i);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, f);
-                matrixStack.fill(xOff - overlayWidth - 14 - 16 - i, yOff - 11 - 16 - i, xOff + overlayWidth + 14 + 16 - i, yOff + 45 + 16 - i, Color.BLACK.getRGB());
-            }
-            float alpha = (showTicks < 40) ? (0.025F * showTicks) : 1.0F;
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-            Utils.drawCenterWithShadow(matrixStack, overlayMessage, xOff, yOff, 16733525);
-
-            SkillCapability localCap = SkillCapability.getLocal();
-            for (int j = 0; j < skills.size(); j++) {
-                Skills abilities = skills.get(j);
-                String level = Integer.toString(abilities.getSkillLvl());
-                // Hoisted + null-guarded: getLocal() can transiently return null even when the cap
-                // is present (resolve race during join); also avoids a lookup every loop iteration.
-                boolean met = (localCap != null && localCap.getSkillLevel(abilities.getSkill()) >= abilities.getSkillLvl());
-
-                int x = xOff + j * 24 - skills.size() * 12;
-                int y = yOff + 15;
+                MutableComponent overlayMessage = Component.translatable("overlay.skill.message");
+                int overlayWidth = this.client.font.width(overlayMessage) / 2;
 
                 RenderSystem.enableBlend();
+                for (int i = 0; i < 16; i++) {
+                    float f = (showTicks < 40) ? (0.003F * i / 40.0F * showTicks) : (0.003F * i);
+                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, f);
+                    matrixStack.fill(xOff - overlayWidth - 14 - 16 - i, yOff - 11 - 16 - i, xOff + overlayWidth + 14 + 16 - i, yOff + 45 + 16 - i, Color.BLACK.getRGB());
+                }
+                float alpha = (showTicks < 40) ? (0.025F * showTicks) : 1.0F;
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
-                matrixStack.blit(abilities.getSkill().getLockedTexture(abilities.getSkillLvl()), x, y, 0.0F, 0.0F, 16, 16, 16, 16);
-                Utils.drawCenterWithShadow(matrixStack, level, x + 16, y + 12, met ? 5635925 : 16733525);
-            }
+                Utils.drawCenterWithShadow(matrixStack, overlayMessage, xOff, yOff, 16733525);
 
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            matrixStack.pose().popPose();
+                SkillCapability localCap = SkillCapability.getLocal();
+                for (int j = 0; j < skills.size(); j++) {
+                    Skills abilities = skills.get(j);
+                    String level = Integer.toString(abilities.getSkillLvl());
+                    // Hoisted + null-guarded: getLocal() can transiently return null even when the cap
+                    // is present (resolve race during join); also avoids a lookup every loop iteration.
+                    boolean met = (localCap != null && localCap.getSkillLevel(abilities.getSkill()) >= abilities.getSkillLvl());
+
+                    int x = xOff + j * 24 - skills.size() * 12;
+                    int y = yOff + 15;
+
+                    RenderSystem.enableBlend();
+                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+                    matrixStack.blit(abilities.getSkill().getLockedTexture(abilities.getSkillLvl()), x, y, 0.0F, 0.0F, 16, 16, 16, 16);
+                    Utils.drawCenterWithShadow(matrixStack, level, x + 16, y + 12, met ? 5635925 : 16733525);
+                }
+            } finally {
+                Utils.resetRenderState();
+                matrixStack.pose().popPose();
+            }
         }
     }
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        // ClientTickEvent fires twice per tick (START and END). Without this guard the
+        // countdown ran at 2 ticks/tick and every overlay vanished in half its configured
+        // duration. OverlayTitleGui has always guarded correctly; these two did not.
+        if (event.phase != TickEvent.Phase.END) return;
         if (showTicks > 0) showTicks--;
     }
 

@@ -14,13 +14,19 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Passive {
+    // Identity and presentation: fixed by the mod.
     public final ResourceLocation key;
     private final Supplier<Skill> skillSupplier;
     public final ResourceLocation texture;
     public final Attribute attribute;
     public final String attributeUuid;
-    public final Object attributeValue;
-    public final int[] levelsRequired;
+
+    // Tunables from the config file. See Perk for the full rationale: these were captured once
+    // when the registry was filled, so a reload changed what handlers read live while leaving the
+    // registered per-level values and requirement arrays frozen (RS10-005). Refreshed in place by
+    // {@link com.otectus.runicskills.registry.RegistryPassives#refreshFromConfig()}.
+    public volatile Object attributeValue;
+    public volatile int[] levelsRequired;
 
     public Passive(ResourceLocation passiveKey, Supplier<Skill> skillSupplier, ResourceLocation passiveTexture, Attribute attribute, String attributeUuid, Object attributeValue, int... levelsRequired) {
         this.key = passiveKey;
@@ -30,6 +36,17 @@ public class Passive {
         this.attributeUuid = attributeUuid;
         this.attributeValue = attributeValue;
         this.levelsRequired = levelsRequired;
+    }
+
+    /**
+     * Takes on {@code rebuilt}'s configuration-derived values, keeping this registered instance's
+     * identity. Fed by re-running this passive's own registration lambda, so the config-field
+     * mapping stays at the registration site.
+     */
+    public void adoptTunables(Passive rebuilt) {
+        if (rebuilt == null || rebuilt == this) return;
+        this.attributeValue = rebuilt.attributeValue;
+        this.levelsRequired = rebuilt.levelsRequired;
     }
 
     public Skill getSkill() {

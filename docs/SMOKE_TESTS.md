@@ -91,10 +91,66 @@ Everything below this line is runtime smoke testing that must be done by hand.
 | 6.12 | Skills HUD overlay layer registered as `runicskills:skill_overlay` (and `:title_overlay`) — resource packs can `above`/`below` it via overlay APIs | | **1.2.0 `RegisterGuiOverlaysEvent` migration.** Replaces the prior `CustomizeGuiOverlayEvent.DebugText` piggy-back. |
 | 6.13 | Per-integration master toggle (e.g. `enableApotheosisIntegration=false`) — that integration's perks remain in registry but events inert | | **1.2.0 integration toggles.** `RunicSkills.<init>` gates each `tryLoadIntegration` / direct-instantiate path. Synced via `CommonConfigSyncCP`. (Botania toggle removed in 1.5.0 along with the integration.) |
 
+## 7. 2.0.0 verification
+
+The release that changed the protocol, the config authority, the save schema and the whole of the
+Powers presentation. Rows 7.1, 7.2, 7.5 and 7.9 are **release-blockers**.
+
+| # | Test | Result | Notes |
+|---|---|---|---|
+| 7.1 | 1.9.0 client vs 2.0.0 server | | **Blocker.** Protocol 9 vs 10. Expect refusal at connect with a named Runic Skills error, not a hang or a silent desync. |
+| 7.2 | A 1.9.0 world loads on 2.0.0 | | **Blocker.** `CapabilitySanitizer` runs as the 1 to 2 migration. Skills, passives, perk ranks and equipped Powers all preserved; one summary line per player in the log, not one per key. Re-load a second time and confirm the migration is idempotent. |
+| 7.3 | Hand-edit a saved skill level to `-5` and to `2147483647`, reload | | Both clamped to the stored bounds, reported once, and the player is playable. These are corruption bounds, not balance caps — lowering `skillMaxLevel` must **not** destroy earned progress. |
+| 7.4 | Client and server with deliberately different `runicskills.common.json5` | | Every gameplay read resolves to the server's values; the Skills screen shows the server's perk gates and budgets. Disconnect, open singleplayer: the local file applies again. |
+| 7.5 | `/skillsreload` after editing a perk's required level | | **Blocker.** The change takes effect without a restart, and the command reports which fields were `LIVE_SERVER` versus `RESTART_REQUIRED`. |
+| 7.6 | Ctrl-click a passive `+` with 10 levels affordable | | Applies 10, atomically, in one packet. Pre-2.0.0 the rate limiter discarded all but the first and it silently bought one. `PassiveLevelUpEvent` fires **once**, spanning the whole move. |
+| 7.7 | `/skills <player> <skill> add 2147483647` | | Saturates at the configured cap. It used to wrap negative and write a negative level into the save. |
+| 7.8 | Install a nickname or chat mod, earn a title | | The title renders as a prefix; the nickname keeps its own text **and its styling**. Nothing writes to the vanilla custom name. A name written by a pre-2.0.0 build is cleared once, on login. |
+| 7.9 | Dedicated server, no YACL, no optional mods | | **Blocker.** Boots to "Done". Join, level a skill, toggle a perk, equip a cross-cutting Power — all work with Iron's Spells absent. |
+| 7.10 | Magic Resist vs an arrow, a thrown trident, and a mob's magic attack | | Arrows and tridents are **not** resisted; magic is. The reverse of pre-2.0.0 behaviour. Datapack-extend `runicskills:affected_by_magic_resistance` and confirm the addition is honoured. |
+| 7.11 | Craft with a locked result in the grid | | No ghost item: the result slot clears in sync, and a shift-click or quick-move is refused authoritatively at `mayPickup`, not just hidden. |
+| 7.12 | Repeatedly click a rejected enchantment button | | The price does not walk down toward 1. The discount applies where offers are generated, not where they are spent. |
+| 7.13 | The 13 new mixins, with their target blocks | | Stonecutter, hopper, dispenser, minecart, brewing stand, thrown potion, furnace, grindstone, container-click attribution, slot take, player action, and the two Apotheosis menus. Each perk that hangs off one fires, and each block behaves vanilla with the perk off. |
+
+## 8. 2.0.1 Power VFX and accessibility
+
+The matrix from the VFX programme. Run the whole of it before tagging; a proc that misleads a player
+about their own build is worse than one they cannot see.
+
+| # | Test | Result | Notes |
+|---|---|---|---|
+| 8.1 | A damage-amplifier Power procs on a mob 20 blocks away | | The rune draws **on the mob**, not around you. Through 2.0.0 every proc spawned eight enchant particles at the local player whatever had happened. |
+| 8.2 | Second player nearby during a proc | | They see it, at the right place. Owner-only procs show them nothing while still showing the owner a HUD card. |
+| 8.3 | Grayscale display (or a screenshot desaturated) | | Mark, Seal and Crown are still tellable apart from silhouette and motion alone: broken ring, closed ring, triple ring. This is the criterion colour is not allowed to carry. |
+| 8.4 | Deuteranopia / protanopia / tritanopia simulation | | School still identifiable from motion and sound after a look at the legend. |
+| 8.5 | `powerVfxQuality = OFF` | | **Zero** runic particles. The HUD card and the sound still play. |
+| 8.6 | `powerVfxQuality = REDUCED` | | Same silhouette and motion, roughly 40% of the particles, shorter afterglow. |
+| 8.7 | Ten simultaneous proc sources | | Caps hold: at most 64 tracked procs, 128 particles, 8 sounds, 3 HUD cards. Repeats of one Power increment its card counter rather than adding cards. No frame-rate cliff. |
+| 8.8 | A chain reaction (Pyroclasm through several corpses) | | Each detonation draws at **its own corpse**, not at the caster. Audio does not stack into clipping. |
+| 8.9 | GUI scale 1-4, 720p through ultrawide | | HUD cards stay inside the safe area and clear of the hotbar and status bars; a long translated Power name is clamped, not clipped off both edges. |
+| 8.10 | `highContrastRunes = true` | | White glyph on a dark accent. Tier and school stay readable, since neither depends on hue. |
+| 8.11 | Disconnect during a proc, then reconnect | | No card survives the world change, no particle leaks, no coalescing key references a dead entity id. |
+| 8.12 | Resource reload (F3+T) with cards on screen | | Descriptors and sprites swap without retaining old instances or crashing. |
+| 8.13 | Powers panel | | Every Power has its own icon, not the placeholder square. A row pulses when **your** Power fires and not when someone else's does. Denial reasons read as sentences. Tab and arrow keys reach the equip buttons; the narrator reads them. |
+| 8.14 | Set the language to `de_de`, hover a skill on the Skills screen | | The level-up tooltip reads as German text. A literal `%s` here is the placeholder-arity bug returning. |
+| 8.15 | Scroll a Powers column past its last row, then back | | The list starts moving again on the first scroll back, with no dead zone. |
+
 ---
 
 ## Reporting gaps
 
-If any row in sections 1.1, 1.4, 3.1, 3.5, 3.7, or 3.8 fails, that's a release-blocker —
-those are the comment-triage and dedicated-server fixes that this release exists to ship.
-Other rows can be flagged in COMMENT_TRIAGE.md or the changelog as known limitations.
+Release-blockers: rows 1.1, 1.4, 3.1, 3.5, 3.7, 3.8 (the historical dedicated-server and
+comment-triage fixes) and rows 7.1, 7.2, 7.5, 7.9 (the 2.0.0 protocol, migration, reload and
+dedicated-server rows). A failure in any of them stops the release.
+
+**For 2.0.1 specifically**, add a protocol row to §7: a **2.0.0** client against a 2.0.1 server must
+be refused at connect. 2.0.1 changed the proc packet's shape and the config schema hash inside
+protocol 10, so it bumped to 11 — if that refusal does not happen, the two will agree on a version
+and then misread each other, which is the exact failure the number exists to prevent.
+
+Anything else that fails goes in the changelog as a known limitation, in the release it ships in.
+Earlier revisions routed failures to `COMMENT_TRIAGE.md`; that file stopped being maintained after
+1.3.7 and now lives in [`history/`](history/), so it is not a destination for new findings.
+
+**Sections 1 through 6 have never had their Result cells filled in.** They are kept because the
+regressions they cover are real, but an empty cell means "not run", not "passed".

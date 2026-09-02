@@ -8,7 +8,6 @@
 
  "yacl3.config.runicskills:config.category.common.group.general": "General",
  "yacl3.config.runicskills:config.category.common.group.passives": "Passives",
- "yacl3.config.runicskills:config.category.common.group.skills": "Skills",
 
  "yacl3.config.runicskills:config.skillMaxLevel": "Skill max level",
  "yacl3.config.runicskills:config.skillFirstCostLevel": "Skill first cost level",
@@ -68,7 +67,6 @@
  "yacl3.config.runicskills:config.treasureHunterItemList" : "Treasure Hunter Item List",
  "yacl3.config.runicskills:config.convergenceProbability" : "Convergence Probability Value",
  "yacl3.config.runicskills:config.convergenceItemList" : "Convergence Item List",
- "yacl3.config.runicskills:config.lifeEaterAmplifier" : "LifeEater Amplifier Value",
  "yacl3.config.runicskills:config.criticalRoll6Modifier" : "Critical Roll 6 Modifier Value",
  "yacl3.config.runicskills:config.criticalRoll1Probability" : "Critical Roll 1 Probability Value",
  "yacl3.config.runicskills:config.luckyDropModifier" : "Lucky Drop Modifier Value",
@@ -145,7 +143,7 @@
  "skill.runicskills.rank.7" : "Grão-Mestre",
  "skill.runicskills.rank.8" : "Lendário",
 
- "tooltip.skill.level_up" : "Gaste %s níveis (%s xp) para subir %s.",
+ "tooltip.skill.level_up" : "Gaste %1$s xp para subir %2$s.",
  "tooltip.skill.max_level" : "Você atingiu o nível máximo de %s.",
  "tooltip.skill.global_max_level": "Nível global máximo de habilidade de %s atingido.",
 
@@ -211,7 +209,6 @@
  "passive.runicskills.block_reach.description" : "Distância entre o jogador e o bloco.",
  "passive.runicskills.break_speed.description" : "Velocidade para quebrar um bloco com ferramentas. (afeta apenas picareta, machado e pá)",
  "passive.runicskills.beneficial_effect.description" : "Duração de poções que beneficiam o jogador.",
- "passive.runicskills.magic_resist.description" : "Anula uma parte do dano mágico causado por: poções de dano, presas de evocador, crânios de Wither, encantamentos de espinhos, raios de guardião, etc.",
  "passive.runicskills.fortune.description" : "Aumenta a probabilidade de encontrar itens de alta qualidade ao pescar ou em baús gerados naturalmente.",
  "passive.runicskills.critical_damage.description" : "Um ataque que causa dano extra em comparação com um ataque normal. (se aplica quando o jogador corre ou cai durante um pulo)",
 
@@ -560,12 +557,6 @@
  "overlay.runicskills.affix_rarity_gated": "Você precisa de Fortuna %s para usar itens %s!",
  "overlay.runicskills.gem_attunement_saved": "A sintonização de gemas preservou a gema!",
 
- "perk.runicskills.blood_mastery": "Maestria de sangue",
- "perk.runicskills.blood_mastery.description": "Sua constituição o fortalece contra o custo do sacrifício de sangue, reduzindo o custo de vida em %s.",
- "perk.runicskills.ritual_sage": "Sábio ritual",
- "perk.runicskills.ritual_sage.description": "Sua sabedoria profunda em rituais de sangue reduz o consumo de PV em %s.",
- "perk.runicskills.crimson_bond": "Vínculo carmesim",
- "perk.runicskills.crimson_bond.description": "Seu vínculo com a rede sanguínea concede uma chance de 1 em %s de não consumir PV ao usar sigilos.",
 
  "perk.runicskills.dragon_slayer": "Matador de dragões",
  "perk.runicskills.dragon_slayer.description": "Sua força permite causar %s de dano bônus a dragões e criaturas míticas.",
@@ -577,14 +568,10 @@
  "perk.runicskills.cataclysm_resistance": "Resistência cataclísmica",
  "perk.runicskills.cataclysm_resistance.description": "Sua resistência o endurece contra forças cataclísmicas, reduzindo dano de chefes em %s.",
 
- "perk.runicskills.curse_ward": "Proteção contra maldições",
- "perk.runicskills.curse_ward.description": "Sua sabedoria o protege de energias amaldiçoadas, reduzindo dano de maldição em %s.",
 
  "perk.runicskills.boss_hunter": "Caçador de chefes",
  "perk.runicskills.boss_hunter.description": "Sua força lhe dá uma vantagem contra chefes poderosos, causando %s de dano bônus.",
 
- "perk.runicskills.aura_attunement": "Sintonização de aura",
- "perk.runicskills.aura_attunement.description": "Sua sintonização com a natureza aumenta a eficiência dos efeitos de aura perto de você em %s.",
 
  "perk.runicskills.master_chef": "Mestre cozinheiro",
  "perk.runicskills.master_chef.description": "Sua constituição permite extrair mais da comida, aumentando a duração dos efeitos em %s.",

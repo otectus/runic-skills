@@ -21,7 +21,23 @@
     "MixVillager",
     "MixCraftingMenu",
     "MixEnchantmentMenu",
-    "MixTrueInvisibilityEffect"
+    "MixTrueInvisibilityEffect",
+    "MixAbstractMagicProjectile",
+    "MixCreeperHeadProjectile",
+    "MixThrownPotion",
+    "MixBrewingStandBlockEntity",
+    "MixGrindstoneMenu",
+    "MixAbstractContainerMenu",
+    "MixAbstractFurnaceBlockEntity",
+    "MixPlayerAction",
+    "MixLivingEntityAccess",
+    "MixStonecutterMenu",
+    "MixHopperBlockEntity",
+    "MixDispenserBlock",
+    "MixAbstractMinecart",
+    "MixSalvagingMenu",
+    "MixReforgingResultSlot",
+    "MixSlot"
   ],
   "injectors": {
     "defaultRequire": 1
