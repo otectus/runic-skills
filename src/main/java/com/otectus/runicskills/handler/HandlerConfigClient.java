@@ -28,6 +28,18 @@ public class HandlerConfigClient {
     public static final ForgeConfigSpec.BooleanValue powerFlashes;
     public static final ForgeConfigSpec.BooleanValue highContrastRunes;
     public static final ForgeConfigSpec.DoubleValue powerParticleMultiplier;
+
+    // Inventory tab strip placement. Purely a presentation choice, so it belongs in the client
+    // TOML: where the strip sits depends on the player's screen size, GUI scale and which other
+    // inventory-decorating mods are installed, none of which a server can know.
+    public static final ForgeConfigSpec.BooleanValue inventoryTabsEnabled;
+    public static final ForgeConfigSpec.ConfigValue<String> inventoryTabsAnchor;
+    public static final ForgeConfigSpec.IntValue inventoryTabsOffsetX;
+    public static final ForgeConfigSpec.IntValue inventoryTabsOffsetY;
+    public static final ForgeConfigSpec.BooleanValue inventoryTabsAvoidRecipeBook;
+    public static final ForgeConfigSpec.BooleanValue inventoryTabsAvoidEffects;
+    public static final ForgeConfigSpec.BooleanValue inventoryTabsDragToMove;
+
     public static boolean defaultShowCriticalRollPerkOverlay = true;
     public static boolean defaultShowLuckDropPerkOverlay = true;
     public static boolean defaultShowPerkModName = false;
@@ -48,6 +60,15 @@ public class HandlerConfigClient {
     public static boolean defaultPowerFlashes = false;
     public static boolean defaultHighContrastRunes = false;
     public static double defaultPowerParticleMultiplier = 1.0D;
+    public static boolean defaultInventoryTabsEnabled = true;
+    // AUTO, not TOP_LEFT: AUTO tries the legacy position first and only moves the strip when
+    // something is actually in the way, so the default is both compatible and self-correcting.
+    public static String defaultInventoryTabsAnchor = "AUTO";
+    public static int defaultInventoryTabsOffsetX = 0;
+    public static int defaultInventoryTabsOffsetY = 0;
+    public static boolean defaultInventoryTabsAvoidRecipeBook = true;
+    public static boolean defaultInventoryTabsAvoidEffects = true;
+    public static boolean defaultInventoryTabsDragToMove = true;
 
     static {
         CONFIG.push("general");
@@ -78,6 +99,26 @@ public class HandlerConfigClient {
                 .define("highContrastRunes", defaultHighContrastRunes);
         powerParticleMultiplier = CONFIG.comment("Scales the particle count of every proc. Clamped to 0.0-2.0; the manager's hard caps still apply above it.")
                 .defineInRange("powerParticleMultiplier", defaultPowerParticleMultiplier, 0.0D, 2.0D);
+        CONFIG.pop();
+
+        CONFIG.push("tabs");
+        inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Turned off automatically anyway when L2Tabs or Legendary Tabs is present, since those render the Skills tab natively.")
+                .define("inventoryTabsEnabled", defaultInventoryTabsEnabled);
+        inventoryTabsAnchor = CONFIG.comment("Where the tab strip attaches to the inventory panel: AUTO, TOP_LEFT, TOP_RIGHT, LEFT, RIGHT, BOTTOM_LEFT or BOTTOM_RIGHT. AUTO tries them in that order and takes the first that fits on screen without overlapping the recipe book, the potion effect panel or a region another mod reserved; TOP_LEFT is the position used before 2.0.5. An explicit anchor is honoured even if it overlaps something.")
+                .define("inventoryTabsAnchor", defaultInventoryTabsAnchor,
+                        raw -> raw instanceof String s && java.util.List.of(
+                                        "AUTO", "TOP_LEFT", "TOP_RIGHT", "LEFT", "RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT")
+                                .contains(s.trim().toUpperCase(java.util.Locale.ROOT)));
+        inventoryTabsOffsetX = CONFIG.comment("Horizontal nudge in GUI pixels, relative to the resolved anchor -- not to the screen. Shift-drag the strip in the inventory to set this without editing the file; the strip is still clamped on screen.")
+                .defineInRange("inventoryTabsOffsetX", defaultInventoryTabsOffsetX, -500, 500);
+        inventoryTabsOffsetY = CONFIG.comment("Vertical nudge in GUI pixels, relative to the resolved anchor. Set by Shift-dragging the strip. Reset the position by putting both offsets back to 0.")
+                .defineInRange("inventoryTabsOffsetY", defaultInventoryTabsOffsetY, -500, 500);
+        inventoryTabsAvoidRecipeBook = CONFIG.comment("Let AUTO treat the open recipe book as an obstacle.")
+                .define("inventoryTabsAvoidRecipeBook", defaultInventoryTabsAvoidRecipeBook);
+        inventoryTabsAvoidEffects = CONFIG.comment("Let AUTO treat the vanilla potion effect panel as an obstacle. The panel only appears with active effects, so this is what stops the strip from being fine until you drink a potion.")
+                .define("inventoryTabsAvoidEffects", defaultInventoryTabsAvoidEffects);
+        inventoryTabsDragToMove = CONFIG.comment("Allow Shift-dragging the strip in the inventory to move it. The drag writes inventoryTabsOffsetX/Y and saves this file when the button is released.")
+                .define("inventoryTabsDragToMove", defaultInventoryTabsDragToMove);
         CONFIG.pop();
 
         SPEC = CONFIG.build();

@@ -4,7 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.otectus.runicskills.client.core.SortPassives;
 import com.otectus.runicskills.client.core.SortPerks;
 import com.otectus.runicskills.client.core.Utils;
+import com.otectus.runicskills.client.event.InventoryTabsScreenHandler;
 import com.otectus.runicskills.client.gui.DrawTabs;
+import com.otectus.runicskills.client.gui.InventoryTabLayout;
 import com.otectus.runicskills.client.tooltip.PassiveTooltip;
 import com.otectus.runicskills.client.tooltip.PerkTooltip;
 import com.otectus.runicskills.common.capability.SkillCapability;
@@ -198,6 +200,30 @@ public class RunicSkillsScreen extends Screen {
         drawScreen(guiGraphics, x, y, mouseX, mouseY, delta);
 
         super.render(guiGraphics, mouseX, mouseY, delta);
+
+        // After super.render, so the tab label is not painted over by the widgets and tooltips
+        // this screen draws. The layout is the one the bodies were actually drawn with.
+        InventoryTabLayout.TabLayout drawn = DrawTabs.currentLayout(this);
+        if (drawn != null && !InventoryTabsScreenHandler.suppressed()) {
+            DrawTabs.renderTooltip(guiGraphics, mouseX, mouseY, drawn);
+        }
+    }
+
+    /**
+     * Tab placement for this screen. Same anchor and offset settings as the inventory strip, but
+     * nothing is reserved: this panel is ours and nothing else draws around it, and the strip
+     * cannot be dragged here — the drag handle lives on the inventory, which is the screen the
+     * obstacles are actually on.
+     */
+    private InventoryTabLayout.TabLayout tabLayout() {
+        return InventoryTabLayout.compute(
+                new InventoryTabLayout.Rect(panelLeft(), panelTop(), PANEL_WIDTH, PANEL_HEIGHT),
+                new InventoryTabLayout.Rect(0, 0, this.width, this.height),
+                DrawTabs.tabCount(),
+                InventoryTabLayout.Anchor.parse(HandlerConfigClient.inventoryTabsAnchor.get()),
+                HandlerConfigClient.inventoryTabsOffsetX.get(),
+                HandlerConfigClient.inventoryTabsOffsetY.get(),
+                List.of());
     }
 
     /**
@@ -240,8 +266,8 @@ public class RunicSkillsScreen extends Screen {
 
         // Suppress our legacy tab strip only after an external tab system registers it
         // successfully. Incompatible L2Tabs versions fall back to this built-in strip.
-        if (!L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
-            DrawTabs.render(guiGraphics, mouseX, mouseY, PANEL_WIDTH, PANEL_HEIGHT, 0);
+        if (!InventoryTabsScreenHandler.suppressed()) {
+            DrawTabs.render(guiGraphics, mouseX, mouseY, tabLayout());
         }
         Utils.resetRenderState();
         guiGraphics.pose().popPose();

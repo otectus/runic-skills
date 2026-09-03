@@ -405,6 +405,10 @@ tasks.register('checkSidedImports') {
             // DistExecutor / NetworkEvent.Context. Sided cleanup of these is tracked
             // under Track 2 of the review remediation.
             'src/main/java/com/otectus/runicskills/network/packet/client',
+            // Client-facing API surface (the inventory tab layout event). Named `client` for the
+            // same reason as the packet package: nothing here is ever loaded on a dedicated
+            // server, it exists so client-side compat code can talk to us without a hard dep.
+            'src/main/java/com/otectus/runicskills/api/client',
     ].collect { file(it).canonicalPath }
     // Top-level files that are explicitly client-side entrypoints.
     def clientFiles = [
