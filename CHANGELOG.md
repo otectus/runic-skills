@@ -15,24 +15,31 @@ No protocol, config schema, or save-data change; network protocol stays at 11. C
 - **Master Researcher** uses `common/crafting/MasterResearcherRecipeIndex.java` (rebuilt on datapack reload, cleared on server stop) with a candidate budget instead of scanning up to 4096 recipes per craft; Inventor draws from the same index; per-recipe/ingredient `RuntimeException` isolation with `common/util/LogOnce.java`; no partial unlock state. **Master Artificer** isolates each `canEnchant` call and caches candidates per item. Phrase: "improved compatibility with modded recipe/ingredient implementations, including configurations using ModernFix".
 - **Inventory tabs**: new layout engine `client/gui/InventoryTabLayout.java` with AUTO anchor selection avoiding the recipe book, the potion-effect panel and any region contributed via `client/gui/InventoryTabReservedRegions.java` or the new `api/client/InventoryTabLayoutEvent`; Shift-drag moves the strip and the offset persists in the client TOML (`inventoryTabsEnabled`, `inventoryTabsAnchor`, `inventoryTabsOffsetX/Y`, `inventoryTabsAvoidRecipeBook`, `inventoryTabsAvoidEffects`, `inventoryTabsDragToMove` in `handler/HandlerConfigClient.java`); tooltip/click/drag/close moved to Forge `ScreenEvent`s in `client/event/InventoryTabsScreenHandler.java` (which absorbed `InventoryTabsCloseHandler`); render/hover/tooltip/click share one set of rectangles; Legendary Tabs / L2Tabs suppression unchanged; the 2.0.2 close/reset fix preserved.
 
+### Perk semantics
+
+- **Precision Tools** — durability-loss avoidance on tool-like items (`DurabilityPerkRules.isTool`, the `lucky_break_*` tags) with chance X/(100+X) so expected lifetime is exactly +X% (`common/durability/DurabilityMath.bonusDurabilityToAvoidance`, `mixin/MixItemStack`).
+- **Tinker's Touch** — crafted damageable items are stamped (`common/util/ItemBonusTags`, `mixin/MixCraftingMenu` at `slotChangedCraftingGrid`) and `MixItemStack`'s `getMaxDamage` hook scales max durability; implemented at slot-change rather than `ItemCraftedEvent` because shift-click copies the result before the event fires.
+- **Tool Smith / Weapon Smith** — anvil-repaired tools/weapons are stamped in `AnvilPerkHandler.onAnvilResult`; consumers are `PerkEffectsHandler.onBreakSpeed` (mining speed) and the new `registry/events/SmithingPerkHandler` (`ItemAttributeModifierEvent`, attack-damage modifier with UUID declared in `registry/RunicAttributeModifiers.Scope.ITEM`).
+- **Runic Engineering** — X% chance (deterministic per input pair) that repairing a runic item (registry id contains "runic"/"rune") raises its lowest non-max enchantment by one level.
+- **Heritage Builder** — optional MineColonies integration (`integration/MineColoniesIntegration`, `common/util/HeritageBuilderHook`, `mixin/MixPathingStuckHandler`) — colony buildings whose owner is online with the perk: raider block breaks cancelled X% of the time; X% of explosion-affected blocks spared (note: redundant under MineColonies' default `turnoffexplosionsincolonies` setting; matters when servers allow explosion damage). Compile-only dependency; nothing loads without MineColonies.
+- **MixAnvilMenu** (`createResult` RETURN) hands the real computed anvil result to `AnvilPerkHandler`; state plainly that Enchantment Amplifier and Enchantment Stacking previously never fired on a vanilla anvil because Forge's `AnvilUpdateEvent` runs before vanilla computes the output (empty unless another mod fills it) and now do.
+- Config percentages are baked into the item at craft/repair time (stamps use the max rule, never additive).
+- Auto Repair is now the only passive-repair perk (`PassiveRepairAccumulator`).
+
 ### Hardening
 
 Unified `common/combat/DamageContext.java` — every Runic-emitted secondary damage call carries an origin (Limit Breaker, Cleave, Bulwark reflect, Weapon Caster reflect, power echo, summon burst, channel splash, spell effects), standard outgoing modifiers apply only to primary hits, secondaries cannot spawn secondaries, hard depth ceiling of 4; the local `CLEAVING` set and `IN_REFLECT`/`IN_ECHO`/`IN_BURST`/`IN_SPLASH` guards were removed in its favour; every damage `event.setAmount` in the mod's event handlers and integrations — 72 sites across 23 files — now passes through `common/combat/DamageMath.safeAmount`, which keeps the original amount when a multiplier would produce NaN, infinite or negative damage; opt-in diagnostics `common/combat/CombatDiagnostics.java` enabled with `-Drunicskills.debug.combat=true` or DEBUG logging. Hardened recursive cross-perk secondary-damage interactions and added safeguards for large multi-skill builds.
 
 ### Testing
 
-New JUnit tests: `ProcRollTest` additions, `CraftingExecutionGuardTest`, `CraftingRefundTest`, `LogOnceTest`, `ReverseIndexTest`, `InventoryTabLayoutTest`, `DamageContextTest`, `DamageMathTest`.
+New JUnit tests: `ProcRollTest` additions, `CraftingExecutionGuardTest`, `CraftingRefundTest`, `LogOnceTest`, `ReverseIndexTest`, `InventoryTabLayoutTest`, `DamageContextTest`, `DamageMathTest`, `DurabilityMathTest`.
 
-New GameTests: `DurabilityPerksGameTest`, `CraftingAuthorityGameTest`, `EfficientCraftingGameTest`, `MasterResearcherGameTest`, `MasterArtificerGameTest`, `DamageContextGameTest`, plus `MockPlayers` helper.
+New GameTests: `DurabilityPerksGameTest`, `CraftingAuthorityGameTest`, `EfficientCraftingGameTest`, `MasterResearcherGameTest`, `MasterArtificerGameTest`, `DamageContextGameTest`, `SmithingPerksGameTest` (15 tests), plus `MockPlayers` helper.
 
 ### Internal
 
 - New `common/util/ReverseIndex`, `LogOnce`, `ProcRoll.chance01`.
 - `build.gradle` checkSidedImports allowlist gained `api/client`.
-
-### Known limitations
-
-The six other perks still in the passive repair accumulator (Precision Tools, Runic Engineering, Tinker's Touch, Tool Smith, Weapon Smith, Heritage Builder) keep their 2.0.4 repair-over-time behaviour although their tooltips describe other effects; see `PassiveRepairAccumulator`'s Javadoc.
 
 ## [2.0.4] - 2026-09-03 — Audit remediation: 16 findings
 

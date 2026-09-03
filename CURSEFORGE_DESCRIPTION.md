@@ -164,6 +164,8 @@ Available to everyone:
 
 **Stability and perk semantics.** Lucky Break now prevents durability loss on tool-like items instead of passively repairing. Mending Boost only amplifies real Mending repairs. Crafting rewards are server-authoritative, and Efficient Crafting actually preserves your consumed materials.
 
+**Six Tinkering and Building perks now do what their tooltips promise:** Precision Tools gives you a bigger durability pool. Tinker's Touch stamps crafted items with a durability bonus. Tool Smith and Weapon Smith stamp repaired items for speed and damage. Runic Engineering improves enchantments on repaired runic gear. Heritage Builder works with MineColonies to protect colony buildings from structural damage.
+
 Master Researcher no longer scans thousands of recipes per craft — it now indexes them with a candidate budget, with improved compatibility for modded recipe and ingredient implementations, including configurations using ModernFix. Combat secondary damage carries re-entry protection and safeguards for large multi-skill builds.
 
 **Inventory tabs now stay out of the way.** They avoid the recipe book, potion effects, and other mods' custom tab regions. You can move the tab strip with Shift-drag, and the position is saved.
