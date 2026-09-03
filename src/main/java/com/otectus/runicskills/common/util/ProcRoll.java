@@ -57,4 +57,21 @@ public final class ProcRoll {
         if (percent <= 0.0D) return false;
         return ThreadLocalRandom.current().nextDouble() * 100.0D < percent;
     }
+
+    /**
+     * Normalises a configured percentage to a probability on {@code [0, 1]}, for the sites that
+     * <em>compose</em> several perk chances additively instead of rolling one of them.
+     *
+     * <p>Those sites — durability avoidance in {@code MixItemStack}, the Mending Boost multiplier
+     * in {@code MixExperienceOrb} — add config values together before they ever reach a random
+     * number, so a single hand-edited {@code NaN}, a negative, or a value above 100 poisons the
+     * whole sum rather than one term of it. Clamping here means every caller can add first and
+     * decide afterwards, and none of them has to repeat the arithmetic.
+     */
+    public static double chance01(double percent) {
+        if (!Double.isFinite(percent)) return 0.0D;
+        double fraction = percent / 100.0D;
+        if (fraction <= 0.0D) return 0.0D;
+        return Math.min(1.0D, fraction);
+    }
 }

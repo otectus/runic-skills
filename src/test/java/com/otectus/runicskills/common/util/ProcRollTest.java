@@ -64,6 +64,26 @@ class ProcRollTest {
     // --- percentage rolls ------------------------------------------------------------------------
 
     @Test
+    void chance01NormalisesAPercentageToAProbability() {
+        assertEquals(0.10D, ProcRoll.chance01(10.0D), 1.0e-9, "10% is 0.10, not 10");
+        assertEquals(0.155D, ProcRoll.chance01(15.5D), 1.0e-9);
+    }
+
+    @Test
+    void chance01ClampsAtBothEnds() {
+        assertEquals(1.0D, ProcRoll.chance01(150.0D), 0.0D, "no perk composition may exceed certainty");
+        assertEquals(0.0D, ProcRoll.chance01(-5.0D), 0.0D, "a negative percentage is not a negative chance");
+        assertEquals(0.0D, ProcRoll.chance01(0.0D), 0.0D);
+    }
+
+    @Test
+    void chance01RejectsNonFiniteConfiguration() {
+        assertEquals(0.0D, ProcRoll.chance01(Double.NaN), 0.0D);
+        assertEquals(0.0D, ProcRoll.chance01(Double.POSITIVE_INFINITY), 0.0D);
+        assertEquals(0.0D, ProcRoll.chance01(Double.NEGATIVE_INFINITY), 0.0D);
+    }
+
+    @Test
     void percentEndpointsAreAbsolute() {
         for (int i = 0; i < 100; i++) {
             assertTrue(ProcRoll.rollsPercent(100.0), "100% always");

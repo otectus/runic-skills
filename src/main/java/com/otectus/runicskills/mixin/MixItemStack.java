@@ -1,5 +1,7 @@
 package com.otectus.runicskills.mixin;
 
+import com.otectus.runicskills.common.durability.DurabilityPerkRules;
+import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -56,15 +58,18 @@ public abstract class MixItemStack {
     }
 
     /**
-     * Reduces the durability actually spent on an item, for the two perks whose tooltips promise
-     * exactly that.
+     * Reduces the durability actually spent on an item, for every perk whose tooltip promises
+     * exactly that: Unbreakable, Unbreaking Mastery, Gadgeteer, Lock Expert and Lucky Break
+     * ("Tool durability loss has a chance to be ignored" — a chance to ignore a point of loss is
+     * not the same thing as healing the item afterwards, which is what it used to do).
      *
-     * <p>Both used to be implemented as a periodic repair on the once-per-second attribute pass,
-     * which is a different mechanic wearing their names (RS10-004): repair cannot save an item that
-     * is about to break on its next use, it silently mends gear the player never damaged, and it
-     * did nothing at all for an item sitting at full durability while being hammered. This is the
-     * one place vanilla actually spends durability — the same method that rolls Unbreaking — so it
-     * is where "loss reduced" and "Unbreaking chance increased" belong.
+     * <p>All of them used to be implemented as a periodic repair on the once-per-second attribute
+     * pass, which is a different mechanic wearing their names (RS10-004, RS-205-01): repair cannot
+     * save an item that is about to break on its next use, it silently mends gear the player never
+     * damaged, it acts on whichever equipped stack is damaged first rather than the one being used,
+     * and it did nothing at all for an item sitting at full durability while being hammered. This
+     * is the one place vanilla actually spends durability — the same method that rolls Unbreaking —
+     * so it is where "loss reduced", "Unbreaking chance increased" and "loss ignored" belong.
      *
      * <p>{@code @ModifyVariable} on the amount rather than cancelling the call: the surrounding
      * method still rolls Unbreaking, still fires the break callback, and still behaves exactly as
@@ -110,6 +115,15 @@ public abstract class MixItemStack {
                 && RegistryPerks.LOCK_EXPERT.get().isEnabled(user)
                 && runicskills$isLockPick(self)) {
             avoided += config.lockExpertPercent / 100.0;
+        }
+
+        // Lucky Break — "Tool durability loss has a %s chance to be ignored". Eligibility is a
+        // real rule rather than whatever was equipped: see DurabilityPerkRules, which keeps armour
+        // out (Unbreakable already owns armour) and lets a pack name its own tools by tag.
+        if (RegistryPerks.LUCKY_BREAK != null
+                && RegistryPerks.LUCKY_BREAK.get().isEnabled(user)
+                && DurabilityPerkRules.isLuckyBreakEligible(self)) {
+            avoided += ProcRoll.chance01(config.luckyBreakPercent);
         }
 
         if (avoided <= 0.0) return amount;
