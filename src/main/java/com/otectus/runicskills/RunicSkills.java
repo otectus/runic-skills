@@ -135,6 +135,10 @@ public class RunicSkills {
         tryLoadIntegration("saintsdragons",    "com.otectus.runicskills.integration.SaintsDragonsIntegration");
         tryLoadIntegration("nichirin_dynasty", "com.otectus.runicskills.integration.NichirinDynastyIntegration");
         tryLoadIntegration("samurai_dynasty",  "com.otectus.runicskills.integration.SamuraiDynastyIntegration");
+        // Heritage Builder's only landing site: installs the HeritageBuilderHook predicate the
+        // PathingStuckHandler mixin calls, and subscribes the explosion handler. Reflective load
+        // keeps every MineColonies type out of the main constant pool.
+        tryLoadIntegration("minecolonies",     "com.otectus.runicskills.integration.MineColoniesIntegration");
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation. Same rule as
         // above: presence decides registration, the toggle decides behaviour, checked live.

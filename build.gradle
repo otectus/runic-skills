@@ -220,6 +220,15 @@ repositories {
         url = "https://maven.blamejared.com"
     }
 
+    // MineColonies family (Heritage Builder integration). LDTTeam's Artifactory is anonymous;
+    // scoped to their group so nothing else is ever resolved from it.
+    maven {
+        url = "https://ldtteam.jfrog.io/artifactory/modding/"
+        content {
+            includeGroup "com.ldtteam"
+        }
+    }
+
     // L2 Tabs
     flatDir{
         dirs 'libs'
@@ -309,6 +318,17 @@ dependencies {
     // ftb-library-forge project 404465 file 7296748 = 2001.2.12 (1.20.1 latest)
     compileOnly fg.deobf("curse.maven:ftb-quests-forge-289412:8078538")
     compileOnly fg.deobf("curse.maven:ftb-library-forge-404465:7296748")
+
+    // MineColonies compatibility (Heritage Builder). Compile-only: resolved at runtime only when
+    // the mod is present. There is no -api jar — IBuilding links Structurize and IColonyManager
+    // reaches BlockUI types, so the whole family has to be on the compile classpath.
+    // MineColonies is GPL-3.0; we link against the published jar and ship none of its bytecode.
+    // CurseMaven fallback ids if LDTTeam's Artifactory is unreachable:
+    //   minecolonies-245506:8615315, structurize-298744:8610456, blockui-522992:7041657
+    compileOnly fg.deobf("com.ldtteam:minecolonies:1.20.1-1.1.1276")
+    compileOnly fg.deobf("com.ldtteam:structurize:1.20.1-1.0.818")
+    compileOnly fg.deobf("com.ldtteam:blockui:1.20.1-1.0.194")
+    compileOnly fg.deobf("com.ldtteam:domum_ornamentum:1.20.1-1.0.288-snapshot:universal")
 
     // QuiltMC Parsers
     implementation("org.quiltmc.parsers:json:0.2.1")

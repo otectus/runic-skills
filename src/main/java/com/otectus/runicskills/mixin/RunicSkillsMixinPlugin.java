@@ -50,6 +50,7 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
                  "MixCreeperHeadProjectile", "WallOfFireEntityAccess" -> isModPresent("irons_spellbooks");
             case "MixSalvagingMenu", "MixReforgingResultSlot",
                  "MixApothEnchantmentMenu" -> isModPresent("apotheosis");
+            case "MixPathingStuckHandler"    -> isModPresent("minecolonies");
             default                          -> true;
         };
     }
