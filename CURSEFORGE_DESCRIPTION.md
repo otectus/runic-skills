@@ -160,6 +160,16 @@ Available to everyone:
 
 ---
 
+## What's new in 2.0.5
+
+**Stability and perk semantics.** Lucky Break now prevents durability loss on tool-like items instead of passively repairing. Mending Boost only amplifies real Mending repairs. Crafting rewards are server-authoritative, and Efficient Crafting actually preserves your consumed materials.
+
+Master Researcher no longer scans thousands of recipes per craft — it now indexes them with a candidate budget, with improved compatibility for modded recipe and ingredient implementations, including configurations using ModernFix. Combat secondary damage carries re-entry protection and safeguards for large multi-skill builds.
+
+**Inventory tabs now stay out of the way.** They avoid the recipe book, potion effects, and other mods' custom tab regions. You can move the tab strip with Shift-drag, and the position is saved.
+
+**2.0.4 and 2.0.5 pair freely** — no protocol or save-data change; new client-only tab settings use safe defaults.
+
 ## What's new in 2.0.4
 
 **Sixteen audit fixes:** passives that were stuck scaling, Powers that weren't firing, Scholar enchantment hiding now per-player, gem credit fixed, perk timers reliable across respawns, and duration values consistent.
