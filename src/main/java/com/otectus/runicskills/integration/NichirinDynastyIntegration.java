@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.mojang.logging.LogUtils;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.entity.Entity;
@@ -52,7 +53,7 @@ public class NichirinDynastyIntegration {
                 && IntegrationHelpers.itemFromMod(player.getMainHandItem(), MOD_ID)) {
             double pct = RegistryPerks.NICHIRIN_BLADE.get().getActiveValue(player)[0];
             float dmg = event.getAmount();
-            event.setAmount(dmg + dmg * (float) (pct / 100.0));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), dmg + dmg * (float) (pct / 100.0)));
         }
     }
 }

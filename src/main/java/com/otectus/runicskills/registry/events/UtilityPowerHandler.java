@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -153,7 +154,7 @@ public class UtilityPowerHandler {
             Power power = RegistryPowers.SHIELD_BREAK_COUNTER.get();
             if (PowerRuntime.ProcWindows.active(defender.getUUID(), power.getName(), now)) {
                 double reduction = PowerOverridesManager.valueOr(power, "damage_reduction", 0.40);
-                event.setAmount((float) (event.getAmount() * (1.0 - Math.min(0.95, reduction))));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 - Math.min(0.95, reduction)))));
                 PowerDispatch.fireProc(defender, power);
             }
         }
@@ -172,7 +173,7 @@ public class UtilityPowerHandler {
         double maxBonus = PowerOverridesManager.valueOr(power, "max_bonus_damage", 8.0);
         double bonus = Math.min(maxBonus, (banked / 20.0) * perSecond);
         if (bonus > 0) {
-            event.setAmount((float) (event.getAmount() + bonus));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() + bonus)));
             PowerDispatch.fireProc(attacker, power);
         }
     }

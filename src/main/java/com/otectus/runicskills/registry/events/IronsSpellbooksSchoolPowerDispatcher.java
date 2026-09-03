@@ -2,6 +2,8 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.FireTrail;
 import com.otectus.runicskills.common.powers.MagicProjectileBlockHitHook;
 import com.otectus.runicskills.common.powers.PowerRuntime;
@@ -246,6 +248,9 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSpellDamage(SpellDamageEvent event) {
+        // Several school Powers below deal damage of their own, which re-enters this handler.
+        // Only a PRIMARY cast is scaled here (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         LivingEntity victim = event.getEntity();
         if (victim == null || !(victim.level() instanceof ServerLevel level)) return;
         if (!(IronsSpellbooksPowerCompat.sourceEntityOf(event) instanceof ServerPlayer player)) return;
@@ -308,7 +313,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         Power p = RegistryPowers.WINGS_OF_JUDGMENT.get();
         double bonus = PowerOverridesManager.valueOr(p, "damage_bonus", 0.15);
         int slowTicks = PowerOverridesManager.intValueOr(p, "slow_ticks", 20);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
         // Iron's Spells' own SLOWED where it exists; vanilla Slowness IV is the same promise
         // ("brief Slow IV") through a debuff every pack has.
         MobEffect slowed = IronsSpellbooksPowerCompat.effect("slowed");
@@ -396,13 +401,17 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         double splashShare = PowerOverridesManager.valueOr(p, "splash_share", 0.5);
         double splashRadius = PowerOverridesManager.valueOr(p, "splash_radius_blocks", 3.0);
         float splash = (float) (event.getOriginalAmount() * splashShare);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
 
         for (LivingEntity bystander : level.getEntitiesOfClass(LivingEntity.class,
                 victim.getBoundingBox().inflate(splashRadius))) {
             if (bystander == victim || bystander == player) continue;
             if (PowerRuntime.AllyDetector.isAlly(player, bystander)) continue;
-            bystander.hurt(player.damageSources().indirectMagic(player, player), splash);
+            try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                    DamageContext.Origin.SPELL_EFFECT)) {
+                if (scope.isSuppressed()) break;
+                bystander.hurt(player.damageSources().indirectMagic(player, player), splash);
+            }
         }
         fireProc(player, p, victim);
     }
@@ -414,7 +423,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         if (!PowerRuntime.TargetTags.has(SHOCKED_TAG, victim.getUUID(), now)) return;
         Power p = RegistryPowers.STATIC_CLING.get();
         double bonus = PowerOverridesManager.valueOr(p, "shocked_damage_bonus", 0.2);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     /**
@@ -458,7 +467,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         Power p = RegistryPowers.VENOMOUS_HARVEST.get();
         if (!PowerRuntime.ProcWindows.active(player.getUUID(), p.getName() + ".poison", now)) return;
         double bonus = PowerOverridesManager.valueOr(p, "poison_damage_bonus", 0.15);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     /**
@@ -476,7 +485,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         float resist = IronsSpellbooksPowerCompat.resistMultiplier(event);
         if (!(resist > 0.0f) || resist >= 1.0f) return;
         PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName() + ".armed");
-        event.setAmount((float) (event.getAmount() * (1.0 + resist) / (2.0 * resist)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + resist) / (2.0 * resist))));
         fireProc(player, p, event.getEntity());
     }
 
@@ -686,6 +695,9 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onLivingHurt(LivingHurtEvent event) {
+        // Heat Haze below pulses damage of its own, and the rest of these adjust the amount of an
+        // outgoing hit; a hit this mod emitted is neither scaled nor allowed to pulse again.
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         LivingEntity victim = event.getEntity();
         if (victim == null || !(victim.level() instanceof ServerLevel level)) return;
         DamageSource source = event.getSource();
@@ -719,7 +731,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
         Power p = RegistryPowers.KINETIC_AFFINITY.get();
         double bonus = PowerOverridesManager.valueOr(p, "held_damage_bonus", 0.5);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
         fireProc(player, p, victim);
     }
 
@@ -735,7 +747,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName() + ".melee");
         double bonus = PowerOverridesManager.valueOr(p, "melee_damage_bonus", 0.3);
         int rootTicks = PowerOverridesManager.intValueOr(p, "root_ticks", 20);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
         // Slowness at amplifier 9 is the vanilla idiom for a root: movement speed reaches zero
         // without inventing a new effect or teleporting the victim back each tick.
         victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, rootTicks, 9, false, true, true));
@@ -768,7 +780,11 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         float damage = (float) PowerOverridesManager.valueOr(p, "pulse_damage", 4.0);
         int fireSeconds = PowerOverridesManager.intValueOr(p, "pulse_fire_seconds", 2);
         for (LivingEntity other : nearby) {
-            other.hurt(player.damageSources().indirectMagic(player, player), damage);
+            try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                    DamageContext.Origin.SPELL_EFFECT)) {
+                if (scope.isSuppressed()) break;
+                other.hurt(player.damageSources().indirectMagic(player, player), damage);
+            }
             other.setSecondsOnFire(fireSeconds);
         }
         fireProc(player, p, victim);
@@ -785,7 +801,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         if (blackHoleContaining(level, player, victim) == null) return;
         Power p = RegistryPowers.BLACK_HOLE_RESONANCE.get();
         double bonus = PowerOverridesManager.valueOr(p, "pulled_damage_bonus", 0.1);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     /**
@@ -804,7 +820,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         Power p = RegistryPowers.VENOMOUS_HARVEST.get();
         if (!PowerRuntime.ProcWindows.active(player.getUUID(), p.getName() + ".poison", now)) return;
         double bonus = PowerOverridesManager.valueOr(p, "poison_damage_bonus", 0.15);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     // ── LivingDamageEvent ───────────────────────────────────────────────────────────
@@ -834,7 +850,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
         double share = PowerOverridesManager.valueOr(p, "missing_health_share", 0.3);
         float missing = Math.max(0.0f, victim.getMaxHealth() - victim.getHealth());
-        event.setAmount((float) (event.getAmount() + missing * share));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() + missing * share)));
         victim.setTicksFrozen(0);
         fireProc(player, p, victim);
     }
@@ -858,6 +874,9 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
     /** Reforge the Shadow, second half — a reforged bear dies in a burst of cold. */
     private void reforgeTheShadowOnBearDeath(ServerLevel level, LivingEntity bear, long now) {
+        // A bear killed by a hit this mod emitted must not burst: that is how one splash becomes
+        // a chain of them (see DamageContext).
+        if (!DamageContext.mayEmitSecondary()) return;
         // Persistent data first: it outlives both the cache and a server restart.
         UUID cached = REFORGED_BEARS.remove(bear.getUUID());
         UUID ownerId = bear.getPersistentData().hasUUID(REFORGED_OWNER_TAG)
@@ -878,9 +897,13 @@ public class IronsSpellbooksSchoolPowerDispatcher {
             if (player != null && (target == player || PowerRuntime.AllyDetector.isAlly(player, target))) continue;
             IronsSpellbooksPowerCompat.applyEffect(target, "chilled", chillTicks, 0);
             IronsSpellbooksPowerCompat.addFreezeTicks(target, freezeTicks);
-            target.hurt(player != null
-                    ? player.damageSources().indirectMagic(player, player)
-                    : level.damageSources().freeze(), damage);
+            try (DamageContext.Scope scope = DamageContext.push(
+                    player == null ? null : player.getUUID(), DamageContext.Origin.SPELL_EFFECT)) {
+                if (scope.isSuppressed()) break;
+                target.hurt(player != null
+                        ? player.damageSources().indirectMagic(player, player)
+                        : level.damageSources().freeze(), damage);
+            }
         }
         if (player != null) fireProc(player, p, bear);
     }
@@ -1034,7 +1057,11 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(releasedAt, releasedAt).inflate(radius))) {
             if (target == player || PowerRuntime.AllyDetector.isAlly(player, target)) continue;
-            target.hurt(player.damageSources().indirectMagic(player, player), damage);
+            try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                    DamageContext.Origin.SPELL_EFFECT)) {
+                if (scope.isSuppressed()) break;
+                target.hurt(player.damageSources().indirectMagic(player, player), damage);
+            }
             Vec3 away = target.position().subtract(releasedAt);
             if (away.lengthSqr() > 1.0E-4) {
                 away = away.normalize().scale(knockback);

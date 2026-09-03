@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.util.DurationMath;
@@ -185,7 +186,7 @@ public class IronsSpellbooksIntegration {
                     int magicLevel = casterCap.getSkillLevel(RegistrySkills.MAGIC.get());
                     float bonus = (magicLevel - 1) * HandlerCommonConfig.HANDLER.instance().ironsSpellDamageScalePerLevel;
                     if (bonus > 0) {
-                        event.setAmount(event.getAmount() * (1.0f + bonus));
+                        event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
                     }
                 }
 
@@ -194,7 +195,7 @@ public class IronsSpellbooksIntegration {
                     int wisdomLevel = casterCap.getSkillLevel(RegistrySkills.WISDOM.get());
                     float wisdomBonus = wisdomLevel * HandlerCommonConfig.HANDLER.instance().wisdomSpellDamagePerLevel;
                     if (wisdomBonus > 0) {
-                        event.setAmount(event.getAmount() + wisdomBonus);
+                        event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() + wisdomBonus));
                     }
                 }
 
@@ -210,7 +211,7 @@ public class IronsSpellbooksIntegration {
                                 int secondaryLevel = casterCap.getSkillLevel(secondarySkillObj.get());
                                 float schoolBonus = secondaryLevel * HandlerCommonConfig.HANDLER.instance().ironsSchoolBonusPerLevel;
                                 if (schoolBonus > 0) {
-                                    event.setAmount(event.getAmount() * (1.0f + schoolBonus));
+                                    event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + schoolBonus)));
                                 }
                             }
                         }
@@ -228,7 +229,7 @@ public class IronsSpellbooksIntegration {
                     float reduction = conLevel * HandlerCommonConfig.HANDLER.instance().constitutionSpellDefensePerLevel;
                     float maxReduction = HandlerCommonConfig.HANDLER.instance().maxConstitutionSpellDefense;
                     if (reduction > 0) {
-                        event.setAmount(event.getAmount() * (1.0f - Math.min(reduction, maxReduction)));
+                        event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - Math.min(reduction, maxReduction))));
                     }
                 }
             }
@@ -236,7 +237,7 @@ public class IronsSpellbooksIntegration {
             // Arcane Shield: perk-based reduction (stacks after Constitution passive)
             if (RegistryPerks.ARCANE_SHIELD != null && RegistryPerks.ARCANE_SHIELD.get().isEnabled(target)) {
                 int percent = HandlerCommonConfig.HANDLER.instance().arcaneShieldPercent;
-                event.setAmount(event.getAmount() * (1.0f - percent / 100.0f));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - percent / 100.0f)));
             }
         }
 
@@ -252,7 +253,7 @@ public class IronsSpellbooksIntegration {
                     double threshold = HandlerCommonConfig.HANDLER.instance().resonantCastingManaThreshold;
                     if (manaPct >= threshold) {
                         double bonus = HandlerCommonConfig.HANDLER.instance().resonantCastingPercent / 100.0;
-                        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                     }
                 }
             }
@@ -262,7 +263,7 @@ public class IronsSpellbooksIntegration {
                 SpellDamageSource spellDs = event.getSpellDamageSource();
                 if (spellDs != null && spellDs.spell() != null && spellDs.spell().getCastType() == CastType.LONG) {
                     double bonus = HandlerCommonConfig.HANDLER.instance().longChannelPercent / 100.0;
-                    event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 }
             }
 
@@ -273,7 +274,7 @@ public class IronsSpellbooksIntegration {
                 SpellDamageSource spellDs = event.getSpellDamageSource();
                 if (spellDs != null && spellDs.spell() != null && spellDs.spell().getCastType() == CastType.LONG) {
                     double bonus = HandlerCommonConfig.HANDLER.instance().chargeMasteryPercent / 100.0;
-                    event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 }
             }
         }
@@ -1002,7 +1003,7 @@ public class IronsSpellbooksIntegration {
         if (count <= 0) return;
 
         float pct = count * (HandlerCommonConfig.HANDLER.instance().resonantAffixesPercent / 100.0f);
-        event.setAmount(event.getAmount() * (1.0f + pct));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + pct)));
     }
 
     /** Quickcast — cooldown reduction applied only to INSTANT-type spells. */
@@ -1043,7 +1044,7 @@ public class IronsSpellbooksIntegration {
         }
         if (absorbed > 0 && manaCost > 0) {
             magic.setMana(Math.max(0f, magic.getMana() - manaCost));
-            event.setAmount(event.getAmount() - absorbed);
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() - absorbed));
         }
     }
 }

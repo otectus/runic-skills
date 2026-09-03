@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
@@ -51,7 +52,7 @@ public class SiegeMachinesIntegration {
         if (!RegistryPerks.SIEGE_ENGINEER.get().isEnabled(operator)) return;
 
         float bonus = HandlerCommonConfig.HANDLER.instance().siegeEngineerPercent / 100.0f;
-        if (bonus > 0) event.setAmount(event.getAmount() * (1.0f + bonus));
+        if (bonus > 0) event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
     }
 
     /** The crew member responsible for a shot: the entity credited with it, or whoever is riding. */

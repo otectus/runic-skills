@@ -50,7 +50,7 @@ public class CraftingAuthorityGameTest {
     /** One certain perk, one bonus item of count 1 — the baseline the other cases measure against. */
     @GameTest(template = EMPTY)
     public static void oneCertainPerkYieldsExactlyOneBonus(GameTestHelper helper) {
-        ServerPlayer player = newPlayer(helper);
+        ServerPlayer player = newPlayer(helper, "crafting_authority_one_perk");
         enablePerk(player, RegistryPerks.ASSEMBLY_LINE);
 
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
@@ -70,7 +70,7 @@ public class CraftingAuthorityGameTest {
     /** Three certain perks, three bonus items: the summed-chance version could only ever give one. */
     @GameTest(template = EMPTY)
     public static void threeCertainPerksYieldThreeBonuses(GameTestHelper helper) {
-        ServerPlayer player = newPlayer(helper);
+        ServerPlayer player = newPlayer(helper, "crafting_authority_three_perks");
         enablePerk(player, RegistryPerks.ASSEMBLY_LINE);
         enablePerk(player, RegistryPerks.MASS_PRODUCTION);
         enablePerk(player, RegistryPerks.MEDIEVAL_ARCHITECTURE);
@@ -100,7 +100,7 @@ public class CraftingAuthorityGameTest {
     /** At 0% nothing procs, with every eligible perk taken. */
     @GameTest(template = EMPTY)
     public static void zeroPercentYieldsNothing(GameTestHelper helper) {
-        ServerPlayer player = newPlayer(helper);
+        ServerPlayer player = newPlayer(helper, "crafting_authority_zero_percent");
         enablePerk(player, RegistryPerks.ASSEMBLY_LINE);
         enablePerk(player, RegistryPerks.MASS_PRODUCTION);
         enablePerk(player, RegistryPerks.MEDIEVAL_ARCHITECTURE);
@@ -200,18 +200,28 @@ public class CraftingAuthorityGameTest {
     /**
      * A server player with a connection: {@code Inventory.placeItemBackInInventory} sends a slot
      * packet, so a player built by hand (as in {@link XpBonusGameTest}) would fault on a null one.
+     * See {@link MockPlayers} for why forge's own mock server player cannot be used either.
      */
-    private static ServerPlayer newPlayer(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+    private static ServerPlayer newPlayer(GameTestHelper helper, String name) {
+        ServerPlayer player = MockPlayers.connectedServerPlayer(helper, name);
         player.getInventory().clearContent();
         return player;
     }
 
+    /**
+     * Gives the player one rank of the perk, at the skill level it requires.
+     *
+     * <p>The level is raised to the requirement, never lowered to it: Mass Production (Building 32)
+     * and Medieval Architecture (Building 21) are perks of the same skill, so writing the second
+     * one's requirement over the first one's level silently switched Mass Production back off, and
+     * the {@code isEnabled} check below only ever looks at the perk just granted.
+     */
     private static void enablePerk(ServerPlayer player, RegistryObject<Perk> registered) {
         Perk perk = registered.get();
         SkillCapability capability = player.getCapability(RegistryCapabilities.SKILL).orElseThrow(
                 () -> new GameTestAssertException("player has no Runic Skills capability"));
-        capability.setSkillLevel(perk.getSkill(), Math.max(1, perk.requiredLevel));
+        capability.setSkillLevel(perk.getSkill(), Math.max(
+                capability.getSkillLevel(perk.getSkill()), Math.max(1, perk.requiredLevel)));
         capability.setPerkRank(perk, 1);
         if (!perk.isEnabled(player)) {
             throw new GameTestAssertException("could not enable perk " + perk.getName()

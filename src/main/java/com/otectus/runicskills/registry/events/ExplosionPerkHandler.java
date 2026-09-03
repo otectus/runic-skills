@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.core.BlockPos;
@@ -225,7 +226,7 @@ public class ExplosionPerkHandler {
 
         double bonus = HandlerCommonConfig.HANDLER.instance().trapMakerPercent / 100.0;
         if (bonus <= 0) return;
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
 

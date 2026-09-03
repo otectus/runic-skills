@@ -1,6 +1,8 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -48,9 +50,6 @@ public class WeaponCasterPowerHandler {
 
     private static final Map<UUID, Rhythm> RHYTHM = new ConcurrentHashMap<>();
 
-    /** Stops Spell Parry's reflected damage from re-entering this handler. */
-    private static final ThreadLocal<Boolean> IN_REFLECT = ThreadLocal.withInitial(() -> false);
-
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         RHYTHM.remove(event.getEntity().getUUID());
@@ -67,7 +66,9 @@ public class WeaponCasterPowerHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onMeleeHit(LivingHurtEvent event) {
-        if (IN_REFLECT.get()) return;
+        // Only a PRIMARY hit builds marks and rhythm; Spell Parry's own reflect, and every other
+        // hit this mod emits, is excluded by the shared context rather than by a private flag.
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity direct = event.getSource().getDirectEntity();
         if (direct instanceof Projectile) return;                 // melee only
         if (!(event.getSource().getEntity() instanceof Player player)) return;
@@ -147,11 +148,13 @@ public class WeaponCasterPowerHandler {
         float reflected = (float) (event.getBlockedDamage() * share);
         if (reflected <= 0) return;
 
-        IN_REFLECT.set(true);
-        try {
+        // A blocked hit is incoming, so this handler still runs for a secondary; the reflect it
+        // emits is a secondary of its own and may not be emitted from one.
+        if (!DamageContext.mayEmitSecondary()) return;
+        try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                DamageContext.Origin.WEAPON_CASTER_REFLECT)) {
+            if (scope.isSuppressed()) return;
             attacker.hurt(player.damageSources().indirectMagic(player, player), reflected);
-        } finally {
-            IN_REFLECT.set(false);
         }
         PowerDispatch.fireProc(player, power);
     }
@@ -161,7 +164,7 @@ public class WeaponCasterPowerHandler {
     /** Ranged half of Imbued Rhythm's alternation. */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onRangedHit(LivingHurtEvent event) {
-        if (IN_REFLECT.get()) return;
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity direct = event.getSource().getDirectEntity();
         if (!(direct instanceof Projectile projectile)) return;
         if (!(projectile.getOwner() instanceof Player player)) return;
@@ -197,7 +200,7 @@ public class WeaponCasterPowerHandler {
 
         double bonus = Math.min(cap, rhythm.alternations * perStep);
         if (bonus > 0) {
-            event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
             PowerDispatch.fireProc(player, power);
         }
     }

@@ -1,6 +1,8 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.integration.IronsSpellbooksIntegration;
 import com.otectus.runicskills.integration.IronsSpellbooksPowerCompat;
@@ -185,7 +187,12 @@ public class IronsSpellbooksPowerEventDispatcher {
             if (hpFraction > floor) {
                 double costPct = PowerOverridesManager.valueOr(p, "hp_cost_fraction", 0.05);
                 float hpCost = (float) (player.getHealth() * costPct);
-                player.hurt(player.damageSources().magic(), hpCost);
+                if (DamageContext.mayEmitSecondary()) {
+                    try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                            DamageContext.Origin.SPELL_EFFECT)) {
+                        if (!scope.isSuppressed()) player.hurt(player.damageSources().magic(), hpCost);
+                    }
+                }
             }
         }
 
@@ -262,6 +269,9 @@ public class IronsSpellbooksPowerEventDispatcher {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSpellDamage(SpellDamageEvent event) {
+        // Several Powers below deal damage of their own, and Iron's spell damage re-enters this
+        // handler. Only a PRIMARY cast is scaled here (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity source = IronsSpellbooksPowerCompat.sourceEntityOf(event);
         if (!(source instanceof Player player)) return;
         SkillCapability cap = SkillCapability.get(player);
@@ -277,7 +287,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && target.getMobType() == MobType.UNDEAD) {
             Power p = RegistryPowers.SANCTIFIED_STRIKE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.25);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -287,7 +297,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && IronsSpellbooksPowerCompat.hasEffect(target, "immolate")) {
             Power p = RegistryPowers.KINDLE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -308,7 +318,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                         RegistryPowers.SKYBREAKER.get().getName(), player.level().getGameTime())) {
             Power p = RegistryPowers.SKYBREAKER.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.25);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName());
             fireProc(player, p, target);
         }
@@ -319,7 +329,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && IronsSpellbooksPowerCompat.hasEffect(target, "guiding_bolt")) {
             Power p = RegistryPowers.GUIDED_FATE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -334,7 +344,7 @@ public class IronsSpellbooksPowerEventDispatcher {
             double mult = (hpFraction <= floor)
                     ? 1.0 + PowerOverridesManager.valueOr(p, "below_floor_damage_bonus", -0.50)
                     : 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.30);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -349,7 +359,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                     player.level().getGameTime())
                     && IronsSpellbooksPowerCompat.directEntityOf(event) instanceof Projectile) {
                 double mult = 1.0 + PowerOverridesManager.valueOr(p, "first_shot_damage_bonus", 0.50);
-                event.setAmount((float) (event.getAmount() * mult));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
                 PowerRuntime.ProcWindows.consume(player.getUUID(), firstShotKey);
                 fireProc(player, p, target);
             }
@@ -363,7 +373,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                         player.level().getGameTime())) {
             Power p = RegistryPowers.COUNTERSPELL_RIPOSTE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName());
             fireProc(player, p, target);
         }
@@ -385,7 +395,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 mult += PowerOverridesManager.valueOr(p, "high_mana_damage_bonus", -0.20);
             }
             if (mult != 1.0) {
-                event.setAmount((float) (event.getAmount() * mult));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
                 fireProc(player, p, target);
             }
         }
@@ -412,7 +422,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                         player.level().getGameTime())) {
             Power p = RegistryPowers.WARMAGES_COVENANT.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.25);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName());
             fireProc(player, p, target);
         }
@@ -434,7 +444,12 @@ public class IronsSpellbooksPowerEventDispatcher {
             state.lastHitTick = now;
             if (threshold > 0 && state.count % threshold == 0) {
                 double mult = PowerOverridesManager.valueOr(p, "echo_damage_multiplier", 0.75);
-                target.hurt(player.damageSources().magic(), (float) (event.getAmount() * mult));
+                try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                        DamageContext.Origin.SPELL_EFFECT)) {
+                    if (!scope.isSuppressed()) {
+                        target.hurt(player.damageSources().magic(), (float) (event.getAmount() * mult));
+                    }
+                }
                 fireProc(player, p, target);
             }
         }
@@ -463,7 +478,12 @@ public class IronsSpellbooksPowerEventDispatcher {
                     }
                     if (nearest != null) {
                         double mult = PowerOverridesManager.valueOr(p, "chain_damage_multiplier", 0.70);
-                        nearest.hurt(player.damageSources().magic(), (float) (event.getAmount() * mult));
+                        try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                                DamageContext.Origin.SPELL_EFFECT)) {
+                            if (!scope.isSuppressed()) {
+                                nearest.hurt(player.damageSources().magic(), (float) (event.getAmount() * mult));
+                            }
+                        }
                         fireProc(player, p, target);
                     }
                 }
@@ -479,7 +499,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                         player.level().getGameTime())) {
             Power p = RegistryPowers.THE_STILL_MIND.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.30);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             int dur = PowerOverridesManager.intValueOr(p, "debuff_duration_ticks", 80);
             int amp = PowerOverridesManager.intValueOr(p, "debuff_amplifier", 0);
             applyStillMindDebuff(target, schoolId, dur, amp);
@@ -492,6 +512,8 @@ public class IronsSpellbooksPowerEventDispatcher {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onLivingDamage(LivingDamageEvent event) {
+        // Crackle Arc's chain below re-enters this handler, as does every other hit the mod emits.
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
@@ -503,7 +525,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && target.hasEffect(MobEffects.POISON)) {
             Power p = RegistryPowers.POISONERS_THUMB.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.15);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -512,7 +534,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && target.hasEffect(MobEffects.BLINDNESS)) {
             Power p = RegistryPowers.BLIND_WITNESS.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -521,7 +543,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && IronsSpellbooksPowerCompat.hasEffect(target, "chilled")) {
             Power p = RegistryPowers.BRITTLE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.15);
-            event.setAmount((float) (event.getAmount() * mult));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
             fireProc(player, p, target);
         }
 
@@ -542,7 +564,7 @@ public class IronsSpellbooksPowerEventDispatcher {
             int threshold = PowerOverridesManager.intValueOr(p, "debuff_count_threshold", 3);
             if (negCount >= threshold) {
                 double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.30);
-                event.setAmount((float) (event.getAmount() * mult));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
                 fireProc(player, p, target);
             }
         }
@@ -570,7 +592,10 @@ public class IronsSpellbooksPowerEventDispatcher {
                 }
                 if (nearest != null) {
                     float dmg = (float) PowerOverridesManager.valueOr(p, "chain_damage", 4.0);
-                    nearest.hurt(player.damageSources().magic(), dmg);
+                    try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                            DamageContext.Origin.SPELL_EFFECT)) {
+                        if (!scope.isSuppressed()) nearest.hurt(player.damageSources().magic(), dmg);
+                    }
                     fireProc(player, p, target);
                 }
             }
@@ -753,6 +778,10 @@ public class IronsSpellbooksPowerEventDispatcher {
      */
     @SubscribeEvent
     public void onHeraldHurt(LivingHurtEvent event) {
+        // Incoming, so it still runs for a secondary hit — but the smite it emits is a secondary
+        // of its own, and a pulse triggered by a pulse is exactly the loop DamageContext exists
+        // to stop.
+        if (!DamageContext.mayEmitSecondary()) return;
         if (!(event.getEntity() instanceof Player victim)) return;
         if (!isEquipped(victim, RegistryPowers.HERALD_OF_DAWN)) return;
         Power p = RegistryPowers.HERALD_OF_DAWN.get();
@@ -795,7 +824,11 @@ public class IronsSpellbooksPowerEventDispatcher {
             } else if (!ally && le instanceof Mob mob && mob.getTarget() != null && d <= foeRadius) {
                 // Limit the smite to mobs already in combat — avoids accidentally hitting
                 // passive cows etc. that wandered into range.
-                le.hurt(victim.damageSources().magic(), smiteDamage);
+                try (DamageContext.Scope scope = DamageContext.push(victim.getUUID(),
+                        DamageContext.Origin.SPELL_EFFECT)) {
+                    if (scope.isSuppressed()) break;
+                    le.hurt(victim.damageSources().magic(), smiteDamage);
+                }
             }
         }
         fireProc(victim, p);
@@ -838,7 +871,7 @@ public class IronsSpellbooksPowerEventDispatcher {
         if (!PowerRuntime.ProcWindows.active(player.getUUID(), p.getName(),
                 player.level().getGameTime())) return;
         double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
-        event.setAmount((float) (event.getAmount() * mult));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
         PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName());
         fireProc(player, p);
     }
@@ -935,7 +968,10 @@ public class IronsSpellbooksPowerEventDispatcher {
                 }
                 if (nearest != null) {
                     float dmg = (float) PowerOverridesManager.valueOr(tl, "strike_damage", 3.0);
-                    nearest.hurt(player.damageSources().magic(), dmg);
+                    try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                            DamageContext.Origin.SPELL_EFFECT)) {
+                        if (!scope.isSuppressed()) nearest.hurt(player.damageSources().magic(), dmg);
+                    }
                     fireProc(player, tl);
                 }
             }
@@ -1020,6 +1056,9 @@ public class IronsSpellbooksPowerEventDispatcher {
      * (vanilla) rather than ISS fire damage source to avoid recursive Power triggers.
      */
     private static void detonatePyroclasm(Player owner, LivingEntity corpse, Power pyro) {
+        // A death caused by a secondary hit must not detonate: that is how one Cleave splash
+        // becomes a chain of explosions.
+        if (!DamageContext.mayEmitSecondary()) return;
         double radius = PowerOverridesManager.valueOr(pyro, "radius_blocks", 3.0);
         float damage = (float) PowerOverridesManager.valueOr(pyro, "damage", 6.0);
         int igniteDur = PowerOverridesManager.intValueOr(pyro, "immolate_ticks", 80);
@@ -1027,7 +1066,11 @@ public class IronsSpellbooksPowerEventDispatcher {
         for (LivingEntity le : corpse.level().getEntitiesOfClass(LivingEntity.class, box)) {
             if (le == owner || le == corpse) continue;
             if (PowerRuntime.AllyDetector.isAlly(owner, le)) continue;
-            le.hurt(owner.damageSources().onFire(), damage);
+            try (DamageContext.Scope scope = DamageContext.push(owner.getUUID(),
+                    DamageContext.Origin.SPELL_EFFECT)) {
+                if (scope.isSuppressed()) break;
+                le.hurt(owner.damageSources().onFire(), damage);
+            }
             IronsSpellbooksPowerCompat.applyEffect(le, "immolate", igniteDur, 0);
         }
         // Centred on the corpse. A chain detonation walks away from the caster, so drawing it

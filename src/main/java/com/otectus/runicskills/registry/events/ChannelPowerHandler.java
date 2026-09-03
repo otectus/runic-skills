@@ -1,5 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -55,9 +57,6 @@ public class ChannelPowerHandler {
 
     /** Bound so a pathological session cannot accumulate projectile entries without limit. */
     private static final int MAX_TRACKED_PROJECTILES = 4096;
-
-    /** Stops Harmonic Resonance's splash from re-entering this handler through its own damage. */
-    private static final ThreadLocal<Boolean> IN_SPLASH = ThreadLocal.withInitial(() -> false);
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
@@ -175,7 +174,9 @@ public class ChannelPowerHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onChannelledProjectileHit(LivingHurtEvent event) {
-        if (IN_SPLASH.get()) return;
+        // Only a PRIMARY impact spends what the channel earned; the splash below re-enters here,
+        // as does every other hit the mod emits (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity direct = event.getSource().getDirectEntity();
         if (!(direct instanceof Projectile projectile)) return;
         if (!(projectile.getOwner() instanceof Player player)) return;
@@ -184,7 +185,7 @@ public class ChannelPowerHandler {
 
         Float bonus = PROJECTILE_BONUS.remove(projectile.getId());
         if (bonus != null && bonus > 0) {
-            event.setAmount(event.getAmount() * (1.0f + bonus));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
         }
 
         // Siphon Bond — a sustained channel returns part of what it deals.
@@ -216,16 +217,15 @@ public class ChannelPowerHandler {
         Power power = RegistryPowers.HARMONIC_RESONANCE.get();
         double share = PowerOverridesManager.valueOr(power, "splash_damage_share", 0.5);
         AABB area = struck.getBoundingBox().inflate(radius);
-        IN_SPLASH.set(true);
-        try {
-            for (LivingEntity nearby : struck.level().getEntitiesOfClass(LivingEntity.class, area)) {
-                if (nearby == struck || nearby == player) continue;
-                if (PowerRuntime.AllyDetector.isAlly(player, nearby)) continue;
+        for (LivingEntity nearby : struck.level().getEntitiesOfClass(LivingEntity.class, area)) {
+            if (nearby == struck || nearby == player) continue;
+            if (PowerRuntime.AllyDetector.isAlly(player, nearby)) continue;
+            try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                    DamageContext.Origin.CHANNEL_SPLASH)) {
+                if (scope.isSuppressed()) break;
                 nearby.hurt(player.damageSources().indirectMagic(player, player),
                         (float) (amount * share));
             }
-        } finally {
-            IN_SPLASH.set(false);
         }
     }
 }

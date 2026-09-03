@@ -1,5 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.core.registries.Registries;
@@ -64,6 +66,9 @@ public class ArcanePerkHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onOutgoingDamage(LivingHurtEvent event) {
+        // A hit this mod emitted is already a fraction of a scaled hit; scaling it again would
+        // compound every magic bonus once per bounce (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         if (player.level().isClientSide()) return;
         LivingEntity target = event.getEntity();
@@ -102,7 +107,7 @@ public class ArcanePerkHandler {
             }
         }
 
-        if (bonus != 0.0) event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        if (bonus != 0.0) event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     /**
@@ -114,13 +119,14 @@ public class ArcanePerkHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSummonDamage(LivingHurtEvent event) {
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof OwnableEntity summon)) return;
         if (!(summon.getOwner() instanceof Player owner) || owner.level().isClientSide()) return;
         if (!enabled(RegistryPerks.SUMMONER, owner)) return;
 
         double bonus = HandlerCommonConfig.HANDLER.instance().summonerPercent / 100.0;
         if (bonus <= 0) return;
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     // ── Study ───────────────────────────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -47,9 +49,6 @@ public class SummonPowerHandler {
 
     private static final int MAX_TRACKED_BLOWS = 32;
 
-    /** Keeps Lingering Binding's burst from re-entering this handler through its own damage. */
-    private static final ThreadLocal<Boolean> IN_BURST = ThreadLocal.withInitial(() -> false);
-
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         RECENT_BLOWS.remove(event.getEntity().getUUID());
@@ -70,7 +69,9 @@ public class SummonPowerHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSummonDealtDamage(LivingHurtEvent event) {
-        if (IN_BURST.get()) return;
+        // Outgoing: only a PRIMARY blow counts as a summon landing a hit. Lingering Binding's own
+        // burst re-enters here, as does every other hit the mod emits (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity attacker = event.getSource().getEntity();
         Player owner = ownerOf(attacker);
         if (owner == null || owner.level().isClientSide()) return;
@@ -84,7 +85,7 @@ public class SummonPowerHandler {
             int window = PowerOverridesManager.intValueOr(power, "window_ticks", 40);
             double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.25);
             if (anotherSummonHitRecently(owner, victim, attacker.getUUID(), now, window)) {
-                event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(owner, power);
             }
             recordBlow(owner, victim, attacker.getUUID(), now, window);
@@ -105,7 +106,8 @@ public class SummonPowerHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onSummonHurt(LivingHurtEvent event) {
-        if (IN_BURST.get()) return;
+        // Incoming: a summon hit by a secondary is still being hit, so this one keeps running. It
+        // emits nothing of its own, it only adjusts the amount of the hit already in flight.
         LivingEntity summon = event.getEntity();
         Player owner = ownerOf(summon);
         if (owner == null || owner.level().isClientSide()) return;
@@ -118,7 +120,7 @@ public class SummonPowerHandler {
 
         boolean withinLeash = summon.distanceToSqr(owner) <= leash * leash;
         double factor = withinLeash ? (1.0 - near) : (1.0 + far);
-        event.setAmount((float) (event.getAmount() * factor));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * factor)));
         if (withinLeash) PowerDispatch.fireProc(owner, power);
     }
 
@@ -149,7 +151,7 @@ public class SummonPowerHandler {
     /** Fallen Echo's payoff: a short window in which the owner's own blows land harder. */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onOwnerDamageDuringEcho(LivingHurtEvent event) {
-        if (IN_BURST.get()) return;
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         if (player.level().isClientSide()) return;
         if (!PowerDispatch.isEquipped(player, RegistryPowers.FALLEN_ECHO)) return;
@@ -160,7 +162,7 @@ public class SummonPowerHandler {
             return;
         }
         double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.15);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     /**
@@ -177,16 +179,18 @@ public class SummonPowerHandler {
         float damage = (float) (banked * share);
         if (damage <= 0) return;
 
+        // The trigger is a death, which a secondary hit can perfectly well cause, so the burst is
+        // gated on the emitting rule rather than on where the death came from.
+        if (!DamageContext.mayEmitSecondary()) return;
         AABB area = summon.getBoundingBox().inflate(radius);
-        IN_BURST.set(true);
-        try {
-            for (LivingEntity nearby : summon.level().getEntitiesOfClass(LivingEntity.class, area)) {
-                if (nearby == summon || nearby == owner) continue;
-                if (PowerRuntime.AllyDetector.isAlly(owner, nearby)) continue;
+        for (LivingEntity nearby : summon.level().getEntitiesOfClass(LivingEntity.class, area)) {
+            if (nearby == summon || nearby == owner) continue;
+            if (PowerRuntime.AllyDetector.isAlly(owner, nearby)) continue;
+            try (DamageContext.Scope scope = DamageContext.push(owner.getUUID(),
+                    DamageContext.Origin.SUMMON_BURST)) {
+                if (scope.isSuppressed()) break;
                 nearby.hurt(owner.damageSources().indirectMagic(owner, owner), damage);
             }
-        } finally {
-            IN_BURST.set(false);
         }
         PowerDispatch.fireProc(owner, power);
     }
@@ -205,7 +209,9 @@ public class SummonPowerHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onOwnerStruckTarget(LivingHurtEvent event) {
-        if (IN_BURST.get()) return;
+        // Retargeting is not damage, but "you struck an enemy" should mean a real blow, not the
+        // splash or echo of one.
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         if (!(player.level() instanceof ServerLevel)) return;
         if (!PowerDispatch.isEquipped(player, RegistryPowers.THE_CONDUCTOR)) return;

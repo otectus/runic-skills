@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.config.models.LockItem;
@@ -392,7 +393,7 @@ public class SpartanIntegration {
             int primaryLevel = cap.getSkillLevel(primarySkill);
             float mastery = primaryLevel * HandlerCommonConfig.HANDLER.instance().spartanMasteryBonusPerLevel;
             if (mastery > 0) {
-                event.setAmount(event.getAmount() * (1.0f + mastery));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + mastery)));
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.util.ContainerInteraction;
 import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.common.util.LogOnce;
@@ -364,7 +365,7 @@ public class EnchantingLorePerkHandler {
         double perLevel = HandlerCommonConfig.HANDLER.instance().dimensionalWisdomPercent / 100.0;
         // Capped so a heavily enchanted weapon cannot compound into an unbounded multiplier.
         double bonus = Math.min(1.0, levels * perLevel / 10.0);
-        event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
     }
 
     // ── Temporal Wisdom ─────────────────────────────────────────────────────────────────────

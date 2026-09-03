@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +43,7 @@ public class CataclysmIntegration {
         if (damageType != null && CATACLYSM_DAMAGE_TYPES.contains(damageType.toString())) {
             if (RegistryPerks.CATACLYSM_RESISTANCE != null && RegistryPerks.CATACLYSM_RESISTANCE.get().isEnabled(player)) {
                 float reduction = HandlerCommonConfig.HANDLER.instance().cataclysmResistancePercent / 100.0f;
-                event.setAmount(event.getAmount() * (1.0f - reduction));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - reduction)));
             }
         }
     }

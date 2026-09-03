@@ -2,6 +2,9 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.combat.CombatDiagnostics;
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.ApothicAttributesIntegration;
@@ -78,9 +81,6 @@ public class CombatEventHandler {
     private static final Map<UUID, AttackerMemo> LAST_ATTACKER = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_STAND_ACTIVE_UNTIL = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> BLADE_STORM_ACTIVE_UNTIL = new ConcurrentHashMap<>();
-    // Reentrancy guard for CLEAVE: while a player's UUID is in this set, the splash hits it deals are
-    // skipped by the attacker handler so they neither recurse nor inherit the % damage bonuses.
-    private static final Set<UUID> CLEAVING = ConcurrentHashMap.newKeySet();
     private static final int RECENT_HITS_CAP = 16;
     private static final long PRUNE_INTERVAL_TICKS = 100L;
     private static long lastPruneTick = 0L;
@@ -95,7 +95,6 @@ public class CombatEventHandler {
         LAST_ATTACKER.clear();
         LAST_STAND_ACTIVE_UNTIL.clear();
         BLADE_STORM_ACTIVE_UNTIL.clear();
-        CLEAVING.clear();
     }
 
     // Deterministic UUID for the transient ATTACK_SPEED modifier BLADE_STORM applies.
@@ -170,8 +169,13 @@ public class CombatEventHandler {
                     // old `random == 1` could not be true for nextInt(1) (RS-029, RS-154).
                     boolean procs = ProcRoll.rolls(RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[0]);
                     Level level = event.getEntity().level();
-                    if (level instanceof ServerLevel serverLevel && procs) {
-                        target.hurt(target.damageSources().playerAttack(player), (float) RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[1]);
+                    if (level instanceof ServerLevel serverLevel && procs && DamageContext.mayEmitSecondary()) {
+                        try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                                DamageContext.Origin.LIMIT_BREAKER)) {
+                            if (!scope.isSuppressed()) {
+                                target.hurt(target.damageSources().playerAttack(player), (float) RegistryPerks.LIMIT_BREAKER.get().getActiveValue(player)[1]);
+                            }
+                        }
                         serverLevel.playSound(null, player, RegistrySounds.LIMIT_BREAKER.get(), SoundSource.PLAYERS, 0.5F, 1.0F);
                         cap.setCooldown(SkillCapability.COOLDOWN_LIMIT_BREAKER, 1200);
                     }
@@ -366,9 +370,10 @@ public class CombatEventHandler {
         if (!(source instanceof Player player) || player.isCreative() || player instanceof FakePlayer) return;
         LivingEntity target = event.getEntity();
         if (target == null || target == player) return;
-        // CLEAVE splash hits re-enter this handler; skip them entirely so the splash damage stays
-        // "pure" (no recursive cleave, no stacking of the other % bonuses below).
-        if (CLEAVING.contains(player.getUUID())) return;
+        // Every hit this mod emits re-enters this handler. Only a PRIMARY hit may be scaled by the
+        // bonuses below: a Cleave splash, a Limit Breaker blow or a Power's chained hit is already
+        // derived from a hit that was scaled once (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
 
         float dmg = event.getAmount();
         float bonus = 0.0f;
@@ -568,14 +573,19 @@ public class CombatEventHandler {
             }
         }
 
-        if (bonus > 0.0f) event.setAmount(dmg + bonus);
+        if (bonus > 0.0f) {
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), dmg + bonus));
+            CombatDiagnostics.trace(player, target, event.getSource(), dmg, event.getAmount(),
+                    "combat outgoing perk bonuses");
+        }
 
         // CLEAVE — splash a fraction of this hit's damage to other living enemies near the struck
         // target. Applied after the primary bonuses so the splash is based on the boosted hit. The
-        // CLEAVING guard (checked at the top of this method) keeps splash hits from recursing or
-        // inheriting the bonuses above. Runs last so a fatal primary hit still cleaves.
+        // DamageContext check (which the guard at the top of this method has already passed) keeps
+        // splash hits from recursing or inheriting the bonuses above. Runs last so a fatal primary
+        // hit still cleaves.
         if (RegistryPerks.CLEAVE != null && RegistryPerks.CLEAVE.get().isEnabled(player)
-                && !CLEAVING.contains(player.getUUID())) {
+                && DamageContext.mayEmitSecondary()) {
             HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
             float splash = event.getAmount() * (float) (cfg.cleavePercent / 100.0);
             if (splash > 0.0f && player.level() instanceof ServerLevel serverLevel) {
@@ -599,27 +609,27 @@ public class CombatEventHandler {
     /**
      * Applies Cleave's splash damage, one tick after the swing that caused it.
      *
-     * <p>The {@code CLEAVING} guard is held for the whole sweep and is consulted by both this
-     * handler and {@code PerkEffectsHandler#onOutgoingDamage}. Only this handler checked it
-     * before, so every splash hit re-ran the entire outgoing bonus table, life-steal, the
-     * unconditional glowing effect and a lightning-strike roll (RS-014).
+     * <p>Each splash hit is emitted inside a {@link DamageContext} scope, which every outgoing
+     * handler in the mod reads. Cleave once carried its own {@code CLEAVING} set that only this
+     * handler consulted, so every splash hit re-ran the entire outgoing bonus table, life-steal,
+     * the unconditional glowing effect and a lightning-strike roll (RS-014). The scope is pushed
+     * per target rather than around the sweep so the depth ceiling counts hits, not sweeps.
      */
     private static void dealCleaveSplash(Player player, LivingEntity origin,
                                          net.minecraft.world.phys.AABB box, float splash, int maxTargets) {
         if (!player.isAlive() || !(player.level() instanceof ServerLevel level)) return;
-        CLEAVING.add(player.getUUID());
-        try {
-            int hit = 0;
-            for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, box)) {
-                if (hit >= maxTargets) break;
-                if (other == origin || other == player || !other.isAlive()) continue;
-                if (other.isAlliedTo(player) || player.isAlliedTo(other)) continue;
-                if (!isValidCleaveTarget(player, other, level)) continue;
+        int hit = 0;
+        for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (hit >= maxTargets) break;
+            if (other == origin || other == player || !other.isAlive()) continue;
+            if (other.isAlliedTo(player) || player.isAlliedTo(other)) continue;
+            if (!isValidCleaveTarget(player, other, level)) continue;
+            try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                    DamageContext.Origin.CLEAVE)) {
+                if (scope.isSuppressed()) break;
                 other.hurt(player.damageSources().playerAttack(player), splash);
-                hit++;
             }
-        } finally {
-            CLEAVING.remove(player.getUUID());
+            hit++;
         }
     }
 
@@ -642,11 +652,6 @@ public class CombatEventHandler {
             if (owner != null) return false;
         }
         return other.isAttackable();
-    }
-
-    /** Shared with {@code PerkEffectsHandler} so splash hits skip the outgoing perk stack. */
-    public static boolean isCleaving(Player player) {
-        return player != null && CLEAVING.contains(player.getUUID());
     }
 
     /** Heavy / two-handed Spartan Weaponry weapons that Titan's Grip applies to. */
@@ -708,7 +713,7 @@ public class CombatEventHandler {
                 if (incoming >= hp && hp > 0.0f) {
                     // Clamp so the player survives at 1 HP; never amplify a hit, only reduce.
                     float clamped = Math.max(0.0f, hp - 1.0f);
-                    event.setAmount(clamped);
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), clamped));
                     LAST_STAND_ACTIVE_UNTIL.put(player.getUUID(), now + 40L);
                     cap.setCooldown(RegistryPerks.LAST_STAND.get(), 1200);
                     if (player instanceof ServerPlayer sp) {
@@ -800,7 +805,7 @@ public class CombatEventHandler {
 
         if (reduction > 0.0f) {
             reduction = Math.min(reduction, 0.80f);
-            event.setAmount(event.getAmount() * (1.0f - reduction));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - reduction)));
         }
     }
 
@@ -872,7 +877,7 @@ public class CombatEventHandler {
         float reduction = enduranceLevel * HandlerCommonConfig.HANDLER.instance().fireResistPerEnduranceLevel;
         float maxReduction = HandlerCommonConfig.HANDLER.instance().maxFireResist;
         if (reduction > 0) {
-            event.setAmount(event.getAmount() * (1.0f - Math.min(reduction, maxReduction)));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - Math.min(reduction, maxReduction))));
         }
     }
 

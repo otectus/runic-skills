@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
@@ -69,7 +70,7 @@ public class MowziesMobsIntegration {
         if (targetType != null && MOD_ID.equals(targetType.getNamespace())) {
             if (RegistryPerks.BOSS_HUNTER != null && RegistryPerks.BOSS_HUNTER.get().isEnabled(player)) {
                 float bonus = HandlerCommonConfig.HANDLER.instance().bossHunterPercent / 100.0f;
-                event.setAmount(event.getAmount() * (1.0f + bonus));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
             }
         }
 
@@ -80,7 +81,7 @@ public class MowziesMobsIntegration {
             Item mainHand = player.getMainHandItem().getItem();
             if (resolveMowzieWeapons().contains(mainHand)) {
                 float bonus = HandlerCommonConfig.HANDLER.instance().mowziesMightPercent / 100.0f;
-                event.setAmount(event.getAmount() * (1.0f + bonus));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
             }
         }
     }

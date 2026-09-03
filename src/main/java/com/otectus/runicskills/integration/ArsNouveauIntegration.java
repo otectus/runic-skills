@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
@@ -489,7 +490,7 @@ public class ArsNouveauIntegration {
                         && isGolem(attacker)) {
                     bonus += config.golemCommanderPercent / 100.0;
                 }
-                if (bonus > 0) event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                if (bonus > 0) event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
             }
         }
 
@@ -504,7 +505,7 @@ public class ArsNouveauIntegration {
                 // it dies and has to be re-summoned, so the perk buys the one improvement that
                 // helps all of them: staying alive long enough to keep doing whatever they do.
                 double reduction = Math.min(0.90, config.arsSavantPercent / 100.0);
-                if (reduction > 0) event.setAmount((float) (event.getAmount() * (1.0 - reduction)));
+                if (reduction > 0) event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 - reduction))));
             }
         }
     }

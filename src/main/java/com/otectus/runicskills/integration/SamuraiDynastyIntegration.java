@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.mojang.logging.LogUtils;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.models.LockItem;
@@ -70,7 +71,7 @@ public class SamuraiDynastyIntegration {
             if (IntegrationHelpers.itemFromMod(main, MOD_ID) && isKatanaClassItem(main)) {
                 double pct = RegistryPerks.SAMURAIS_EDGE.get().getActiveValue(player)[0];
                 float dmg = event.getAmount();
-                event.setAmount(dmg + dmg * (float) (pct / 100.0));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), dmg + dmg * (float) (pct / 100.0)));
             }
         }
     }

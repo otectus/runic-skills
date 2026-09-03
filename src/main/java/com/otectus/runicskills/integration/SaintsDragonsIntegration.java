@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.mojang.logging.LogUtils;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.entity.Entity;
@@ -66,7 +67,7 @@ public class SaintsDragonsIntegration {
             if (IntegrationHelpers.itemFromMod(main, MOD_ID) && isDraconicWeapon(main)) {
                 double pct = RegistryPerks.DRACONIC_FURY.get().getActiveValue(player)[0];
                 float dmg = event.getAmount();
-                event.setAmount(dmg + dmg * (float) (pct / 100.0));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), dmg + dmg * (float) (pct / 100.0)));
                 // Fire-secondary: ignite for at least 2 s, scaling with rank percent.
                 int seconds = Math.max(2, 2 + (int) (pct / 25.0));
                 target.setSecondsOnFire(seconds);

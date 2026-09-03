@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.util.ApothGateMath;
@@ -577,6 +578,6 @@ public class ApotheosisIntegration {
         if (count <= 0) return;
         double reduction = Math.min(0.9, count
                 * (HandlerCommonConfig.HANDLER.instance().affixAffinityReductionPercent / 100.0));
-        event.setAmount((float) (event.getAmount() * (1.0 - reduction)));
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 - reduction))));
     }
 }

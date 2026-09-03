@@ -1,5 +1,8 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.CombatDiagnostics;
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.durability.PassiveRepairAccumulator;
 import com.otectus.runicskills.common.util.GameTimeWindow;
@@ -280,7 +283,7 @@ public class PerkEffectsHandler {
                     int spent = Math.min(cost, available);
                     float absorbed = spent / (float) perHalfHeart;
                     com.otectus.runicskills.network.packet.common.SkillLevelUpSP.addPlayerXP(player, -spent);
-                    event.setAmount(Math.max(0.0f, event.getAmount() - absorbed));
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), Math.max(0.0f, event.getAmount() - absorbed)));
                 }
             }
         }
@@ -316,12 +319,12 @@ public class PerkEffectsHandler {
         }
 
         if (reduction > 0.0f) {
-            event.setAmount(event.getAmount() * (1.0f - Math.min(reduction, 0.80f)));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - Math.min(reduction, 0.80f))));
         }
         // THICK_SKIN — flat reduction of physical damage (after the percent reductions).
         if (on(RegistryPerks.THICK_SKIN, player) && !src.is(DamageTypeTags.IS_FIRE) && !src.is(DamageTypes.MAGIC)
                 && !src.is(DamageTypeTags.BYPASSES_ARMOR))
-            event.setAmount(Math.max(0.0f, event.getAmount() - c.thickSkinAmplifier));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), Math.max(0.0f, event.getAmount() - c.thickSkinAmplifier)));
         // SMOKE_BOMB — dropping below a health fraction (but not dying) grants brief invisibility.
         if (on(RegistryPerks.SMOKE_BOMB, player)) {
             float postHit = player.getHealth() - event.getAmount();
@@ -334,7 +337,17 @@ public class PerkEffectsHandler {
                 && src.getEntity() instanceof LivingEntity attacker && attacker != player
                 && !src.is(DamageTypeTags.IS_PROJECTILE)) {
             float reflected = event.getAmount() * (float) (val(RegistryPerks.BULWARK, player, 0) / 100.0);
-            if (reflected > 0.0f) attacker.hurt(player.damageSources().thorns(player), reflected);
+            // Defensive handler, so it keeps running for a secondary hit — a player being hit by
+            // one is still being hit — but the reflect it emits is a secondary of its own and had
+            // no guard at all before 2.0.5, so a reflect could be reflected (RS-205-08).
+            if (reflected > 0.0f && DamageContext.mayEmitSecondary()) {
+                try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                        DamageContext.Origin.BULWARK_REFLECT)) {
+                    if (!scope.isSuppressed()) {
+                        attacker.hurt(player.damageSources().thorns(player), reflected);
+                    }
+                }
+            }
         }
     }
 
@@ -1127,10 +1140,11 @@ public class PerkEffectsHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onOutgoingDamage(LivingHurtEvent event) {
         if (!(event.getSource().getEntity() instanceof Player player) || player instanceof FakePlayer) return;
-        // Cleave's splash hits must not re-run the outgoing perk stack. CombatEventHandler held
-        // this guard for its own bonuses but this handler did not, so each splash target also got
-        // life-steal, a glowing effect and a chain-lightning roll of its own (RS-014).
-        if (CombatEventHandler.isCleaving(player)) return;
+        // Only a PRIMARY hit runs the outgoing perk stack. Cleave's splash hits used to be excluded
+        // by a guard CombatEventHandler held for its own bonuses and this handler did not, so each
+        // splash target also got life-steal, a glowing effect and a chain-lightning roll of its own
+        // (RS-014); every Runic-emitted hit is now excluded, not just Cleave's (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         LivingEntity target = event.getEntity();
         if (target == player) return;
         HandlerCommonConfig c = cfg();
@@ -1228,7 +1242,12 @@ public class PerkEffectsHandler {
                     && src.getDirectEntity() instanceof AbstractArrow aa && aa.isCritArrow())
                 bonus += c.precisionShotPercent / 100.0;
         }
-        if (bonus != 0.0) event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+        if (bonus != 0.0) {
+            float before = event.getAmount();
+            event.setAmount(DamageMath.safeAmount(before, before * (1.0 + bonus)));
+            CombatDiagnostics.trace(player, target, src, before, event.getAmount(),
+                    "outgoing perk bonuses");
+        }
 
         // BLOOD_FURY — "Critical hits steal a share of the damage dealt as health", so it requires
         // a critical hit. It used to fire on every melee blow, which is a strictly stronger and
@@ -1241,7 +1260,10 @@ public class PerkEffectsHandler {
         if (on(RegistryPerks.TRACKING, player))
             target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false));
         // CHAIN_LIGHTNING_STRIKE — melee hits may chain a lightning bolt to a nearby enemy.
+        // A LightningBolt carries a vanilla damage source with no attacker, so there is nothing to
+        // wrap in a DamageContext scope — the spawn itself is what has to be gated.
         if (melee && on(RegistryPerks.CHAIN_LIGHTNING_STRIKE, player)
+                && DamageContext.mayEmitSecondary()
                 && player.getRandom().nextDouble() < c.chainLightningStrikePercent / 100.0
                 && target.level() instanceof ServerLevel sl) {
             LivingEntity near = sl.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(5.0),

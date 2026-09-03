@@ -1,5 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.combat.DamageContext;
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.powers.PowerRuntime;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -85,9 +87,6 @@ public class VanillaPowerEventDispatcher {
     /** Bounds every map above: a player cannot accumulate more than this many tracked hits. */
     private static final int MAX_TRACKED_HITS = 32;
 
-    /** Guards against an echo damaging through the echo it just dealt. */
-    private static final ThreadLocal<Boolean> IN_ECHO = ThreadLocal.withInitial(() -> false);
-
     // ── Lifecycle ───────────────────────────────────────────────────────────────────────────
 
     /**
@@ -164,7 +163,9 @@ public class VanillaPowerEventDispatcher {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onProjectileHurt(LivingHurtEvent event) {
-        if (IN_ECHO.get()) return;
+        // Only a PRIMARY hit is scaled here. The echo below re-enters this handler, as does every
+        // other hit the mod emits (see DamageContext).
+        if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         LivingEntity victim = event.getEntity();
         if (victim == null || victim.level().isClientSide()) return;
 
@@ -179,7 +180,7 @@ public class VanillaPowerEventDispatcher {
             if (PowerRuntime.ProcWindows.active(player.getUUID(), power.getName(), now)) {
                 PowerRuntime.ProcWindows.consume(player.getUUID(), power.getName());
                 double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.30);
-                event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(player, power);
             }
         }
@@ -192,7 +193,7 @@ public class VanillaPowerEventDispatcher {
             UUID intended = INTENDED_TARGET.get(projectile.getId());
             if (intended != null && intended.equals(victim.getUUID())) {
                 double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.15);
-                event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(player, power);
             }
         }
@@ -203,7 +204,7 @@ public class VanillaPowerEventDispatcher {
             Power power = RegistryPowers.GRAVITY_WELL.get();
             double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.25);
             int slowFalling = PowerOverridesManager.intValueOr(power, "slow_falling_ticks", 60);
-            event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+            event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
             victim.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, slowFalling, 0, false, true));
             PowerDispatch.fireProc(player, power);
         }
@@ -215,7 +216,7 @@ public class VanillaPowerEventDispatcher {
             int needed = PowerOverridesManager.intValueOr(power, "hits_required", 3);
             double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.40);
             if (countRecentHits(player, victim, now, windowTicks) >= needed) {
-                event.setAmount((float) (event.getAmount() * (1.0 + bonus)));
+                event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(player, power);
             }
             recordHit(player, victim, now, windowTicks);
@@ -253,12 +254,11 @@ public class VanillaPowerEventDispatcher {
         if (state.landed < every) return;
 
         state.landed = 0;
-        IN_ECHO.set(true);
-        try {
+        try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
+                DamageContext.Origin.POWER_ECHO)) {
+            if (scope.isSuppressed()) return;
             victim.hurt(player.damageSources().indirectMagic(player, player),
                     (float) (baseAmount * share));
-        } finally {
-            IN_ECHO.set(false);
         }
         PowerDispatch.fireProc(player, power);
     }

@@ -1,5 +1,6 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.config.models.LockItem;
@@ -264,7 +265,7 @@ public class IceAndFireIntegration {
             if (targetType != null && MOD_ID.equals(targetType.getNamespace())) {
                 if (RegistryPerks.DRAGON_SLAYER != null && RegistryPerks.DRAGON_SLAYER.get().isEnabled(player)) {
                     float bonus = HandlerCommonConfig.HANDLER.instance().dragonSlayerPercent / 100.0f;
-                    event.setAmount(event.getAmount() * (1.0f + bonus));
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
                 }
             }
         }
@@ -277,7 +278,7 @@ public class IceAndFireIntegration {
             if (damageType != null && DRAGON_DAMAGE_TYPES.contains(damageType.toString())) {
                 if (RegistryPerks.MYTHIC_FORTITUDE != null && RegistryPerks.MYTHIC_FORTITUDE.get().isEnabled(player)) {
                     float reduction = HandlerCommonConfig.HANDLER.instance().mythicFortitudePercent / 100.0f;
-                    event.setAmount(event.getAmount() * (1.0f - reduction));
+                    event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f - reduction)));
                 }
             }
         }
@@ -303,7 +304,7 @@ public class IceAndFireIntegration {
         if (!isMagicalDragonItem(held.getPath())) return;
 
         float bonus = HandlerCommonConfig.HANDLER.instance().dragonMagicPercent / 100.0f;
-        if (bonus > 0) event.setAmount(event.getAmount() * (1.0f + bonus));
+        if (bonus > 0) event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
     }
 
     /** Ice and Fire items that are both dragon-themed and magical rather than merely sharp. */

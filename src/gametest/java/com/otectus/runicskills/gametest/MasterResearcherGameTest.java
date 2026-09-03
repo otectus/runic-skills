@@ -1,6 +1,5 @@
 package com.otectus.runicskills.gametest;
 
-import com.mojang.authlib.GameProfile;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.crafting.MasterResearcherRecipeIndex;
@@ -15,7 +14,6 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -32,7 +30,6 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
@@ -59,11 +56,13 @@ public class MasterResearcherGameTest {
 
     private static final ResourceLocation OAK_PLANKS = new ResourceLocation("minecraft", "oak_planks");
 
+    /**
+     * A server player with a connection: {@code ServerPlayer.awardRecipes} sends the unlocked
+     * recipes down it, so a bare hand-built player would fault on a null one. See
+     * {@link MockPlayers} for why forge's own mock server player cannot be used either.
+     */
     private static ServerPlayer newPlayer(GameTestHelper helper, String name) {
-        ServerLevel level = helper.getLevel();
-        GameProfile profile = new GameProfile(
-                UUID.nameUUIDFromBytes(("runicskills-gametest:" + name).getBytes()), name);
-        return new ServerPlayer(level.getServer(), level, profile);
+        return MockPlayers.connectedServerPlayer(helper, name);
     }
 
     private static SkillCapability capabilityOf(ServerPlayer player) {
