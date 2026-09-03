@@ -21,6 +21,7 @@
     "MixVillager",
     "MixCraftingMenu",
     "MixEnchantmentMenu",
+    "MixExperienceOrb",
     "MixTrueInvisibilityEffect",
     "MixAbstractMagicProjectile",
     "MixCreeperHeadProjectile",
@@ -38,6 +39,7 @@
     "MixSalvagingMenu",
     "MixApothEnchantmentMenu",
     "MixReforgingResultSlot",
+    "MixResultSlot",
     "MixSlot",
     "WallOfFireEntityAccess"
   ],
