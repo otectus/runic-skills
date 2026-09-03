@@ -1,9 +1,11 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -97,9 +99,12 @@ public class FortunePerkHandler {
      */
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-        Player player = event.getEntity();
-        if (player.level().isClientSide() || player instanceof FakePlayer) return;
+        // ItemCraftedEvent fires on both sides and this hands back an item, so the handler starts
+        // from ServerPlayer; FakePlayer extends ServerPlayer and is rejected on its own clause.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (!enabled(RegistryPerks.JEWELERS_EYE, player)) return;
+        // A gem handed back is a Runic reward, not a craft that earns another one.
+        if (CraftingExecutionGuard.isReentrant()) return;
 
         double chance = HandlerCommonConfig.HANDLER.instance().jewelersEyePercent / 100.0;
         if (chance <= 0 || player.getRandom().nextDouble() >= chance) return;
@@ -109,7 +114,9 @@ public class FortunePerkHandler {
 
         ItemStack bonus = gem.copy();
         bonus.setCount(1);
-        if (!player.getInventory().add(bonus)) player.drop(bonus, false);
+        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+            if (!player.getInventory().add(bonus)) player.drop(bonus, false);
+        }
     }
 
     /**

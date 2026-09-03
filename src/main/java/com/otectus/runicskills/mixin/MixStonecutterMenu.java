@@ -49,6 +49,10 @@ public abstract class MixStonecutterMenu {
     private void runicskills$bonusOutput(CallbackInfo ci) {
         Player player = this.runicskills$user;
         if (player == null) return;
+        // Side authority: setupResultSlot runs on both sides, and the client copy of the menu would
+        // roll its own bonus and display a count the server never granted. The server's result is
+        // synced to the client, so refusing here costs the client nothing (RS-205-03).
+        if (player.level().isClientSide()) return;
         if (RegistryPerks.STONE_CUTTER_EFFICIENCY == null
                 || !RegistryPerks.STONE_CUTTER_EFFICIENCY.get().isEnabled(player)) {
             return;

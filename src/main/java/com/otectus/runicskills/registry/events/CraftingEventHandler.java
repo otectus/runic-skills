@@ -2,6 +2,7 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.util.ContainerRewardLedger;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
@@ -58,12 +59,21 @@ public class CraftingEventHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerCraft(PlayerEvent.ItemCraftedEvent event) {
-        Player player = event.getEntity();
         // ItemCraftedEvent fires on BOTH logical sides. Rolling RNG here on the client produced
         // ghost bonus items the server never granted, and the durability edit below mutated a
-        // client-side copy that the next inventory sync discarded (RS-061).
-        if (player == null || player.level().isClientSide) return;
-        if (player instanceof FakePlayer) return;
+        // client-side copy that the next inventory sync discarded (RS-061). Requiring a
+        // ServerPlayer is what rejects that client-side firing; FakePlayer is a ServerPlayer
+        // subclass, so an automated crafter has to be rejected on its own clause.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        // Nothing here may pay out again for a reward this mod itself just inserted.
+        if (CraftingExecutionGuard.isReentrant()) return;
+        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+            awardCraftingPerks(event, player);
+        }
+    }
+
+    /** The Convergence / Master Tinkerer / crafting-luck payouts, inside the re-entry guard. */
+    private static void awardCraftingPerks(PlayerEvent.ItemCraftedEvent event, ServerPlayer player) {
         if (RegistryPerks.CONVERGENCE != null && RegistryPerks.CONVERGENCE.get().isEnabled(player)) {
             // The roll now sits INSIDE the enablement check. It used to run for every craft by
             // every player, so a configured probability of 0 threw out of this handler and broke
@@ -87,15 +97,13 @@ public class CraftingEventHandler {
             }
         }
 
-        if (player instanceof ServerPlayer serverPlayer) {
-            double craftingLuck = serverPlayer.getAttributeValue(RegistryAttributes.CRAFTING_LUCK.get());
-            if (craftingLuck > 0) {
-                int chance = ThreadLocalRandom.current().nextInt(100);
-                if (chance < (int) craftingLuck && event.getCrafting().getMaxStackSize() > 1) {
-                    ItemStack bonus = event.getCrafting().copy();
-                    bonus.setCount(1);
-                    player.drop(bonus, false);
-                }
+        double craftingLuck = player.getAttributeValue(RegistryAttributes.CRAFTING_LUCK.get());
+        if (craftingLuck > 0) {
+            int chance = ThreadLocalRandom.current().nextInt(100);
+            if (chance < (int) craftingLuck && event.getCrafting().getMaxStackSize() > 1) {
+                ItemStack bonus = event.getCrafting().copy();
+                bonus.setCount(1);
+                player.drop(bonus, false);
             }
         }
     }

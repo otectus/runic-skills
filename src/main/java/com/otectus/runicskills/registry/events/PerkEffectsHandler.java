@@ -1,6 +1,9 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
+import com.otectus.runicskills.common.durability.PassiveRepairAccumulator;
 import com.otectus.runicskills.common.util.GameTimeWindow;
+import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
@@ -808,20 +811,17 @@ public class PerkEffectsHandler {
                 player.heal((float) c.naturesBlessingAmplifier);
         }
         // ── passive item repair (perks that genuinely mend gear over time) ──
-        double repairRate = 0.0;
-        if (on(RegistryPerks.AUTO_REPAIR, player))       repairRate += c.autoRepairPercent;
-        if (on(RegistryPerks.PRECISION_TOOLS, player))   repairRate += c.precisionToolsPercent;
-        if (on(RegistryPerks.MENDING_BOOST, player))     repairRate += c.mendingBoostPercent;
-        if (on(RegistryPerks.RUNIC_ENGINEERING, player)) repairRate += c.runicEngineeringPercent;
-        if (on(RegistryPerks.TINKERS_TOUCH, player))     repairRate += c.tinkersTouchPercent;
-        if (on(RegistryPerks.TOOL_SMITH, player))        repairRate += c.toolSmithPercent;
-        if (on(RegistryPerks.WEAPON_SMITH, player))      repairRate += c.weaponSmithPercent;
-        if (on(RegistryPerks.LUCKY_BREAK, player))       repairRate += c.luckyBreakPercent;
-        if (on(RegistryPerks.HERITAGE_BUILDER, player))  repairRate += c.heritageBuilderPercent;
-        // UNBREAKABLE and UNBREAKING_MASTERY are not here. Both promise reduced durability LOSS,
-        // which is a different thing from periodic repair: repair cannot save an item that is about
-        // to break on its next use, and it silently mends gear the player never damaged. They apply
-        // where durability is actually spent instead (RS10-004).
+        // Which perks belong in this sum is decided in PassiveRepairAccumulator, one perk per line
+        // with its tooltip beside it, because the membership is what kept going wrong.
+        double repairRate = PassiveRepairAccumulator.rate(c, perk -> on(perk, player));
+        // UNBREAKABLE, UNBREAKING_MASTERY and LUCKY_BREAK are not here. All three promise reduced
+        // durability LOSS, which is a different thing from periodic repair: repair cannot save an
+        // item that is about to break on its next use, and it silently mends gear the player never
+        // damaged. They apply where durability is actually spent instead — MixItemStack, on the
+        // hurt() call that also rolls Unbreaking (RS10-004, RS-205-01).
+        // MENDING_BOOST is not here either: it promises a faster MENDING repair, which only means
+        // anything on an item carrying Mending while the player is absorbing experience. It applies
+        // in MixExperienceOrb, where an orb is converted to durability (RS-205-02).
         if (repairRate > 0) {
             int amt = Math.max(1, (int) Math.round(repairRate / 100.0 * 4));
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -1329,25 +1329,65 @@ public class PerkEffectsHandler {
     }
 
     // ── crafting output ─────────────────────────────────────────────────────────────
+
+    /**
+     * The bonus-output crafting perks: Assembly Line, Mass Production, Alloy Master, Master
+     * Woodworker and Medieval Architecture.
+     *
+     * <p><b>Side authority.</b> {@code ItemCraftedEvent} fires on both logical sides, and this
+     * handler inserts items. It therefore starts from a {@link ServerPlayer}, which rejects the
+     * client-side firing. {@link FakePlayer} is a {@code ServerPlayer} subclass, so it is not
+     * covered by that check and is rejected on its own line: an automated crafter has no player
+     * progression to reward and no inventory a reward belongs in.
+     *
+     * <p><b>Independent rolls.</b> Each eligible perk is now rolled on its own instead of having
+     * its percentage added into one shared chance. The expected number of bonus items is the sum
+     * of the eligible percentages exactly as it was while that sum stayed below 1 — but the sum
+     * no longer saturates at a single bonus item, and it no longer becomes an unconditional proc
+     * once several crafting perks are taken or a pack raises the values. Two perks at 60% used to
+     * mean "always exactly one bonus"; they now mean "one bonus 48% of the time, two 36% of the
+     * time, none 16% of the time".
+     *
+     * <p><b>Efficient Crafting is not here.</b> Its tooltip promises a chance not to consume
+     * materials, which "+1 output" only imitates for recipes whose entire cost happens to equal
+     * one result item. It is implemented as a real refund at the result-take boundary instead —
+     * see {@code MixResultSlot} and {@code CraftingRefund}.
+     */
     @SubscribeEvent
     public void onCraft(PlayerEvent.ItemCraftedEvent event) {
-        Player player = event.getEntity();
-        if (player instanceof FakePlayer) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         ItemStack result = event.getCrafting();
         if (result.isEmpty()) return;
+        // A reward inserted below can be observed by another mod's menu as a craft of its own.
+        // Only the outermost craft pays out; see CraftingExecutionGuard.
+        if (CraftingExecutionGuard.isReentrant()) return;
+        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+            int copies = bonusCopies(player, result);
+            for (int i = 0; i < copies; i++) {
+                ItemStack bonus = result.copy();
+                bonus.setCount(1);
+                player.getInventory().placeItemBackInInventory(bonus);
+            }
+        }
+    }
+
+    /**
+     * How many bonus copies of {@code result} this craft earned: one per crafting perk that is
+     * both eligible for this result and passes its own roll.
+     */
+    private static int bonusCopies(Player player, ItemStack result) {
         ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(result.getItem());
         HandlerCommonConfig c = cfg();
-        double chance = 0.0;
-        if (on(RegistryPerks.ASSEMBLY_LINE, player))   chance += c.assemblyLinePercent / 100.0;
-        if (on(RegistryPerks.MASS_PRODUCTION, player)) chance += c.massProductionPercent / 100.0;
-        if (on(RegistryPerks.EFFICIENT_CRAFTING, player)) chance += c.efficientCraftingPercent / 100.0; // saved materials ≈ bonus output
-        if (on(RegistryPerks.ALLOY_MASTER, player) && path(id, "ingot"))   chance += c.alloyMasterPercent / 100.0;
-        if (on(RegistryPerks.MASTER_WOODWORKER, player) && path(id, "planks")) chance += c.masterWoodworkerPercent / 100.0;
-        if (on(RegistryPerks.MEDIEVAL_ARCHITECTURE, player) && result.getItem() instanceof BlockItem) chance += c.medievalArchitecturePercent / 100.0;
-        if (chance > 0 && player.getRandom().nextDouble() < chance) {
-            ItemStack bonus = result.copy(); bonus.setCount(1);
-            player.getInventory().placeItemBackInInventory(bonus);
-        }
+        int copies = 0;
+        if (on(RegistryPerks.ASSEMBLY_LINE, player) && ProcRoll.rollsPercent(c.assemblyLinePercent)) copies++;
+        if (on(RegistryPerks.MASS_PRODUCTION, player) && ProcRoll.rollsPercent(c.massProductionPercent)) copies++;
+        if (on(RegistryPerks.ALLOY_MASTER, player) && path(id, "ingot")
+                && ProcRoll.rollsPercent(c.alloyMasterPercent)) copies++;
+        if (on(RegistryPerks.MASTER_WOODWORKER, player) && path(id, "planks")
+                && ProcRoll.rollsPercent(c.masterWoodworkerPercent)) copies++;
+        if (on(RegistryPerks.MEDIEVAL_ARCHITECTURE, player) && result.getItem() instanceof BlockItem
+                && ProcRoll.rollsPercent(c.medievalArchitecturePercent)) copies++;
+        return copies;
     }
 
     // ── anvil repair cost ───────────────────────────────────────────────────────────

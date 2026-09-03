@@ -1,11 +1,12 @@
 package com.otectus.runicskills.integration;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.FakePlayer;
@@ -37,8 +38,10 @@ public class LocksIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         if (!isModLoaded()) return;
-        Player player = event.getEntity();
-        if (player == null || player instanceof FakePlayer) return;
+        // ItemCraftedEvent fires on both sides and this substitution rewrites inventory contents,
+        // so it starts from ServerPlayer; FakePlayer is a ServerPlayer subclass and is rejected
+        // separately, as an automated crafter has no perks to apply.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (RegistryPerks.KEY_FORGE == null || !RegistryPerks.KEY_FORGE.get().isEnabled(player)) return;
 
         ItemStack crafted = event.getCrafting();
@@ -57,8 +60,11 @@ public class LocksIntegration {
         int count = crafted.getCount();
         crafted.setCount(0);
         ItemStack masterStack = new ItemStack(masterKey, count);
-        if (!player.getInventory().add(masterStack)) {
-            player.drop(masterStack, false);
+        // The insertion is a Runic reward, so it must not be seen as a craft worth rewarding again.
+        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+            if (!player.getInventory().add(masterStack)) {
+                player.drop(masterStack, false);
+            }
         }
     }
 
@@ -76,8 +82,8 @@ public class LocksIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLockCrafted(PlayerEvent.ItemCraftedEvent event) {
         if (!isModLoaded()) return;
-        Player player = event.getEntity();
-        if (player == null || player instanceof FakePlayer) return;
+        // Server authority and the FakePlayer rejection, for the same reasons as Key Forge above.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (RegistryPerks.SAFE_BUILDER == null || !RegistryPerks.SAFE_BUILDER.get().isEnabled(player)) return;
 
         ItemStack crafted = event.getCrafting();
@@ -95,8 +101,11 @@ public class LocksIntegration {
         int count = crafted.getCount();
         crafted.setCount(0);
         ItemStack upgraded = new ItemStack(stronger, count);
-        if (!player.getInventory().add(upgraded)) {
-            player.drop(upgraded, false);
+        // Same reasoning as Key Forge: the substituted lock is a reward, not a fresh craft.
+        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+            if (!player.getInventory().add(upgraded)) {
+                player.drop(upgraded, false);
+            }
         }
     }
 

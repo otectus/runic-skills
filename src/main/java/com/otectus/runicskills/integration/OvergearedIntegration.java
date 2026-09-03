@@ -1,10 +1,12 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.util.ForgingQualityMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -60,8 +62,9 @@ public class OvergearedIntegration {
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         if (!isActive()) return;
-        Player player = event.getEntity();
-        if (player == null || player instanceof FakePlayer || player.level().isClientSide()) return;
+        // Server authority: the quality tag written below is item NBT the server owns. FakePlayer
+        // is a ServerPlayer subclass, so it needs its own clause.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (!isModLoaded()) return;
 
         ItemStack result = event.getCrafting();
@@ -107,9 +110,12 @@ public class OvergearedIntegration {
     @SubscribeEvent
     public void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
         if (!isActive()) return;
-        Player player = event.getEntity();
-        if (player == null || player instanceof FakePlayer || player.level().isClientSide()) return;
+        // Server authority: this inserts an item. FakePlayer is a ServerPlayer subclass, so an
+        // automated furnace is rejected on its own clause.
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (!isModLoaded()) return;
+        // The bonus must not be observable as another smelt/craft worth rewarding.
+        if (CraftingExecutionGuard.isReentrant()) return;
 
         ItemStack result = event.getSmelting();
         if (result.isEmpty() || !isNamespace(result, MOD_ID)) return;
@@ -118,7 +124,9 @@ public class OvergearedIntegration {
                 && player.getRandom().nextDouble() < cfg.metallurgistPercent / 100.0) {
             ItemStack bonus = result.copy();
             bonus.setCount(1);
-            player.getInventory().placeItemBackInInventory(bonus);
+            try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
+                player.getInventory().placeItemBackInInventory(bonus);
+            }
         }
     }
 
