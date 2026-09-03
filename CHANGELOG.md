@@ -1,5 +1,39 @@
 # Changelog
 
+## [2.0.5] - 2026-09-03 — Stability, perk semantics, crafting authority & inventory tabs
+
+No protocol, config schema, or save-data change; network protocol stays at 11. Client TOML gains `tabs` configuration group with safe defaults. Dev Forge is 47.4.23; `forge_version_range` remains `[47,)`.
+
+### Confirmed fixes
+
+- **Lucky Break** now prevents durability loss on tool-like items (TieredItem, shears, and items in the `runicskills:lucky_break_eligible` tag; `runicskills:lucky_break_ineligible` excludes) via `MixItemStack`, instead of passively repairing the held item — `common/durability/DurabilityPerkRules.java`, `mixin/MixItemStack.java`.
+- **Mending Boost** now amplifies real Mending repair in `ExperienceOrb.repairPlayerItems` via the new `MixExperienceOrb` mixin without spending extra XP; it no longer repairs passively — `mixin/MixExperienceOrb.java`.
+- Passive repair accumulator moved to `common/durability/PassiveRepairAccumulator.java`; Lucky Break and Mending Boost removed from it.
+- **Crafting rewards are server-authoritative**: every craft handler starts from `ServerPlayer` and rejects `FakePlayer` explicitly (note `FakePlayer` extends `ServerPlayer`) — `PerkEffectsHandler.onCraft`, `CraftingEventHandler`, `FortunePerkHandler`, `LocksIntegration`, `OvergearedIntegration`, `MixStonecutterMenu`.
+- **Bonus-output crafting perks** (Assembly Line, Mass Production, Alloy Master, Master Woodworker, Medieval Architecture) roll independently instead of summing into one saturating chance; new `common/crafting/CraftingExecutionGuard.java` re-entry guard.
+- **Efficient Crafting** now really preserves consumed materials: `mixin/MixResultSlot.java` + `common/crafting/CraftingRefund.java`; remainders (buckets, bottles, damaged tools) never duplicated; modded `ResultSlot` subclasses skipped.
+- **Master Researcher** uses `common/crafting/MasterResearcherRecipeIndex.java` (rebuilt on datapack reload, cleared on server stop) with a candidate budget instead of scanning up to 4096 recipes per craft; Inventor draws from the same index; per-recipe/ingredient `RuntimeException` isolation with `common/util/LogOnce.java`; no partial unlock state. **Master Artificer** isolates each `canEnchant` call and caches candidates per item. Phrase: "improved compatibility with modded recipe/ingredient implementations, including configurations using ModernFix".
+- **Inventory tabs**: new layout engine `client/gui/InventoryTabLayout.java` with AUTO anchor selection avoiding the recipe book, the potion-effect panel and any region contributed via `client/gui/InventoryTabReservedRegions.java` or the new `api/client/InventoryTabLayoutEvent`; Shift-drag moves the strip and the offset persists in the client TOML (`inventoryTabsEnabled`, `inventoryTabsAnchor`, `inventoryTabsOffsetX/Y`, `inventoryTabsAvoidRecipeBook`, `inventoryTabsAvoidEffects`, `inventoryTabsDragToMove` in `handler/HandlerConfigClient.java`); tooltip/click/drag/close moved to Forge `ScreenEvent`s in `client/event/InventoryTabsScreenHandler.java` (which absorbed `InventoryTabsCloseHandler`); render/hover/tooltip/click share one set of rectangles; Legendary Tabs / L2Tabs suppression unchanged; the 2.0.2 close/reset fix preserved.
+
+### Hardening
+
+Unified `common/combat/DamageContext.java` — every Runic-emitted secondary damage call carries an origin (Limit Breaker, Cleave, Bulwark reflect, Weapon Caster reflect, power echo, summon burst, channel splash, spell effects), standard outgoing modifiers apply only to primary hits, secondaries cannot spawn secondaries, hard depth ceiling of 4; the local `CLEAVING` set and `IN_REFLECT`/`IN_ECHO`/`IN_BURST`/`IN_SPLASH` guards were removed in its favour; every damage `event.setAmount` in the mod's event handlers and integrations — 72 sites across 23 files — now passes through `common/combat/DamageMath.safeAmount`, which keeps the original amount when a multiplier would produce NaN, infinite or negative damage; opt-in diagnostics `common/combat/CombatDiagnostics.java` enabled with `-Drunicskills.debug.combat=true` or DEBUG logging. Hardened recursive cross-perk secondary-damage interactions and added safeguards for large multi-skill builds.
+
+### Testing
+
+New JUnit tests: `ProcRollTest` additions, `CraftingExecutionGuardTest`, `CraftingRefundTest`, `LogOnceTest`, `ReverseIndexTest`, `InventoryTabLayoutTest`, `DamageContextTest`, `DamageMathTest`.
+
+New GameTests: `DurabilityPerksGameTest`, `CraftingAuthorityGameTest`, `EfficientCraftingGameTest`, `MasterResearcherGameTest`, `MasterArtificerGameTest`, `DamageContextGameTest`, plus `MockPlayers` helper.
+
+### Internal
+
+- New `common/util/ReverseIndex`, `LogOnce`, `ProcRoll.chance01`.
+- `build.gradle` checkSidedImports allowlist gained `api/client`.
+
+### Known limitations
+
+The six other perks still in the passive repair accumulator (Precision Tools, Runic Engineering, Tinker's Touch, Tool Smith, Weapon Smith, Heritage Builder) keep their 2.0.4 repair-over-time behaviour although their tooltips describe other effects; see `PassiveRepairAccumulator`'s Javadoc.
+
 ## [2.0.4] - 2026-09-03 — Audit remediation: 16 findings
 
 No protocol, config schema, or save-data change; network protocol stays at 11.
