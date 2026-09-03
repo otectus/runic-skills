@@ -4,8 +4,10 @@ import com.otectus.runicskills.common.combat.CombatDiagnostics;
 import com.otectus.runicskills.common.combat.DamageContext;
 import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
+import com.otectus.runicskills.common.durability.DurabilityPerkRules;
 import com.otectus.runicskills.common.durability.PassiveRepairAccumulator;
 import com.otectus.runicskills.common.util.GameTimeWindow;
+import com.otectus.runicskills.common.util.ItemBonusTags;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -666,10 +668,13 @@ public class PerkEffectsHandler {
         return player.level() instanceof ServerLevel level && level.isVillage(player.blockPosition());
     }
 
-    /** True if an item's registry id marks it as runic, matching Runic Might's own test. */
+    /**
+     * True if an item's registry id marks it as runic. The rule itself now lives in
+     * {@link DurabilityPerkRules}, because Runic Engineering asks the same question at the anvil
+     * and the two perks have to mean the same thing by "runic item".
+     */
     private static boolean isRunicItem(ItemStack stack) {
-        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
-        return id != null && (id.getPath().contains("runic") || id.getPath().contains("rune"));
+        return DurabilityPerkRules.isRunicItem(stack);
     }
 
     /** True while at least one piece of armour the player is wearing is runic. */
@@ -835,6 +840,10 @@ public class PerkEffectsHandler {
         // MENDING_BOOST is not here either: it promises a faster MENDING repair, which only means
         // anything on an item carrying Mending while the player is absorbing experience. It applies
         // in MixExperienceOrb, where an orb is converted to durability (RS-205-02).
+        // Nor are PRECISION_TOOLS, TINKERS_TOUCH, TOOL_SMITH, WEAPON_SMITH, RUNIC_ENGINEERING or
+        // HERITAGE_BUILDER, which were summed in here through 2.0.5 while their tooltips described
+        // six other mechanics. Each now lives where the thing it names happens; the list and the
+        // new homes are in PassiveRepairAccumulator. AUTO_REPAIR is the only term left.
         if (repairRate > 0) {
             int amt = Math.max(1, (int) Math.round(repairRate / 100.0 * 4));
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -1445,6 +1454,12 @@ public class PerkEffectsHandler {
         if (on(RegistryPerks.TERRAFORMER, player) && (player.getMainHandItem().getItem() instanceof net.minecraft.world.item.ShovelItem
                 || player.getMainHandItem().getItem() instanceof net.minecraft.world.item.HoeItem))
             mult += (float) (c.terraformerPercent / 100.0);
+        // TOOL_SMITH is read off the TOOL, not off the player: "repaired tools gain bonus
+        // efficiency" is a property the smith gave the item, so it keeps working for whoever ends
+        // up holding it. The stamp is written at the anvil (AnvilPerkHandler#applyRepairBonuses);
+        // this is a per-swing hot path, and ItemBonusTags.read allocates nothing when it misses.
+        int toolSmith = ItemBonusTags.read(player.getMainHandItem(), ItemBonusTags.TOOL_SMITH);
+        if (toolSmith > 0) mult += toolSmith / 100.0f;
         if (mult != 1.0f) event.setNewSpeed(event.getNewSpeed() * mult);
     }
 

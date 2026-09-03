@@ -28,6 +28,7 @@
     "MixThrownPotion",
     "MixBrewingStandBlockEntity",
     "MixGrindstoneMenu",
+    "MixAnvilMenu",
     "MixAbstractContainerMenu",
     "MixAbstractFurnaceBlockEntity",
     "MixPlayerAction",
@@ -41,6 +42,7 @@
     "MixReforgingResultSlot",
     "MixResultSlot",
     "MixSlot",
+    "MixPathingStuckHandler",
     "WallOfFireEntityAccess"
   ],
   "injectors": {

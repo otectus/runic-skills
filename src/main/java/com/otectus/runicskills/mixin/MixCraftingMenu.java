@@ -1,6 +1,9 @@
 package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.util.ItemBonusTags;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -10,6 +13,7 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.util.FakePlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -55,5 +59,39 @@ public abstract class MixCraftingMenu {
         menu.setRemoteSlot(0, ItemStack.EMPTY);
         serverPlayer.connection.send(new ClientboundContainerSetSlotPacket(
                 menu.containerId, menu.incrementStateId(), 0, ItemStack.EMPTY));
+    }
+
+    /**
+     * Tinker's Touch — "Items you craft gain X% bonus durability", written onto the result.
+     *
+     * <p><b>Why here and not in {@code ItemCraftedEvent}.</b> Shift-clicking a result runs
+     * {@code CraftingMenu.quickMoveStack}, which calls {@code moveItemStackTo} — inserting
+     * {@code split()} copies into the inventory — <em>before</em> {@code slot.onTake} fires the
+     * craft event. A take-time handler therefore receives an already-emptied original, and anything
+     * it writes onto that stack is thrown away. (The same copy is why Master Tinkerer's
+     * {@code setDamageValue} does nothing on a shift-click; that is a separate defect, noted, not
+     * fixed here.) The one place the result stack is real is where vanilla creates it, which is
+     * this method — and it is server-only by construction, so no side guard beyond the
+     * {@link ServerPlayer} check is needed.
+     *
+     * <p>Both the crafting table and the 2x2 inventory grid route through this same static, so one
+     * injection covers both.
+     *
+     * <p>The percentage is baked into the item now, not read later: see {@link ItemBonusTags}.
+     */
+    @Inject(at = @At("TAIL"), method = "slotChangedCraftingGrid")
+    private static void runicskills$stampTinkersTouch(AbstractContainerMenu menu, Level level, Player player,
+                                                      CraftingContainer container, ResultContainer resultContainer,
+                                                      CallbackInfo ci) {
+        // A FakePlayer is an automation block standing in for a person; it has no perks, and its
+        // capability lookup is the kind of thing that misbehaves on other mods' fake players.
+        if (!(player instanceof ServerPlayer) || player instanceof FakePlayer) return;
+        if (RegistryPerks.TINKERS_TOUCH == null || !RegistryPerks.TINKERS_TOUCH.get().isEnabled(player)) return;
+
+        ItemStack result = resultContainer.getItem(0);
+        if (result.isEmpty() || !result.isDamageableItem()) return;
+
+        ItemBonusTags.stamp(result, ItemBonusTags.BONUS_DURABILITY,
+                HandlerCommonConfig.HANDLER.instance().tinkersTouchPercent);
     }
 }

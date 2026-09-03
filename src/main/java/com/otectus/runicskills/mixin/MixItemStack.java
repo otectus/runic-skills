@@ -1,6 +1,9 @@
 package com.otectus.runicskills.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.otectus.runicskills.common.durability.DurabilityMath;
 import com.otectus.runicskills.common.durability.DurabilityPerkRules;
+import com.otectus.runicskills.common.util.ItemBonusTags;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import net.minecraft.ChatFormatting;
@@ -59,9 +62,10 @@ public abstract class MixItemStack {
 
     /**
      * Reduces the durability actually spent on an item, for every perk whose tooltip promises
-     * exactly that: Unbreakable, Unbreaking Mastery, Gadgeteer, Lock Expert and Lucky Break
+     * exactly that: Unbreakable, Unbreaking Mastery, Gadgeteer, Lock Expert, Lucky Break
      * ("Tool durability loss has a chance to be ignored" — a chance to ignore a point of loss is
-     * not the same thing as healing the item afterwards, which is what it used to do).
+     * not the same thing as healing the item afterwards, which is what it used to do) and
+     * Precision Tools.
      *
      * <p>All of them used to be implemented as a periodic repair on the once-per-second attribute
      * pass, which is a different mechanic wearing their names (RS10-004, RS-205-01): repair cannot
@@ -126,6 +130,20 @@ public abstract class MixItemStack {
             avoided += ProcRoll.chance01(config.luckyBreakPercent);
         }
 
+        // Precision Tools — "Tool durability increased by X%". A larger durability pool is a
+        // property of an item, but this perk belongs to a PLAYER, and getMaxDamage has no player
+        // to ask; so the same promise is kept from the other side, by not spending points. See
+        // DurabilityMath.bonusDurabilityToAvoidance: ignoring each point with probability
+        // X/(100+X) gives an expected lifetime of exactly 1 + X/100, which is what the tooltip
+        // says. (Avoiding X% of points would give more than X% extra durability, not exactly X%.)
+        // The 0.90 cap below only bites past a configured 900%, so the +X% promise is exact for
+        // every value a pack would plausibly set.
+        if (RegistryPerks.PRECISION_TOOLS != null
+                && RegistryPerks.PRECISION_TOOLS.get().isEnabled(user)
+                && DurabilityPerkRules.isTool(self)) {
+            avoided += DurabilityMath.bonusDurabilityToAvoidance(config.precisionToolsPercent);
+        }
+
         if (avoided <= 0.0) return amount;
         // Never free: an item that could take no durability damage at all would be unbreakable in
         // the literal sense, which no configuration should be able to grant by accident.
@@ -139,6 +157,31 @@ public abstract class MixItemStack {
         // single-point hits that make up almost all durability loss, where rounding would either
         // negate every hit or none of them.
         return Math.max(0, reduced);
+    }
+
+    /**
+     * Tinker's Touch — "Items you craft gain X% bonus durability", read back off the item.
+     *
+     * <p>The producing half is in {@code MixCraftingMenu}, which stamps the configured percentage
+     * onto the result as it is created; this is the only place that number turns into durability.
+     * Keeping the bonus on the stack rather than on the crafter is what makes the tooltip true
+     * after the item is traded away — and it is the only option here anyway, since
+     * {@code getMaxDamage} is asked about a stack with no player anywhere in sight.
+     *
+     * <p>{@code @ModifyReturnValue} rather than an {@code @Inject}: the item's own maximum (and
+     * any other mod's adjustment to it) is the input, so an unstamped item returns bit-for-bit
+     * what vanilla returned.
+     *
+     * <p>Hot path — this runs for every durability bar, every tooltip and every damage comparison.
+     * {@link ItemBonusTags#read} does a null check and one {@code contains} before anything else
+     * and allocates nothing when the tag is absent, which is the overwhelmingly common case.
+     */
+    @ModifyReturnValue(method = "getMaxDamage", at = @At("RETURN"))
+    private int runicskills$applyBonusDurability(int original) {
+        ItemStack self = (ItemStack) (Object) this;
+        int bonus = ItemBonusTags.read(self, ItemBonusTags.BONUS_DURABILITY);
+        if (bonus <= 0) return original;
+        return DurabilityMath.scaledMaxDamage(original, bonus);
     }
 
     /** A Locks Reforged lock pick, the tool Lock Expert makes go further. */

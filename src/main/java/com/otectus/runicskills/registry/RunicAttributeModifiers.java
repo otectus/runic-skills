@@ -51,7 +51,14 @@ public final class RunicAttributeModifiers {
         /** Applied to a player. Must be transient. */
         PLAYER,
         /** Applied to a mod-owned non-player entity (a summon). May be permanent. */
-        OWNED_ENTITY
+        OWNED_ENTITY,
+        /**
+         * Written onto an ITEM and surfaced through {@code ItemAttributeModifierEvent}, so vanilla
+         * owns the whole lifecycle: it adds the modifier when the stack is equipped and removes it
+         * when it is not. Never purged — the purge would only delete a modifier vanilla puts
+         * straight back on the next equip, and would meanwhile strip a bonus the player is holding.
+         */
+        ITEM
     }
 
     /**
@@ -179,6 +186,19 @@ public final class RunicAttributeModifiers {
     public static final UUID APOTH_HEAL_RECV    = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0d");
     public static final UUID APOTH_OVERHEAL     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0e");
 
+    // -- Item-borne (written to a stack, applied by vanilla when it is held) --------------------
+
+    /**
+     * Weapon Smith's bonus damage, stamped onto a weapon when a smith repairs it.
+     *
+     * <p>Belongs in this table even though it never touches a player's saved attributes, because
+     * the table is the mod's inventory of modifier identities and the uniqueness check that guards
+     * it is what stops a future feature from picking the same id. Fixed forever: vanilla matches
+     * modifiers by UUID across equip and unequip, so changing it would strand the old modifier on
+     * every weapon currently in a player's hand.
+     */
+    public static final UUID WEAPON_SMITH_DAMAGE = UUID.fromString("6b1a2f34-9c7d-4e58-8a03-5d2e7f1b4c96");
+
     private static final List<Owned> TABLE = List.of(
             new Owned(COUNTER_ATTACK, "perk:counter_attack", "minecraft:attack_damage", "ADDITION", Scope.PLAYER),
             new Owned(ONE_HANDED,     "perk:one_handed",     "minecraft:attack_damage", "ADDITION", Scope.PLAYER),
@@ -245,7 +265,9 @@ public final class RunicAttributeModifiers {
             new Owned(APOTH_PROT_SHRED,   "apothic:spectral_ward",       "attributeslib:prot_shred",        "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_GHOST_HP,     "apothic:ghostbound",          "attributeslib:ghost_health",      "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_HEAL_RECV,    "apothic:heart_of_the_healer", "attributeslib:healing_received",  "ADDITION",      Scope.PLAYER),
-            new Owned(APOTH_OVERHEAL,     "apothic:heart_of_the_healer", "attributeslib:overheal",          "ADDITION",      Scope.PLAYER)
+            new Owned(APOTH_OVERHEAL,     "apothic:heart_of_the_healer", "attributeslib:overheal",          "ADDITION",      Scope.PLAYER),
+
+            new Owned(WEAPON_SMITH_DAMAGE, "perk:weapon_smith", "minecraft:attack_damage", "MULTIPLY_TOTAL", Scope.ITEM)
     );
 
     /** The declared, hand-maintained slots. Dynamic per-perk/per-passive ids are not in here. */

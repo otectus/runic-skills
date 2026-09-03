@@ -87,6 +87,11 @@ public class CraftingEventHandler {
             }
         }
 
+        // Tinker's Touch is deliberately NOT here. It writes NBT onto the crafted stack, and a
+        // shift-clicked craft reaches this event holding an already-emptied original:
+        // CraftingMenu.quickMoveStack moves split() copies into the inventory before onTake fires
+        // the event, so anything stamped here is discarded. It is applied where the result stack is
+        // created instead, in MixCraftingMenu.
         if (RegistryPerks.MASTER_TINKERER != null && RegistryPerks.MASTER_TINKERER.get().isEnabled(player)) {
             ItemStack crafted = event.getCrafting();
             if (crafted.isDamageableItem()) {
