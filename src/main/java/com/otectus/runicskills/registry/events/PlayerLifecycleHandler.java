@@ -22,6 +22,7 @@ import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -126,6 +127,10 @@ public class PlayerLifecycleHandler {
         PerkEffectsHandler.clearAll();
         FortunePerkHandler.clearAll();
         EnchantingLorePerkHandler.clearAll();
+        // Both caches are keyed on server-owned data — recipes and the enchantment registry — so
+        // in a JVM that hosts a second world they must not answer for the first one's content.
+        EnchantingLorePerkHandler.clearCache();
+        com.otectus.runicskills.common.crafting.MasterResearcherRecipeIndex.invalidate();
     }
 
     @SubscribeEvent
@@ -197,6 +202,10 @@ public class PlayerLifecycleHandler {
         event.addListener(new PerkGroupsReloadListener());
         event.addListener(new com.otectus.runicskills.registry.skill.SkillVisualsReloadListener());
         event.addListener(new PowerOverridesReloadListener());
+        // Master Researcher's recipe index is a snapshot of the recipe manager, and /reload
+        // replaces every recipe in it. Nothing to prepare, so the listener is just the drop.
+        event.addListener((ResourceManagerReloadListener)
+                manager -> com.otectus.runicskills.common.crafting.MasterResearcherRecipeIndex.invalidate());
     }
 
     @SubscribeEvent

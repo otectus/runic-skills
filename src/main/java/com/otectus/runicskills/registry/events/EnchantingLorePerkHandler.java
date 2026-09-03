@@ -2,18 +2,22 @@ package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.util.ContainerInteraction;
 import com.otectus.runicskills.common.util.GameTimeWindow;
+import com.otectus.runicskills.common.util.LogOnce;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.GrindstoneEvent;
 import net.minecraftforge.event.TickEvent;
@@ -43,6 +47,15 @@ public class EnchantingLorePerkHandler {
      * session after a portal, and as never-opened after a death.
      */
     private static final Map<UUID, Long> LAST_COMBAT_TICK = new ConcurrentHashMap<>();
+
+    /**
+     * Master Artificer's enchantable-candidate list per item type; see {@code candidatesFor}.
+     * Bounded, and cleared on server stop, because the enchantment registry itself is per-server.
+     */
+    private static final Map<Item, List<Enchantment>> ARTIFICER_CANDIDATES = new ConcurrentHashMap<>();
+
+    /** Distinct item types the Artificer cache holds before it is thrown away and rebuilt. */
+    private static final int MAX_CACHED_ARTIFICER_ITEMS = 512;
 
     /**
      * What each dying player was holding, captured before the inventory is emptied.
@@ -195,8 +208,11 @@ public class EnchantingLorePerkHandler {
      */
     @SubscribeEvent
     public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-        Player player = event.getEntity();
-        if (player.level().isClientSide()) return;
+        // ServerPlayer, not "not client", so the logical client never rolls this. FakePlayer is a
+        // ServerPlayer, so it needs saying separately: an autocrafter or machine block crafting
+        // through one must not roll a real player's perk. (It would fail the capability check
+        // below anyway, but that is an accident of how capabilities attach, not a decision.)
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (RegistryPerks.MASTER_ARTIFICER == null
                 || !RegistryPerks.MASTER_ARTIFICER.get().isEnabled(player)) {
             return;
@@ -207,13 +223,53 @@ public class EnchantingLorePerkHandler {
         ItemStack crafted = event.getCrafting();
         if (crafted.isEmpty() || crafted.isEnchanted() || !crafted.isEnchantable()) return;
 
+        List<Enchantment> candidates = candidatesFor(crafted);
+        if (candidates.isEmpty()) return;
+        crafted.enchant(candidates.get(player.getRandom().nextInt(candidates.size())), 1);
+    }
+
+    /**
+     * Which enchantments could go on {@code crafted}, cached per item type.
+     *
+     * <p>The walk is the whole enchantment registry — several hundred entries in a modded pack,
+     * each one a {@code canEnchant} call into third-party code — and it was being repeated on
+     * every proc. The answer depends only on the item type in every implementation vanilla and
+     * Forge ship (they test {@code stack.getItem()} against an {@code EnchantmentCategory}), so
+     * caching by {@link Item} is sound and turns a per-craft registry walk into a map lookup.
+     *
+     * <p>A {@code canEnchant} that throws costs its own enchantment and nothing else: before this,
+     * one broken enchantment destroyed the craft of any player who had the perk.
+     */
+    private static List<Enchantment> candidatesFor(ItemStack crafted) {
+        List<Enchantment> cached = ARTIFICER_CANDIDATES.get(crafted.getItem());
+        if (cached != null) return cached;
+
         List<Enchantment> candidates = new ArrayList<>();
         for (Enchantment candidate : net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS) {
             if (candidate.isCurse() || candidate.isTreasureOnly()) continue;
-            if (candidate.canEnchant(crafted)) candidates.add(candidate);
+            try {
+                if (candidate.canEnchant(crafted)) candidates.add(candidate);
+            } catch (RuntimeException e) {
+                var id = net.minecraftforge.registries.ForgeRegistries.ENCHANTMENTS.getKey(candidate);
+                LogOnce.warnOnce("artificer:" + id,
+                        "[Runic Skills] Master Artificer skipped enchantment {} because canEnchant threw"
+                        + " {}. The craft was allowed to continue.",
+                        id, e.getClass().getSimpleName());
+            }
         }
-        if (candidates.isEmpty()) return;
-        crafted.enchant(candidates.get(player.getRandom().nextInt(candidates.size())), 1);
+
+        // Cleared rather than evicted: this is a pure function of the item, so throwing the whole
+        // map away costs one rebuild per item still in use, and there is no sensible victim to
+        // pick when a pack somehow presents more than 512 enchantable item types.
+        if (ARTIFICER_CANDIDATES.size() >= MAX_CACHED_ARTIFICER_ITEMS) ARTIFICER_CANDIDATES.clear();
+        List<Enchantment> immutable = List.copyOf(candidates);
+        ARTIFICER_CANDIDATES.put(crafted.getItem(), immutable);
+        return immutable;
+    }
+
+    /** Drops the Master Artificer cache, so one world's registry cannot answer for the next. */
+    public static void clearCache() {
+        ARTIFICER_CANDIDATES.clear();
     }
 
     // ── Scroll perks ────────────────────────────────────────────────────────────────────────
