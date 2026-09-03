@@ -36,8 +36,10 @@
     "MixDispenserBlock",
     "MixAbstractMinecart",
     "MixSalvagingMenu",
+    "MixApothEnchantmentMenu",
     "MixReforgingResultSlot",
-    "MixSlot"
+    "MixSlot",
+    "WallOfFireEntityAccess"
   ],
   "injectors": {
     "defaultRequire": 1

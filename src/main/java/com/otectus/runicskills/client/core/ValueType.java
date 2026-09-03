@@ -6,7 +6,9 @@
    AMPLIFIER,
    PERCENT,
    BOOST,
-   PROBABILITY
+   PROBABILITY,
+   /** A bare tick count. Used where the lang string already says "ticks" and the config field is raw ticks. */
+   TICKS
  }
 
 

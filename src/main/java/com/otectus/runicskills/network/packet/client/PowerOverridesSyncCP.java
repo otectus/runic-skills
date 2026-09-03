@@ -1,5 +1,6 @@
 package com.otectus.runicskills.network.packet.client;
 
+import com.otectus.runicskills.common.powers.PowerOverrideLimits;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.registry.powers.PowerOverrides;
 import com.otectus.runicskills.registry.powers.PowerOverridesManager;
@@ -31,12 +32,9 @@ public class PowerOverridesSyncCP {
         this.overrides = new ArrayList<>(PowerOverridesManager.all());
     }
 
-    private static final int MAX_OVERRIDES = 8192;
-    private static final int MAX_VALUES_PER_OVERRIDE = 1024;
-
     public PowerOverridesSyncCP(FriendlyByteBuf buffer) {
         int count = buffer.readVarInt();
-        if (count < 0 || count > MAX_OVERRIDES) {
+        if (!PowerOverrideLimits.isValidOverrideCount(count)) {
             throw new DecoderException("PowerOverridesSyncCP: override count out of range: " + count);
         }
         List<PowerOverrides> list = new ArrayList<>(count);
@@ -45,7 +43,7 @@ public class PowerOverridesSyncCP {
             int reqLvl = buffer.readVarInt();
             int icd = buffer.readVarInt();
             int valCount = buffer.readVarInt();
-            if (valCount < 0 || valCount > MAX_VALUES_PER_OVERRIDE) {
+            if (!PowerOverrideLimits.isValidValueCount(valCount)) {
                 throw new DecoderException("PowerOverridesSyncCP: value count out of range: " + valCount);
             }
             Map<String, Double> values = new LinkedHashMap<>(valCount);
@@ -61,14 +59,25 @@ public class PowerOverridesSyncCP {
         this.overrides = list;
     }
 
+    /**
+     * Wire shape is unchanged; the encoder simply refuses to write more than the decoder is
+     * allowed to read. Writing an oversized payload only produced a client that threw on the
+     * login packet it had just been sent, which reads as "the server kicked me" (MEDIUM-07).
+     */
     public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeVarInt(this.overrides.size());
+        int count = Math.min(this.overrides.size(), PowerOverrideLimits.MAX_OVERRIDES);
+        buffer.writeVarInt(count);
+        int written = 0;
         for (PowerOverrides ov : this.overrides) {
+            if (written++ >= count) break;
             buffer.writeResourceLocation(ov.id());
             buffer.writeVarInt(ov.requiredSkillLevel());
             buffer.writeVarInt(ov.icdTicks());
-            buffer.writeVarInt(ov.values().size());
+            int valCount = Math.min(ov.values().size(), PowerOverrideLimits.MAX_VALUES_PER_OVERRIDE);
+            buffer.writeVarInt(valCount);
+            int valWritten = 0;
             for (Map.Entry<String, Double> e : ov.values().entrySet()) {
+                if (valWritten++ >= valCount) break;
                 buffer.writeUtf(e.getKey(), Short.MAX_VALUE);
                 buffer.writeDouble(e.getValue());
             }

@@ -3,9 +3,12 @@ package com.otectus.runicskills.integration;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.util.ApothGateMath;
+import com.otectus.runicskills.common.util.ContainerInteraction;
+import com.otectus.runicskills.common.util.TransientModifiers;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
+import com.otectus.runicskills.registry.RegistryAttributes;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RunicAttributeModifiers;
 import com.otectus.runicskills.registry.RegistrySkills;
@@ -36,7 +39,6 @@ import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,53 +66,12 @@ public class ApotheosisIntegration {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // B4 fix: bounded recent-interactor cache keyed by player UUID. Replaces the
-    // single-field `lastInteractingPlayer` to scope socketing-player attribution
-    // to a short interaction window and tolerate concurrent interactions across
-    // multiple players. Entries past the window are pruned periodically.
-    private static final Map<UUID, Long> recentInteractors = new ConcurrentHashMap<>();
-    private static final long INTERACTION_WINDOW_TICKS = 20L; // 1 second @ 20 tps
-
     // B3 fix: rarities Apotheosis recognises by canonical path name. Unknown
     // paths default-deny on rarity gating and log once to surface API drift.
     private static final Set<String> UNKNOWN_RARITIES_LOGGED = ConcurrentHashMap.newKeySet();
 
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("apotheosis");
-    }
-
-    private static void recordInteraction(Player p) {
-        if (p == null || p.level() == null) return;
-        recentInteractors.put(p.getUUID(), p.level().getGameTime());
-    }
-
-    /**
-     * Returns the most-recent interactor whose interaction is still inside
-     * {@link #INTERACTION_WINDOW_TICKS}, or null if none. Used to attribute
-     * Apotheosis events that lack a player context (e.g. ItemSocketingEvent).
-     */
-    private static Player resolveInteractor() {
-        if (RunicSkills.server == null) return null;
-        long now = RunicSkills.server.getTickCount();
-        UUID best = null;
-        long bestTime = Long.MIN_VALUE;
-        for (Map.Entry<UUID, Long> e : recentInteractors.entrySet()) {
-            long age = now - e.getValue();
-            if (age > INTERACTION_WINDOW_TICKS) continue;
-            if (e.getValue() > bestTime) {
-                bestTime = e.getValue();
-                best = e.getKey();
-            }
-        }
-        if (best == null) return null;
-        return RunicSkills.server.getPlayerList().getPlayer(best);
-    }
-
-    /** Periodic prune to keep the map bounded. Called from onPlayerTickPhase2a. */
-    private static void pruneInteractors() {
-        if (RunicSkills.server == null) return;
-        long now = RunicSkills.server.getTickCount();
-        recentInteractors.entrySet().removeIf(e -> now - e.getValue() > INTERACTION_WINDOW_TICKS);
     }
 
     private static void warnOnceForUnknownRarity(ResourceLocation id) {
@@ -204,8 +165,6 @@ public class ApotheosisIntegration {
         if (player.isCreative() || player instanceof FakePlayer) return;
         if (event.getSlot().getType() != EquipmentSlot.Type.ARMOR) return;
 
-        recordInteraction(player);
-
         ItemStack item = event.getTo();
         // Compute the gate decision (required level + rarity name) BEFORE any mutation of the
         // stack. The previous code recomputed the required level AFTER item.setCount(0) had
@@ -265,8 +224,6 @@ public class ApotheosisIntegration {
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
 
-        recordInteraction(player);
-
         if (!canPlayerUseAffixItem(player, event.getItemStack())) {
             event.setCanceled(true);
             if (player instanceof ServerPlayer serverPlayer) {
@@ -277,18 +234,10 @@ public class ApotheosisIntegration {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!isActive()) return;
-        recordInteraction(event.getEntity());
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onAttackWithAffixItem(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
         if (!isActive()) return;
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
-
-        recordInteraction(player);
 
         if (!canPlayerUseAffixItem(player, player.getMainHandItem())) {
             event.setCanceled(true);
@@ -304,20 +253,23 @@ public class ApotheosisIntegration {
     @SubscribeEvent
     public void onCanSocketGem(ItemSocketingEvent.CanSocket event) {
         if (!isActive()) return;
-        Player player = resolveInteractor();
-        if (player == null || player.isRemoved() || player.isCreative() || player instanceof FakePlayer) return;
+        // Who is socketing: whoever's container click is being processed on this thread.
+        // SocketingRecipe is only ever reached from inside AbstractContainerMenu.clicked, so the
+        // answer is exact rather than the nearest recent interactor, which used to attribute one
+        // player's socket to another player's right-click a tick earlier (HIGH-02). No answer means
+        // no gate: the socket is allowed through untouched.
+        if (!(ContainerInteraction.currentPlayer() instanceof ServerPlayer player)) return;
+        if (player.isRemoved() || player.isCreative() || player instanceof FakePlayer) return;
         int required = getRequiredFortuneLevelForGem(event.getInputGem());
         if (required <= 0) return;
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return; // capability race — fail open, matching the affix-gating path
         if (cap.getSkillLevel(RegistrySkills.FORTUNE.get()) >= required) return;
         event.setResult(net.minecraftforge.eventbus.api.Event.Result.DENY);
-        if (player instanceof ServerPlayer serverPlayer) {
-            DynamicHolder<LootRarity> rarityHolder = GemInstance.unsocketed(event.getInputGem()).rarity();
-            String rarityName = rarityHolder.isBound() ? rarityHolder.get().toComponent().getString() : "Unknown";
-            // "You need Fortune %s to socket %s gems!" → required level + gem rarity name.
-            NoticeOverlayCP.send(serverPlayer, "overlay.runicskills.gem_rarity_gated", String.valueOf(required), rarityName);
-        }
+        DynamicHolder<LootRarity> rarityHolder = GemInstance.unsocketed(event.getInputGem()).rarity();
+        String rarityName = rarityHolder.isBound() ? rarityHolder.get().toComponent().getString() : "Unknown";
+        // "You need Fortune %s to socket %s gems!" → required level + gem rarity name.
+        NoticeOverlayCP.send(player, "overlay.runicskills.gem_rarity_gated", String.valueOf(required), rarityName);
     }
 
     // ── Gem Socket Bonus ──
@@ -478,22 +430,11 @@ public class ApotheosisIntegration {
      * Finds the player who has the given ItemStack in their equipment slots.
      * Uses reference equality to match the exact ItemStack instance.
      *
-     * B4 fix: fast-path uses the recent-interactor cache (bounded, per-UUID)
-     * instead of a single static field; falls back to scanning all online
-     * players if the cached interactor doesn't own the stack.
+     * <p>The recent-interactor fast path that used to sit in front of this scan went with the cache
+     * it read (HIGH-02). It was only ever an optimisation: reference equality over the online
+     * player list already returns the one true owner, or nobody.
      */
     private Player findItemOwner(ItemStack stack) {
-        // Fast path: any recent interactor whose equipment matches the stack.
-        Player recent = resolveInteractor();
-        if (recent != null && !recent.isRemoved()) {
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
-                if (recent.getItemBySlot(slot) == stack) {
-                    return recent;
-                }
-            }
-        }
-
-        // Fallback: search all online players
         if (RunicSkills.server == null) return null;
         for (ServerPlayer player : RunicSkills.server.getPlayerList().getPlayers()) {
             for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -512,13 +453,13 @@ public class ApotheosisIntegration {
         if (!isActive()) return;
         if (RegistryPerks.GEM_ATTUNEMENT == null) return;
 
-        // B4 fix: attribute socketing to the most-recent interactor within the 1-second
-        // window. Two-player concurrent interactions no longer cross-pollinate; if no
-        // recent interactor exists, default-deny the perk-aware branch and fall through
-        // to vanilla Apotheosis behavior.
-        Player player = resolveInteractor();
-        if (player == null || player.isRemoved()) return;
-        if (player.isCreative() || player instanceof FakePlayer) return;
+        // Same attribution as the CanSocket gate: the ThreadLocal MixAbstractContainerMenu
+        // publishes for the duration of a click. Apotheosis posts this event with no player, but the
+        // click that caused it is still on the stack, so the gem is refunded to whoever actually
+        // socketed it rather than to whoever last touched anything (HIGH-02). Outside a click there
+        // is nobody to pay and the perk sits out.
+        if (!(ContainerInteraction.currentPlayer() instanceof ServerPlayer player)) return;
+        if (player.isRemoved() || player.isCreative() || player instanceof FakePlayer) return;
 
         if (!RegistryPerks.GEM_ATTUNEMENT.get().isEnabled(player)) return;
 
@@ -530,27 +471,26 @@ public class ApotheosisIntegration {
         if (roll == 0) {
             // Give the gem back to the player
             ItemStack gem = event.getInputGem().copy();
-            if (player instanceof ServerPlayer serverPlayer) {
-                if (!serverPlayer.getInventory().add(gem)) {
-                    serverPlayer.drop(gem, false);
-                }
-                serverPlayer.displayClientMessage(
-                        net.minecraft.network.chat.Component.translatable("overlay.runicskills.gem_attunement_saved"),
-                        true);
+            if (!player.getInventory().add(gem)) {
+                player.drop(gem, false);
             }
+            player.displayClientMessage(
+                    net.minecraft.network.chat.Component.translatable("overlay.runicskills.gem_attunement_saved"),
+                    true);
         }
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // ── Phase 2a: Affix Affinity + interactor pruning ──
+    // ── Phase 2a: Affix Affinity + Enchanting Power scaling ──
     // ════════════════════════════════════════════════════════════════════════
     // The ten Apothic Attributes (attributeslib) perks that used to live in this tick handler
     // moved to ApothicAttributesPerksIntegration (1.5.3, M-5) so an AttributesLib version
     // mismatch can no longer take down affix-rarity / gem gating with it. This handler keeps
     // only Apotheosis-typed work: Affix Affinity (vanilla ATTACK_DAMAGE, but counts affixed
-    // gear via AffixHelper) and the periodic recentInteractors prune.
+    // gear via AffixHelper) and the Enchanting Power scaling.
 
     private static final UUID APOTH_AFFIX_AFFINITY_DMG_UUID = RunicAttributeModifiers.APOTH_AFFIX_AFFINITY;
+    private static final UUID APOTH_ENCHANTING_POWER_UUID = RunicAttributeModifiers.APOTH_ENCHANTING_POWER;
 
     @SubscribeEvent
     public void onPlayerTickPhase2a(TickEvent.PlayerTickEvent event) {
@@ -558,10 +498,6 @@ public class ApotheosisIntegration {
         Player player = event.player;
         if (player.level().isClientSide) return;
         if ((player.tickCount % 10) != 0) return;
-
-        // B4 fix: prune the interactor map periodically so it stays bounded even
-        // if the server runs for days with no socketing events.
-        if ((player.tickCount % 100) == 0) pruneInteractors();
 
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
 
@@ -592,6 +528,26 @@ public class ApotheosisIntegration {
                 attack.removeModifier(existing);
             }
         }
+
+        // Enchanting scaling → ENCHANTING_POWER, which the enchanting-table mixins read as extra
+        // bookshelves. apothEnableEnchantingScaling and apothEnchantingScalePerLevel were public,
+        // documented and read by nothing (HIGH-05); this is the reader.
+        //
+        // Reconciled unconditionally for the same reason as Affix Affinity above: the amount
+        // carries the state, so turning the toggle or the integration off removes the bonus on the
+        // next tick instead of stranding it for the session.
+        SkillCapability capability = SkillCapability.get(player);
+        boolean scalingWanted = isActive() && c.apothEnableEnchantingScaling && capability != null;
+        double enchantingPower = 0.0;
+        if (scalingWanted) {
+            int levels = capability.getSkillLevel(RegistrySkills.INTELLIGENCE.get())
+                    + capability.getSkillLevel(RegistrySkills.WISDOM.get());
+            enchantingPower = Math.max(0, levels) * c.apothEnchantingScalePerLevel;
+        }
+        TransientModifiers.reconcile(player, RegistryAttributes.ENCHANTING_POWER.get(),
+                APOTH_ENCHANTING_POWER_UUID, "runicskills:apoth_enchanting_scaling",
+                scalingWanted && enchantingPower > 0, enchantingPower,
+                AttributeModifier.Operation.ADDITION);
     }
 
     /** Counts equipped items of Rare rarity or higher. B3 fix: name-keyed instead of ordinal. */

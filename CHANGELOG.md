@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.0.4] - 2026-09-03 — Audit remediation: 16 findings
+
+No protocol, config schema, or save-data change; network protocol stays at 11.
+
+### High severity
+
+- **HIGH-01**: Arcane Reprieve and Continuous Flow are now reachable. Mana-change handler split into gain, spend, and zero-crossing paths; refactored timestamp logic to avoid sentinel overflow.
+- **HIGH-02**: Apotheosis gem socketing now attributes the actual clicking player via container-interaction context. Removed the `onRightClickBlock` handler and the `findItemOwner` recent-interactor fast path along with the cache.
+- **HIGH-03**: Scholar now hides enchantment names per player (Scholars read names; when `enableScholarEnchantmentHiding` is off the perk is disabled rather than selectable-and-inert). Effect-coverage tests now ignore comments and string literals.
+- **HIGH-04**: Wisdom XP Bonus passive now multiplies positive XP gains with per-player fractional carry.
+- **HIGH-05**: Enchanting Power passive now raises enchanting-table power on the vanilla table (before the vanilla 15-shelf cap) and Apotheosis's table (eterna). Added Intelligence+Wisdom modifier under toggles `apothEnableEnchantingScaling` and `apothEnchantingScalePerLevel`.
+- **HIGH-06**: Iron's Magic-level cooldown reduction now applied with settings `ironsEnableCooldownReduction`, `ironsCooldownReductionPerLevel`, and `ironsMaxCooldownReduction`, stacking independently with Tempo.
+
+### Medium severity
+
+- **MEDIUM-01**: Break-speed passive no longer doubles base speed at rank 0; now adds only the delta to existing speed.
+- **MEDIUM-02**: Integration master toggles (`ironsEnable*`, `arsEnable*`) no longer suppress unrelated perks and synergies; each feature now guards itself.
+- **MEDIUM-03**: Reforge the Shadow owner now stored on the bear entity; death burst survives reload and restart.
+- **MEDIUM-04**: Scorched Earth now extends Wall of Fire lifetime.
+- **MEDIUM-05**: Perk timers switched to world game time so respawn no longer leaves stale windows/cooldowns. Combat windows clear on death; cooldowns persist.
+- **MEDIUM-06**: Iron's Spellweaver and Arcane Reprieve state now cleared on logout and server stop.
+- **MEDIUM-07**: Power overrides limited to IDs with a registered Power (any namespace), with packet limits enforced on load and send (closes RS-069).
+- **MEDIUM-08**: Duration value consistency: `ValueType.TICKS` added; Counter Attack, Fighting Spirit, and Quick Reposition now use exactly 20 ticks per configured second. **Balance note:** Counter Attack's default 3 previously lasted 6s and now lasts 3s (set to 6 to restore); Fighting Spirit and Quick Reposition lose a hidden 0.5s each. Catch of the Day also goes through `DurationMath.secondsToTicks` (was a `* 20` literal; no behaviour change).
+
+### Low severity
+
+- **LOW-01**: Mortal Strike subtitle localized.
+- **LOW-02**: Removed dead `HandlerConfigCommon`, `ItemListGroup`, `BossesOfMassDestructionIntegration`, `JetAndEliasIntegration`.
+
+### Testing
+
+Added source-stripping coverage tests, duration-unit consistency tests, sound-subtitle lang test, packet bounds validation, XP bonus gametest.
+
+### Internal
+
+- New `common/util/TransientModifiers` helper is now the shared idempotent attribute-modifier reconcile used by the Iron's Spells and Apotheosis integrations.
+- New `common/util/GameTimeWindow` is the shared elapsed/cooldown helper for combat timers.
+- `PerkEffectsHandler` renamed `BERSERK_UNTIL` to `BERSERK_SINCE` and `SURVIVE_COOLDOWN` now stores the trigger time rather than a deadline; `BERSERK_WINDOW` (100 ticks) and `SURVIVE_LOCKOUT` (1200 ticks) are now named constants.
+
 ## [2.0.3] - 2026-09-02 — Every Iron's Spells Power now does something
 
 No protocol, config, or save-data change; 2.0.2 and 2.0.3 pair freely. Network protocol stays at 11.

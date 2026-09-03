@@ -1,5 +1,6 @@
 package com.otectus.runicskills.common.util;
 
+import com.otectus.runicskills.common.powers.PowerOverrideLimits;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -71,5 +72,27 @@ class PacketBoundsTest {
         assertFalse(PacketBounds.isContentIdValid("runicskills:"), "empty path");
         assertFalse(PacketBounds.isContentIdValid("a:b:c"), "two separators");
         assertFalse(PacketBounds.isContentIdValid(":"));
+    }
+
+    // -- Power override payload limits (MEDIUM-07) ---------------------------------------------
+
+    @Test
+    void overrideCountIsInclusiveAtTheCap() {
+        assertTrue(PowerOverrideLimits.isValidOverrideCount(0));
+        assertTrue(PowerOverrideLimits.isValidOverrideCount(PowerOverrideLimits.MAX_OVERRIDES),
+                "8192 is the cap, not one past it");
+        assertFalse(PowerOverrideLimits.isValidOverrideCount(PowerOverrideLimits.MAX_OVERRIDES + 1));
+        assertFalse(PowerOverrideLimits.isValidOverrideCount(-1),
+                "a negative VarInt must not size an ArrayList");
+    }
+
+    @Test
+    void valueCountIsInclusiveAtTheCap() {
+        assertTrue(PowerOverrideLimits.isValidValueCount(0));
+        assertTrue(PowerOverrideLimits.isValidValueCount(PowerOverrideLimits.MAX_VALUES_PER_OVERRIDE));
+        assertFalse(PowerOverrideLimits.isValidValueCount(
+                PowerOverrideLimits.MAX_VALUES_PER_OVERRIDE + 1));
+        assertFalse(PowerOverrideLimits.isValidValueCount(-1));
+        assertFalse(PowerOverrideLimits.isValidValueCount(Integer.MAX_VALUE));
     }
 }

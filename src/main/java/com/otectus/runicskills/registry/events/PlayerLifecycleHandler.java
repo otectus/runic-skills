@@ -101,6 +101,8 @@ public class PlayerLifecycleHandler {
     public void onPlayerLoggedOut(PlayerLoggedOutEvent event) {
         PacketRateLimiter.clearPlayer(event.getEntity().getUUID());
         PerkEffectsHandler.clearPlayer(event.getEntity().getUUID());
+        FortunePerkHandler.clearPlayer(event.getEntity().getUUID());
+        EnchantingLorePerkHandler.clearPlayer(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -121,6 +123,9 @@ public class PlayerLifecycleHandler {
         com.otectus.runicskills.network.PacketRateLimiter.clear();
         com.otectus.runicskills.common.util.ContainerRewardLedger.clear();
         com.otectus.runicskills.common.powers.PowerRuntime.clearAll();
+        PerkEffectsHandler.clearAll();
+        FortunePerkHandler.clearAll();
+        EnchantingLorePerkHandler.clearAll();
     }
 
     @SubscribeEvent
@@ -213,6 +218,13 @@ public class PlayerLifecycleHandler {
                     serverPlayerNew.setHealth(serverPlayerOld.getHealth());
                 } else {
                     serverPlayerNew.setHealth(serverPlayerOld.getMaxHealth());
+                }
+                // A death ends the in-combat windows the old body was carrying. Cooldowns are not
+                // touched: a survive-lethal perk or a Chaos Roll that death made ready again would
+                // turn dying into the cheapest way to use it.
+                if (event.isWasDeath()) {
+                    PerkEffectsHandler.clearCombatWindows(serverPlayerOld.getUUID());
+                    EnchantingLorePerkHandler.clearCombatWindows(serverPlayerOld.getUUID());
                 }
                 serverPlayerOld.invalidateCaps();
             }

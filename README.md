@@ -86,7 +86,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-2.0.3.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-2.0.4.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Optionally install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.5.0+ — it powers the in-game configuration screen. Without it the mod runs normally and the Configure button explains that the screen needs YACL; every setting remains editable in `config/RunicSkills/`.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -246,6 +246,7 @@ Example task SNBT / JSON:
 
 | Runic Skills | Minecraft | Forge | Java | Network protocol | FTB Quests Forge (optional) |
 |---|---|---|---|---|---|
+| 2.0.4 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
 | 2.0.3 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
 | 2.0.2 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
 | 2.0.1 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |

@@ -97,6 +97,47 @@ public final class ExperienceMath {
         return Math.max(Math.max(0, minCost), cost);
     }
 
+    /**
+     * The XP points a pickup of {@code amount} is worth once the {@code xp_bonus} attribute is
+     * applied, carrying {@code carry} forward from previous awards.
+     *
+     * <p>Returned as a double so the caller can split it with {@link #wholePoints} and
+     * {@link #remainder}: XP awards are integers, and truncating each one independently is how a
+     * 25% bonus paid nothing at all on the 1-point pickups that make up most of a player's XP. The
+     * fraction is banked instead and spends itself on a later award.</p>
+     *
+     * <p>A NaN, infinite or negative {@code bonus} contributes nothing rather than corrupting the
+     * player's total — attribute values come from modifiers other mods can also write to.</p>
+     */
+    public static double bonusTotal(int amount, double bonus, double carry) {
+        if (amount <= 0) return 0.0;
+        double safeBonus = (Double.isNaN(bonus) || Double.isInfinite(bonus) || bonus < 0.0) ? 0.0 : bonus;
+        double safeCarry = (Double.isNaN(carry) || Double.isInfinite(carry) || carry < 0.0) ? 0.0 : carry;
+        return amount + amount * safeBonus + safeCarry;
+    }
+
+    /** The whole XP points of a {@link #bonusTotal}, clamped to a non-negative int. */
+    public static int wholePoints(double total) {
+        if (Double.isNaN(total) || total <= 0.0) return 0;
+        if (total >= Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return (int) Math.floor(total);
+    }
+
+    /** The sub-point remainder of a {@link #bonusTotal}, to bank for the next award. */
+    public static double remainder(double total) {
+        if (Double.isNaN(total) || Double.isInfinite(total) || total <= 0.0) return 0.0;
+        double frac = total - Math.floor(total);
+        return frac < 0.0 ? 0.0 : frac;
+    }
+
+    /** {@code base + add} clamped to the int range, so a huge award cannot wrap to negative XP. */
+    public static int saturatingAdd(int base, long add) {
+        long sum = (long) base + add;
+        if (sum > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        if (sum < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        return (int) sum;
+    }
+
     private static int sum(int n, int a0, int d) {
         return n * (2 * a0 + (n - 1) * d) / 2;
     }

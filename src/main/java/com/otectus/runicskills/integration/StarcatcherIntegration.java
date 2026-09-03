@@ -1,6 +1,7 @@
 package com.otectus.runicskills.integration;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.util.DurationMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.resources.ResourceLocation;
@@ -81,7 +82,7 @@ public class StarcatcherIntegration {
             if (player.getPersistentData().getLong(DAY_STAMP_TAG) != day + 1) { // +1 so day 0 != missing tag
                 player.getPersistentData().putLong(DAY_STAMP_TAG, day + 1);
                 player.addEffect(new MobEffectInstance(MobEffects.LUCK,
-                        Math.max(1, cfg.catchOfTheDayDuration) * 20, 0));
+                        DurationMath.secondsToTicks(Math.max(1, cfg.catchOfTheDayDuration)), 0));
             }
         }
 

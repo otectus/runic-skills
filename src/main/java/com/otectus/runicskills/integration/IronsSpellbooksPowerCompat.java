@@ -470,6 +470,9 @@ public final class IronsSpellbooksPowerCompat {
         try {
             if (entity instanceof AoeEntity aoe) return aoe.getDuration();
             if (entity instanceof BlackHole hole) return hole.getDuration();
+            if (entity instanceof com.otectus.runicskills.mixin.WallOfFireEntityAccess wall) {
+                return wall.runicskills$getLifetime();
+            }
             return -1;
         } catch (Throwable ignored) {
             return -1;
@@ -479,14 +482,22 @@ public final class IronsSpellbooksPowerCompat {
     /**
      * Sets an AoE spell entity's lifetime.
      *
-     * @return false when the entity has no settable duration. {@code WallOfFireEntity} is the
-     *         case that matters: Iron's Spells keeps its lifetime in a private field with no
-     *         setter, so Scorched Earth extends fire fields but not walls of fire.
+     * <p>{@code WallOfFireEntity} is not an {@code AoeEntity} and has no duration accessor of any
+     * kind, so it is reached through {@link com.otectus.runicskills.mixin.WallOfFireEntityAccess}.
+     * Its {@code lifetime} field counts <em>down</em> — {@code tick} discards the entity once
+     * {@code --lifetime} goes negative — so it is remaining ticks, the same quantity
+     * {@code AoeEntity.getDuration} reports, and needs no conversion.
+     *
+     * @return false when the entity has no settable duration.
      */
     public static boolean setAoeDuration(@Nullable Entity entity, int ticks) {
         try {
             if (entity instanceof AoeEntity aoe) { aoe.setDuration(ticks); return true; }
             if (entity instanceof BlackHole hole) { hole.setDuration(ticks); return true; }
+            if (entity instanceof com.otectus.runicskills.mixin.WallOfFireEntityAccess wall) {
+                wall.runicskills$setLifetime(ticks);
+                return true;
+            }
             return false;
         } catch (Throwable ignored) {
             return false;

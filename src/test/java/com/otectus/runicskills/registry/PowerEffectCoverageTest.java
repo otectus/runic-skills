@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry;
 
+import com.otectus.runicskills.support.SourceStripper;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -29,7 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * constant — that is where a dispatcher reads {@code isEquipped} and acts. The backlog in
  * {@code src/test/resources/power_no_effect_allowlist.txt} can only shrink.
  *
- * <p>Source-scanning rather than class-loading, so it stays Forge-free like its siblings.
+ * <p>Source-scanning rather than class-loading, so it stays Forge-free like its siblings. Comments
+ * and string literals are stripped by {@link SourceStripper} first, so a Power mentioned only in a
+ * javadoc line still counts as inert.
  */
 class PowerEffectCoverageTest {
 
@@ -76,7 +79,7 @@ class PowerEffectCoverageTest {
                     stack.add(child);
                 } else if (child.getName().endsWith(".java")
                         && !child.getName().equals("RegistryPowers.java")) {
-                    Matcher matcher = POWER_REF.matcher(read(child));
+                    Matcher matcher = POWER_REF.matcher(SourceStripper.strip(read(child)));
                     while (matcher.find()) referenced.add(matcher.group(1));
                 }
             }

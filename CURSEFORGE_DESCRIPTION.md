@@ -41,13 +41,11 @@ Your total level is the sum of all ten, and a server can cap it.
 **Perks — 445 abilities you pick.**
 Perks unlock at skill breakpoints and you toggle them on and off freely from the Skills screen. *Vein Miner* cascades an ore vein in one break. *Wormhole Storage* opens your ender chest from anywhere. *Haggler* talks villagers down. *Cleave* splashes damage into the crowd around your target. You have a limited number of active slots, so a build is about what you leave off as much as what you take.
 
-**Passives — 39 permanent stat upgrades.**
+**Passives — 38 permanent stat upgrades.**
 Pour levels into +Max Health, +Attack Damage, +Movement Speed, +Armour Toughness, +Projectile Damage and more. These use Minecraft's real attribute system, so they stack correctly with your gear and with other mods. Shift, Ctrl and Alt buy 5, 10, or as many as you can afford at once.
 
-**Powers — a second loadout, 56 of them live.**
-A separate set of slots from perks, on their own point budget: **5 Marks, 3 Seals and 1 Crown**, escalating in strength, with each tier requiring one of the tier below already slotted in the same school.
-
-Seventy-five Powers are registered. Thirty are cross-cutting — projectile, channel, summon, mobility, weapon-caster and utility — and work in **any** pack. The other forty-five belong to the nine magic schools and need Iron's Spells 'n Spellbooks. Of those, **nineteen are written against Iron's Spells events this build has never been able to execute, and they are marked inert**: not equippable, not shown in the panel, and costing you nothing. That leaves 56 you can actually use. Equip them from the Powers panel, reachable from a button on the Skills screen.
+**Powers — a second loadout, 75 of them live.**
+A separate set of slots from perks, on their own point budget: **5 Marks, 3 Seals and 1 Crown**, escalating in strength, with each tier requiring one of the tier below already slotted in the same school. Thirty are cross-cutting — projectile, channel, summon, mobility, weapon-caster and utility — and work in **any** pack. The other forty-five belong to the nine magic schools and each needs Iron's Spells 'n Spellbooks. All seventy-five execute their intended effects. Equip them from the Powers panel, reachable from a button on the Skills screen.
 
 **Titles — 77 badges for real milestones.**
 Kill the Ender Dragon, beat the Warden, max out a skill. Earn one and you can wear it above your name, where everyone on the server sees it. Titles are drawn as a name prefix and never overwrite your actual name, so nickname, chat and tab-list mods keep working.
@@ -107,9 +105,9 @@ Works in single-player, LAN and on dedicated servers, using the same jar everywh
 - **L2Tabs / Legendary Tabs (2.0+)** — the Skills tab joins their strip instead of drawing over it
 - **Farmer's Delight and the Let's Do series, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared**, and the gun mods (**TacZ**, **Scorched Guns 2**, **PointBlank (Vic's)**, **Crayfish Gun Mod**) — food, combat and firearm perks
 
-**Automatic gear gating** — **33 mods** get their weapons, tools and armour level-gated with no configuration at all, through a mix of hand-tuned tables and namespace scanning: Ice and Fire, Spartan Weaponry, Samurai Dynasty, Jewelcraft, Locks Reforged, Epic Knights, Aquaculture, Dragonsteel and many more. If a classification gets one item wrong, you can exempt that single item instead of switching a whole mod off.
+**Automatic gear gating** — 33 mod families get their weapons, tools and armour level-gated with no configuration at all, through a mix of hand-tuned rules and namespace scanning: Ice and Fire, Spartan Weaponry, Samurai Dynasty, Jewelcraft, Locks Reforged, Epic Knights, Aquaculture, Dragonsteel, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared, and many more. If a classification gets one item wrong, you can exempt that single item instead of switching a whole mod off.
 
-> **Stated honestly:** the perks and Powers that depend on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai Dynasty, Locks Reforged and Siege Machines compile against those mods, but have not yet been run against them end to end. They should work; they are not yet verified. The nineteen inert Powers above are the part of that backlog we can already prove, which is why they are switched off rather than advertised.
+> **Stated honestly:** the perks that depend on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai Dynasty, Locks Reforged and Siege Machines compile against those mods, but have not yet been run against them end to end. They should work; they are not yet verified.
 
 ---
 
@@ -152,6 +150,8 @@ Operator commands (permission level 2):
 | `/powers list\|view\|equip\|unequip` | Inspect and manage Powers |
 | `/updateskilllevel <level>` | Change the per-skill level cap. **Console or command block only**, because it rewrites the server's config file |
 
+All of these are also available under a `/runicskills` root, so `/runicskills respec <player>` works the same way as `/respec <player>`.
+
 Available to everyone:
 
 | Command | Does |
@@ -160,47 +160,35 @@ Available to everyone:
 
 ---
 
+## What's new in 2.0.4
+
+**Sixteen audit fixes:** passives that were stuck scaling, Powers that weren't firing, Scholar enchantment hiding now per-player, gem credit fixed, perk timers reliable across respawns, and duration values consistent.
+
+Wisdom XP Bonus and Enchanting Power passives now scale correctly. Arcane Reprieve and Continuous Flow, two mana-management Powers, are now reachable. Scholar's enchantment-name hiding works per-player. Break Speed passive respects other mods' speed modifiers. Perk timers use world time instead of server ticks.
+
+**2.0.3 and 2.0.4 pair freely** — no protocol, config or save-data change.
+
 ## What's new in 2.0.3
 
-**Every Iron's Spells school Power now does something.**
+**Every Iron's Spells school Power now does something.** Nineteen Powers that shipped with tooltips but no effect — Marrow Sense, Kinetic Affinity, Piercing Insight, Arcane Echo, Black Hole Resonance, Creeper Cascade Mastery, Fang Follow-Through, Shield Wall, Ember Trail, Heat Haze, Scorched Earth, Wings of Judgment, Frost Echo, Reforge the Shadow, Shatter, Conduit Mark, Static Cling, Blight Spread and Venomous Harvest — each now executes its intended effect. All magnitude, duration and chance values are datapack tunable.
 
-Nineteen Powers — Marrow Sense, Kinetic Affinity, Piercing Insight, Arcane Echo, Black Hole
-Resonance, Creeper Cascade Mastery, Fang Follow-Through, Shield Wall, Ember Trail, Heat Haze,
-Scorched Earth, Wings of Judgment, Frost Echo, Reforge the Shadow, Shatter, Conduit Mark, Static
-Cling, Blight Spread and Venomous Harvest — shipped with tooltips but no effect. Each now does what
-its tooltip says. One substitution: Iron's Spells has no "Ice Shadow" summon, so Reforge the Shadow
-buffs the Summon Polar Bear instead, and its tooltip says so. Every number is a datapack tunable.
-
-**2.0.2 and 2.0.3 pair freely** — no protocol, config or save-data change between them.
+**2.0.2 and 2.0.3 pair freely** — no protocol, config or save-data change.
 
 ## What's new in 2.0.2
 
-**A startup conflict with Highlighter that could misfire your inventory tabs.**
+**Inventory tab strip compatibility with other mods.** The tab strip's close reset now listens to Forge's screen-closing event instead of competing with other mods for the mixin, fixing a startup conflict with Highlighter and similar tab mods.
 
-The Skills tab strip cleared its click latch by overwriting the inventory screen's close method, and
-Mixin keeps exactly one such overwrite when a second mod declares the same one. Highlighter's won,
-ours was dropped, and every launch logged a `Method overwrite conflict` warning. The visible symptom
-was a click that closed the inventory arming a tab switch that then fired in the next screen to draw
-the strip. The reset now listens to Forge's own screen-closing event, so it composes with other mods
-instead of competing with them.
-
-**2.0.1 and 2.0.2 pair freely** — no protocol, config or save-data change between them.
+**2.0.1 and 2.0.2 pair freely** — no protocol, config or save-data change.
 
 ### Coming from 2.0.0 or earlier
 
 ⚠️ **The network protocol changed in 2.0.1 (10 → 11). A 2.0.0 client cannot join a 2.0.1+ server, or the reverse.** Worlds and configs carry over untouched.
 
-**2.0.1 — Powers you can finally see.**
+## What's new in 2.0.1
 
-- **Every Power has its own icon.** All seventy-five used to share one placeholder square, so the panel could not tell you what anything was until you read its name.
-- **A proc now happens somewhere.** It used to spawn a few generic sparkles around *you*, whatever the Power was and wherever it had actually landed — and nobody else could see it at all. A damage amplifier now brands **the mob**, a chain detonation draws at **each corpse**, and other players nearby see it too.
-- **You can tell Marks, Seals and Crowns apart at a glance — even in greyscale.** Tier is carried by the shape of the rune (broken ring, closed ring, triple ring), school by colour, motion and sound. Nothing depends on colour alone.
-- **A card above the hotbar names what fired**, at most three at a time, with repeats counting up instead of stacking. It still works with particles and sound switched off.
-- **Items were being locked by accident.** Keyword matching was too loose, so bowls, waxed copper blocks and fishing rods could end up gated behind a weapon skill in mods scanned automatically. Fixed — and you can now exempt a single item instead of disabling a whole mod's locks.
-- **Notice and skill-lock pop-ups vanished in half their configured time.**
-- **A core tooltip was broken in every non-English language**, showing a literal `%s` instead of the cost to level a skill.
+**Powers you can finally see.** Every Power has its own icon, not a placeholder square. A proc now shows where it landed — damage amplifiers brand the mob, chains draw at each corpse, and every client in range sees it. Tier is visible at a glance — Marks, Seals and Crowns are distinguishable in grayscale by their rune shape. A card names what fired above the hotbar. Item locks got more precise — keyword matching moved from substring to segment-based so bowls, waxed blocks and fishing rods are no longer accidentally gated.
 
-**2.0.0 was the big one** — 129 perks and 44 Powers that did nothing at all were implemented or removed, the server became authoritative over configuration, and player data stopped being destroyed by config edits. **1.9.0** fixed a bug where **dying wiped your character**. All of it is included.
+**2.0.0 was the big one.** 129 perks and 44 Powers that did nothing were implemented or removed. The server became authoritative over configuration. Player data stopped being destroyed by config edits. **1.9.0** fixed a bug where dying wiped your character. All of it is included.
 
 Full details for this and every previous release are in the [changelog](https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md).
 

@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry;
 
+import com.otectus.runicskills.support.SourceStripper;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -33,7 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *   <li>Every allowlist entry names a currently-registered perk — no dead names / typos.</li>
  * </ol>
  *
- * <p>Source-scanning (not class-loading) so it stays Forge-free, like {@code LockProviderRegistryTest}.</p>
+ * <p>Source-scanning (not class-loading) so it stays Forge-free, like {@code LockProviderRegistryTest}.
+ * Comments and string literals are stripped by {@link SourceStripper} first: a perk named only in a
+ * javadoc line is not an effect site, and counting one as such is how SCHOLAR passed this test while
+ * being inert (HIGH-03).</p>
  */
 class PerkEffectCoverageTest {
 
@@ -80,7 +84,7 @@ class PerkEffectCoverageTest {
             if (f.isDirectory()) {
                 collect(f, registered, out);
             } else if (f.getName().endsWith(".java") && !f.getName().equals("RegistryPerks.java")) {
-                Matcher m = PERK_REF.matcher(read(f));
+                Matcher m = PERK_REF.matcher(SourceStripper.strip(read(f)));
                 while (m.find()) {
                     String name = m.group(1);
                     if (registered.contains(name)) out.add(name);

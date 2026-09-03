@@ -137,6 +137,7 @@
  "config.cloth-config.runicskills.convergenceItemList.tooltip" : "How to add a convergence item: (to make it fair the convergence only will give you 1 result)\n<Mod name>§b:§f<Item name>§b#§f<Mod name result>§b:§f<Item name result>",
 
  "screen.skill.title" : "Skills",
+ "screen.skill.mortal_strike" : "Mortal Strike",
  "screen.skill.level" : "Lvl: %s / Exp: %s",
  "screen.skill.experience" : "%s/%s",
 

@@ -47,8 +47,9 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
             case "MixTargetFinder"           -> isModPresent("bettercombat");
             case "MixGunItem"                -> isModPresent("pointblank");
             case "MixTrueInvisibilityEffect", "MixAbstractMagicProjectile",
-                 "MixCreeperHeadProjectile" -> isModPresent("irons_spellbooks");
-            case "MixSalvagingMenu", "MixReforgingResultSlot" -> isModPresent("apotheosis");
+                 "MixCreeperHeadProjectile", "WallOfFireEntityAccess" -> isModPresent("irons_spellbooks");
+            case "MixSalvagingMenu", "MixReforgingResultSlot",
+                 "MixApothEnchantmentMenu" -> isModPresent("apotheosis");
             default                          -> true;
         };
     }

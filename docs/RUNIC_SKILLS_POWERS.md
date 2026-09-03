@@ -124,7 +124,7 @@ require_skill: { magery: 90 }, require_total_skill: 500   # Crown
 require_power: runic_skills:fire/mark_01        # chained prerequisite
 ```
 
-All gates are JSON in `data/runic_skills/powers/<id>.json`, codec-driven, reload-safe.
+All gates are JSON in `data/runicskills/powers/<id>.json`, codec-driven, reload-safe. Overrides for IDs not registered in the Runic Power registry are ignored.
 
 ---
 

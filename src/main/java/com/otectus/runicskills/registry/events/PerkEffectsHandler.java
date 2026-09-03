@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
@@ -73,19 +74,31 @@ public class PerkEffectsHandler {
     // ── helpers ────────────────────────────────────────────────────────────────
     private static HandlerCommonConfig cfg() { return HandlerCommonConfig.HANDLER.instance(); }
 
-    /** Server tick of each player's most recent incoming hit — drives BATTLE_RECOVERY / SAMURAI_RESOLVE. */
-    private static final java.util.Map<java.util.UUID, Integer> LAST_HURT_TICK = new java.util.concurrent.ConcurrentHashMap<>();
-    /** Server tick of each player's most recent dodge (DODGE_ROLL/EVASION/SPELL_DODGE) — consumed by PHANTOM_STRIKE. */
-    private static final java.util.Map<java.util.UUID, Integer> LAST_DODGE_TICK = new java.util.concurrent.ConcurrentHashMap<>();
-    /** Server tick of each player's most recent mob kill — drives BLOODLUST's attack-speed window. */
-    private static final java.util.Map<java.util.UUID, Integer> LAST_KILL_TICK = new java.util.concurrent.ConcurrentHashMap<>();
-    /** Tick until which MYTHICAL_BERSERKER's bonus-damage window is active (0 = inactive). */
-    private static final java.util.Map<java.util.UUID, Integer> BERSERK_UNTIL = new java.util.concurrent.ConcurrentHashMap<>();
-    /** Earliest tick a player may re-trigger a survive-lethal perk (UNDYING_WILL / MYTHICAL_BERSERKER). */
-    private static final java.util.Map<java.util.UUID, Integer> SURVIVE_COOLDOWN = new java.util.concurrent.ConcurrentHashMap<>();
+    // Every stamp below is level.getGameTime(), not Player.tickCount. tickCount restarts at zero
+    // on respawn and on every dimension change, which made each of these windows either snap shut
+    // or hang open for the rest of the session; game time is one monotonic clock for the world.
+    // Read them through GameTimeWindow, which owns the "no usable stamp" rule.
+
+    /** Game time of each player's most recent incoming hit — drives BATTLE_RECOVERY / SAMURAI_RESOLVE. */
+    private static final java.util.Map<java.util.UUID, Long> LAST_HURT_TICK = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Game time of each player's most recent dodge (DODGE_ROLL/EVASION/SPELL_DODGE) — consumed by PHANTOM_STRIKE. */
+    private static final java.util.Map<java.util.UUID, Long> LAST_DODGE_TICK = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Game time of each player's most recent mob kill — drives BLOODLUST's attack-speed window. */
+    private static final java.util.Map<java.util.UUID, Long> LAST_KILL_TICK = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Game time MYTHICAL_BERSERKER's bonus-damage window opened; it runs {@link #BERSERK_WINDOW} ticks. */
+    private static final java.util.Map<java.util.UUID, Long> BERSERK_SINCE = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Game time a survive-lethal perk (UNDYING_WILL / MYTHICAL_BERSERKER) last triggered. */
+    private static final java.util.Map<java.util.UUID, Long> SURVIVE_COOLDOWN = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** MYTHICAL_BERSERKER's post-survival damage window, in ticks. */
+    private static final long BERSERK_WINDOW = 100L;
+    /** Ticks a player must wait before a survive-lethal perk may fire again (~60s). */
+    private static final long SURVIVE_LOCKOUT = 1200L;
     /** ADAPTATION: the last damage-source key a player took, and how many consecutive hits from it. */
     private static final java.util.Map<java.util.UUID, String> ADAPT_SOURCE = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.Map<java.util.UUID, Integer> ADAPT_COUNT = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Sub-point XP owed to a player by the xp_bonus attribute, banked until it reaches a whole point. */
+    private static final java.util.Map<java.util.UUID, Double> XP_CARRY = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * Frees all per-player combat memory. Called from PlayerLifecycleHandler on logout — without
@@ -97,15 +110,49 @@ public class PerkEffectsHandler {
         LAST_HURT_TICK.remove(id);
         LAST_DODGE_TICK.remove(id);
         LAST_KILL_TICK.remove(id);
-        BERSERK_UNTIL.remove(id);
+        BERSERK_SINCE.remove(id);
         SURVIVE_COOLDOWN.remove(id);
         ADAPT_SOURCE.remove(id);
         ADAPT_COUNT.remove(id);
+        LAST_CRIT_TICK.remove(id);
+        XP_CARRY.remove(id);
+    }
+
+    /**
+     * Clears the in-combat windows a death should end, and nothing else. Called from
+     * PlayerLifecycleHandler when a clone was a death.
+     *
+     * <p>{@link #SURVIVE_COOLDOWN} is deliberately kept: a cooldown that reset on death would make
+     * dying the way to ready the survive-lethal perk again. {@link #XP_CARRY} is kept because it is
+     * banked progression, not a combat state.
+     */
+    public static void clearCombatWindows(java.util.UUID id) {
+        if (id == null) return;
+        LAST_HURT_TICK.remove(id);
+        LAST_DODGE_TICK.remove(id);
+        LAST_KILL_TICK.remove(id);
+        BERSERK_SINCE.remove(id);
+        ADAPT_SOURCE.remove(id);
+        ADAPT_COUNT.remove(id);
+        LAST_CRIT_TICK.remove(id);
+    }
+
+    /** Drops every player's state, so a single-player world does not leak into the next one. */
+    public static void clearAll() {
+        LAST_HURT_TICK.clear();
+        LAST_DODGE_TICK.clear();
+        LAST_KILL_TICK.clear();
+        BERSERK_SINCE.clear();
+        SURVIVE_COOLDOWN.clear();
+        ADAPT_SOURCE.clear();
+        ADAPT_COUNT.clear();
+        LAST_CRIT_TICK.clear();
+        XP_CARRY.clear();
     }
 
     /** True while a player is inside BLOODLUST's post-kill attack-speed window. */
     private static boolean inKillWindow(Player p) {
-        return p.tickCount - LAST_KILL_TICK.getOrDefault(p.getUUID(), -1000) < 100;
+        return GameTimeWindow.elapsed(p.level().getGameTime(), LAST_KILL_TICK.get(p.getUUID())) < 100;
     }
 
     /** True when the perk is registered (non-null) and enabled for this player. */
@@ -182,8 +229,8 @@ public class PerkEffectsHandler {
     public void onIncomingDamage(LivingHurtEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (player instanceof FakePlayer) return;
-        int prevHurtTick = LAST_HURT_TICK.getOrDefault(player.getUUID(), -10000);
-        LAST_HURT_TICK.put(player.getUUID(), player.tickCount);
+        Long prevHurtTick = LAST_HURT_TICK.get(player.getUUID());
+        LAST_HURT_TICK.put(player.getUUID(), player.level().getGameTime());
         if (player.isCreative()) return;
         DamageSource src = event.getSource();
         HandlerCommonConfig c = cfg();
@@ -195,7 +242,7 @@ public class PerkEffectsHandler {
             || (on(RegistryPerks.EVASION, player) && player.getArmorValue() < 15 && player.getRandom().nextDouble() < c.evasionPercent / 100.0)
             || (on(RegistryPerks.SPELL_DODGE, player) && src.is(DamageTypes.MAGIC) && player.getRandom().nextDouble() < c.spellDodgePercent / 100.0);
         if (dodged) {
-            LAST_DODGE_TICK.put(player.getUUID(), player.tickCount);
+            LAST_DODGE_TICK.put(player.getUUID(), player.level().getGameTime());
             event.setCanceled(true);
             return;
         }
@@ -242,7 +289,8 @@ public class PerkEffectsHandler {
             reduction += (float) (c.ancientGuardianPercent / 100.0);
         // MONSTER_COMPENDIUM is an OUTGOING-damage perk; handled in onOutgoingDamage.
         // SAMURAI_RESOLVE — brief reduction window after being hit (uses the prior hit's tick).
-        if (on(RegistryPerks.SAMURAI_RESOLVE, player) && prevHurtTick > 0 && player.tickCount - prevHurtTick <= 60)
+        if (on(RegistryPerks.SAMURAI_RESOLVE, player)
+                && GameTimeWindow.within(player.level().getGameTime(), prevHurtTick, 60))
             reduction += (float) (c.samuraiResolvePercent / 100.0);
         // SHIELD_WALL — extra reduction while actively blocking.
         if (on(RegistryPerks.SHIELD_WALL, player) && player.isBlocking())
@@ -744,7 +792,7 @@ public class PerkEffectsHandler {
         if (on(RegistryPerks.SECOND_WIND, player) && player.getHealth() < player.getMaxHealth() * 0.25f)
             player.heal((float) val(RegistryPerks.SECOND_WIND, player, 0));
         if (on(RegistryPerks.BATTLE_RECOVERY, player)
-                && player.tickCount - LAST_HURT_TICK.getOrDefault(player.getUUID(), -1000) > 100
+                && GameTimeWindow.elapsed(player.level().getGameTime(), LAST_HURT_TICK.get(player.getUUID())) > 100
                 && player.getHealth() < player.getMaxHealth())
             player.heal((float) val(RegistryPerks.BATTLE_RECOVERY, player, 0));
         if (on(RegistryPerks.ARCANE_BARRIER, player)) {
@@ -804,6 +852,37 @@ public class PerkEffectsHandler {
         // COIN_FLIP — chance for a burst of bonus XP from an attacked mob.
         if (on(RegistryPerks.COIN_FLIP, player) && player.getRandom().nextDouble() < c.coinFlipPercent / 100.0)
             event.setDroppedExperience(event.getDroppedExperience() + Math.max(1, xp / 2));
+    }
+
+    /**
+     * Pays out the {@code xp_bonus} attribute — the XP Bonus passive's only effect, which until
+     * 2.0.4 was registered, synced and displayed while nothing ever read it (HIGH-04).
+     *
+     * <p>{@code XpChange} is the one place every award passes through, and rewriting its amount is
+     * how the bonus reaches the player. Note what is <em>not</em> done here: calling
+     * {@code giveExperiencePoints} to add the difference would re-post this same event and recurse.</p>
+     *
+     * <p>The sub-point remainder is banked in {@link #XP_CARRY} rather than truncated, because a
+     * 25% bonus on the 1-point awards that dominate normal play truncates to exactly zero every
+     * time — a passive that reads as "+25% XP" and pays nothing.</p>
+     */
+    @SubscribeEvent
+    public void onXpChange(PlayerXpEvent.XpChange event) {
+        Player player = event.getEntity();
+        if (player == null || player.level().isClientSide || player instanceof FakePlayer) return;
+        int amount = event.getAmount();
+        if (amount <= 0) return;
+
+        double bonus = player.getAttributeValue(
+                com.otectus.runicskills.registry.RegistryAttributes.XP_BONUS.get());
+        java.util.UUID id = player.getUUID();
+        double carry = XP_CARRY.getOrDefault(id, 0.0);
+        if (bonus <= 0.0 && carry <= 0.0) return;
+
+        double total = com.otectus.runicskills.common.util.ExperienceMath.bonusTotal(amount, bonus, carry);
+        int whole = com.otectus.runicskills.common.util.ExperienceMath.wholePoints(total);
+        XP_CARRY.put(id, com.otectus.runicskills.common.util.ExperienceMath.remainder(total));
+        if (whole != amount) event.setAmount(whole);
     }
 
     @SubscribeEvent
@@ -1082,12 +1161,13 @@ public class PerkEffectsHandler {
             if (on(RegistryPerks.SPARTAN_MARKSMANSHIP, player) && ns(held, "spartanweaponry")) bonus += c.spartanMarksmanshipPercent / 100.0;
             // PHANTOM_STRIKE — first attack after a dodge hits harder (consumes the dodge window).
             if (on(RegistryPerks.PHANTOM_STRIKE, player)
-                    && player.tickCount - LAST_DODGE_TICK.getOrDefault(player.getUUID(), -1000) < 40) {
+                    && GameTimeWindow.elapsed(player.level().getGameTime(), LAST_DODGE_TICK.get(player.getUUID())) < 40) {
                 bonus += c.phantomStrikePercent / 100.0;
                 LAST_DODGE_TICK.remove(player.getUUID());
             }
             // MYTHICAL_BERSERKER — bonus damage during the post-survival window.
-            if (on(RegistryPerks.MYTHICAL_BERSERKER, player) && player.tickCount < BERSERK_UNTIL.getOrDefault(player.getUUID(), 0))
+            if (on(RegistryPerks.MYTHICAL_BERSERKER, player) && GameTimeWindow.elapsed(
+                    player.level().getGameTime(), BERSERK_SINCE.get(player.getUUID())) < BERSERK_WINDOW)
                 bonus += c.mythicalBerserkerPercent / 100.0;
             // RUNECRAFTER — "Runic items gain bonus stats". The stat a weapon has is its damage,
             // and runic gear is identified the same way Runic Might identifies it: by the item's
@@ -1320,18 +1400,19 @@ public class PerkEffectsHandler {
         // follows carries no crit flag, and this handler runs immediately before it for the same
         // attack — so the tick number is an exact marker, not a heuristic.
         if (event.isVanillaCritical() || event.getResult() == Event.Result.ALLOW) {
-            LAST_CRIT_TICK.put(player.getUUID(), player.tickCount);
+            LAST_CRIT_TICK.put(player.getUUID(), player.level().getGameTime());
         }
     }
 
-    /** Tick of each player's most recent critical hit, for perks that require one. */
-    private static final java.util.Map<java.util.UUID, Integer> LAST_CRIT_TICK =
+    /** Game time of each player's most recent critical hit, for perks that require one. */
+    private static final java.util.Map<java.util.UUID, Long> LAST_CRIT_TICK =
             new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Whether the swing being resolved right now was a critical hit. */
     private static boolean isCriticalSwing(Player player) {
-        Integer at = LAST_CRIT_TICK.get(player.getUUID());
-        return at != null && at == player.tickCount;
+        // A same-tick marker: the crit and the damage event it belongs to resolve on one game tick.
+        Long at = LAST_CRIT_TICK.get(player.getUUID());
+        return at != null && at == player.level().getGameTime();
     }
 
     // ── bow / crossbow draw speed ─────────────────────────────────────────────────────
@@ -1417,7 +1498,7 @@ public class PerkEffectsHandler {
     @SubscribeEvent
     public void onDeath(LivingDeathEvent event) {
         if (event.getSource().getEntity() instanceof Player killer && !(killer instanceof FakePlayer)) {
-            if (on(RegistryPerks.BLOODLUST, killer)) LAST_KILL_TICK.put(killer.getUUID(), killer.tickCount);
+            if (on(RegistryPerks.BLOODLUST, killer)) LAST_KILL_TICK.put(killer.getUUID(), killer.level().getGameTime());
             // STALWART_STRIKER — "Killing dungeon mobs restores health", so the kill has to happen
             // in one. Any hostile anywhere was the earlier approximation; the shipped
             // runicskills:dungeons structure tag now answers the question properly.
@@ -1428,12 +1509,13 @@ public class PerkEffectsHandler {
         }
         if (event.getEntity() instanceof Player player && !(player instanceof FakePlayer)) {
             java.util.UUID uid = player.getUUID();
-            if (player.tickCount < SURVIVE_COOLDOWN.getOrDefault(uid, 0)) return; // not a permanent totem
+            long now = player.level().getGameTime();
+            if (!GameTimeWindow.ready(now, SURVIVE_COOLDOWN.get(uid), SURVIVE_LOCKOUT)) return; // not a permanent totem
             HandlerCommonConfig c = cfg();
             boolean survived = false;
             if (on(RegistryPerks.MYTHICAL_BERSERKER, player)) {
                 survived = true;
-                BERSERK_UNTIL.put(uid, player.tickCount + 100);
+                BERSERK_SINCE.put(uid, now);
             } else if (on(RegistryPerks.UNDYING_WILL, player)
                     && player.getRandom().nextDouble() < c.undyingWillPercent / 100.0) {
                 survived = true;
@@ -1443,7 +1525,7 @@ public class PerkEffectsHandler {
                 player.setHealth(1.0f);
                 player.removeAllEffects();
                 player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1));
-                SURVIVE_COOLDOWN.put(uid, player.tickCount + 1200); // ~60s lockout
+                SURVIVE_COOLDOWN.put(uid, now);
             }
         }
     }

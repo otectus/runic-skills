@@ -1,5 +1,6 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
@@ -32,8 +33,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FortunePerkHandler {
 
-    /** Earliest tick at which each player's Chaos Roll may fire again. */
-    private static final Map<UUID, Integer> CHAOS_READY_AT = new ConcurrentHashMap<>();
+    /**
+     * Game time at which each player's Chaos Roll last fired.
+     *
+     * <p>{@code level.getGameTime()}, not {@code Player.tickCount}: tickCount restarts at zero on
+     * respawn and on every dimension change, so a cooldown stamped in it came back ready the
+     * moment the player died or stepped through a portal.
+     */
+    private static final Map<UUID, Long> CHAOS_READY_AT = new ConcurrentHashMap<>();
 
     /**
      * How long Chaos Roll waits between blessings.
@@ -55,9 +62,24 @@ public class FortunePerkHandler {
             MobEffects.NIGHT_VISION, MobEffects.JUMP,
     };
 
+    /**
+     * Frees one player's Chaos Roll cooldown.
+     *
+     * <p>Deliberately not called on death: a cooldown that death reset would make dying the
+     * cheapest way to re-roll a blessing.
+     */
+    public static void clearPlayer(UUID id) {
+        if (id != null) CHAOS_READY_AT.remove(id);
+    }
+
+    /** Drops every player's cooldown, so a single-player world does not leak into the next one. */
+    public static void clearAll() {
+        CHAOS_READY_AT.clear();
+    }
+
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        CHAOS_READY_AT.remove(event.getEntity().getUUID());
+        clearPlayer(event.getEntity().getUUID());
     }
 
     // ── Jeweler's Eye ───────────────────────────────────────────────────────────────────────
@@ -132,13 +154,13 @@ public class FortunePerkHandler {
         if (player == null || player.level().isClientSide() || player instanceof FakePlayer) return;
         if (!enabled(RegistryPerks.CHAOS_ROLL, player)) return;
 
-        Integer readyAt = CHAOS_READY_AT.get(player.getUUID());
-        if (readyAt != null && player.tickCount < readyAt) return;
+        long now = player.level().getGameTime();
+        if (!GameTimeWindow.ready(now, CHAOS_READY_AT.get(player.getUUID()), CHAOS_COOLDOWN_TICKS)) return;
 
         double chance = HandlerCommonConfig.HANDLER.instance().chaosRollPercent / 100.0;
         if (chance <= 0 || player.getRandom().nextDouble() >= chance) return;
 
-        CHAOS_READY_AT.put(player.getUUID(), player.tickCount + CHAOS_COOLDOWN_TICKS);
+        CHAOS_READY_AT.put(player.getUUID(), now);
         MobEffect blessing = BLESSINGS[player.getRandom().nextInt(BLESSINGS.length)];
         player.addEffect(new MobEffectInstance(blessing, CHAOS_DURATION_TICKS, 0, true, true));
     }

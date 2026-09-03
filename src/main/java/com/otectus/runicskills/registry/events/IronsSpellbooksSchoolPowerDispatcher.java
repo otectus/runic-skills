@@ -39,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -95,8 +96,15 @@ public class IronsSpellbooksSchoolPowerDispatcher {
     /** Scorched Earth: fire-field / wall-of-fire entity id → the player who cast it. */
     private static final Map<Integer, UUID> FIRE_FIELD_OWNERS = new ConcurrentHashMap<>();
 
-    /** Reforge the Shadow: summoned bear uuid → the player who summoned it. */
+    /**
+     * Reforge the Shadow: summoned bear uuid → the player who summoned it. A cache only: the
+     * record that counts is {@link #REFORGED_OWNER_TAG} on the bear's persistent data, which
+     * survives a restart. This map is refilled as reforged bears rejoin a level.
+     */
     private static final Map<UUID, UUID> REFORGED_BEARS = new ConcurrentHashMap<>();
+
+    /** Persistent-data key holding the summoner of a reforged bear. */
+    private static final String REFORGED_OWNER_TAG = "runicskills:reforged_owner";
 
     /** Ember Trail: player → the block they stood on last tick, which is what gets lit. */
     private static final Map<UUID, BlockPos> EMBER_LAST_POS = new ConcurrentHashMap<>();
@@ -499,6 +507,19 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         }
     }
 
+    /**
+     * Drops a reforged bear from the cache when it leaves the level — unloaded chunk, dimension
+     * change, or shutdown. Nothing is lost: {@link #REFORGED_OWNER_TAG} stays on the entity, and
+     * the entry is rebuilt from it the next time the bear joins a level.
+     */
+    @SubscribeEvent
+    public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (event.getLevel().isClientSide) return;
+        if (!IronsSpellbooksPowerCompat.KIND_POLAR_BEAR_SUMMON
+                .equals(IronsSpellbooksPowerCompat.entityKind(event.getEntity()))) return;
+        REFORGED_BEARS.remove(event.getEntity().getUUID());
+    }
+
     /** Black Hole Resonance (Ender Seal), first half — remember whose hole this is. */
     private void trackBlackHole(Entity hole) {
         if (!(IronsSpellbooksPowerCompat.ownerOf(hole) instanceof ServerPlayer player)) return;
@@ -601,8 +622,13 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
         AttributeInstance maxHealth = livingBear.getAttribute(Attributes.MAX_HEALTH);
         if (maxHealth == null) return;
-        // addPermanentModifier throws on a duplicate id, and a summon that reloads from disk comes
-        // back through this event with the modifier already on it.
+        // A bear that reloads from disk comes back through this event already reforged. Its owner
+        // is on its persistent data, so the cache is refilled here instead of being lost to the
+        // restart; addPermanentModifier would throw on the duplicate id anyway.
+        if (bear.getPersistentData().hasUUID(REFORGED_OWNER_TAG)) {
+            REFORGED_BEARS.put(bear.getUUID(), bear.getPersistentData().getUUID(REFORGED_OWNER_TAG));
+            return;
+        }
         if (maxHealth.getModifier(RunicAttributeModifiers.REFORGE_SHADOW_MAX_HEALTH) != null) return;
 
         Power p = RegistryPowers.REFORGE_THE_SHADOW.get();
@@ -612,6 +638,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
                 bonus, AttributeModifier.Operation.MULTIPLY_TOTAL));
         livingBear.setHealth(livingBear.getMaxHealth());
         REFORGED_BEARS.put(bear.getUUID(), player.getUUID());
+        bear.getPersistentData().putUUID(REFORGED_OWNER_TAG, player.getUUID());
         fireProc(player, p, bear);
     }
 
@@ -831,7 +858,11 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
     /** Reforge the Shadow, second half — a reforged bear dies in a burst of cold. */
     private void reforgeTheShadowOnBearDeath(ServerLevel level, LivingEntity bear, long now) {
-        UUID ownerId = REFORGED_BEARS.remove(bear.getUUID());
+        // Persistent data first: it outlives both the cache and a server restart.
+        UUID cached = REFORGED_BEARS.remove(bear.getUUID());
+        UUID ownerId = bear.getPersistentData().hasUUID(REFORGED_OWNER_TAG)
+                ? bear.getPersistentData().getUUID(REFORGED_OWNER_TAG)
+                : cached;
         if (ownerId == null) return;
         ServerPlayer player = level.getServer().getPlayerList().getPlayer(ownerId);
 

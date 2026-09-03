@@ -453,7 +453,6 @@ tasks.register('checkSidedImports') {
             'src/main/java/com/otectus/runicskills/config/controller',
             'src/main/java/com/otectus/runicskills/config/StringListGroup.java',
             'src/main/java/com/otectus/runicskills/config/LockItemListGroup.java',
-            'src/main/java/com/otectus/runicskills/config/ItemListGroup.java',
     ].collect { file(it).canonicalPath }
 
     // Configuration-time inputs so the task is up-to-date aware.

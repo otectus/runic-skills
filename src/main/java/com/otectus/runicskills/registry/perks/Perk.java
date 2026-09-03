@@ -233,6 +233,9 @@ public class Perk {
         String parameter = df.format(parameterValue);
         if (type.equals(ValueType.MODIFIER)) parameter = "§cx" + parameter;
         if (type.equals(ValueType.DURATION)) parameter = "§9" + parameter + "s";
+        // TICKS prints bare: the only lang strings that use it already write "ticks" after the
+        // placeholder, so appending a unit here would read "60 ticks ticks" in 17 locales.
+        if (type.equals(ValueType.TICKS)) parameter = "§9" + parameter;
         if (type.equals(ValueType.AMPLIFIER)) parameter = "§6+" + parameter;
         if (type.equals(ValueType.PERCENT)) parameter = "§2" + parameter + "%";
         if (type.equals(ValueType.BOOST)) parameter = "§d" + Utils.intToRoman(Integer.parseInt(parameter));

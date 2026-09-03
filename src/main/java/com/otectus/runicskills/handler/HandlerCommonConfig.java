@@ -211,7 +211,7 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean dropLockedItems = false;
 
-    @SerialEntry(comment = "If true, enchantment names are globally hidden in tooltips (replaced with a 'requires Scholar' placeholder line) until the Scholar perk is enabled in the disabledPerks list. Default false: enchantment names always render normally; the Scholar perk's only effect is its XP/enchanting bonus. Server-authoritative; mirrored to clients on join. Set to true if your modpack wants the historical hide-until-perk behaviour.")
+    @SerialEntry(comment = "If true, enchantment names are hidden in tooltips (replaced with a 'requires Scholar' placeholder line) for players who have not taken the Scholar perk; players who have taken it read them normally. Default false: enchantment names always render for everyone, and Scholar is then a no-op and is treated as disabled. This gate is the Scholar perk's whole effect - it grants no XP or enchanting bonus. Unrelated to the disabledPerks list, which disables perks generally. Server-authoritative; mirrored to clients on join.")
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableScholarEnchantmentHiding = false;

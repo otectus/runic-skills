@@ -126,4 +126,55 @@ class ExperienceMathTest {
         assertEquals(0, ExperienceMath.getLevelForExperience(newTotal));
         assertEquals(0f, ExperienceMath.progressForTotal(newTotal, 0));
     }
+
+    // -- xp_bonus attribute payout (HIGH-04) ---------------------------------------------------
+
+    @Test
+    void quarterBonusOnHundredSinglePointAwardsPaysTwentyFive() {
+        // The shape that matters: 100 awards of 1 point at +25%. Truncating each award would pay
+        // exactly nothing, which is what the passive did before it was wired up.
+        int total = 0;
+        double carry = 0.0;
+        for (int i = 0; i < 100; i++) {
+            double value = ExperienceMath.bonusTotal(1, 0.25, carry);
+            total += ExperienceMath.wholePoints(value);
+            carry = ExperienceMath.remainder(value);
+        }
+        assertEquals(125, total);
+    }
+
+    @Test
+    void zeroBonusIsIdentity() {
+        assertEquals(7, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(7, 0.0, 0.0)));
+    }
+
+    @Test
+    void negativeOrNonFiniteBonusNeverReducesTheAward() {
+        assertEquals(7, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(7, -0.5, 0.0)));
+        assertEquals(7, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(7, Double.NaN, 0.0)));
+        assertEquals(7, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(7,
+                Double.POSITIVE_INFINITY, 0.0)));
+    }
+
+    @Test
+    void nonPositiveAwardsAreLeftAlone() {
+        assertEquals(0, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(0, 0.25, 0.0)));
+        assertEquals(0, ExperienceMath.wholePoints(ExperienceMath.bonusTotal(-5, 0.25, 0.0)));
+    }
+
+    @Test
+    void remainderIsAlwaysASubPointFraction() {
+        double value = ExperienceMath.bonusTotal(1, 0.25, 0.0);
+        assertEquals(0.25, ExperienceMath.remainder(value), 1e-9);
+        assertEquals(0.0, ExperienceMath.remainder(ExperienceMath.bonusTotal(4, 0.25, 0.0)), 1e-9);
+    }
+
+    @Test
+    void hugeBonusSaturatesInsteadOfWrapping() {
+        assertEquals(Integer.MAX_VALUE,
+                ExperienceMath.wholePoints(ExperienceMath.bonusTotal(Integer.MAX_VALUE, 1000.0, 0.0)));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.saturatingAdd(Integer.MAX_VALUE, 10L));
+        assertEquals(Integer.MIN_VALUE, ExperienceMath.saturatingAdd(Integer.MIN_VALUE, -10L));
+        assertEquals(15, ExperienceMath.saturatingAdd(5, 10L));
+    }
 }

@@ -1,6 +1,7 @@
 package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.registry.RegistryAttributes;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -54,6 +56,47 @@ public abstract class MixEnchantmentMenu {
     private void runicskills$captureUser(int containerId, Inventory inventory,
                                          ContainerLevelAccess access, CallbackInfo ci) {
         this.runicskills$user = inventory.player;
+    }
+
+    /**
+     * The Enchanting Power passive, which had a registered attribute, a texture and a tooltip and
+     * was read by nothing (HIGH-05).
+     *
+     * <p>Vanilla derives the three offers from one number — the bookshelf count — inside the
+     * {@code slotsChanged} lambda, and hands it to {@code getEnchantmentCost} as the {@code power}
+     * argument. Adding the passive there is what "counts as extra bookshelves" means: the costs,
+     * the clue enchantments and the final enchantment list all follow from it, so a single argument
+     * change moves every downstream number consistently.
+     *
+     * <p>The synthetic lambda is the only place power feeds offer generation, hence the target. Both
+     * of its names are spelled out because the annotation processor cannot help here: synthetic
+     * methods are invisible to {@code javax.lang.model}, so no refmap entry is generated for the
+     * selector and a single name would resolve in exactly one of the two environments. The
+     * development name came from {@code javap -p} on the mapped {@code EnchantmentMenu}; the
+     * production name is its SRG counterpart, {@code m_39483_}, read from
+     * {@code srg_to_official_1.20.1.tsrg} against the same descriptor. {@code remap = false} keeps
+     * the processor from rewriting the selector; the {@code @At} target is remapped as usual.
+     *
+     * <p>Vanilla clamps power to 15 immediately afterwards, so the passive only matters below a
+     * full shelf ring. Clamping here as well, to the attribute's own 0..1024 range, keeps a hostile
+     * config from overflowing the addition.
+     */
+    @ModifyArg(method = {
+                    "lambda$slotsChanged$0(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+                    "m_39483_(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"
+            },
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I",
+                    remap = true),
+            index = 2,
+            remap = false,
+            require = 1)
+    private int runicskills$addEnchantingPower(int power) {
+        Player player = this.runicskills$user;
+        if (player == null) return power;
+        double bonus = player.getAttributeValue(RegistryAttributes.ENCHANTING_POWER.get());
+        if (!(bonus > 0)) return power;
+        return power + (int) Math.min(1024.0, Math.floor(bonus));
     }
 
     /**

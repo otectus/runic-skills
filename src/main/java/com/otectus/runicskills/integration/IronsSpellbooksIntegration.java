@@ -2,6 +2,9 @@ package com.otectus.runicskills.integration;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.util.DurationMath;
+import com.otectus.runicskills.common.util.GameTimeWindow;
+import com.otectus.runicskills.common.util.TransientModifiers;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.NoticeOverlayCP;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -32,6 +35,8 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -135,11 +140,11 @@ public class IronsSpellbooksIntegration {
         if (RegistryPerks.SPELLWEAVER != null && RegistryPerks.SPELLWEAVER.get().isEnabled(player)) {
             UUID uuid = player.getUUID();
             long now = player.level().getGameTime();
-            int windowTicks = HandlerCommonConfig.HANDLER.instance().spellweaverComboWindow * 20;
+            int windowTicks = DurationMath.secondsToTicks(HandlerCommonConfig.HANDLER.instance().spellweaverComboWindow);
             int required = Math.max(2, HandlerCommonConfig.HANDLER.instance().spellweaverComboCount);
 
-            long last = spellweaverLastCast.getOrDefault(uuid, Long.MIN_VALUE);
-            int count = (now - last <= windowTicks) ? spellweaverCount.getOrDefault(uuid, 0) + 1 : 1;
+            int count = GameTimeWindow.within(now, spellweaverLastCast.get(uuid), windowTicks)
+                    ? spellweaverCount.getOrDefault(uuid, 0) + 1 : 1;
             spellweaverLastCast.put(uuid, now);
 
             if (count >= required) {
@@ -167,41 +172,45 @@ public class IronsSpellbooksIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellDamage(SpellDamageEvent event) {
         if (!isActive()) return;
-        // Spell Damage Scaling: if the caster is a player, scale damage up
-        if (HandlerCommonConfig.HANDLER.instance().ironsEnableSpellDamageScaling) {
-            Entity sourceEntity = event.getSpellDamageSource().getEntity();
-            if (sourceEntity instanceof Player caster && !caster.isCreative()) {
-                SkillCapability casterCap = SkillCapability.get(caster);
-                if (casterCap != null) {
+        // Three independent bonuses on one event, each behind its own switch. All three used to
+        // sit inside ironsEnableSpellDamageScaling, so turning off the Magic-level scaling also
+        // turned off the Wisdom synergy and the school bonus — neither of which that switch
+        // describes, and both of which have a switch of their own (MEDIUM-02).
+        Entity sourceEntity = event.getSpellDamageSource().getEntity();
+        if (sourceEntity instanceof Player caster && !caster.isCreative()) {
+            SkillCapability casterCap = SkillCapability.get(caster);
+            if (casterCap != null) {
+                // Spell Damage Scaling: if the caster is a player, scale damage up
+                if (HandlerCommonConfig.HANDLER.instance().ironsEnableSpellDamageScaling) {
                     int magicLevel = casterCap.getSkillLevel(RegistrySkills.MAGIC.get());
                     float bonus = (magicLevel - 1) * HandlerCommonConfig.HANDLER.instance().ironsSpellDamageScalePerLevel;
                     if (bonus > 0) {
                         event.setAmount(event.getAmount() * (1.0f + bonus));
                     }
+                }
 
-                    // Cross-mod synergy: Wisdom adds a flat spell damage bonus
-                    if (HandlerCommonConfig.HANDLER.instance().enableWisdomSpellDamageBonus) {
-                        int wisdomLevel = casterCap.getSkillLevel(RegistrySkills.WISDOM.get());
-                        float wisdomBonus = wisdomLevel * HandlerCommonConfig.HANDLER.instance().wisdomSpellDamagePerLevel;
-                        if (wisdomBonus > 0) {
-                            event.setAmount(event.getAmount() + wisdomBonus);
-                        }
+                // Cross-mod synergy: Wisdom adds a flat spell damage bonus
+                if (HandlerCommonConfig.HANDLER.instance().enableWisdomSpellDamageBonus) {
+                    int wisdomLevel = casterCap.getSkillLevel(RegistrySkills.WISDOM.get());
+                    float wisdomBonus = wisdomLevel * HandlerCommonConfig.HANDLER.instance().wisdomSpellDamagePerLevel;
+                    if (wisdomBonus > 0) {
+                        event.setAmount(event.getAmount() + wisdomBonus);
                     }
+                }
 
-                    // School-specific secondary skill bonus
-                    if (HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolBonuses) {
-                        SpellDamageSource spellDs = event.getSpellDamageSource();
-                        if (spellDs != null && spellDs.spell() != null) {
-                            SchoolType school = spellDs.spell().getSchoolType();
-                            if (school != null) {
-                                ResourceLocation schoolId = school.getId();
-                                RegistryObject<Skill> secondarySkillObj = SCHOOL_SKILL_MAP.get(schoolId.getPath());
-                                if (secondarySkillObj != null) {
-                                    int secondaryLevel = casterCap.getSkillLevel(secondarySkillObj.get());
-                                    float schoolBonus = secondaryLevel * HandlerCommonConfig.HANDLER.instance().ironsSchoolBonusPerLevel;
-                                    if (schoolBonus > 0) {
-                                        event.setAmount(event.getAmount() * (1.0f + schoolBonus));
-                                    }
+                // School-specific secondary skill bonus
+                if (HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolBonuses) {
+                    SpellDamageSource spellDs = event.getSpellDamageSource();
+                    if (spellDs != null && spellDs.spell() != null) {
+                        SchoolType school = spellDs.spell().getSchoolType();
+                        if (school != null) {
+                            ResourceLocation schoolId = school.getId();
+                            RegistryObject<Skill> secondarySkillObj = SCHOOL_SKILL_MAP.get(schoolId.getPath());
+                            if (secondarySkillObj != null) {
+                                int secondaryLevel = casterCap.getSkillLevel(secondarySkillObj.get());
+                                float schoolBonus = secondaryLevel * HandlerCommonConfig.HANDLER.instance().ironsSchoolBonusPerLevel;
+                                if (schoolBonus > 0) {
+                                    event.setAmount(event.getAmount() * (1.0f + schoolBonus));
                                 }
                             }
                         }
@@ -275,20 +284,24 @@ public class IronsSpellbooksIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onModifySpellLevel(ModifySpellLevelEvent event) {
         if (!isActive()) return;
-        if (!HandlerCommonConfig.HANDLER.instance().ironsEnableSpellLevelBonus) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
 
-        int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
-        int threshold2 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2;
-        int threshold1 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold;
+        // ironsEnableSpellLevelBonus names the Magic-threshold bonus, so it gates only that.
+        // Imbued Focus is a perk with its own enablement, and used to be unreachable whenever this
+        // unrelated switch was off (MEDIUM-02).
+        if (HandlerCommonConfig.HANDLER.instance().ironsEnableSpellLevelBonus) {
+            int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
+            int threshold2 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold2;
+            int threshold1 = HandlerCommonConfig.HANDLER.instance().ironsSpellLevelBonusThreshold;
 
-        if (magicLevel >= threshold2) {
-            event.addLevels(2);
-        } else if (magicLevel >= threshold1) {
-            event.addLevels(1);
+            if (magicLevel >= threshold2) {
+                event.addLevels(2);
+            } else if (magicLevel >= threshold1) {
+                event.addLevels(1);
+            }
         }
 
         // Imbued Focus: flat +N bonus level on every cast.
@@ -300,13 +313,23 @@ public class IronsSpellbooksIntegration {
 
     // ── Phase 5: Mana Regeneration ──
 
+    /**
+     * Every mana adjustment this mod makes, sorted by the direction the mana was already moving.
+     *
+     * <p>The handler used to open with {@code ironsEnableManaRegen} and an "only when mana is going
+     * up" return, which made three unrelated features conditional on a regeneration switch: the
+     * Intelligence synergy has a switch of its own, and Continuous Flow and Arcane Reprieve are
+     * perks that fire on mana being <em>spent</em>, so the early return meant neither could ever run
+     * at all (HIGH-01, MEDIUM-02). Each delta now stands on its own gate.
+     *
+     * <p>Both readings are taken once, up front, because the branches below rewrite the event as
+     * they go: Continuous Flow has to see the drain Iron's proposed rather than one an earlier
+     * branch already softened, and Arcane Reprieve has to fire on that proposal reaching zero even
+     * though Continuous Flow may since have pulled the number back above it.
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onChangeMana(ChangeManaEvent event) {
         if (!isActive()) return;
-        if (!HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen) return;
-
-        // Only boost mana regeneration (when mana is going up), not mana spending
-        if (event.getNewMana() <= event.getOldMana()) return;
 
         Player player = event.getEntity();
         if (player.isCreative()) return;
@@ -314,46 +337,56 @@ public class IronsSpellbooksIntegration {
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
 
-        int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
-        float bonus = magicLevel * HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel;
-        if (bonus > 0) {
-            event.setNewMana(event.getNewMana() + bonus);
-        }
+        float oldMana = event.getOldMana();
+        float preNew = event.getNewMana();
 
-        // Cross-mod synergy: Intelligence adds secondary mana regen
-        if (HandlerCommonConfig.HANDLER.instance().enableIntelligenceManaRegen) {
-            int intLevel = cap.getSkillLevel(RegistrySkills.INTELLIGENCE.get());
-            float intBonus = intLevel * HandlerCommonConfig.HANDLER.instance().intelligenceManaRegenPerLevel;
-            if (intBonus > 0) {
-                event.setNewMana(event.getNewMana() + intBonus);
+        // ── Mana going up: the level-scaled regeneration bonuses ──
+        if (preNew > oldMana) {
+            if (HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen) {
+                int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
+                float bonus = magicLevel * HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel;
+                if (bonus > 0) {
+                    event.setNewMana(event.getNewMana() + bonus);
+                }
+            }
+
+            // Cross-mod synergy: Intelligence adds secondary mana regen
+            if (HandlerCommonConfig.HANDLER.instance().enableIntelligenceManaRegen) {
+                int intLevel = cap.getSkillLevel(RegistrySkills.INTELLIGENCE.get());
+                float intBonus = intLevel * HandlerCommonConfig.HANDLER.instance().intelligenceManaRegenPerLevel;
+                if (intBonus > 0) {
+                    event.setNewMana(event.getNewMana() + intBonus);
+                }
             }
         }
 
-        // ── Phase 1a: Arcane Reprieve — instant refill when mana hits zero ──
-        if (RegistryPerks.ARCANE_REPRIEVE != null && RegistryPerks.ARCANE_REPRIEVE.get().isEnabled(player)
-                && event.getNewMana() <= 0.0f && event.getOldMana() > 0.0f) {
+        // ── Mana going down: Continuous Flow — reduced per-tick drain on CONTINUOUS casts ──
+        if (preNew < oldMana
+                && RegistryPerks.CONTINUOUS_FLOW != null
+                && RegistryPerks.CONTINUOUS_FLOW.get().isEnabled(player)) {
+            MagicData magic = event.getMagicData();
+            if (magic != null && magic.isCasting() && magic.getCastType() == CastType.CONTINUOUS) {
+                float drain = oldMana - preNew;
+                double pct = HandlerCommonConfig.HANDLER.instance().continuousFlowPercent / 100.0;
+                float savings = (float) (drain * pct);
+                event.setNewMana(event.getNewMana() + savings);
+            }
+        }
+
+        // ── Mana crossing zero: Arcane Reprieve — instant refill when the pool runs out ──
+        // Judged on preNew, so a Continuous Flow saving cannot hide the moment the player ran dry.
+        if (oldMana > 0.0f && preNew <= 0.0f
+                && RegistryPerks.ARCANE_REPRIEVE != null
+                && RegistryPerks.ARCANE_REPRIEVE.get().isEnabled(player)) {
             long now = player.level().getGameTime();
-            long lastUse = arcaneReprieveLastUse.getOrDefault(player.getUUID(), Long.MIN_VALUE);
-            int cdTicks = HandlerCommonConfig.HANDLER.instance().arcaneReprieveCooldown * 20;
-            if (now - lastUse >= cdTicks) {
+            int cdTicks = DurationMath.secondsToTicks(HandlerCommonConfig.HANDLER.instance().arcaneReprieveCooldown);
+            if (GameTimeWindow.ready(now, arcaneReprieveLastUse.get(player.getUUID()), cdTicks)) {
                 double[] values = RegistryPerks.ARCANE_REPRIEVE.get().getActiveValue(player);
                 double pct = values.length > 0 ? values[0] : 40.0;
                 AttributeInstance maxMana = player.getAttribute(AttributeRegistry.MAX_MANA.get());
                 float restore = (float) ((maxMana != null ? maxMana.getValue() : 100.0) * pct / 100.0);
                 event.setNewMana(restore);
                 arcaneReprieveLastUse.put(player.getUUID(), now);
-            }
-        }
-
-        // ── Phase 1a: Continuous Flow — reduced per-tick drain on CONTINUOUS casts ──
-        if (RegistryPerks.CONTINUOUS_FLOW != null && RegistryPerks.CONTINUOUS_FLOW.get().isEnabled(player)
-                && event.getNewMana() < event.getOldMana()) {
-            MagicData magic = event.getMagicData();
-            if (magic != null && magic.isCasting() && magic.getCastType() == CastType.CONTINUOUS) {
-                float drain = event.getOldMana() - event.getNewMana();
-                double pct = HandlerCommonConfig.HANDLER.instance().continuousFlowPercent / 100.0;
-                float savings = (float) (drain * pct);
-                event.setNewMana(event.getNewMana() + savings);
             }
         }
     }
@@ -364,9 +397,8 @@ public class IronsSpellbooksIntegration {
     // Sixteen perks from MAGIC-RUNIC-SKILLS.md §A1. Four are pure attribute
     // modifiers reconciled on a throttled tick; the remainder hook into ISS
     // cast / mana / damage events. Per-player transient state (combo counters,
-    // reprieve cooldowns) lives in Maps keyed by Player UUID — entries are
-    // intentionally not cleaned up on logout; they cap at online-player count
-    // and drop on restart, which is acceptable given the tiny per-entry cost.
+    // reprieve cooldowns) lives in Maps keyed by Player UUID and is cleared by
+    // the lifecycle handlers just below them.
 
     // Stable UUIDs for each permanent modifier so we can idempotently
     // add/remove per-perk. Generated once; do NOT change — loaded worlds
@@ -381,6 +413,7 @@ public class IronsSpellbooksIntegration {
     private static final UUID TEMPO_UUID          = RunicAttributeModifiers.TEMPO;
     private static final UUID MANA_SURGE_SP_UUID  = RunicAttributeModifiers.MANA_SURGE_SP;
     private static final UUID MANA_SURGE_MR_UUID  = RunicAttributeModifiers.MANA_SURGE_MR;
+    private static final UUID IRONS_COOLDOWN_SCALING_UUID = RunicAttributeModifiers.IRONS_COOLDOWN_SCALING;
 
     // Phase 1b: per-school mancer/warded modifier UUIDs. Two per school, nine
     // schools = 18 stable UUIDs. Do NOT reorder — stored in player attribute NBT.
@@ -412,6 +445,65 @@ public class IronsSpellbooksIntegration {
     private static final Map<UUID, Long> arcaneReprieveLastUse = new HashMap<>();
 
     /**
+     * Forgets everything remembered about one player.
+     *
+     * <p>The three maps above were never emptied. A UUID went in on the first cast and stayed for
+     * the life of the process, so a long-running server accumulated an entry for every player who
+     * had ever cast a spell, and a returning player resumed a combo window from a previous session
+     * (MEDIUM-06).
+     */
+    public static void clearPlayer(UUID uuid) {
+        if (uuid == null) return;
+        spellweaverCount.remove(uuid);
+        spellweaverLastCast.remove(uuid);
+        arcaneReprieveLastUse.remove(uuid);
+    }
+
+    /**
+     * Empties the maps entirely, so leaving a singleplayer world does not carry its timers into the
+     * next one loaded in the same process.
+     */
+    public static void clearAll() {
+        spellweaverCount.clear();
+        spellweaverLastCast.clear();
+        arcaneReprieveLastUse.clear();
+    }
+
+    /**
+     * Logout clears everything: a player who is gone has neither a combo running nor a cooldown to
+     * serve, and these entries are what leaked.
+     *
+     * <p>This and the two handlers below it sit on the Iron's-typed integration class rather than in
+     * the common lifecycle handler on purpose. The instance is registered on the FORGE bus by
+     * {@code RunicSkills.tryLoadIntegration} only when Iron's Spells is installed, so common code
+     * never has to name a class that would drag Iron's types into its constant pool.
+     */
+    @SubscribeEvent
+    public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        clearPlayer(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        clearAll();
+    }
+
+    /**
+     * A death respawn ends the combo window and nothing else.
+     *
+     * <p>Spellweaver counts casts inside a few seconds, and dying plainly ends that. Arcane
+     * Reprieve's cooldown deliberately survives: a cooldown that death resets is a cooldown a player
+     * can shorten by dying on purpose.
+     */
+    @SubscribeEvent
+    public void onPlayerClone(PlayerEvent.Clone event) {
+        if (!event.isWasDeath()) return;
+        UUID uuid = event.getOriginal().getUUID();
+        spellweaverCount.remove(uuid);
+        spellweaverLastCast.remove(uuid);
+    }
+
+    /**
      * Idempotently reconciles a transient attribute modifier with the perk's current enabled
      * state. If enabled, ensures the modifier is present with the given value and operation; if
      * disabled, removes it.
@@ -429,18 +521,8 @@ public class IronsSpellbooksIntegration {
         // Gated here rather than by an early return in the tick handlers that call this: turning
         // the integration off has to actively REMOVE the modifiers it owns, and a handler that
         // returned early would strand them until the player next logged out (RS10-011).
-        wanted = wanted && isActive();
         if (attrObj == null || !attrObj.isPresent()) return;
-        AttributeInstance inst = player.getAttribute(attrObj.get());
-        if (inst == null) return;
-        AttributeModifier existing = inst.getModifier(uuid);
-        if (wanted) {
-            if (existing != null && existing.getAmount() == value && existing.getOperation() == op) return;
-            if (existing != null) inst.removeModifier(existing);
-            inst.addTransientModifier(new AttributeModifier(uuid, name, value, op));
-        } else if (existing != null) {
-            inst.removeModifier(existing);
-        }
+        TransientModifiers.reconcile(player, attrObj.get(), uuid, name, wanted && isActive(), value, op);
     }
 
     /** Tick-throttled reconciliation of permanent & transient attribute perks. */
@@ -482,6 +564,24 @@ public class IronsSpellbooksIntegration {
                 ? HandlerCommonConfig.HANDLER.instance().tempoPercent / 100.0 : 0;
         reconcileModifier(player, AttributeRegistry.COOLDOWN_REDUCTION, TEMPO_UUID,
                 "runicskills:tempo", tempo, tempoValue,
+                AttributeModifier.Operation.ADDITION);
+
+        // Magic level → COOLDOWN_REDUCTION. ironsEnableCooldownReduction, ironsCooldownReductionPerLevel
+        // and ironsMaxCooldownReduction were three public, documented config fields that nothing read
+        // (HIGH-06). The scaling lands on the same attribute as Tempo but under its own id, so the
+        // passive and the perk stack rather than one silently replacing the other.
+        boolean cooldownScaling = HandlerCommonConfig.HANDLER.instance().ironsEnableCooldownReduction;
+        SkillCapability cooldownCap = SkillCapability.get(player);
+        double cooldownScalingValue = 0;
+        if (cooldownScaling && cooldownCap != null) {
+            int magicLevel = cooldownCap.getSkillLevel(RegistrySkills.MAGIC.get());
+            cooldownScalingValue = Math.min(
+                    HandlerCommonConfig.HANDLER.instance().ironsMaxCooldownReduction,
+                    Math.max(0, magicLevel - 1)
+                            * HandlerCommonConfig.HANDLER.instance().ironsCooldownReductionPerLevel);
+        }
+        reconcileModifier(player, AttributeRegistry.COOLDOWN_REDUCTION, IRONS_COOLDOWN_SCALING_UUID,
+                "runicskills:irons_cooldown_scaling", cooldownScalingValue > 0, cooldownScalingValue,
                 AttributeModifier.Operation.ADDITION);
 
         // The four perks completed in 2.0.0. Each was registered with a config value, a texture and
@@ -720,15 +820,15 @@ public class IronsSpellbooksIntegration {
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
         switch (schoolName) {
             case "lightning" -> tryCatalyst(caster, RegistryPerks.LIGHTNING_CATALYST,
-                    MobEffectRegistry.CHARGED.get(), c.lightningCatalystProbability, c.lightningCatalystDuration * 20);
+                    MobEffectRegistry.CHARGED.get(), c.lightningCatalystProbability, DurationMath.secondsToTicks(c.lightningCatalystDuration));
             case "holy" -> tryCatalyst(caster, RegistryPerks.HOLY_CATALYST,
-                    MobEffectRegistry.FORTIFY.get(), c.holyCatalystProbability, c.holyCatalystDuration * 20);
+                    MobEffectRegistry.FORTIFY.get(), c.holyCatalystProbability, DurationMath.secondsToTicks(c.holyCatalystDuration));
             case "ender" -> tryCatalyst(caster, RegistryPerks.ENDER_CATALYST,
-                    MobEffectRegistry.PLANAR_SIGHT.get(), c.enderCatalystProbability, c.enderCatalystDuration * 20);
+                    MobEffectRegistry.PLANAR_SIGHT.get(), c.enderCatalystProbability, DurationMath.secondsToTicks(c.enderCatalystDuration));
             case "evocation" -> tryCatalyst(caster, RegistryPerks.EVOCATION_CATALYST,
-                    MobEffectRegistry.ECHOING_STRIKES.get(), c.evocationCatalystProbability, c.evocationCatalystDuration * 20);
+                    MobEffectRegistry.ECHOING_STRIKES.get(), c.evocationCatalystProbability, DurationMath.secondsToTicks(c.evocationCatalystDuration));
             case "nature" -> tryCatalyst(caster, RegistryPerks.NATURE_CATALYST,
-                    MobEffectRegistry.OAKSKIN.get(), c.natureCatalystProbability, c.natureCatalystDuration * 20);
+                    MobEffectRegistry.OAKSKIN.get(), c.natureCatalystProbability, DurationMath.secondsToTicks(c.natureCatalystDuration));
             case "eldritch" -> tryCatalyst(caster, RegistryPerks.ELDRITCH_CATALYST,
                     MobEffectRegistry.ABYSSAL_SHROUD.get(), c.eldritchCatalystProbability, c.eldritchCatalystDuration);
             default -> { /* no-op for offensive-school casts */ }
@@ -756,11 +856,11 @@ public class IronsSpellbooksIntegration {
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
         switch (schoolName) {
             case "fire" -> tryCatalystOn(caster, victim, RegistryPerks.FIRE_CATALYST,
-                    MobEffectRegistry.IMMOLATE.get(), c.fireCatalystProbability, c.fireCatalystDuration * 20);
+                    MobEffectRegistry.IMMOLATE.get(), c.fireCatalystProbability, DurationMath.secondsToTicks(c.fireCatalystDuration));
             case "ice" -> tryCatalystOn(caster, victim, RegistryPerks.ICE_CATALYST,
-                    MobEffectRegistry.CHILLED.get(), c.iceCatalystProbability, c.iceCatalystDuration * 20);
+                    MobEffectRegistry.CHILLED.get(), c.iceCatalystProbability, DurationMath.secondsToTicks(c.iceCatalystDuration));
             case "blood" -> tryCatalystOn(caster, victim, RegistryPerks.BLOOD_CATALYST,
-                    MobEffectRegistry.REND.get(), c.bloodCatalystProbability, c.bloodCatalystDuration * 20);
+                    MobEffectRegistry.REND.get(), c.bloodCatalystProbability, DurationMath.secondsToTicks(c.bloodCatalystDuration));
             default -> { /* other schools buff via SpellOnCastEvent branch */ }
         }
     }

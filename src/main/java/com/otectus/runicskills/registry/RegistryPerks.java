@@ -724,7 +724,10 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().eldritchCatalystRequiredLevel,
                     HandlerResources.ISS_ELDRITCH_CATALYST_PERK,
                     new Value(ValueType.PROBABILITY, HandlerCommonConfig.HANDLER.instance().eldritchCatalystProbability),
-                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().eldritchCatalystDuration)));
+                    // TICKS, not DURATION: this is the one catalyst whose config field is raw ticks
+                    // (the handler passes it through unmultiplied), and the lang line already says
+                    // "ticks". Typing it DURATION printed "10s" for a half-second effect.
+                    new Value(ValueType.TICKS, HandlerCommonConfig.HANDLER.instance().eldritchCatalystDuration)));
 
     // ── Iron's Spells — Phase 1c: summon/utility perks ──
     public static final RegistryObject<Perk> LORD_OF_THE_DEAD =
@@ -3934,6 +3937,16 @@ public class RegistryPerks {
 
     public static boolean isDisabled(Perk perk) {
         if (perk == null) return false;
+        // Scholar's entire effect is the enchantment-name gate, so with the gate off the perk has
+        // nothing left to do. Reporting it disabled here keeps it out of the selectable set instead
+        // of letting a player spend a point on a guaranteed no-op (HIGH-03). Matched by name rather
+        // than by identity against SCHOLAR.get() so this is safe before the registry is populated.
+        if ("scholar".equals(perk.getName())
+                && RunicSkills.MOD_ID.equals(perk.getMod())
+                && !HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding) {
+            return true;
+        }
+
         // Short-circuit on the empty list before touching the perk at all.
         //
         // This is called from Perk#isEnabled, which runs on the order of a hundred times per melee

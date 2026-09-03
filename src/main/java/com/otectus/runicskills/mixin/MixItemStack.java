@@ -24,24 +24,26 @@ import java.util.List;
 @Mixin({ItemStack.class})
 public abstract class MixItemStack {
     /**
-     * Optionally hides enchantment names globally when {@code enableScholarEnchantmentHiding}
-     * is set in the common config. Default false.
+     * Hides enchantment names from players who have not taken Scholar, when the pack opts in with
+     * {@code enableScholarEnchantmentHiding} (default false, in which case names always render).
      *
-     * <p>Historical context: pre-1.1.0 this mixin keyed off {@code RegistryPerks.SCHOLAR.isEnabled()},
-     * inverting the meaning of the {@code disabledPerks} list — adding {@code "scholar"} there
-     * (the natural way to "turn off" the perk) had the unwanted side effect of hiding every
-     * enchantment name on every item in the world. CurseForge users reported this as a
-     * confusing tooltip bug. 1.1.0 decouples the two: the Scholar perk now solely controls its
-     * XP/enchanting bonus, and the hiding feature is a separate opt-in.
+     * <p>This is what makes Scholar a perk rather than a name in a list: 1.1.0 decoupled the gate
+     * from {@code disabledPerks} to fix a tooltip bug, but decoupled it from the perk entirely, so
+     * from then until 2.0.4 taking Scholar changed nothing and the gate hid names from everyone
+     * including the Scholar (HIGH-03).
      *
-     * <p>{@code appendEnchantmentNames} is a static method with no player context, so this is
-     * still a global toggle. Per-player hiding would require a client-side
-     * {@link net.minecraftforge.event.entity.player.ItemTooltipEvent} handler where
-     * {@code Minecraft.getInstance().player} is available; that is a future refactor.
+     * <p>{@code appendEnchantmentNames} is static with no player argument, but it only ever renders
+     * for the player reading the tooltip, so the no-arg {@link com.otectus.runicskills.registry.perks.Perk#isEnabled()}
+     * — which resolves the local player's rank and honours {@code disabledPerks} — is the right
+     * question to ask. On a dedicated server {@code getLocal()} is null and it answers false, so the
+     * text stays hidden: the safe direction.
      */
     @Inject(method = {"appendEnchantmentNames"}, at = {@At("HEAD")}, cancellable = true)
     private static void appendEnchantmentNames(List<Component> list, ListTag tags, CallbackInfo info) {
         if (!HandlerCommonConfig.HANDLER.instance().enableScholarEnchantmentHiding) {
+            return;
+        }
+        if (RegistryPerks.SCHOLAR != null && RegistryPerks.SCHOLAR.get().isEnabled()) {
             return;
         }
 

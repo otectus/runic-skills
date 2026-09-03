@@ -1,6 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.util.ContainerInteraction;
+import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -34,8 +35,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EnchantingLorePerkHandler {
 
-    /** Tick of each player's most recent damage, for Temporal Wisdom's "in combat" window. */
-    private static final Map<UUID, Integer> LAST_COMBAT_TICK = new ConcurrentHashMap<>();
+    /**
+     * Game time of each player's most recent damage, for Temporal Wisdom's "in combat" window.
+     *
+     * <p>{@code level.getGameTime()}, not {@code Player.tickCount}: tickCount restarts at zero on
+     * respawn and on every dimension change, so the window read as wide open for the rest of the
+     * session after a portal, and as never-opened after a death.
+     */
+    private static final Map<UUID, Long> LAST_COMBAT_TICK = new ConcurrentHashMap<>();
 
     /**
      * What each dying player was holding, captured before the inventory is emptied.
@@ -47,10 +54,33 @@ public class EnchantingLorePerkHandler {
      */
     private static final Map<UUID, ItemStack> HELD_AT_DEATH = new ConcurrentHashMap<>();
 
+    /**
+     * Clears what a death should end.
+     *
+     * <p>{@link #HELD_AT_DEATH} is consumed by {@code LivingDropsEvent} on the death tick itself,
+     * long before the respawn clone, so clearing it here takes nothing away from Soul Binding — it
+     * only sweeps the entry left behind when nothing dropped at all (keepInventory).
+     */
+    public static void clearCombatWindows(UUID id) {
+        if (id == null) return;
+        LAST_COMBAT_TICK.remove(id);
+        HELD_AT_DEATH.remove(id);
+    }
+
+    /** Frees one player's state. Called on logout. */
+    public static void clearPlayer(UUID id) {
+        clearCombatWindows(id);
+    }
+
+    /** Drops every player's state, so a single-player world does not leak into the next one. */
+    public static void clearAll() {
+        LAST_COMBAT_TICK.clear();
+        HELD_AT_DEATH.clear();
+    }
+
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        LAST_COMBAT_TICK.remove(event.getEntity().getUUID());
-        HELD_AT_DEATH.remove(event.getEntity().getUUID());
+        clearPlayer(event.getEntity().getUUID());
     }
 
     // ── Keeping things through death ────────────────────────────────────────────────────────
@@ -287,10 +317,10 @@ public class EnchantingLorePerkHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onCombat(LivingHurtEvent event) {
         if (event.getEntity() instanceof Player hurt) {
-            LAST_COMBAT_TICK.put(hurt.getUUID(), hurt.tickCount);
+            LAST_COMBAT_TICK.put(hurt.getUUID(), hurt.level().getGameTime());
         }
         if (event.getSource().getEntity() instanceof Player attacker) {
-            LAST_COMBAT_TICK.put(attacker.getUUID(), attacker.tickCount);
+            LAST_COMBAT_TICK.put(attacker.getUUID(), attacker.level().getGameTime());
         }
     }
 
@@ -312,9 +342,9 @@ public class EnchantingLorePerkHandler {
         if (added == null || added.isInfiniteDuration()) return;
         if (added.getEffect().getCategory() != MobEffectCategory.BENEFICIAL) return;
 
-        Integer lastCombat = LAST_COMBAT_TICK.get(player.getUUID());
+        Long lastCombat = LAST_COMBAT_TICK.get(player.getUUID());
         int window = HandlerCommonConfig.HANDLER.instance().temporalWisdomCombatTicks;
-        if (lastCombat == null || player.tickCount - lastCombat > window) return;
+        if (!GameTimeWindow.within(player.level().getGameTime(), lastCombat, window)) return;
 
         double extra = HandlerCommonConfig.HANDLER.instance().temporalWisdomPercent / 100.0;
         if (extra <= 0) return;

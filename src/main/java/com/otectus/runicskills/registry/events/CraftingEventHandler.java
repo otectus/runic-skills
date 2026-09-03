@@ -186,7 +186,7 @@ public class CraftingEventHandler {
                 Entity entity1 = event.getSource().getEntity();
                 if (entity1 instanceof ServerPlayer player) {
                     if (RegistryPerks.FIGHTING_SPIRIT != null) {
-                        new RegistryEffects.AddEffect(player, RegistryPerks.FIGHTING_SPIRIT.get().isEnabled(player), MobEffects.DAMAGE_BOOST).add((int) (10.0D + 20.0D * RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[1]), (int) (RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[0] - 1.0D));
+                        new RegistryEffects.AddEffect(player, RegistryPerks.FIGHTING_SPIRIT.get().isEnabled(player), MobEffects.DAMAGE_BOOST).add(com.otectus.runicskills.common.util.DurationMath.secondsToTicks(RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[1]), (int) (RegistryPerks.FIGHTING_SPIRIT.get().getActiveValue(player)[0] - 1.0D));
                     }
                 }
             }

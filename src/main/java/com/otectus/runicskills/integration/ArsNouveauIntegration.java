@@ -72,24 +72,27 @@ public class ArsNouveauIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellDamage(SpellDamageEvent.Pre event) {
         if (!isActive()) return;
-        // Scale outgoing damage for caster
-        if (HandlerCommonConfig.HANDLER.instance().arsEnableSpellDamageScaling) {
-            if (event.caster instanceof Player caster && !caster.isCreative()) {
-                SkillCapability casterCap = SkillCapability.get(caster);
-                if (casterCap != null) {
+        // Two independent bonuses, each behind its own switch. The Wisdom synergy used to sit
+        // inside arsEnableSpellDamageScaling, which describes the Magic-level scaling and nothing
+        // else, so turning that off silently took the synergy with it (MEDIUM-02).
+        if (event.caster instanceof Player caster && !caster.isCreative()) {
+            SkillCapability casterCap = SkillCapability.get(caster);
+            if (casterCap != null) {
+                // Scale outgoing damage for caster
+                if (HandlerCommonConfig.HANDLER.instance().arsEnableSpellDamageScaling) {
                     int magicLevel = casterCap.getSkillLevel(RegistrySkills.MAGIC.get());
                     float bonus = (magicLevel - 1) * HandlerCommonConfig.HANDLER.instance().arsSpellDamageScalePerLevel;
                     if (bonus > 0) {
                         event.damage = event.damage * (1.0f + bonus);
                     }
+                }
 
-                    // Cross-mod synergy: Wisdom adds a flat spell damage bonus
-                    if (HandlerCommonConfig.HANDLER.instance().enableWisdomSpellDamageBonus) {
-                        int wisdomLevel = casterCap.getSkillLevel(RegistrySkills.WISDOM.get());
-                        float wisdomBonus = wisdomLevel * HandlerCommonConfig.HANDLER.instance().wisdomSpellDamagePerLevel;
-                        if (wisdomBonus > 0) {
-                            event.damage = event.damage + wisdomBonus;
-                        }
+                // Cross-mod synergy: Wisdom adds a flat spell damage bonus
+                if (HandlerCommonConfig.HANDLER.instance().enableWisdomSpellDamageBonus) {
+                    int wisdomLevel = casterCap.getSkillLevel(RegistrySkills.WISDOM.get());
+                    float wisdomBonus = wisdomLevel * HandlerCommonConfig.HANDLER.instance().wisdomSpellDamagePerLevel;
+                    if (wisdomBonus > 0) {
+                        event.damage = event.damage + wisdomBonus;
                     }
                 }
             }
@@ -340,16 +343,20 @@ public class ArsNouveauIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onManaRegenCalc(ManaRegenCalcEvent event) {
         if (!isActive()) return;
-        if (!HandlerCommonConfig.HANDLER.instance().arsEnableManaRegen) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
 
-        int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
-        double bonus = magicLevel * HandlerCommonConfig.HANDLER.instance().arsManaRegenPerMagicLevel;
-        if (bonus > 0) {
-            event.setRegen(event.getRegen() + bonus);
+        // arsEnableManaRegen names the Magic-level bonus, so it gates only that. The Intelligence
+        // synergy has a switch of its own and Source Well is a perk; both used to be unreachable
+        // whenever this one switch was off (MEDIUM-02).
+        if (HandlerCommonConfig.HANDLER.instance().arsEnableManaRegen) {
+            int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
+            double bonus = magicLevel * HandlerCommonConfig.HANDLER.instance().arsManaRegenPerMagicLevel;
+            if (bonus > 0) {
+                event.setRegen(event.getRegen() + bonus);
+            }
         }
 
         // Cross-mod synergy: Intelligence adds secondary mana regen
@@ -376,18 +383,21 @@ public class ArsNouveauIntegration {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onMaxManaCalc(MaxManaCalcEvent event) {
         if (!isActive()) return;
-        if (!HandlerCommonConfig.HANDLER.instance().arsEnableMaxManaBonus) return;
         if (!(event.getEntity() instanceof Player player) || player.isCreative()) return;
 
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
 
-        int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
-        int intLevel = cap.getSkillLevel(RegistrySkills.INTELLIGENCE.get());
-        int bonus = (int) (magicLevel * HandlerCommonConfig.HANDLER.instance().arsMaxManaPerMagicLevel
-                + intLevel * HandlerCommonConfig.HANDLER.instance().arsMaxManaPerIntelligenceLevel);
-        if (bonus > 0) {
-            event.setMax(event.getMax() + bonus);
+        // arsEnableMaxManaBonus names the level-scaled pool bonus. Source Attunement is a perk and
+        // runs on its own enablement below, rather than being switched off with it (MEDIUM-02).
+        if (HandlerCommonConfig.HANDLER.instance().arsEnableMaxManaBonus) {
+            int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
+            int intLevel = cap.getSkillLevel(RegistrySkills.INTELLIGENCE.get());
+            int bonus = (int) (magicLevel * HandlerCommonConfig.HANDLER.instance().arsMaxManaPerMagicLevel
+                    + intLevel * HandlerCommonConfig.HANDLER.instance().arsMaxManaPerIntelligenceLevel);
+            if (bonus > 0) {
+                event.setMax(event.getMax() + bonus);
+            }
         }
 
         // Source Attunement - "Ars Nouveau source pool increased". Applied after the level bonuses

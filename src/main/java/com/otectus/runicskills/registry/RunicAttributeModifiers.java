@@ -88,6 +88,12 @@ public final class RunicAttributeModifiers {
     public static final UUID MANA_SURGE_SP = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-5e6b4f9a3c8d");
     public static final UUID MANA_SURGE_MR = UUID.fromString("a5d3f7c2-1b4e-4a8f-9c2d-6e6b4f9a3c8d");
 
+    /**
+     * The Magic-level cooldown scaling, which had two config fields and no reader (HIGH-06). Its own
+     * id rather than Tempo's, so the passive and the perk stack instead of overwriting each other.
+     */
+    public static final UUID IRONS_COOLDOWN_SCALING = UUID.fromString("443aecab-b6b9-48a3-b357-436a8a8f544c");
+
     // The four Iron's Spells perks completed in 2.0.0. Each sits on the attribute its own tooltip
     // describes, which is why two of them share one: Spell Quickening and Spellcraft Knowledge both
     // promise a faster cast, and a faster cast is one number.
@@ -150,6 +156,13 @@ public final class RunicAttributeModifiers {
     public static final UUID APOTH_GEM_THREADED   = UUID.fromString("3a8b1c5d-9f7e-4d2a-8b1c-5d9f7e4d2a8b");
     public static final UUID APOTH_AFFIX_AFFINITY = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0f");
 
+    /**
+     * Intelligence + Wisdom feeding the Enchanting Power attribute, which the enchanting-table
+     * mixins read as extra bookshelves. Apotheosis-owned only because the scaling is gated on
+     * {@code apothEnchantingScalePerLevel}; the attribute itself is ours.
+     */
+    public static final UUID APOTH_ENCHANTING_POWER = UUID.fromString("b65dacd3-9cb2-4fbe-9780-66fc655b8280");
+
     // -- Apothic Attributes (attributeslib) ----------------------------------------------------
     public static final UUID APOTH_CRIT_CHANCE  = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c01");
     public static final UUID APOTH_CRIT_DAMAGE  = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c02");
@@ -179,6 +192,7 @@ public final class RunicAttributeModifiers {
             new Owned(TEMPO,         "iss:tempo",      "irons_spellbooks:cast_time_reduction", "ADDITION", Scope.PLAYER),
             new Owned(MANA_SURGE_SP, "iss:mana_surge", "irons_spellbooks:spell_power",         "ADDITION", Scope.PLAYER),
             new Owned(MANA_SURGE_MR, "iss:mana_surge", "irons_spellbooks:mana_regen",          "ADDITION", Scope.PLAYER),
+            new Owned(IRONS_COOLDOWN_SCALING, "iss:cooldown_scaling", "irons_spellbooks:cooldown_reduction", "ADDITION", Scope.PLAYER),
 
             new Owned(MANA_REGENERATION,    "perk:mana_regeneration",    "irons_spellbooks:mana_regen",          "ADDITION", Scope.PLAYER),
             new Owned(SPELL_QUICKENING,     "perk:spell_quickening",     "irons_spellbooks:cast_time_reduction", "ADDITION", Scope.PLAYER),
@@ -216,6 +230,7 @@ public final class RunicAttributeModifiers {
 
             new Owned(APOTH_GEM_THREADED,   "apotheosis:gem_threaded",   "minecraft:armor",         "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_AFFIX_AFFINITY, "apotheosis:affix_affinity", "minecraft:attack_damage", "MULTIPLY_BASE", Scope.PLAYER),
+            new Owned(APOTH_ENCHANTING_POWER, "apotheosis:enchanting_scaling", "runicskills:enchanting_power", "ADDITION", Scope.PLAYER),
 
             new Owned(APOTH_CRIT_CHANCE,  "apothic:critical_mastery",    "attributeslib:crit_chance",       "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_CRIT_DAMAGE,  "apothic:critical_mastery",    "attributeslib:crit_damage",       "ADDITION",      Scope.PLAYER),

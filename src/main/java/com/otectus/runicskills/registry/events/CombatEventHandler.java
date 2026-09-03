@@ -58,8 +58,8 @@ public class CombatEventHandler {
     // ── R3 batch 2 combat memory ───────────────────────────────────────────────
     // Transient per-life state for VENGEANCE / BLADE_STORM / LAST_STAND. Lives
     // here (not on SkillCapability) because it's session-scoped: dies cleanly on
-    // server restart, no NBT, no protocol bump. Mirrors the R2 pattern at
-    // ApotheosisIntegration.recentInteractors. Pruned at PRUNE_INTERVAL_TICKS in
+    // server restart, no NBT, no protocol bump. Keyed on world game time.
+    // Pruned at PRUNE_INTERVAL_TICKS in
     // onServerTick (Phase.END).
 
     private static final class HitRecord {
@@ -246,7 +246,8 @@ public class CombatEventHandler {
                 && HandlerCommonConfig.HANDLER.instance().apothicDelegateMiningSpeed;
 
         float modifier = apothicHandlesBreakSpeed ? 0.0F
-                : event.getOriginalSpeed() * (1.0F + (float) player.getAttributeValue(RegistryAttributes.BREAK_SPEED.get()));
+                : com.otectus.runicskills.common.util.BreakSpeedMath.delta(event.getOriginalSpeed(),
+                        player.getAttributeValue(RegistryAttributes.BREAK_SPEED.get()));
 
         if (player.getMainHandItem().is(itemHolder -> itemHolder.get() instanceof net.minecraft.world.item.PickaxeItem)) {
             if (event.getState().is(RegistryTags.Blocks.OBSIDIAN)) {
@@ -332,10 +333,12 @@ public class CombatEventHandler {
 
                         if (provider != null && !event.isCanceled() && RegistryPerks.COUNTER_ATTACK != null && RegistryPerks.COUNTER_ATTACK.get().isEnabled(player)) {
                             float modifier = (float) (sourceDamage * RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[1] / 100.0D);
-                            // Open a real, self-expiring window. value[0] is the window in seconds;
-                            // the historical *40.0D scaling is preserved so configured durations
-                            // keep their existing meaning.
-                            int windowTicks = (int) (RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[0] * 40.0D);
+                            // Open a real, self-expiring window. value[0] is the window in seconds,
+                            // and the tooltip prints it in seconds, so it converts at 20 ticks per
+                            // second like every other duration; the historical *40 made a configured
+                            // 3s last 6s (MEDIUM-08).
+                            int windowTicks = com.otectus.runicskills.common.util.DurationMath.secondsToTicks(
+                                    RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[0]);
                             provider.setCounterAttack(windowTicks);
                             new RegistryAttributes.RegisterAttribute(player, Attributes.ATTACK_DAMAGE, modifier, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(true);
                             SyncSkillCapabilityCP.send(player);
@@ -916,7 +919,9 @@ public class CombatEventHandler {
             if (entity instanceof ServerPlayer serverPlayer) {
                 if (RegistryPerks.QUICK_REPOSITION != null && event.getRayTraceResult().getType() == HitResult.Type.ENTITY) {
                     new RegistryEffects.AddEffect(serverPlayer, RegistryPerks.QUICK_REPOSITION.get().isEnabled(serverPlayer), MobEffects.MOVEMENT_SPEED)
-                            .add((int) (10.0D + 20.0D * RegistryPerks.QUICK_REPOSITION.get().getActiveValue(serverPlayer)[1]), (int) (RegistryPerks.QUICK_REPOSITION.get().getActiveValue(serverPlayer)[0] - 1.0D));
+                            .add(com.otectus.runicskills.common.util.DurationMath.secondsToTicks(
+                                            RegistryPerks.QUICK_REPOSITION.get().getActiveValue(serverPlayer)[1]),
+                                    (int) (RegistryPerks.QUICK_REPOSITION.get().getActiveValue(serverPlayer)[0] - 1.0D));
                 }
             }
         }
