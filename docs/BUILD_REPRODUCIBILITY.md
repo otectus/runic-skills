@@ -18,6 +18,7 @@ Two things prevent a repeat:
 - **No third-party jar is needed to compile.** Legendary Tabs is compiled against
   [`src/legendarytabsApi/java`](../src/legendarytabsApi/java) — a hand-written signature mirror of
   the 2.0 API, built by the `legendarytabsApi` source set and placed on the compile classpath only.
+  CustomNPCs is compiled the same way via [`src/customnpcsApi/java`](../src/customnpcsApi/java).
   L2Tabs still uses the tracked stub jar `libs/l2tabs-0.3.3.jar`.
 - **`fresh-clone-build` is the release gate.** It builds with no cache action, a `GRADLE_USER_HOME`
   inside the workspace, and an explicit check that the checkout contains no untracked file and no
@@ -28,11 +29,17 @@ If you ever need to add a jar to `libs/` again, add the `.gitignore` exception *
 
 ### Keeping the stub honest
 
-The stub mirrors a specific upstream version and is deliberately minimal: it declares only the
+Each stub mirrors a specific upstream version and is deliberately minimal: it declares only the
 members Runic Skills calls, so calling anything else is a compile error rather than a runtime
-`NoSuchMethodError` against a real install. When Legendary Tabs changes its API, update the stub
-and the `legendarytabs` `versionRange` in `mods.toml` in the same change. Signatures were taken
-from `javap` on the 2.0 release.
+`NoSuchMethodError` against a real install.
+
+**Legendary Tabs:** When the API changes, update the stub and the corresponding `versionRange`
+in `mods.toml` in the same change. Signatures were taken from `javap` on the 2.0 release.
+
+**CustomNPCs:** Compatibility is guarded only by the runtime reflective probe in
+`CustomNpcsIntegration.registerClientTabs()`, which logs a warning and falls back to the
+built-in tab strip on mismatch. The stub header records the CustomNPCs jar it was verified
+against (currently `CustomNPCs-1.20.1-GBPort-Unofficial-1.20.1.20260711.jar`).
 
 ## Reproducible jars
 

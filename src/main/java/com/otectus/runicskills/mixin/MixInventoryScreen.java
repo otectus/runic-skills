@@ -6,8 +6,7 @@ import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.client.event.InventoryTabsScreenHandler;
 import com.otectus.runicskills.client.gui.DrawTabs;
 import com.otectus.runicskills.handler.HandlerConfigClient;
-import com.otectus.runicskills.integration.L2TabsIntegration;
-import com.otectus.runicskills.integration.LegendaryTabsIntegration;
+import com.otectus.runicskills.integration.InventoryTabOwnership;
 import com.otectus.runicskills.network.packet.common.OpenEnderChestSP;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,13 +35,12 @@ public abstract class MixInventoryScreen extends EffectRenderingInventoryScreen<
     @Unique
     public boolean this$isMouseCheck = false;
 
-    // L2Tabs and Legendary Tabs render the Skills tab natively via their own tab APIs
-    // (see RunicSkillsClient#clientSetup); skip the mixin-driven draw so we don't double-render.
-    // L2Tabs counts as active only after registration succeeds, so an incompatible version falls
-    // back to Runic Skills' built-in strip instead of hiding the tab or crashing startup.
+    // L2Tabs, Legendary Tabs and CustomNPCs render the Skills tab natively via their own tab
+    // strips (see RunicSkillsClient#clientSetup); skip the mixin-driven draw so we don't
+    // double-render. The single shared answer lives in InventoryTabOwnership.
     @Unique
     private boolean runicskills$externalTabsActive() {
-        return L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isModLoaded();
+        return InventoryTabOwnership.externalTabsActive();
     }
 
     /**

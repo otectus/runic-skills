@@ -8,8 +8,7 @@ import com.otectus.runicskills.client.gui.InventoryTabLayout.Rect;
 import com.otectus.runicskills.client.gui.InventoryTabLayout.TabLayout;
 import com.otectus.runicskills.client.gui.InventoryTabReservedRegions;
 import com.otectus.runicskills.handler.HandlerConfigClient;
-import com.otectus.runicskills.integration.L2TabsIntegration;
-import com.otectus.runicskills.integration.LegendaryTabsIntegration;
+import com.otectus.runicskills.integration.InventoryTabOwnership;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -53,13 +52,13 @@ public final class InventoryTabsScreenHandler {
     }
 
     /**
-     * L2Tabs and Legendary Tabs render the Skills tab natively via their own tab APIs
-     * (see {@code RunicSkillsClient#clientSetup}); ours stays out of the way entirely when either
-     * is active. L2Tabs counts as active only after registration succeeds, so an incompatible
-     * version falls back to the built-in strip instead of losing the tab.
+     * L2Tabs, Legendary Tabs and CustomNPCs render the Skills tab natively via their own tab
+     * strips (see {@code RunicSkillsClient#clientSetup}); ours stays out of the way entirely when
+     * any of them is active — see {@link InventoryTabOwnership#externalTabsActive()} for how that
+     * is decided.
      */
     public static boolean suppressed() {
-        return L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isModLoaded()
+        return InventoryTabOwnership.externalTabsActive()
                 || !HandlerConfigClient.inventoryTabsEnabled.get();
     }
 

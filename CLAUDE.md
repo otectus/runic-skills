@@ -26,6 +26,8 @@ src/gametest/java/          — Forge GameTests (capability lifecycle, config au
                               Own source set: needs a real server, so it cannot live in src/test.
 src/legendarytabsApi/java/  — Hand-written signature mirror of the Legendary Tabs 2.0 API.
                               Compile classpath only; never shipped. See docs/BUILD_REPRODUCIBILITY.md.
+src/customnpcsApi/java/     — Hand-written signature mirror of CustomNPCs' inventory-tab classes.
+                              Compile classpath only; never shipped.
 src/generated/resources/    — Declared as a resource root by build.gradle. Currently EMPTY: there is
                               no GatherDataEvent handler, so the `runData` run config produces nothing.
 src/main/resources/
@@ -45,6 +47,7 @@ src/main/resources/
 - **Irons Spellbooks** — spell system integration (optional)
 - **MineColonies** — colony building integration (optional, compile-only via LDTTeam Artifactory `com.ldtteam:minecolonies:1.20.1-1.1.1276` with Structurize, BlockUI and Domum Ornamentum on the compile classpath). The integration class loads through `RunicSkills.tryLoadIntegration("minecolonies", …)`; the `@Pseudo` mixin `MixPathingStuckHandler` is gated in `RunicSkillsMixinPlugin`.
 - **L2Tabs / Legendary Tabs** — inventory tab integrations (optional, compile-time only). Neither has a public Maven coordinate, so both compile against minimal in-repo API surfaces and a fresh clone needs no manually supplied jar: Legendary Tabs `1.20.1-2.0` via the `legendarytabsApi` source set (`src/legendarytabsApi/java`, compile classpath only, never shipped), L2Tabs `0.3.3` via the tracked stub jar `libs/l2tabs-0.3.3.jar`. Calling an upstream method the stub does not declare is a compile error by design; add the signature to the stub and re-check it against the real jar.
+- **CustomNPCs** — optional, compile-time only via the `customnpcsApi` source set (no Maven coordinate; the real jar is not tracked); `CustomNpcsIntegration` probes the real classes reflectively before loading the client class; the client integration inserts the Skills tab into CustomNPCs' strip; falls back to the built-in strip on mismatch.
 - **MixinExtras** (0.4.0) — used by `MixGrindstoneMenu` via `@ModifyReturnValue`. Declared as an
   annotation processor and a jar-in-jar dependency. The `jarJar` plugin is never enabled; only
   this one dependency uses the jarJar configuration.

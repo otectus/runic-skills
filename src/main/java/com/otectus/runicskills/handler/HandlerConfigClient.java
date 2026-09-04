@@ -39,6 +39,7 @@ public class HandlerConfigClient {
     public static final ForgeConfigSpec.BooleanValue inventoryTabsAvoidRecipeBook;
     public static final ForgeConfigSpec.BooleanValue inventoryTabsAvoidEffects;
     public static final ForgeConfigSpec.BooleanValue inventoryTabsDragToMove;
+    public static final ForgeConfigSpec.BooleanValue customNpcsNativeTabs;
 
     public static boolean defaultShowCriticalRollPerkOverlay = true;
     public static boolean defaultShowLuckDropPerkOverlay = true;
@@ -69,6 +70,10 @@ public class HandlerConfigClient {
     public static boolean defaultInventoryTabsAvoidRecipeBook = true;
     public static boolean defaultInventoryTabsAvoidEffects = true;
     public static boolean defaultInventoryTabsDragToMove = true;
+    // On by default: with CustomNPCs installed the inline tab is strictly better than a second
+    // strip, and turning it off is only useful for a player who wants the Runic strip's anchor and
+    // drag settings back.
+    public static boolean defaultCustomNpcsNativeTabs = true;
 
     static {
         CONFIG.push("general");
@@ -102,7 +107,7 @@ public class HandlerConfigClient {
         CONFIG.pop();
 
         CONFIG.push("tabs");
-        inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Turned off automatically anyway when L2Tabs or Legendary Tabs is present, since those render the Skills tab natively.")
+        inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Turned off automatically anyway when L2Tabs, Legendary Tabs or CustomNPCs is present, since those render the Skills tab natively.")
                 .define("inventoryTabsEnabled", defaultInventoryTabsEnabled);
         inventoryTabsAnchor = CONFIG.comment("Where the tab strip attaches to the inventory panel: AUTO, TOP_LEFT, TOP_RIGHT, LEFT, RIGHT, BOTTOM_LEFT or BOTTOM_RIGHT. AUTO tries them in that order and takes the first that fits on screen without overlapping the recipe book, the potion effect panel, another mod's inventory widgets (tab strips and side buttons other mods add to the inventory screen) or a region another mod reserved; TOP_LEFT is the position used before 2.0.5. An explicit anchor is honoured even if it overlaps something.")
                 .define("inventoryTabsAnchor", defaultInventoryTabsAnchor,
@@ -119,6 +124,8 @@ public class HandlerConfigClient {
                 .define("inventoryTabsAvoidEffects", defaultInventoryTabsAvoidEffects);
         inventoryTabsDragToMove = CONFIG.comment("Allow Shift-dragging the strip in the inventory to move it. The drag writes inventoryTabsOffsetX/Y and saves this file when the button is released.")
                 .define("inventoryTabsDragToMove", defaultInventoryTabsDragToMove);
+        customNpcsNativeTabs = CONFIG.comment("With CustomNPCs installed, put the Skills tab inside its tab strip (Inventory, Skills, Factions, Quests) instead of drawing a second strip of Runic Skills' own. Set to false to restore the separate strip. No effect without CustomNPCs.")
+                .define("customNpcsNativeTabs", defaultCustomNpcsNativeTabs);
         CONFIG.pop();
 
         SPEC = CONFIG.build();

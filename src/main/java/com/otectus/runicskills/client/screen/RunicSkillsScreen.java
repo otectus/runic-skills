@@ -15,8 +15,7 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerConfigClient;
 import com.otectus.runicskills.handler.HandlerResources;
-import com.otectus.runicskills.integration.L2TabsIntegration;
-import com.otectus.runicskills.integration.LegendaryTabsIntegration;
+import com.otectus.runicskills.integration.InventoryTabOwnership;
 import com.otectus.runicskills.network.packet.common.AdjustPassiveSP;
 import com.otectus.runicskills.network.packet.common.SetPlayerTitleSP;
 import com.otectus.runicskills.common.util.SkillLevelUpMath;
@@ -842,7 +841,7 @@ public class RunicSkillsScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && !L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
+        if (button == 0 && !InventoryTabOwnership.externalTabsActive()) {
             DrawTabs.mouseClicked(button);
         }
 
@@ -932,7 +931,7 @@ public class RunicSkillsScreen extends Screen {
         if (this.searchTitle != null) {
             this.searchTitle.setValue("");
         }
-        if (!L2TabsIntegration.isNativeTabsActive() && !LegendaryTabsIntegration.isModLoaded()) {
+        if (!InventoryTabOwnership.externalTabsActive()) {
             DrawTabs.onClose();
         }
         super.onClose();
@@ -1179,11 +1178,13 @@ public class RunicSkillsScreen extends Screen {
         return new Area(pageTextX + client.font.width(pageNumber) + 5, panelY + FOOTER_Y, 7, 11);
     }
 
-    private int panelLeft() {
+    /** Panel origin. Public so tab strips supplied by other mods can be placed against it. */
+    public int panelLeft() {
         return (this.width - PANEL_WIDTH) / 2;
     }
 
-    private int panelTop() {
+    /** @see #panelLeft() */
+    public int panelTop() {
         return (this.height - PANEL_HEIGHT) / 2;
     }
 

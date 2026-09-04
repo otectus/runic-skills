@@ -125,6 +125,7 @@ Runic Skills detects installed mods at runtime and enables matching content with
 | **Crayfish Gun Mod (unofficial)**, **Scorched Guns 2**, **TacZ**, **PointBlank** (Vic's) | Gun-fire events honour Runic Skills perks/locks |
 | **L2Tabs** | Registers the Skills tab in L2Tabs' strip (priority 3500) |
 | **Legendary Tabs** (Sfiomn) | Registers a native `TabBase` for the Legendary Tabs sidebar (priority configurable) |
+| **CustomNPCs** | Skills tab joins CustomNPCs' inventory tab strip |
 | **FTB Quests** (since 1.3.0) | Six native task types (`skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) — see the [FTB Quests integration](#ftb-quests-integration) section |
 
 If you're a mod author and want Runic Skills to integrate with your mod, open an issue or a PR — each integration is a single Java class with an `isModLoaded()` gate, see [`src/main/java/com/otectus/runicskills/integration/`](src/main/java/com/otectus/runicskills/integration/).

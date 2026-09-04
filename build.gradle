@@ -54,8 +54,15 @@ java {
 // not be) tracked here (RS10-001). Compiling our own stub keeps the build self-contained: it
 // is on the compile classpath only, so it never enters the shipped jar or any run
 // configuration, and the real Legendary Tabs classes are what load at runtime.
+//
+// The same applies to CustomNPCs (src/customnpcsApi/java): its inventory tab strip is built from
+// `noppes.npcs.client.gui.player.tabs.AbstractTab`, and our tab has to subclass it to inherit that
+// mod's exact rendering, hover and selected-state drawing. CustomNPCs has no Maven coordinate
+// either, so the same stub-source-set treatment applies — compile classpath only, never shipped,
+// with a reflective probe at runtime turning any upstream drift into a fallback rather than a crash.
 sourceSets {
     legendarytabsApi
+    customnpcsApi
 
     // Forge GameTests (src/gametest/java). Separate from src/main so behavioural test code never
     // ships in the mod jar, and separate from src/test because these need a real Minecraft server
@@ -68,6 +75,7 @@ sourceSets {
 configurations {
     // Give the stub the Minecraft/Forge classes its signatures reference.
     legendarytabsApiCompileOnly.extendsFrom(minecraft)
+    customnpcsApiCompileOnly.extendsFrom(minecraft)
 }
 
 minecraft {
@@ -260,6 +268,12 @@ dependencies {
     // abstract getId()/getIconTexture() and render() took three more parameters. The stub
     // mirrors 2.0; keep it and the legendarytabs versionRange in mods.toml in step.
     compileOnly sourceSets.legendarytabsApi.output
+
+    // CustomNPCs (Noppes / GBPort Unofficial) — compiled against the in-repo API stub declared
+    // above for the same reason as Legendary Tabs: no Maven coordinate, and our tab subclasses
+    // theirs, so the dependency cannot be reflected away at compile time. Runtime linkage is
+    // guarded by the probe in CustomNpcsIntegration.
+    compileOnly sourceSets.customnpcsApi.output
 
     // ClothConfig implementation (Required by BetterCombat)
     implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.118")

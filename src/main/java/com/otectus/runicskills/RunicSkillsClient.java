@@ -9,6 +9,7 @@ import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.client.gui.OverlayTitleGui;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.client.integration.LegendaryTabsClientIntegration;
+import com.otectus.runicskills.integration.CustomNpcsIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.client.event.RegistryClientEvents;
@@ -149,6 +150,13 @@ public class RunicSkillsClient {
                 // guard, so the class is never loaded at all when Legendary Tabs is
                 // absent — the same isolation the method reference above buys us.
                 MinecraftForge.EVENT_BUS.register(LegendaryTabsClientIntegration.class);
+            }
+
+            if (CustomNpcsIntegration.isModLoaded()) {
+                // Same isolation pattern again: the server-safe facade probes CustomNPCs'
+                // AbstractTab and only then reflectively loads the client integration that
+                // subclasses it, so no noppes.* symbol reaches ClientProxy's constant pool.
+                event.enqueueWork(CustomNpcsIntegration::registerClientTabs);
             }
         }
 
