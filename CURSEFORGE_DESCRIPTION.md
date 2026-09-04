@@ -168,7 +168,7 @@ Available to everyone:
 
 Master Researcher no longer scans thousands of recipes per craft — it now indexes them with a candidate budget, with improved compatibility for modded recipe and ingredient implementations, including configurations using ModernFix. Combat secondary damage carries re-entry protection and safeguards for large multi-skill builds.
 
-**Inventory tabs now stay out of the way.** They avoid the recipe book, potion effects, and other mods' custom tab regions. You can move the tab strip with Shift-drag, and the position is saved.
+**Inventory tabs now stay out of the way.** They avoid the recipe book, potion effects, other mods' tab strips and side buttons, and any custom regions. You can move the tab strip with Shift-drag, and the position is saved.
 
 **KubeJS server-side progression gates now work.** Write `RunicSkillsEvents.skillLevelUp` listeners in `kubejs/server_scripts/` to observe or deny skill level-ups, including advancement-based gates. The server post is authoritative and charges no XP on denial. See docs/KUBEJS.md for advancement helpers and examples.
 

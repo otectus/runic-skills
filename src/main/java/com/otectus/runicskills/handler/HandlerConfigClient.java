@@ -104,7 +104,7 @@ public class HandlerConfigClient {
         CONFIG.push("tabs");
         inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Turned off automatically anyway when L2Tabs or Legendary Tabs is present, since those render the Skills tab natively.")
                 .define("inventoryTabsEnabled", defaultInventoryTabsEnabled);
-        inventoryTabsAnchor = CONFIG.comment("Where the tab strip attaches to the inventory panel: AUTO, TOP_LEFT, TOP_RIGHT, LEFT, RIGHT, BOTTOM_LEFT or BOTTOM_RIGHT. AUTO tries them in that order and takes the first that fits on screen without overlapping the recipe book, the potion effect panel or a region another mod reserved; TOP_LEFT is the position used before 2.0.5. An explicit anchor is honoured even if it overlaps something.")
+        inventoryTabsAnchor = CONFIG.comment("Where the tab strip attaches to the inventory panel: AUTO, TOP_LEFT, TOP_RIGHT, LEFT, RIGHT, BOTTOM_LEFT or BOTTOM_RIGHT. AUTO tries them in that order and takes the first that fits on screen without overlapping the recipe book, the potion effect panel, another mod's inventory widgets (tab strips and side buttons other mods add to the inventory screen) or a region another mod reserved; TOP_LEFT is the position used before 2.0.5. An explicit anchor is honoured even if it overlaps something.")
                 .define("inventoryTabsAnchor", defaultInventoryTabsAnchor,
                         raw -> raw instanceof String s && java.util.List.of(
                                         "AUTO", "TOP_LEFT", "TOP_RIGHT", "LEFT", "RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT")
