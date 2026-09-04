@@ -10,7 +10,8 @@
     "MixPlayerRenderer",
     "MixInventoryScreen",
     "MixGunItem",
-    "MixTargetFinder"
+    "MixTargetFinder",
+    "ScreenAccessor"
   ],
   "mixins": [
     "MixItemStack",

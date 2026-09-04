@@ -4,6 +4,7 @@ import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.integration.CustomNpcsIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
+import com.otectus.runicskills.mixin.ScreenAccessor;
 import com.otectus.runicskills.registry.RegistryItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
@@ -35,14 +36,27 @@ import java.util.List;
  * would put {@code AbstractTab} in an always-loaded constant pool and throw
  * {@link NoClassDefFoundError} for every player without CustomNPCs.
  *
- * <p><b>Why {@link EventPriority#LOWEST}.</b> CustomNPCs adds its three tabs from its own
- * default-priority {@code ScreenEvent.Init.Post} handler. Ours has to run after that one, or the
- * list it scans is still empty on the vanilla inventory and there is nothing to insert into.
+ * <p><b>Why insertion happens at first render, not at {@code Init.Post}.</b> CustomNPCs adds its
+ * three tabs from its own {@code ScreenEvent.Init.Post} handler, and that handler is itself
+ * annotated {@code @SubscribeEvent(priority = EventPriority.LOWEST)} — confirmed with {@code javap}.
+ * Two handlers at the same priority are dispatched in registration order, which nothing about our
+ * mod can influence; in the reporting instance ours ran first, found no {@link AbstractTab} on the
+ * inventory screen and returned, leaving the player with CustomNPCs' three tabs and no Skills tab.
+ * {@code Init.Post} ordering therefore cannot be made reliable at any priority. Instead
+ * {@link #ensure(Screen)} runs from {@code ScreenEvent.Render.Pre}, by which point every mod's
+ * {@code init} work is done. It is idempotent and cheap — one pass over {@code screen.children()} —
+ * and because a window resize re-runs {@code init()} and clears the widget list, the per-frame
+ * check re-inserts the tab by itself. The {@code Init.Post} handler is kept only as a fast path
+ * for the frame-zero case; it calls the same {@code ensure} and nothing depends on it running.
+ *
+ * <p>Adding at render time means {@code ScreenEvent.Init.Post#addListener} is no longer available,
+ * so the widget goes in through {@link ScreenAccessor}, which is the screen's own
+ * {@code addRenderableWidget}.
  *
  * <p><b>Why widgets are scanned rather than screen types.</b> The strip appears on the vanilla
  * inventory (added by that handler) and on CustomNPCs' own Faction and Quest screens (added by
  * those screens' {@code init()} via {@code addRenderableWidget}, so already present when
- * {@code Init.Post} fires). Keying off the screen classes would mean stubbing and naming
+ * {@code init()} runs). Keying off the screen classes would mean stubbing and naming
  * {@code GuiFaction} and {@code GuiQuestLog} as well, and would silently miss any screen a future
  * CustomNPCs release puts the strip on. "Does this screen already have {@code AbstractTab}
  * widgets?" is the question we actually mean, and it answers itself for screens we have never
@@ -129,21 +143,38 @@ public final class CustomNpcsTabsClientIntegration {
     }
 
     /**
-     * Inserts the Skills tab into whatever strip this screen has, or builds the whole strip when
-     * the screen is ours.
+     * Fast path: usually the tab is in place before the screen's first frame is drawn. Harmless
+     * when CustomNPCs has not run yet — {@link #ensure(Screen)} simply finds no strip, and the
+     * render handler below picks it up on the next frame.
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onScreenInitPost(ScreenEvent.Init.Post event) {
+        ensure(event.getScreen());
+    }
+
+    /**
+     * The authoritative insertion point. Runs every frame; all but the first return after a single
+     * pass over the screen's listener list.
+     */
+    @SubscribeEvent
+    public static void onScreenRenderPre(ScreenEvent.Render.Pre event) {
+        ensure(event.getScreen());
+    }
+
+    /**
+     * Inserts the Skills tab into whatever strip this screen has, or builds the whole strip when
+     * the screen is ours. Idempotent: if our tab is already on the screen, this only refreshes the
+     * {@code activeTab}/{@code activeScreen} pair the tooltip handler reads.
+     */
+    private static void ensure(Screen screen) {
         if (!CustomNpcsIntegration.isNativeTabsActive()) return;
         // L2Tabs and Legendary Tabs already render a Skills tab natively. Adding a second copy
         // here would recreate exactly the duplication this integration exists to remove.
         if (L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isModLoaded()) return;
 
-        Screen screen = event.getScreen();
         List<AbstractTab> existing = new ArrayList<>();
-        for (GuiEventListener listener : event.getListenersList()) {
+        for (GuiEventListener listener : screen.children()) {
             if (listener instanceof RunicSkillsCustomNpcsTab ours) {
-                // Idempotent: Init.Post fires again on every resize, and screens can be re-inited.
                 activeTab = ours;
                 activeScreen = screen;
                 return;
@@ -154,9 +185,9 @@ public final class CustomNpcsTabsClientIntegration {
         }
 
         if (!existing.isEmpty()) {
-            insertIntoExistingStrip(event, screen, existing);
+            insertIntoExistingStrip(screen, existing);
         } else if (screen instanceof RunicSkillsScreen skillsScreen) {
-            buildFullStrip(event, skillsScreen);
+            buildFullStrip(skillsScreen);
         }
     }
 
@@ -167,8 +198,7 @@ public final class CustomNpcsTabsClientIntegration {
      * re-runs {@code init(screen)} so its x is recomputed from upstream's own anchor for this
      * screen rather than from anything we assume about it.
      */
-    private static void insertIntoExistingStrip(ScreenEvent.Init.Post event, Screen screen,
-                                                List<AbstractTab> existing) {
+    private static void insertIntoExistingStrip(Screen screen, List<AbstractTab> existing) {
         for (AbstractTab tab : existing) {
             if (tab.id >= 1) tab.id++;
             tab.init(screen);
@@ -177,7 +207,7 @@ public final class CustomNpcsTabsClientIntegration {
         RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
         ours.id = 1;
         ours.init(screen);
-        event.addListener(ours);
+        ((ScreenAccessor) screen).runicskills$addRenderableWidget(ours);
 
         activeTab = ours;
         activeScreen = screen;
@@ -188,7 +218,7 @@ public final class CustomNpcsTabsClientIntegration {
      * hand at the panel-relative offsets documented on this class. Ours draws itself selected,
      * because its {@code screenClass} is this screen.
      */
-    private static void buildFullStrip(ScreenEvent.Init.Post event, RunicSkillsScreen screen) {
+    private static void buildFullStrip(RunicSkillsScreen screen) {
         RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
         List<AbstractTab> strip = List.of(
                 new InventoryTabVanilla(), ours, new InventoryTabFactions(), new InventoryTabQuests());
@@ -203,7 +233,7 @@ public final class CustomNpcsTabsClientIntegration {
             tab.init(screen);
             tab.setX(left + STRIP_INSET_X + id * TAB_PITCH);
             tab.setY(top + STRIP_INSET_Y - TAB_PITCH);
-            event.addListener(tab);
+            ((ScreenAccessor) screen).runicskills$addRenderableWidget(tab);
         }
 
         activeTab = ours;
