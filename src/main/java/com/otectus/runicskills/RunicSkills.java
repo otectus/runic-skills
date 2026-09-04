@@ -1,6 +1,7 @@
 package com.otectus.runicskills;
 
 import com.mojang.logging.LogUtils;
+import com.otectus.runicskills.common.progression.ProgressionHooks;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.*;
@@ -139,6 +140,17 @@ public class RunicSkills {
         // PathingStuckHandler mixin calls, and subscribes the explosion handler. Reflective load
         // keeps every MineColonies type out of the main constant pool.
         tryLoadIntegration("minecolonies",     "com.otectus.runicskills.integration.MineColoniesIntegration");
+        // Installs the ProgressionHooks vetoes that post RunicSkillsEvents.skillLevelUp. Reflective
+        // for the usual reason, and because a KubeJS whose event API moved must degrade to "scripts
+        // do not gate progression" rather than to "the mod does not load".
+        tryLoadIntegration("kubejs",           "com.otectus.runicskills.kubejs.KubeJSEventBridge");
+        // tryLoadIntegration's own catch logs a WARN naming the class; this says what it means for
+        // the pack, at ERROR, because a pack whose gates are silently inactive is the defect
+        // issue #1 reported. It also covers the case where the class loaded but did not install.
+        if (KubeJSIntegration.isModLoaded() && !ProgressionHooks.kubejsBridgeInstalled) {
+            LOGGER.error("KubeJS is installed but the Runic Skills server event bridge could not "
+                    + "initialize. Server-side progression scripts will not run.");
+        }
 
         // Integrations that use only Forge/MC APIs — safe for direct instantiation. Same rule as
         // above: presence decides registration, the toggle decides behaviour, checked live.

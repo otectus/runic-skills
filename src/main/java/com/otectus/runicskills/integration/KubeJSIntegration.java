@@ -1,69 +1,74 @@
 package com.otectus.runicskills.integration;
 
+import com.otectus.runicskills.common.progression.ProgressionHooks;
+import com.otectus.runicskills.common.progression.ProgressionService;
+import com.otectus.runicskills.common.util.LogOnce;
 import com.otectus.runicskills.registry.skill.Skill;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.ModList;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-
 /**
- * Legacy KubeJS shim. Since 1.2.0 the canonical level-up hook is the public Forge
- * {@link com.otectus.runicskills.event.SkillLevelUpEvent} which KubeJS subscribes
- * to natively via its Forge-event bridge — no reflection needed. This class
- * remains so existing pack scripts using the {@code SkillLevelUpEventJS} surface
- * keep working unchanged. Will be removed in a future major.
+ * Presence check and entry points for the KubeJS progression events.
+ *
+ * <p>This class holds no KubeJS types at all. The posts happen in
+ * {@code kubejs.KubeJSEventBridge}, reached through the {@link ProgressionHooks} indirection, so
+ * common code can ask for a script veto without the JVM ever resolving a KubeJS class
+ * on an installation that has no KubeJS. What used to be here — a reflective post that resolved
+ * four members by name and swallowed every exception without logging — reported "not cancelled" for
+ * three releases while the underlying event was registered client-only and could never fire on a
+ * server (issue #1). Reflection that cannot fail loudly is worse than no integration.
  */
 public class KubeJSIntegration {
-
-    // Reflection handles are resolved lazily on first call and cached for the lifetime
-    // of the mod. Prevents ~6 reflective lookups per skill level-up.
-    private static volatile boolean REFLECTION_READY = false;
-    private static volatile boolean REFLECTION_FAILED = false;
-    private static Constructor<?> LEVEL_UP_EVENT_CTOR;
-    private static Object SKILL_LEVELUP_FIELD;
-    private static Method POST_METHOD;
-    private static Method GET_CANCELLED_METHOD;
 
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("kubejs");
     }
 
     /**
-     * @deprecated Since 1.2.0. Subscribe to {@link com.otectus.runicskills.event.SkillLevelUpEvent}
-     *     on {@code MinecraftForge.EVENT_BUS} instead. Kept for backward compatibility with
-     *     existing KubeJS pack scripts; will be removed in a future major.
+     * Runs the server-side script veto for a level-up in progress.
+     *
+     * @return whether a script cancelled it, and the reason to show the player if it gave one
      */
-    @Deprecated(forRemoval = true)
-    public boolean postLevelUpEvent(Player player, Skill skill) {
-        if (REFLECTION_FAILED) return false;
-        if (!REFLECTION_READY) {
-            synchronized (KubeJSIntegration.class) {
-                if (!REFLECTION_READY && !REFLECTION_FAILED) {
-                    try {
-                        Class<?> eventClass = Class.forName("com.otectus.runicskills.kubejs.events.LevelUpEvent");
-                        Class<?> customEventsClass = Class.forName("com.otectus.runicskills.kubejs.events.CustomEvents");
-                        Class<?> eventJsClass = Class.forName("dev.latvian.mods.kubejs.event.EventJS");
+    public static ProgressionHooks.VetoResult postServerSkillLevelUp(
+            ServerPlayer player, Skill skill, int oldLevel, int newLevel,
+            ProgressionService.Cause cause) {
+        warnIfBridgeMissing();
+        return ProgressionHooks.postServerLevelUp(player, skill, oldLevel, newLevel, cause);
+    }
 
-                        LEVEL_UP_EVENT_CTOR = eventClass.getConstructor(Player.class, Skill.class);
-                        SKILL_LEVELUP_FIELD = customEventsClass.getField("SKILL_LEVELUP").get(null);
-                        POST_METHOD = SKILL_LEVELUP_FIELD.getClass().getMethod("post", eventJsClass);
-                        GET_CANCELLED_METHOD = eventClass.getMethod("getCancelled");
-                        REFLECTION_READY = true;
-                    } catch (Exception e) {
-                        REFLECTION_FAILED = true;
-                        return false;
-                    }
-                }
-            }
-        }
-        try {
-            Object eventInstance = LEVEL_UP_EVENT_CTOR.newInstance(player, skill);
-            POST_METHOD.invoke(SKILL_LEVELUP_FIELD, eventInstance);
-            return (boolean) GET_CANCELLED_METHOD.invoke(eventInstance);
-        } catch (Exception e) {
-            return false;
+    /** The client convenience veto; suppresses the purchase packet only. */
+    public static ProgressionHooks.VetoResult postClientSkillLevelUp(
+            Player player, Skill skill, int oldLevel, int newLevel,
+            ProgressionService.Cause cause) {
+        return ProgressionHooks.postClientLevelUp(player, skill, oldLevel, newLevel, cause);
+    }
+
+    /**
+     * KubeJS present but the bridge absent means every script gate in the pack is silently
+     * inactive. That is the exact failure this release exists to remove, so it is reported at ERROR
+     * — once here, at the first level-up, and once at mod construction, because an operator who
+     * missed the startup line will still see this one when a gate does not fire.
+     */
+    private static void warnIfBridgeMissing() {
+        if (isModLoaded() && !ProgressionHooks.kubejsBridgeInstalled) {
+            LogOnce.errorOnce("kubejs-bridge-missing",
+                    "KubeJS is installed but the Runic Skills server event bridge could not "
+                            + "initialize. Server-side progression scripts will not run.");
         }
     }
 
+    /**
+     * @deprecated Since 2.0.5. Call {@link #postServerSkillLevelUp} — or, from a script, listen to
+     *     {@code RunicSkillsEvents.skillLevelUp}. This form cannot say which levels are involved,
+     *     so it assumes a one-level purchase from the player's current level. Kept only so an
+     *     external caller compiled against the old signature keeps working.
+     */
+    @Deprecated(forRemoval = true)
+    public boolean postLevelUpEvent(Player player, Skill skill) {
+        if (!(player instanceof ServerPlayer serverPlayer) || skill == null) return false;
+        int current = skill.getLevel(serverPlayer);
+        return postServerSkillLevelUp(serverPlayer, skill, current, current + 1,
+                ProgressionService.Cause.PURCHASE).cancelled();
+    }
 }

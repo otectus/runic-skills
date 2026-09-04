@@ -3,13 +3,14 @@ package com.otectus.runicskills.common.progression;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.util.CapabilityBounds;
 import com.otectus.runicskills.event.SkillLevelUpEvent;
-import com.otectus.runicskills.integration.KubeJSIntegration;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.KubeJSIntegration;
 import com.otectus.runicskills.integration.quests.RunicQuestBridge;
 import com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP;
 import com.otectus.runicskills.registry.RegistryAttributes;
 import com.otectus.runicskills.registry.RegistryTitles;
 import com.otectus.runicskills.registry.skill.Skill;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -62,7 +63,7 @@ public final class ProgressionService {
         UNKNOWN_SKILL,
         /** The requested level is what the player already has. */
         NO_CHANGE,
-        /** A subscriber cancelled {@link SkillLevelUpEvent}. */
+        /** A subscriber cancelled {@link SkillLevelUpEvent}, or a script vetoed the level-up. */
         CANCELLED
     }
 
@@ -82,8 +83,23 @@ public final class ProgressionService {
      *
      * <p>The clamp is deliberately applied here rather than being the caller's business: every
      * caller had its own version of it before, and two of them were wrong.
+     *
+     * <p><b>The order is clamp → Forge {@link SkillLevelUpEvent} → KubeJS server hook → mutation →
+     * reconcile, and each position is deliberate.</b> Clamping first means a subscriber is told the
+     * level that would actually be written, not the one a caller asked for. Both vetoes run before
+     * the capability is touched, so a cancellation is a level-up that never happened rather than
+     * one that has to be undone — the rollback the old Javadoc described was a second write that
+     * observers could see. Reconciliation runs last and exactly once, on the finished state.
+     *
+     * <p>The KubeJS hook is posted only when {@code target > previous}: its scripting surface is
+     * named {@code skillLevelUp} and pack authors gate purchases with it, so firing it for an
+     * operator's {@code /skills … subtract} would let a "you may not level up" script block a
+     * level-down. The Forge event does fire for both, which is the older contract and is kept.
+     *
+     * <p>{@link Cause#RESPEC} is reserved: nothing constructs it yet, but scripts already switch on
+     * the cause, so the value exists in the enum from the start rather than appearing later and
+     * breaking every {@code else} branch a pack wrote.
      */
-    @SuppressWarnings("removal") // deliberately posts the deprecated KubeJS shim; see below
     public static Outcome setSkillLevel(ServerPlayer player, Skill skill, int requested, Cause cause) {
         if (skill == null) return Outcome.unchanged(0, Denial.UNKNOWN_SKILL);
         SkillCapability capability = SkillCapability.get(player);
@@ -99,14 +115,26 @@ public final class ProgressionService {
             return Outcome.unchanged(previous, Denial.CANCELLED);
         }
 
-        // The legacy KubeJS SKILL_LEVELUP surface used to be posted from the Skills screen's click
-        // handler, which meant a script's veto only suppressed the client's packet: anything that
-        // sent the packet directly, or used a command, walked straight past it. It is posted here
-        // now, on the server, where a cancellation is authoritative like every other one
-        // (RS-106). Deprecated since 1.2.0 in favour of SkillLevelUpEvent above.
-        if (target > previous && KubeJSIntegration.isModLoaded()
-                && new KubeJSIntegration().postLevelUpEvent(player, skill)) {
-            return Outcome.unchanged(previous, Denial.CANCELLED);
+        // The KubeJS SKILL_LEVELUP surface used to be posted from the Skills screen's click
+        // handler, on the client, which meant a script's veto only suppressed the client's own
+        // packet: anything that sent the packet directly, or used a command, walked straight past
+        // it. It is posted here now, on the server, where a cancellation is authoritative like
+        // every other one (RS-106, issue #1).
+        // Through KubeJSIntegration rather than straight to ProgressionHooks: that is the one call
+        // site that can tell "no KubeJS, so nothing to run" apart from "KubeJS is here but its
+        // bridge failed to install, so every gate in the pack is silently off", and the second must
+        // be reported. Neither class names a KubeJS type; the bridge behind the hook does.
+        if (target > previous) {
+            ProgressionHooks.VetoResult veto =
+                    KubeJSIntegration.postServerSkillLevelUp(player, skill, previous, target, cause);
+            if (veto.cancelled()) {
+                // The one place a denial reason reaches the player. The client hook stays silent so
+                // a script that denies in both script types cannot produce two chat lines.
+                if (veto.message() != null && !veto.message().isEmpty()) {
+                    player.sendSystemMessage(Component.literal(veto.message()));
+                }
+                return Outcome.unchanged(previous, Denial.CANCELLED);
+            }
         }
 
         capability.setSkillLevel(skill, target);

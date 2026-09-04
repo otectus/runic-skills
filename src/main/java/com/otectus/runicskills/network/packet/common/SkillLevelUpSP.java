@@ -53,73 +53,83 @@ public class SkillLevelUpSP {
         }
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
-            if (player != null) {
-                SkillCapability capability = SkillCapability.get(player);
-                if (capability == null) return;
-
-                Skill skillPlayer = RegistrySkills.getSkill(this.skill);
-                if (skillPlayer == null) return;
-
-                int skillLevel = capability.getSkillLevel(skillPlayer);
-
-                // At skillMaxLevel the storage clamp makes addSkillLevel a no-op, but without
-                // this check the packet still consumed XP, fired SkillLevelUpEvent, and notified
-                // the quest bridge for a level-up that never happened. Same cap the admin
-                // command path enforces via its argument range.
-                if (!com.otectus.runicskills.common.util.SkillLevelUpMath.canLevelUp(
-                        skillLevel, HandlerCommonConfig.HANDLER.instance().skillMaxLevel)) {
-                    SyncSkillCapabilityCP.send(player);
-                    return;
-                }
-
-                // The global level cap was enforced ONLY in the client GUI, so a patched or
-                // modified client could keep sending this packet and walk straight past a limit
-                // operators explicitly tune with /globallimit. Because the perk budget scales from
-                // earned global level, exceeding it also granted extra perk slots — the cap is a
-                // balance rule, and a rule only the client enforces is not a rule (RS-008).
-                int globalCap = HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel;
-                if (globalCap > 0 && capability.getGlobalLevel() >= globalCap) {
-                    SyncSkillCapabilityCP.send(player);
-                    return;
-                }
-
-                int requiredPoints = requiredPoints(player, skillPlayer, skillLevel);
-
-                // XP points are the single authoritative currency. spendableXp derives the player's
-                // real balance from experienceLevel + experienceProgress (getPlayerXP), never the
-                // raw totalExperience field or the displayed level count — the OR-across-currencies
-                // gate this replaces let a player with enough levels but too few points overspend
-                // into negative XP.
-                boolean canLevelUpSkill = com.otectus.runicskills.common.util.SkillLevelUpMath.canAfford(
-                        player.isCreative(), getPlayerXP(player), requiredPoints);
-
-                if (!canLevelUpSkill){
-                    RunicSkills.getLOGGER().info("Received level up packet without the required EXP needed to level up, skipping packet...");
-                    // Resync so a tampered/stale client can't stay in a misleading state.
-                    SyncSkillCapabilityCP.send(player);
-                    return;
-                }
-
-                // One mutation path for the purchase and for every command form (RS10-013).
-                // ProgressionService clamps against the live configuration, fires the public
-                // SkillLevelUpEvent — which a subscriber may still cancel — and reconciles
-                // attributes, titles and quests once before syncing.
-                com.otectus.runicskills.common.progression.ProgressionService.Outcome outcome =
-                        com.otectus.runicskills.common.progression.ProgressionService.addSkillLevels(
-                                player, skillPlayer, 1,
-                                com.otectus.runicskills.common.progression.ProgressionService.Cause.PURCHASE);
-                if (!outcome.changed()) {
-                    // Cancelled, capped, or otherwise refused: charge nothing, and resync so the
-                    // client stops displaying the level it optimistically drew (RS-156).
-                    SyncSkillCapabilityCP.send(player);
-                    return;
-                }
-                if (!player.isCreative()) {
-                    addPlayerXP(player, requiredPoints * -1);
-                }
-            }
+            if (player != null) applyPurchase(player, RegistrySkills.getSkill(this.skill));
         });
         context.setPacketHandled(true);
+    }
+
+
+    /**
+     * The whole of one skill purchase: validation, affordability, the mutation and the charge.
+     *
+     * <p>Extracted from the packet handler so a test can drive the real purchase path rather than a
+     * reimplementation of it (RS-205). Admission control — the rate limiter — deliberately stays in
+     * {@link #handle}, because it is about the packet, not about the purchase; every other check
+     * below is a rule of the game and belongs with the purchase wherever it is invoked from.
+     */
+    public static void applyPurchase(ServerPlayer player, Skill skillPlayer) {
+        SkillCapability capability = SkillCapability.get(player);
+        if (capability == null) return;
+
+        if (skillPlayer == null) return;
+
+        int skillLevel = capability.getSkillLevel(skillPlayer);
+
+        // At skillMaxLevel the storage clamp makes addSkillLevel a no-op, but without
+        // this check the packet still consumed XP, fired SkillLevelUpEvent, and notified
+        // the quest bridge for a level-up that never happened. Same cap the admin
+        // command path enforces via its argument range.
+        if (!com.otectus.runicskills.common.util.SkillLevelUpMath.canLevelUp(
+                skillLevel, HandlerCommonConfig.HANDLER.instance().skillMaxLevel)) {
+            SyncSkillCapabilityCP.send(player);
+            return;
+        }
+
+        // The global level cap was enforced ONLY in the client GUI, so a patched or
+        // modified client could keep sending this packet and walk straight past a limit
+        // operators explicitly tune with /globallimit. Because the perk budget scales from
+        // earned global level, exceeding it also granted extra perk slots — the cap is a
+        // balance rule, and a rule only the client enforces is not a rule (RS-008).
+        int globalCap = HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel;
+        if (globalCap > 0 && capability.getGlobalLevel() >= globalCap) {
+            SyncSkillCapabilityCP.send(player);
+            return;
+        }
+
+        int requiredPoints = requiredPoints(player, skillPlayer, skillLevel);
+
+        // XP points are the single authoritative currency. spendableXp derives the player's
+        // real balance from experienceLevel + experienceProgress (getPlayerXP), never the
+        // raw totalExperience field or the displayed level count — the OR-across-currencies
+        // gate this replaces let a player with enough levels but too few points overspend
+        // into negative XP.
+        boolean canLevelUpSkill = com.otectus.runicskills.common.util.SkillLevelUpMath.canAfford(
+                player.isCreative(), getPlayerXP(player), requiredPoints);
+
+        if (!canLevelUpSkill) {
+            RunicSkills.getLOGGER().info("Received level up packet without the required EXP needed to level up, skipping packet...");
+            // Resync so a tampered/stale client can't stay in a misleading state.
+            SyncSkillCapabilityCP.send(player);
+            return;
+        }
+
+        // One mutation path for the purchase and for every command form (RS10-013).
+        // ProgressionService clamps against the live configuration, fires the public
+        // SkillLevelUpEvent — which a subscriber may still cancel — and reconciles
+        // attributes, titles and quests once before syncing.
+        com.otectus.runicskills.common.progression.ProgressionService.Outcome outcome =
+                com.otectus.runicskills.common.progression.ProgressionService.addSkillLevels(
+                        player, skillPlayer, 1,
+                        com.otectus.runicskills.common.progression.ProgressionService.Cause.PURCHASE);
+        if (!outcome.changed()) {
+            // Cancelled, capped, or otherwise refused: charge nothing, and resync so the
+            // client stops displaying the level it optimistically drew (RS-156).
+            SyncSkillCapabilityCP.send(player);
+            return;
+        }
+        if (!player.isCreative()) {
+            addPlayerXP(player, requiredPoints * -1);
+        }
     }
 
     /** The player's current spendable XP-point balance (authoritative currency for level-up cost). */

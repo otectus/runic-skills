@@ -101,7 +101,7 @@ Works in single-player, LAN and on dedicated servers, using the same jar everywh
 - **Ars Nouveau** — spell damage, mana regeneration, glyph mastery
 - **Apotheosis / Apothic Attributes** — affix, gem and socket perks, an enchantment-cap boost, gem-rarity gating on socketing, and a much wider stat pool for passives
 - **FTB Quests** — six native task types, so quests can require skill levels, total level, perk ranks, passive levels or titles
-- **KubeJS** — subscribe to progression events from scripts
+- **KubeJS** — server-side progression events can observe or veto skill level-ups, including advancement-based progression rules
 - **L2Tabs / Legendary Tabs (2.0+)** — the Skills tab joins their strip instead of drawing over it
 - **Farmer's Delight and the Let's Do series, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared**, and the gun mods (**TacZ**, **Scorched Guns 2**, **PointBlank (Vic's)**, **Crayfish Gun Mod**) — food, combat and firearm perks
 
@@ -169,6 +169,8 @@ Available to everyone:
 Master Researcher no longer scans thousands of recipes per craft — it now indexes them with a candidate budget, with improved compatibility for modded recipe and ingredient implementations, including configurations using ModernFix. Combat secondary damage carries re-entry protection and safeguards for large multi-skill builds.
 
 **Inventory tabs now stay out of the way.** They avoid the recipe book, potion effects, and other mods' custom tab regions. You can move the tab strip with Shift-drag, and the position is saved.
+
+**KubeJS server-side progression gates now work.** Write `RunicSkillsEvents.skillLevelUp` listeners in `kubejs/server_scripts/` to observe or deny skill level-ups, including advancement-based gates. The server post is authoritative and charges no XP on denial. See docs/KUBEJS.md for advancement helpers and examples.
 
 **2.0.4 and 2.0.5 pair freely** — no protocol or save-data change; new client-only tab settings use safe defaults.
 

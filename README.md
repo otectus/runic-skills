@@ -105,7 +105,7 @@ Runic Skills detects installed mods at runtime and enables matching content with
 
 | Integration | Effect when present |
 |---|---|
-| **KubeJS** / Rhino | Progression events — `SKILL_LEVELUP` plus the four public Forge events, subscribable from scripts. **Not** content registration: see the note below. |
+| **KubeJS** / Rhino | Server-side progression events can observe or veto skill level-ups, including advancement-based progression rules. **Not** content registration: see the note below. |
 | **Ars Nouveau** | 11 form/school perks (Form Focus: Projectile/Touch/Self, Wild Manipulation, per-school Hedgewitch/Emberforged/Stormcaller/Geomancer/Conjurer/Abjurer/Arcane Weaver) on top of the existing spell-damage scaling, mana regen passives, glyph mastery, and familiar gating |
 | **Irons Spellbooks** | 37 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch — including the blood-school perks Blood-mancer / Blood-Warded / Blood Catalyst and Blood Fury), summon perks (Lord of the Dead, Life Leech Bound), plus Spell Echo, Arcane Shield, and Magic-level spell gating |
 | **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item), Apotheosis Wisdom (enchantment-cap boost via Placebo's GetEnchantmentLevelEvent), plus gem rarity gating — socketing a gem requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), toggled by `apothEnableGemRarityGating` (default on) |
@@ -295,7 +295,7 @@ Both mirror a specific upstream version (Legendary Tabs `1.20.1-2.0`, L2Tabs `0.
 
 ## Scripting hooks and the public Forge event API
 
-Since **1.2.0**, Runic Skills fires four public `PlayerEvent`-subclass events on `MinecraftForge.EVENT_BUS` that external Java mods and KubeJS scripts can subscribe to. The full reference is in [`docs/API_EVENTS.md`](docs/API_EVENTS.md); a summary:
+Since **1.2.0**, Runic Skills fires four public `PlayerEvent`-subclass events on `MinecraftForge.EVENT_BUS` that external Java mods can subscribe to. Since **2.0.5**, KubeJS `server_scripts` can also gate skill progression. The full reference is in [`docs/API_EVENTS.md`](docs/API_EVENTS.md) and [`docs/KUBEJS.md`](docs/KUBEJS.md); a summary:
 
 | Event | Cancelable | Fires from |
 |---|---|---|
@@ -305,17 +305,20 @@ Since **1.2.0**, Runic Skills fires four public `PlayerEvent`-subclass events on
 | `PerkToggleEvent.Post` | ❌ | `TogglePerkSP.handle`, after state mutation |
 | `TitleEarnedEvent` | ❌ | `Title.setRequirement` when a title unlocks for a player |
 
-**KubeJS script (new style — recommended):**
+**KubeJS server script (new in 2.0.5):**
 ```js
-// kubejs/server_scripts/runicskills_hooks.js
-ForgeEvents.onEvent('net.minecraftforge.event.entity.player.PlayerEvent$SkillLevelUpEvent', event => {
+// kubejs/server_scripts/runicskills_gates.js
+RunicSkillsEvents.skillLevelUp(event => {
+    // Only gate purchases, not admin commands
+    if (event.cause !== 'purchase') return;
+    
     if (event.skill.name === 'magic' && event.newLevel > 30) {
-        event.entity.tell(`Magic ${event.newLevel} reached!`);
+        event.deny('Magic is capped at 30');
     }
 });
 ```
 
-**Legacy `SKILL_LEVELUP` event** (pre-1.2.0) still fires for backward compatibility via a deprecated shim in `KubeJSIntegration` — but new scripts should subscribe to the Forge event directly. The legacy reflection bridge is marked `@Deprecated(forRemoval = true)` and scheduled for removal in a future major.
+The server post is authoritative: a cancellation prevents the level-up and charges no XP. See [`docs/KUBEJS.md`](docs/KUBEJS.md) for advancement helpers, examples and full details.
 
 **What KubeJS cannot do: register content.** Earlier versions of this README advertised registering
 custom skills, perks, passives, titles and conditions from scripts. That was never wired up

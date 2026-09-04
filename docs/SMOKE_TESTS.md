@@ -137,6 +137,35 @@ about their own build is worse than one they cannot see.
 
 ---
 
+## 9. 2.0.5 KubeJS server progression
+
+| # | Test | Result | Notes |
+|---|---|---|---|
+| 9.1 | Dedicated server, no KubeJS on the mod list | | Server boots to "Done". KubeJS not present; no bridge to install. |
+| 9.2 | Dedicated server, KubeJS 2001.6.5-build.14 installed | | Server boots to "Done". Bridge installs; progression hooks are ready. |
+| 9.3 | Dedicated server, KubeJS 2001.6.5-build.26 installed | | Server boots to "Done". Bridge installs; progression hooks are ready. |
+| 9.4 | `kubejs/server_scripts/` folder exists, no scripts in it | | `/kubejs reload server_scripts` reports 0 scripts, 0 errors. |
+| 9.5 | Script: `event.setCanceled(true)` denies the level-up | | Purchase fails. Level does not rise. XP not charged. GUI resync shows pre-attempt level. |
+| 9.6 | Script: `event.setCancelled(true)` denies the level-up (British spelling) | | Same as 9.5. |
+| 9.7 | Script: `event.cancel()` denies the level-up | | Same as 9.5. |
+| 9.8 | Script: `event.deny('your reason here')` denies with a message | | Same as 9.5. Player sees "your reason here" in chat, once, on the server post only. |
+| 9.9 | Denied purchase: player has 100 XP, denies at level-up cost of 50, check balance | | Still has 100 XP. (Denial is before charge.) |
+| 9.10 | Allowed purchase: player has 100 XP, costs 50 to level, check balance | | Now has 50 XP. Level is +1. Passives/perks/titles reconciled. |
+| 9.11 | GUI purchase from Skills screen | | Fires server event once with `cause == 'purchase'`. |
+| 9.12 | `/skills <player> <skill> add 1` increases by 1 | | Fires server event once with `cause == 'command'`. |
+| 9.13 | `/skills <player> <skill> set 2` then set 12 (jump from 2→12) | | Fires one server event with `oldLevel == 2, newLevel == 12`. |
+| 9.14 | `/skills <player> <skill> subtract 1` decreases (no server post for decreases) | | Forge `SkillLevelUpEvent` fires (it fires for both directions). KubeJS server post does not fire (only for increases). GUI does not fire client post. |
+| 9.15 | Script: `if (event.cause !== 'purchase') return;` then deny | | `/skills` commands obey the gate. Deny only affects player-initiated purchases. |
+| 9.16 | Script: deny without the cause check | | `/skills` commands also trigger the gate. (Ops can lock themselves out if they are not careful.) |
+| 9.17 | `event.hasAdvancement('minecraft:adventure/kill_a_mob')` returns true for a player who has it | | Advancement helper works. |
+| 9.18 | `event.hasAdvancement('minecraft:adventure/kill_a_mob')` returns false for a player who does not have it | | Advancement helper works. |
+| 9.19 | `event.hasAdvancement('invalid:id')` malformed | | No crash. Returns false. One DEBUG line in `logs/kubejs/server.log` naming the bad id. |
+| 9.20 | `/kubejs reload server_scripts` with valid script in the folder | | Expect 0 errors. Script loads. |
+| 9.21 | `/probejs dump` lists the event | | Event appears in both SERVER and CLIENT contexts in the generated stubs. |
+| 9.22 | Multiplayer: client without KubeJS, server with it | | Client joins. Can level skills. Gate is enforced server-side (client cannot see or bypass it). Record observed behaviour. |
+
+---
+
 ## Reporting gaps
 
 Release-blockers: rows 1.1, 1.4, 3.1, 3.5, 3.7, 3.8 (the historical dedicated-server and

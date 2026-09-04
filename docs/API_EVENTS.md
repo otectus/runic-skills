@@ -4,7 +4,7 @@ Five `PlayerEvent` subclasses live on the **Forge bus** (`MinecraftForge.EVENT_B
 
 | Event | Cancelable | Fires from | Fields |
 |---|---|---|---|
-| [`SkillLevelUpEvent`](../src/main/java/com/otectus/runicskills/event/SkillLevelUpEvent.java) | ✅ | `ProgressionService.setSkillLevel`, after clamping and before mutation — so it covers the screen, the level-up packet **and** the admin commands, which used to write straight into the capability | `Skill skill`, `int oldLevel`, `int newLevel` |
+| [`SkillLevelUpEvent`](../src/main/java/com/otectus/runicskills/event/SkillLevelUpEvent.java) | ✅ | `ProgressionService.setSkillLevel`, after clamping and before mutation — so it covers the screen, the level-up packet **and** the admin commands, which used to write straight into the capability. The KubeJS server post follows this event and is also cancelable. | `Skill skill`, `int oldLevel`, `int newLevel` |
 | [`PassiveLevelUpEvent`](../src/main/java/com/otectus/runicskills/event/PassiveLevelUpEvent.java) | ✅ | `AdjustPassiveSP.handle` after validation, before mutation | `Passive passive`, `int oldLevel`, `int newLevel` |
 | [`PerkToggleEvent.Pre`](../src/main/java/com/otectus/runicskills/event/PerkToggleEvent.java) | ✅ | `TogglePerkSP.handle` after built-in validation, before rank/cooldown write | `Perk perk`, `int oldRank`, `int newRank`, `boolean wasEnabled`, `boolean isEnabled` |
 | [`PerkToggleEvent.Post`](../src/main/java/com/otectus/runicskills/event/PerkToggleEvent.java) | ❌ | after rank/cooldown write, before client sync | (same as Pre) |
@@ -53,28 +53,18 @@ public class MyAddon {
 
 ## Example — KubeJS script (server_scripts/)
 
-KubeJS forwards Forge events through its native `ForgeEvents` bridge:
+Since 2.0.5, Runic Skills posts its own custom event to KubeJS server_scripts, where a cancellation is authoritative and charges no XP. See [`docs/KUBEJS.md`](KUBEJS.md) for the full reference:
 
 ```js
-ForgeEvents.onEvent('com.otectus.runicskills.event.SkillLevelUpEvent', event => {
-    const player = event.entity
-    const skill = event.skill
-    console.info(`${player.username} leveled ${skill.name} to ${event.newLevel}`)
+RunicSkillsEvents.skillLevelUp(event => {
+    if (event.cause !== 'purchase') return;  // Let ops use /skills
+    if (event.skill.name === 'magic' && event.newLevel > 30) {
+        event.deny('Magic is capped at 30');
+    }
 })
 ```
 
-The legacy pre-1.2.0 KubeJS surface still works through a back-compat shim
-(`kubejs/events/LevelUpEvent` posted reflectively from `KubeJSIntegration.postLevelUpEvent`). New
-scripts should subscribe to the Forge event directly.
-
-**Two things changed about the shim in 2.0.1.** It used to be posted from the Skills screen's click
-handler — on the *client* — so a script cancelling it only suppressed that one packet, and
-anything that levelled a skill by another route walked straight past. It is posted from
-`ProgressionService` now, on the server, where a cancellation is authoritative like every other one.
-
-It is still `@Deprecated(forRemoval = true)`. Earlier revisions of this document said removal
-"would require a major version bump"; 2.0.0 *was* that bump and the shim stayed, so that wording was
-promising a schedule nobody was keeping. **The commitment now is concrete: it is removed in 2.1.0.**
+This is the supported KubeJS route. The old `ForgeEvents` bridge is not available in server_scripts.
 
 ## Stability commitment
 

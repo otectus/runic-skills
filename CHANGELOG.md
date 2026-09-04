@@ -30,6 +30,23 @@ No protocol, config schema, or save-data change; network protocol stays at 11. C
 
 Unified `common/combat/DamageContext.java` — every Runic-emitted secondary damage call carries an origin (Limit Breaker, Cleave, Bulwark reflect, Weapon Caster reflect, power echo, summon burst, channel splash, spell effects), standard outgoing modifiers apply only to primary hits, secondaries cannot spawn secondaries, hard depth ceiling of 4; the local `CLEAVING` set and `IN_REFLECT`/`IN_ECHO`/`IN_BURST`/`IN_SPLASH` guards were removed in its favour; every damage `event.setAmount` in the mod's event handlers and integrations — 72 sites across 23 files — now passes through `common/combat/DamageMath.safeAmount`, which keeps the original amount when a multiplier would produce NaN, infinite or negative damage; opt-in diagnostics `common/combat/CombatDiagnostics.java` enabled with `-Drunicskills.debug.combat=true` or DEBUG logging. Hardened recursive cross-perk secondary-damage interactions and added safeguards for large multi-skill builds.
 
+### KubeJS
+
+**Fixed:**
+- **Documentation.** The old example referenced a nonexistent inner class name (`PlayerEvent$SkillLevelUpEvent`) and relied on the ForgeEvents bridge from server_scripts, which is not the supported API. The JUnit test `KubeJSSurfaceInvariantTest` now fails the build if docs reintroduce the nonexistent class name or the broken ForgeEvents example.
+- **Event registration.** The KubeJS event was registered `client`-only, which meant server_scripts listeners were never invoked. Changed to `common` so the server post runs on the server and is authoritative.
+- **Event dispatch.** Bridge failures are now logged at ERROR instead of silently swallowed, so "KubeJS is present but gates never fire" is visible instead of invisible.
+- **Javadoc.** `SkillLevelUpEvent` Javadoc corrected to reflect that it fires before mutation (not after) and that it fires for both increases and decreases.
+
+**Added:**
+- **Server-side event gate.** `RunicSkillsEvents.skillLevelUp` now posts to `kubejs/server_scripts/` where cancellation is authoritative and charges no XP. Old `ForgeEvents` path (pre-1.2.0) never worked in server_scripts and is not supported.
+- **Event fields.** `oldLevel`, `newLevel`, `cause` (as lowercase string: `'purchase'` | `'command'` | `'respec'`), `serverSide` and `clientSide` boolean flags, both `setCanceled` and `setCancelled` spellings, `cancel()` and `cancel('message')` with native KubeJS throw, `deny(text)` as the preferred denial method.
+- **Advancement helpers.** `hasAdvancement(id)`, `getAdvancementProgress(id)` (0.0–1.0), `getCompletedAdvancementCriteria(id)`, `getTotalAdvancementCriteria(id)`, `completedAdvancementCount` (advancements with display, recipes excluded). Queries the server registry (return safe defaults on client post).
+- **GameTests:** `KubeJSScriptGateGameTest` loads a real server_scripts gate via `kubejs reload server_scripts` and proves it vetoes; `ProgressionVetoGameTest` covers veto and XP semantics.
+- **Integration:** `ProgressionHooks` indirection point lets the GameTests inject a veto without a test-only seam in production code.
+
+No network protocol, config schema, or save-data change; KubeJS remains optional. Compiled against build.14; tested through build.26.
+
 ### Testing
 
 New JUnit tests: `ProcRollTest` additions, `CraftingExecutionGuardTest`, `CraftingRefundTest`, `LogOnceTest`, `ReverseIndexTest`, `InventoryTabLayoutTest`, `DamageContextTest`, `DamageMathTest`, `DurabilityMathTest`.

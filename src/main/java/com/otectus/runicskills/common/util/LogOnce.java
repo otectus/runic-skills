@@ -71,6 +71,10 @@ public final class LogOnce {
         if (shouldLog(key)) logger.warn(message, args);
     }
 
+    public void error(String key, String message, Object... args) {
+        if (shouldLog(key)) logger.error(message, args);
+    }
+
     public void info(String key, String message, Object... args) {
         if (shouldLog(key)) logger.info(message, args);
     }
@@ -83,6 +87,15 @@ public final class LogOnce {
 
     public static void warnOnce(String key, String message, Object... args) {
         shared().warn(key, message, args);
+    }
+
+    /**
+     * An ERROR that must be seen but must not repeat. Added for the progression hook wrappers: a
+     * broken script or a mismatched KubeJS build fails open on every single level-up, so the
+     * diagnostic needs the severity of a real fault without the volume of one.
+     */
+    public static void errorOnce(String key, String message, Object... args) {
+        shared().error(key, message, args);
     }
 
     public static void infoOnce(String key, String message, Object... args) {

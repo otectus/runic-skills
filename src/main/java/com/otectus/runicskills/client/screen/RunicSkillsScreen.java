@@ -1,6 +1,8 @@
 package com.otectus.runicskills.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.otectus.runicskills.common.progression.ProgressionHooks;
+import com.otectus.runicskills.common.progression.ProgressionService;
 import com.otectus.runicskills.client.core.SortPassives;
 import com.otectus.runicskills.client.core.SortPerks;
 import com.otectus.runicskills.client.core.Utils;
@@ -1021,10 +1023,15 @@ public class RunicSkillsScreen extends Screen {
                 && detailState.skillLevel() < HandlerCommonConfig.HANDLER.instance().skillMaxLevel
                 && canLevelUp(detailState.skill(), detailState.skillLevel())) {
             Utils.playSound();
-            // The legacy KubeJS veto used to be consulted here, on the client, where suppressing
-            // the packet was the whole of its enforcement. It moved to ProgressionService, beside
-            // the Forge event it duplicates, so a script cancellation now holds for commands and
-            // hand-sent packets too.
+            // Compatibility only. The authoritative post is the server one in ProgressionService,
+            // which holds for commands and hand-sent packets alike; this client post exists so a
+            // client_scripts listener can suppress the request before it leaves, and it says
+            // nothing to the player — the server sends the denial message, once.
+            if (ProgressionHooks.postClientLevelUp(this.minecraft.player, detailState.skill(),
+                    detailState.skillLevel(), detailState.skillLevel() + 1,
+                    ProgressionService.Cause.PURCHASE).cancelled()) {
+                return true;
+            }
             SkillLevelUpSP.send(detailState.skill());
             return true;
         }

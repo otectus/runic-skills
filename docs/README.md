@@ -15,6 +15,7 @@ releases behind — and a reader had no way to tell which described the mod as i
 | [`CONTENT_STATUS.md`](CONTENT_STATUS.md) | **What the mod admits it is not doing** — inert and approximate content, and how that is enforced |
 | [`PERK_AUDIT.md`](PERK_AUDIT.md) | Perk effect coverage: the closed backlog, and why seventeen perks were removed |
 | [`API_EVENTS.md`](API_EVENTS.md) | The public Forge event surface for addons and KubeJS |
+| [`KUBEJS.md`](KUBEJS.md) | KubeJS server-side progression events — gate skill level-ups, including advancement-based rules (current) |
 | [`INTEGRATION_MATRIX.md`](INTEGRATION_MATRIX.md) | Which mods get item-lock generation, and how it is wired |
 | [`SMOKE_TESTS.md`](SMOKE_TESTS.md) | The runtime checklist that has to be walked before a release |
 | [`BUILD_REPRODUCIBILITY.md`](BUILD_REPRODUCIBILITY.md) | Build inputs, reproducible jars, the Gradle 9 baseline |
