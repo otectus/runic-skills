@@ -4,9 +4,10 @@ import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.integration.CustomNpcsIntegration;
 import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
-import com.otectus.runicskills.mixin.ScreenAccessor;
+import com.otectus.runicskills.common.util.LogOnce;
 import com.otectus.runicskills.registry.RegistryItems;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,11 +17,13 @@ import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import noppes.npcs.client.gui.player.tabs.AbstractTab;
 import noppes.npcs.client.gui.player.tabs.InventoryTabFactions;
 import noppes.npcs.client.gui.player.tabs.InventoryTabQuests;
 import noppes.npcs.client.gui.player.tabs.InventoryTabVanilla;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +53,8 @@ import java.util.List;
  * for the frame-zero case; it calls the same {@code ensure} and nothing depends on it running.
  *
  * <p>Adding at render time means {@code ScreenEvent.Init.Post#addListener} is no longer available,
- * so the widget goes in through {@link ScreenAccessor}, which is the screen's own
- * {@code addRenderableWidget}.
+ * so the widget goes in through the screen's own {@code addRenderableWidget}, reached by
+ * {@link #addRenderableWidget(Screen, AbstractWidget)}.
  *
  * <p><b>Why widgets are scanned rather than screen types.</b> The strip appears on the vanilla
  * inventory (added by that handler) and on CustomNPCs' own Faction and Quest screens (added by
@@ -87,7 +90,55 @@ public final class CustomNpcsTabsClientIntegration {
     private static RunicSkillsCustomNpcsTab activeTab;
     private static Screen activeScreen;
 
+    /**
+     * {@code Screen.addRenderableWidget}, resolved on first use and then cached. {@code null} until
+     * the first call, and left {@code null} if resolution ever fails.
+     */
+    private static Method addRenderableWidget;
+
+    /** Set once resolution or invocation has failed, so we stop retrying every frame. */
+    private static boolean addRenderableWidgetBroken;
+
     private CustomNpcsTabsClientIntegration() {
+    }
+
+    /**
+     * Adds {@code widget} to {@code screen} through the screen's own {@code protected}
+     * {@code addRenderableWidget}, returning whether it went in.
+     *
+     * <p><b>Why not a mixin accessor.</b> This used to be an {@code @Invoker} on {@code Screen}.
+     * The target is generic — {@code <T extends GuiEventListener & Renderable & NarratableEntry>
+     * T addRenderableWidget(T)} — and the Mixin annotation processor emitted no refmap entry for
+     * it. In the development environment that is invisible, because the method is already named
+     * {@code addRenderableWidget}; in production, where it is {@code m_142416_}, the invoker had
+     * nothing to bind to and mixin application failed outright with
+     * {@code InvalidAccessorException}, taking the whole game down for every user with CustomNPCs
+     * installed.
+     *
+     * <p><b>Why SRG-name reflection is reliable.</b>
+     * {@link ObfuscationReflectionHelper#findMethod} takes the SRG name and remaps it for whichever
+     * naming the runtime is actually using, so one call covers both the mapped dev environment and
+     * the obfuscated production one — no generated refmap involved. The parameter type is
+     * {@link GuiEventListener} because that is the erasure of the generic method's single bound.
+     *
+     * <p>Failure is not fatal: the tab is simply not shown, and the reason is logged once.
+     */
+    private static boolean addRenderableWidget(Screen screen, AbstractWidget widget) {
+        if (addRenderableWidgetBroken) return false;
+        try {
+            if (addRenderableWidget == null) {
+                addRenderableWidget = ObfuscationReflectionHelper.findMethod(
+                        Screen.class, "m_142416_", GuiEventListener.class);
+            }
+            addRenderableWidget.invoke(screen, widget);
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            addRenderableWidgetBroken = true;
+            LogOnce.warnOnce("customnpcs-tabs:add-widget",
+                    "Runic Skills could not add its CustomNPCs tab to {}: {}. The tab will not be shown.",
+                    screen.getClass().getName(), e.toString());
+            return false;
+        }
     }
 
     /**
@@ -207,7 +258,7 @@ public final class CustomNpcsTabsClientIntegration {
         RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
         ours.id = 1;
         ours.init(screen);
-        ((ScreenAccessor) screen).runicskills$addRenderableWidget(ours);
+        if (!addRenderableWidget(screen, ours)) return;
 
         activeTab = ours;
         activeScreen = screen;
@@ -233,7 +284,7 @@ public final class CustomNpcsTabsClientIntegration {
             tab.init(screen);
             tab.setX(left + STRIP_INSET_X + id * TAB_PITCH);
             tab.setY(top + STRIP_INSET_Y - TAB_PITCH);
-            ((ScreenAccessor) screen).runicskills$addRenderableWidget(tab);
+            if (!addRenderableWidget(screen, tab)) return;
         }
 
         activeTab = ours;
