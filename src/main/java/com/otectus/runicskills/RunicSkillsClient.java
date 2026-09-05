@@ -132,24 +132,14 @@ public class RunicSkillsClient {
                 // and "legendarytabs" precedes "runicskills"). TabsMenu.register is thread
                 // -safe but we still enqueueWork to match Legendary Tabs' own pattern.
                 //
-                // IMPORTANT: use a method reference to LegendaryTabsClientIntegration#registerTab
-                // rather than an inline lambda. An inline lambda body containing
-                // `TabsMenu.register(new LegendaryTabRunicSkills())` compiles to a synthetic
-                // method ON THIS ClientProxy class, whose bytecode references sfiomn.* types.
-                // Forge loads ClientProxy via Class.forName(..., true, loader) at mod
-                // construction; the JVM verifier then tries to check assignability between
-                // LegendaryTabRunicSkills and TabBase, which eager-loads TabBase and blows up
-                // with NoClassDefFoundError when Legendary Tabs is absent. A method reference
-                // to a separate class puts only that class's name in ClientProxy's constant
-                // pool — no sfiomn types in ClientProxy's bytecode, no eager resolution.
-                event.enqueueWork(LegendaryTabsClientIntegration::registerTab);
-
-                // Keep the strip correct as screens are opened — Legendary Tabs 2.0 only
-                // seeds most of its screen registry on world join, long after the
-                // load-complete sweep below. Registered here, inside the isModLoaded
-                // guard, so the class is never loaded at all when Legendary Tabs is
-                // absent — the same isolation the method reference above buys us.
-                MinecraftForge.EVENT_BUS.register(LegendaryTabsClientIntegration.class);
+                // Routed through the server-safe facade, exactly as L2Tabs and CustomNPCs are:
+                // it probes TabBase, reflectively loads the typed adapter — which registers the
+                // tab and subscribes the per-screen handler — and quarantines linkage failures
+                // from an incompatible Legendary Tabs so they downgrade to Runic Skills' own
+                // strip instead of failing mod loading. ClientProxy therefore holds neither
+                // sfiomn.* symbols nor an adapter-class reference an eager verifier could
+                // resolve during startup.
+                event.enqueueWork(LegendaryTabsIntegration::registerClientTab);
             }
 
             if (CustomNpcsIntegration.isModLoaded()) {
@@ -194,7 +184,7 @@ public class RunicSkillsClient {
             // TabRegistry.reloadTabs(), which first runs on world join and again on every
             // /reload. The ScreenEvent.Init.Pre listener registered above is what covers
             // everything that appears after this point.
-            if (LegendaryTabsIntegration.isModLoaded()) {
+            if (LegendaryTabsIntegration.isNativeTabsActive()) {
                 event.enqueueWork(LegendaryTabsClientIntegration::synchronizeTabStripAcrossScreens);
             }
         }

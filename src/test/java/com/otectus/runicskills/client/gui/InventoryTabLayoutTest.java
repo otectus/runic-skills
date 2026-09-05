@@ -65,6 +65,21 @@ class InventoryTabLayoutTest {
     }
 
     @Test
+    @DisplayName("when every candidate is blocked, the least-covered one wins")
+    void everythingBlockedPicksLeastCovered() {
+        // A box over the whole window, so no candidate is clear, plus a second box piled on the
+        // legacy top-left position. The strip is drawn under the widget layer, so "covered" means
+        // "hidden": TOP_LEFT is covered twice over and must not be the answer. LEFT is the
+        // cheapest of the rest -- a vertical strip is 1690 px against a horizontal one's 1696 --
+        // and is declared before RIGHT, which ties with it.
+        Rect everywhere = new Rect(0, 0, 854, 480);
+        Rect extraOnTopLeft = new Rect(PANEL.x() - 10, PANEL.y() - 40, 80, 40);
+        TabLayout layout = auto(List.of(everywhere, extraOnTopLeft));
+
+        assertEquals(Anchor.LEFT, layout.resolved());
+    }
+
+    @Test
     @DisplayName("offsets are applied to the resolved anchor, not the screen")
     void offsetsApplyAfterAnchor() {
         TabLayout base = InventoryTabLayout.compute(PANEL, SCREEN, 2, Anchor.TOP_RIGHT, 0, 0, List.of());

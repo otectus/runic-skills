@@ -91,6 +91,19 @@ public final class CustomNpcsTabsClientIntegration {
     private static Screen activeScreen;
 
     /**
+     * Set the first time a CustomNPCs strip is actually found on one of CustomNPCs' own screens.
+     *
+     * <p>{@link #buildFullStrip} draws the whole four-tab strip on the Skills screen, which only
+     * makes sense as a continuation of a strip the player already has elsewhere. If CustomNPCs is
+     * installed but never puts a strip on the inventory — a configuration or a build that does not
+     * add one — then building one here would give the player a CustomNPCs strip on the Skills
+     * screen and Runic Skills' own strip on the inventory, two different arrangements for the same
+     * pair of screens. Waiting for evidence keeps both screens on whichever arrangement is
+     * actually working.
+     */
+    private static boolean upstreamStripSeen;
+
+    /**
      * {@code Screen.addRenderableWidget}, resolved on first use and then cached. {@code null} until
      * the first call, and left {@code null} if resolution ever fails.
      */
@@ -218,16 +231,24 @@ public final class CustomNpcsTabsClientIntegration {
      * {@code activeTab}/{@code activeScreen} pair the tooltip handler reads.
      */
     private static void ensure(Screen screen) {
-        if (!CustomNpcsIntegration.isNativeTabsActive()) return;
+        if (!CustomNpcsIntegration.isNativeTabsPreferred()) {
+            CustomNpcsIntegration.setNativeTabPresent(false);
+            return;
+        }
         // L2Tabs and Legendary Tabs already render a Skills tab natively. Adding a second copy
-        // here would recreate exactly the duplication this integration exists to remove.
-        if (L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isModLoaded()) return;
+        // here would recreate exactly the duplication this integration exists to remove. Their
+        // own suppression covers the strip, so this only has to stay out of the way.
+        if (L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isNativeTabsActive()) {
+            CustomNpcsIntegration.setNativeTabPresent(false);
+            return;
+        }
 
         List<AbstractTab> existing = new ArrayList<>();
         for (GuiEventListener listener : screen.children()) {
             if (listener instanceof RunicSkillsCustomNpcsTab ours) {
                 activeTab = ours;
                 activeScreen = screen;
+                CustomNpcsIntegration.setNativeTabPresent(true);
                 return;
             }
             if (listener instanceof AbstractTab tab) {
@@ -235,11 +256,18 @@ public final class CustomNpcsTabsClientIntegration {
             }
         }
 
+        boolean present;
         if (!existing.isEmpty()) {
-            insertIntoExistingStrip(screen, existing);
-        } else if (screen instanceof RunicSkillsScreen skillsScreen) {
-            buildFullStrip(skillsScreen);
+            upstreamStripSeen = true;
+            present = insertIntoExistingStrip(screen, existing);
+        } else if (upstreamStripSeen && screen instanceof RunicSkillsScreen skillsScreen) {
+            present = buildFullStrip(skillsScreen);
+        } else {
+            // No strip to join and no evidence there is one anywhere: this screen belongs to
+            // Runic Skills' own tab strip, which draws itself as soon as this flag says so.
+            present = false;
         }
+        CustomNpcsIntegration.setNativeTabPresent(present);
     }
 
     /**
@@ -249,19 +277,26 @@ public final class CustomNpcsTabsClientIntegration {
      * re-runs {@code init(screen)} so its x is recomputed from upstream's own anchor for this
      * screen rather than from anything we assume about it.
      */
-    private static void insertIntoExistingStrip(Screen screen, List<AbstractTab> existing) {
+    private static boolean insertIntoExistingStrip(Screen screen, List<AbstractTab> existing) {
+        RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
+        ours.id = 1;
+        ours.init(screen);
+
+        // Our tab goes in before CustomNPCs' are renumbered, so a failure leaves their strip
+        // exactly as it was. The old order renumbered first and returned on failure, and because
+        // this runs every frame the ids kept climbing: CustomNPCs' own tabs walked one slot
+        // further right per frame until they left the screen, which is what "my tabs disappeared"
+        // looked like from the player's side.
+        if (!addRenderableWidget(screen, ours)) return false;
+
         for (AbstractTab tab : existing) {
             if (tab.id >= 1) tab.id++;
             tab.init(screen);
         }
 
-        RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
-        ours.id = 1;
-        ours.init(screen);
-        if (!addRenderableWidget(screen, ours)) return;
-
         activeTab = ours;
         activeScreen = screen;
+        return true;
     }
 
     /**
@@ -269,7 +304,7 @@ public final class CustomNpcsTabsClientIntegration {
      * hand at the panel-relative offsets documented on this class. Ours draws itself selected,
      * because its {@code screenClass} is this screen.
      */
-    private static void buildFullStrip(RunicSkillsScreen screen) {
+    private static boolean buildFullStrip(RunicSkillsScreen screen) {
         RunicSkillsCustomNpcsTab ours = new RunicSkillsCustomNpcsTab();
         List<AbstractTab> strip = List.of(
                 new InventoryTabVanilla(), ours, new InventoryTabFactions(), new InventoryTabQuests());
@@ -284,11 +319,12 @@ public final class CustomNpcsTabsClientIntegration {
             tab.init(screen);
             tab.setX(left + STRIP_INSET_X + id * TAB_PITCH);
             tab.setY(top + STRIP_INSET_Y - TAB_PITCH);
-            if (!addRenderableWidget(screen, tab)) return;
+            if (!addRenderableWidget(screen, tab)) return false;
         }
 
         activeTab = ours;
         activeScreen = screen;
+        return true;
     }
 
     /**

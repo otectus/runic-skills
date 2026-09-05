@@ -143,6 +143,10 @@ public class RunicSkills {
         // Installs the ProgressionHooks vetoes that post RunicSkillsEvents.skillLevelUp. Reflective
         // for the usual reason, and because a KubeJS whose event API moved must degrade to "scripts
         // do not gate progression" rather than to "the mod does not load".
+        // MCA: Reputation. Installs the ReputationFacade provider the StandingTier title condition
+        // reads and subscribes the tier-reward handler. Reflective for the usual reason: it is the
+        // only class naming dev.otectus.mcareputation types.
+        tryLoadIntegration("mcareputation",    "com.otectus.runicskills.integration.McaReputationIntegration");
         tryLoadIntegration("kubejs",           "com.otectus.runicskills.kubejs.KubeJSEventBridge");
         // tryLoadIntegration's own catch logs a WARN naming the class; this says what it means for
         // the pack, at ERROR, because a pack whose gates are silently inactive is the defect

@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/otectus/runic-skills",
   "promos": {
-    "1.20.1-latest": "2.0.5",
-    "1.20.1-recommended": "2.0.5"
+    "1.20.1-latest": "2.0.6",
+    "1.20.1-recommended": "2.0.6"
   },
   "1.20.1": {
     "2.0.0": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
@@ -10,6 +10,7 @@
     "2.0.2": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.3": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.4": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
-    "2.0.5": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md"
+    "2.0.5": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
+    "2.0.6": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md"
   }
 }

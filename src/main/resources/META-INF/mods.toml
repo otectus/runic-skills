@@ -201,3 +201,13 @@ description='''${mod_description}'''
     versionRange = "[1.1,)"
     ordering = "AFTER"
     side = "BOTH"
+# MCA: Reputation — optional standing bridge. Compile-only against the sibling mod's classes; the
+# integration class is loaded reflectively and refuses to install unless
+# McaReputationApi.getApiVersion() reports the surface this build was written against, so the
+# compatibility gate is that runtime check rather than a range guessed here.
+[[dependencies."${mod_id}"]]
+    modId = "mcareputation"
+    mandatory = false
+    versionRange = "[0,)"
+    ordering = "AFTER"
+    side = "BOTH"

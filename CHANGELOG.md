@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.0.6] - 2026-09-04 — Inventory tabs: the built-in strip is the guaranteed fallback
+
+No protocol, config schema, or save-data change; network protocol stays at 11. Dev Forge is 47.4.23; `forge_version_range` remains `[47,)`.
+
+### Inventory tabs
+
+**Fixed:**
+- **Suppression is now evidence-based**, not presence-based. Before 2.0.6, Runic Skills disabled its own tab strip whenever Legendary Tabs, L2Tabs or CustomNPCs were merely installed, even if their registration failed or they had no tab strip on the current screen. Any API break, version mismatch or configuration that prevented the external tab from loading left the player with no Skills tab at all. Now:
+  - **Legendary Tabs**: `LegendaryTabsIntegration.registerClientTab()` probes `sfiomn.legendarytabs.api.tabs_menu.TabBase` and only sets the active flag after `TabsMenu.register` succeeds. A Legendary Tabs 1.x/2.0 mismatch or API break is caught, logged once as WARN, and downgraded to the built-in strip instead of escaping `enqueueWork` and failing mod load.
+  - **L2Tabs**: already probes before claiming registration (unchanged in 2.0.6).
+  - **CustomNPCs**: split into `isNativeTabsPreferred()` (probe passed and `customNpcsNativeTabs` is on) and `isNativeTabsActive()` (that, and the tab is on the screen currently being drawn, reported per frame by the client integration). Screens where CustomNPCs has no strip to join now fall back to Runic Skills' own strip instead of nothing. — `integration/InventoryTabOwnership.java`.
+- **CustomNPCs tab insertion no longer renumbers upstream's tabs before checking the insert will fit.** Pre-2.0.6 the renumber ran first and the insert second, so whenever the insert failed — the `addRenderableWidget` reflection not resolving, which latches and fails for the rest of the session — the renumber still ran on every frame of this per-frame pass, walking CustomNPCs' own tabs one slot right per frame until they left the screen. The order is now insert-first, renumber-second — `client/integration/CustomNpcsTabsClientIntegration.java:280–300`.
+- **CustomNPCs: the full strip on the Skills screen waits for evidence of an upstream strip on another screen.** A CustomNPCs build or configuration that doesn't add a strip can no longer put the player with a CustomNPCs arrangement on the Skills screen and a separate Runic Skills arrangement on the inventory. The strip is only built once `upstreamStripSeen` is true — `client/integration/CustomNpcsTabsClientIntegration.java:94–104`.
+- **AUTO anchor selection now picks the least-covered candidate when all collide.** When the inventory has many other mods' widgets, every anchor position overlaps. The old unconditional fallback to TOP_LEFT could hide the entire strip behind another mod's widgets; the new search picks the position with the smallest overlay instead — `client/gui/InventoryTabLayout.java:147–164`.
+- **Shift-right-click on the inventory tab strip now resets the drag offset to (0, 0).** A strip nudged into a corner and no longer visible could only be recovered by editing the TOML; it is now one click away — `client/event/InventoryTabsScreenHandler.java:132–145`.
+- **RunicSkillsScreen.onClose unconditionally clears the DrawTabs click latch.** Ownership can change between frames now (CustomNPCs reports per-screen); leaving the latch armed because an external strip owned the last frame is how a click that closed the Skills screen becomes a tab switch on the next one — `client/screen/RunicSkillsScreen.java:925–939`.
+
+**Config comments:**
+- `inventoryTabsEnabled` rewrites "the built-in strip is drawn so the tab is never missing entirely" (it always is now).
+- `inventoryTabsOffsetY` and `inventoryTabsDragToMove` explain the Shift-drag and the new Shift-right-click reset.
+- `customNpcsNativeTabs` explains the per-screen fallback.
+
+**Testing:**
+- New JUnit test: `InventoryTabLayoutTest.everythingBlockedPicksLeastCovered()` covers the least-covered anchor selection.
+
 ## [2.0.5] - 2026-09-03 — Stability, perk semantics, crafting authority & inventory tabs
 
 No protocol, config schema, or save-data change; network protocol stays at 11. Client TOML gains `tabs` configuration group with safe defaults. Dev Forge is 47.4.23; `forge_version_range` remains `[47,)`.

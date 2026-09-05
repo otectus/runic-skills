@@ -1,6 +1,7 @@
 package com.otectus.runicskills.client.event;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.client.gui.DrawTabs;
 import com.otectus.runicskills.client.gui.InventoryTabLayout;
 import com.otectus.runicskills.client.gui.InventoryTabLayout.Anchor;
@@ -21,7 +22,8 @@ import java.util.List;
 
 /**
  * Everything about the inventory tab strip that is not "paint the bodies": the tooltip, the click,
- * the Shift-drag that moves it, and the close-time latch reset.
+ * the Shift-drag that moves it, the Shift-right-click that puts it back, and the close-time latch
+ * reset.
  *
  * <p><b>Why these are Forge screen events rather than mixin injections.</b> The bodies have to be
  * drawn from {@code renderBg} so items and their tooltips sit on top of them, but everything else
@@ -120,12 +122,29 @@ public final class InventoryTabsScreenHandler {
 
     @SubscribeEvent
     public static void onMousePressed(ScreenEvent.MouseButtonPressed.Pre event) {
-        if (suppressed() || event.getButton() != 0) return;
+        if (suppressed() || (event.getButton() != 0 && event.getButton() != 1)) return;
         if (!(event.getScreen() instanceof InventoryScreen screen)) return;
 
         TabLayout layout = layoutOf(screen);
         int mouseX = (int) event.getMouseX();
         int mouseY = (int) event.getMouseY();
+
+        // Shift-right-click undoes a drag. Without it the only way back from a strip nudged into
+        // a corner -- deliberately, or by a Shift-click that started on the strip instead of on a
+        // slot -- is to find and edit the client TOML, and a strip parked somewhere unexpected is
+        // exactly what a player reports as the tabs having disappeared.
+        if (event.getButton() == 1) {
+            if (HandlerConfigClient.inventoryTabsDragToMove.get() && Screen.hasShiftDown()
+                    && layout.strip().contains(mouseX, mouseY)) {
+                drag = null;
+                HandlerConfigClient.inventoryTabsOffsetX.set(0);
+                HandlerConfigClient.inventoryTabsOffsetY.set(0);
+                HandlerConfigClient.SPEC.save();
+                Utils.playSound();
+                event.setCanceled(true);
+            }
+            return;
+        }
 
         if (HandlerConfigClient.inventoryTabsDragToMove.get() && Screen.hasShiftDown()
                 && layout.strip().contains(mouseX, mouseY)) {

@@ -27,6 +27,12 @@ public class HandlerConditions {
         registerCondition("ItemDropped", ItemDroppedCondition::new);
         registerCondition("Advancement", AdvancementCondition::new);
         registerCondition("GlobalLevel", GlobalLevelCondition::new);
+        // MCA: Reputation standing. Registered unconditionally — the condition reads through
+        // ReputationFacade, which answers the bottom tier when the mod is absent, so a pack that
+        // ships a standing-gated title on a server without Reputation gets an unobtainable title
+        // rather than an unknown-condition error every scan.
+        registerCondition("StandingTier", StandingTierCondition::new);
+        registerCondition("standing_tier", StandingTierCondition::new);
     }
 
     public static void registerCondition(String name, Supplier<ConditionImpl<?>> factory){

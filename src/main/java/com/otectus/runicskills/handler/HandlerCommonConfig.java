@@ -272,6 +272,27 @@ public class HandlerCommonConfig {
     @Scope(ConfigScope.RESTART_REQUIRED)
     public boolean enableFTBQuestsIntegration = true;
 
+    @SerialEntry(comment = "Master toggle for the MCA: Reputation integration. When false, standing-gated titles see the bottom tier and no skill levels are granted for reaching a new standing tier. Has no effect unless MCA: Reputation is installed.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableMcaReputationIntegration = true;
+
+    // Reward for a first-time upward standing-tier crossing. Runic Skills has no skill XP pool —
+    // progression is levels — so the reward is levels, which is why the list is empty by default:
+    // installing both mods must not silently hand out free progression. Name a skill to opt in.
+    // A list rather than a single id because ConfigSchema cannot encode a bare String field and an
+    // unsyncable field would never reach clients (RS10-005); an empty list means "grant nothing".
+    @SerialEntry(comment = "Skill ids granted levels when a player reaches a new best MCA: Reputation standing tier (any of: strength, constitution, dexterity, endurance, intelligence, building, wisdom, magic, fortune, tinkering). Empty (the default) grants nothing.")
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> mcaReputationTierSkillIds = new java.util.ArrayList<>();
+
+    @SerialEntry(comment = "How many levels of each mcaReputationTierSkillIds entry to grant on a first-time upward standing-tier crossing. Zero grants nothing.")
+    @AutoGen(category = "common", group = "integrations")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int mcaReputationTierSkillLevels = 1;
+
     @SerialEntry(comment = "Master toggle for the Jewelcraft integration. When false, item lock generation is skipped.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)

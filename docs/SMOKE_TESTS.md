@@ -25,6 +25,10 @@ Everything below this line is runtime smoke testing that must be done by hand.
 | 1.3 | Runic Skills jar + YACL, integrated client | | YACL config screen should open, all groups visible, all fields render. New 1.1.0 fields visible: `enableScholarEnchantmentHiding`, `disabledPerks`, `disabledPassives` (under `general`). |
 | 1.4 | Runic Skills jar alone, dedicated server, **no L2Tabs installed** | | Regression test for the L2Tabs class-load fix. Pre-1.1.0, ClientProxy held a direct `TabRegistry` import which the JVM verifier eager-loaded. Expected: server (and client too) boots clean. |
 | 1.5 | Runic Skills jar alone, integrated client, **no Legendary Tabs installed** | | Existing 1.0.0 fix — regression check that we didn't break it. |
+| 1.6 | Runic Skills jar alone, integrated client, **no tab mod of any kind** | | 2.0.6 baseline. Open the inventory: the built-in two-tab strip (player head, Leveling Book) must be present, 28 px above the panel and flush with its left edge. This is the case `InventoryTabOwnership.externalTabsActive()` must always answer false for. |
+| 1.7 | Runic Skills jar + CustomNPCs, integrated client | | Open the inventory. Either CustomNPCs' strip carries a Skills tab as its second entry, or Runic Skills' own strip is drawn — never neither. CustomNPCs' own Factions and Quests tabs must stay put; if they walk right frame by frame, `insertIntoExistingStrip` is renumbering before a failed insert (the 2.0.5 bug). Check `latest.log` for `customnpcs-tabs:add-widget`. |
+| 1.8 | Runic Skills jar + Legendary Tabs, integrated client | | The Skills tab appears in Legendary Tabs' strip. If Legendary Tabs' API has moved, expect one WARN naming it and Runic Skills' own strip — never a missing tab, and never a mod-loading failure. |
+| 1.9 | Runic Skills jar + a mod that adds buttons above the inventory panel | | The strip routes around them; if every anchor is blocked it takes the least-covered one rather than hiding behind a widget. Shift-drag moves the strip, Shift-right-click snaps it back to the anchor and rewrites `inventoryTabsOffsetX/Y` to 0. |
 
 ## 2. Phase 1 / 1.0.x regression checks
 

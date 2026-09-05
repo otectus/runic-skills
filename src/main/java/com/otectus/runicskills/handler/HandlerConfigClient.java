@@ -107,7 +107,7 @@ public class HandlerConfigClient {
         CONFIG.pop();
 
         CONFIG.push("tabs");
-        inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Turned off automatically anyway when L2Tabs, Legendary Tabs or CustomNPCs is present, since those render the Skills tab natively.")
+        inventoryTabsEnabled = CONFIG.comment("Draw Runic Skills' own inventory tab strip. Suppressed automatically while L2Tabs, Legendary Tabs or CustomNPCs is actually drawing the Skills tab itself; if one of them is installed but its tab is not there, this strip is drawn so the tab is never missing entirely.")
                 .define("inventoryTabsEnabled", defaultInventoryTabsEnabled);
         inventoryTabsAnchor = CONFIG.comment("Where the tab strip attaches to the inventory panel: AUTO, TOP_LEFT, TOP_RIGHT, LEFT, RIGHT, BOTTOM_LEFT or BOTTOM_RIGHT. AUTO tries them in that order and takes the first that fits on screen without overlapping the recipe book, the potion effect panel, another mod's inventory widgets (tab strips and side buttons other mods add to the inventory screen) or a region another mod reserved; TOP_LEFT is the position used before 2.0.5. An explicit anchor is honoured even if it overlaps something.")
                 .define("inventoryTabsAnchor", defaultInventoryTabsAnchor,
@@ -116,15 +116,15 @@ public class HandlerConfigClient {
                                 .contains(s.trim().toUpperCase(java.util.Locale.ROOT)));
         inventoryTabsOffsetX = CONFIG.comment("Horizontal nudge in GUI pixels, relative to the resolved anchor -- not to the screen. Shift-drag the strip in the inventory to set this without editing the file; the strip is still clamped on screen.")
                 .defineInRange("inventoryTabsOffsetX", defaultInventoryTabsOffsetX, -500, 500);
-        inventoryTabsOffsetY = CONFIG.comment("Vertical nudge in GUI pixels, relative to the resolved anchor. Set by Shift-dragging the strip. Reset the position by putting both offsets back to 0.")
+        inventoryTabsOffsetY = CONFIG.comment("Vertical nudge in GUI pixels, relative to the resolved anchor. Set by Shift-dragging the strip. Shift-right-click the strip in the inventory to put both offsets back to 0 without editing this file.")
                 .defineInRange("inventoryTabsOffsetY", defaultInventoryTabsOffsetY, -500, 500);
         inventoryTabsAvoidRecipeBook = CONFIG.comment("Let AUTO treat the open recipe book as an obstacle.")
                 .define("inventoryTabsAvoidRecipeBook", defaultInventoryTabsAvoidRecipeBook);
         inventoryTabsAvoidEffects = CONFIG.comment("Let AUTO treat the vanilla potion effect panel as an obstacle. The panel only appears with active effects, so this is what stops the strip from being fine until you drink a potion.")
                 .define("inventoryTabsAvoidEffects", defaultInventoryTabsAvoidEffects);
-        inventoryTabsDragToMove = CONFIG.comment("Allow Shift-dragging the strip in the inventory to move it. The drag writes inventoryTabsOffsetX/Y and saves this file when the button is released.")
+        inventoryTabsDragToMove = CONFIG.comment("Allow Shift-dragging the strip in the inventory to move it, and Shift-right-clicking it to snap it back to the anchor. The drag writes inventoryTabsOffsetX/Y and saves this file when the button is released; the reset writes zeroes and saves immediately.")
                 .define("inventoryTabsDragToMove", defaultInventoryTabsDragToMove);
-        customNpcsNativeTabs = CONFIG.comment("With CustomNPCs installed, put the Skills tab inside its tab strip (Inventory, Skills, Factions, Quests) instead of drawing a second strip of Runic Skills' own. Set to false to restore the separate strip. No effect without CustomNPCs.")
+        customNpcsNativeTabs = CONFIG.comment("With CustomNPCs installed, put the Skills tab inside its tab strip (Inventory, Skills, Factions, Quests) instead of drawing a second strip of Runic Skills' own. Set to false to restore the separate strip. No effect without CustomNPCs, and Runic Skills' own strip is drawn anyway on any screen where CustomNPCs turns out not to have a strip to join.")
                 .define("customNpcsNativeTabs", defaultCustomNpcsNativeTabs);
         CONFIG.pop();
 

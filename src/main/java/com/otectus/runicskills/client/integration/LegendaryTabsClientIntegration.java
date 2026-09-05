@@ -8,6 +8,7 @@ import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.slf4j.Logger;
@@ -62,6 +63,20 @@ public final class LegendaryTabsClientIntegration {
         LegendaryTabRunicSkills tab = new LegendaryTabRunicSkills();
         tabInstance = tab;
         TabsMenu.register(tab);
+    }
+
+    /**
+     * Entry point called reflectively by {@link LegendaryTabsIntegration#registerClientTab()}:
+     * registers the tab and, only if that succeeded, subscribes the per-screen handler below.
+     *
+     * <p>Both steps live here rather than in {@code RunicSkillsClient} so a Legendary Tabs API
+     * change is caught by the facade's try/catch and downgraded to the built-in strip, instead of
+     * escaping {@code enqueueWork} and failing mod loading. Subscribing after registration also
+     * means the handler never runs without a {@link #tabInstance} to place.
+     */
+    public static void register() {
+        registerTab();
+        MinecraftForge.EVENT_BUS.register(LegendaryTabsClientIntegration.class);
     }
 
     /**

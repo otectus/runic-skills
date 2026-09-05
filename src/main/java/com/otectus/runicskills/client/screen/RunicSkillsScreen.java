@@ -931,9 +931,11 @@ public class RunicSkillsScreen extends Screen {
         if (this.searchTitle != null) {
             this.searchTitle.setValue("");
         }
-        if (!InventoryTabOwnership.externalTabsActive()) {
-            DrawTabs.onClose();
-        }
+        // Unconditional: DrawTabs.onClose only clears a click latch and the cached layout, and
+        // ownership can now change from frame to frame (CustomNPCs reports per screen). Leaving
+        // the latch armed because an external strip happened to own the last frame is how a
+        // click that closed this screen becomes a tab switch on the next one.
+        DrawTabs.onClose();
         super.onClose();
     }
 

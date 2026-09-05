@@ -128,8 +128,16 @@ public final class InventoryTabLayout {
 
     /**
      * First candidate that is fully on-screen (with {@link #SPACING} to spare) and clear of every
-     * reserved box wins. If none is, {@link Anchor#TOP_LEFT} is used: an overlapping strip is worse
-     * than the legacy one, but a missing strip is worse than both.
+     * reserved box wins.
+     *
+     * <p>When every candidate collides, the least-covered one is used rather than
+     * {@link Anchor#TOP_LEFT}. The strip is painted from {@code renderBg}, underneath the widget
+     * layer, so a reserved box the strip sits on is a box drawn <em>over</em> the strip: with a
+     * crowded inventory screen the old unconditional fall back to TOP_LEFT could put the strip
+     * entirely behind another mod's widgets, which is indistinguishable from the tabs not being
+     * there at all. Minimising the covered area keeps as much of the strip clickable and visible
+     * as the screen allows. TOP_LEFT is still the answer when nothing fits on-screen, because an
+     * overlapping strip is worse than the legacy one but a missing strip is worse than both.
      *
      * <p>The screen test uses the inflated strip so a candidate is not chosen flush against the
      * window edge, while the obstacle test uses the real strip: sitting immediately beside the
@@ -137,22 +145,39 @@ public final class InventoryTabLayout {
      * look right.
      */
     private static Anchor search(Rect panel, Rect screen, int tabCount, List<Rect> reserved) {
+        Anchor best = Anchor.TOP_LEFT;
+        long leastCovered = Long.MAX_VALUE;
+
         for (Anchor candidate : Anchor.values()) {
             if (candidate == Anchor.AUTO) continue;
             Rect strip = stripFor(candidate, panel, tabCount);
             if (!inside(inflate(strip, SPACING), screen)) continue;
-            if (collides(strip, reserved)) continue;
-            return candidate;
+
+            long covered = coveredArea(strip, reserved);
+            if (covered == 0L) return candidate;
+            if (covered < leastCovered) {
+                leastCovered = covered;
+                best = candidate;
+            }
         }
-        return Anchor.TOP_LEFT;
+        return best;
     }
 
-    private static boolean collides(Rect probe, List<Rect> reserved) {
-        if (reserved == null) return false;
+    /**
+     * How many square pixels of {@code probe} the reserved boxes cover, counting a pixel once per
+     * box that covers it. Overlapping obstacles therefore double-count, which is the behaviour we
+     * want from a tie-breaker: a spot two mods both want is worse than a spot only one wants.
+     */
+    private static long coveredArea(Rect probe, List<Rect> reserved) {
+        if (reserved == null) return 0L;
+        long total = 0L;
         for (Rect r : reserved) {
-            if (r != null && probe.intersects(r)) return true;
+            if (r == null) continue;
+            long w = Math.min(probe.right(), r.right()) - Math.max(probe.x(), r.x());
+            long h = Math.min(probe.bottom(), r.bottom()) - Math.max(probe.y(), r.y());
+            if (w > 0 && h > 0) total += w * h;
         }
-        return false;
+        return total;
     }
 
     private static boolean inside(Rect inner, Rect outer) {
