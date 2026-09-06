@@ -1,0 +1,637 @@
+{
+  "generated": "2026-09-05T00:00:00Z",
+  "runicskills": "2.1.0",
+  "profiles": {
+    "stable": {
+      "tconstruct": {
+        "version": "1.20.1-3.11.2.166",
+        "sha256": "653b49d73481a1325ba78adc7273dee6c765a51bafdf264a7510576d6ef91c43"
+      },
+      "mantle": {
+        "version": "1.20.1-1.11.97",
+        "sha256": "67c79f7cbea8f4d2be8987a7ee83d7a341b841de89c3c09acd2edbf7e539e61e"
+      },
+      "jei": {
+        "version": "15.20.0.103",
+        "sha256": "d7a4d7c5d7ed9358e7edf624987fa2616f3502b018262b4562850281add67d9b"
+      }
+    },
+    "beta": {
+      "tconstruct": {
+        "version": "1.20.1-3.12.0.220",
+        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+      },
+      "mantle": {
+        "version": "1.20.1-1.11.113",
+        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+      },
+      "jei": {
+        "version": "15.56.0.204",
+        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+      }
+    }
+  },
+  "hooks": [
+    {
+      "id": "H1",
+      "seam": "Native wear",
+      "class": "slimeknights.tconstruct.library.tools.helper.ToolDamageUtil",
+      "method": "damage",
+      "descriptor": "(Lslimeknights/tconstruct/library/tools/nbt/IToolStackView;ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)Z",
+      "at": "INVOKE directDamage inside the 4-arg method",
+      "actor": "LivingEntity parameter, cast to Player when instanceof",
+      "phase": "post-modifier, pre-ordinary-loss",
+      "status": "implemented",
+      "stage": "S2",
+      "implementation": "MixToolDamageUtil"
+    },
+    {
+      "id": "H2",
+      "seam": "Station take (crafting-event timing)",
+      "class": "slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity",
+      "method": "onCraft",
+      "descriptor": "(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;I)V",
+      "at": "HEAD",
+      "actor": "Player parameter (arg0)",
+      "phase": "pre-input-shrink",
+      "status": "implemented",
+      "stage": "S3",
+      "implementation": "MixTinkerStationBlockEntity"
+    },
+    {
+      "id": "H3",
+      "seam": "Station quick-move",
+      "class": "slimeknights.mantle.inventory.MultiModuleContainerMenu",
+      "method": "quickMoveStack",
+      "descriptor": "(Lnet/minecraft/world/entity/player/Player;I)Lnet/minecraft/world/item/ItemStack;",
+      "at": "(no hook needed)",
+      "actor": "Player parameter",
+      "phase": "pre-take, post-move",
+      "status": "resolved; no hook needed (native flow refuses before commit)",
+      "stage": "S3",
+      "note": "Mantle's quickMoveStack returns early on full inventory before onTake/onCraft; the transform happens in LazyResultContainer at copy time instead"
+    },
+    {
+      "id": "H4",
+      "seam": "Normal take (LazyResultSlot)",
+      "class": "slimeknights.tconstruct.tables.menu.slot.LazyResultSlot",
+      "method": "getItem, removeItem, removeItemNoUpdate",
+      "descriptor": "(I)Lnet/minecraft/world/item/ItemStack;",
+      "at": "RETURN from each method",
+      "actor": "Player via ContainerInteraction",
+      "phase": "post-copy",
+      "status": "implemented",
+      "stage": "S3",
+      "implementation": "MixLazyResultContainer"
+    },
+    {
+      "id": "H5",
+      "seam": "Repair recipe",
+      "class": "slimeknights.tconstruct.tables.recipe.TinkerStationRepairRecipe",
+      "method": "getValidatedResult",
+      "descriptor": "(...)",
+      "at": "INVOKE ToolDamageUtil.repair(Lslimeknights/tconstruct/library/tools/nbt/IToolStackView;I)V",
+      "actor": "implicit from recipe/TinkerStationBlockEntity.onCraft context",
+      "phase": "post-repair-factor",
+      "status": "resolved",
+      "stage": "S2"
+    },
+    {
+      "id": "H6",
+      "seam": "Workmanship rebuild",
+      "class": "slimeknights.tconstruct.library.tools.nbt.ToolStack",
+      "method": "rebuildStats",
+      "descriptor": "()V",
+      "at": "pre-rebuild or post-rebuild (stage-dependent)",
+      "actor": "implicit from modifier context",
+      "phase": "post-add, around-rebuild",
+      "status": "resolved",
+      "stage": "S2"
+    },
+    {
+      "id": "H7",
+      "seam": "Tags",
+      "class": "slimeknights.tconstruct.common.TinkerTags",
+      "method": "Items (constants)",
+      "descriptor": "151 TagKey<Item> fields",
+      "at": "at tag/item-classification time",
+      "actor": "none (classification only)",
+      "phase": "N/A",
+      "status": "resolved",
+      "stage": "S2"
+    },
+    {
+      "id": "H8",
+      "seam": "Harvest AoE",
+      "class": "slimeknights.tconstruct.library.tools.helper.ToolHarvestLogic",
+      "method": "breakBlock and breakExtraBlock",
+      "descriptor": "(...): boolean",
+      "at": "WRAP around breakBlock call in breakExtraBlock; RETURN after breakBlock",
+      "actor": "ServerPlayer via ToolHarvestContext",
+      "phase": "post-removal, post-protection",
+      "status": "implemented",
+      "stage": "S3",
+      "implementation": "MixToolHarvestLogic"
+    },
+    {
+      "id": "H9",
+      "seam": "Ranged launch / return",
+      "class": "slimeknights.tconstruct.library.tools.item.ranged.ModifiableBowItem, ModifiableCrossbowItem, ThrownTool",
+      "method": "releaseUsing, fireCrossbow, tryPickup, EntityJoinLevelEvent",
+      "descriptor": "(multiple)",
+      "at": "WRAP launch methods; HEAD on tryPickup; event handler",
+      "actor": "LivingEntity at launch; Player at return detection",
+      "phase": "launch before projectile spawn; return at genuine detection",
+      "status": "implemented",
+      "stage": "S3",
+      "implementation": "MixModifiableBowItem, MixModifiableCrossbowItem, MixThrownTool, TConstructCombatBridge"
+    },
+    {
+      "id": "H10",
+      "seam": "Melting / casting",
+      "class": "slimeknights.tconstruct.smeltery.block.entity.CastingBlockEntity and MeltingModule",
+      "method": "heatItem (speed arg), serverTick (private)",
+      "descriptor": "(II)V and (Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+      "at": "MODIFY speed argument for melting; HEAD inject for cooling; private method injectable by name",
+      "actor": "none (state in entity fields)",
+      "phase": "mid-tick, fractional progress",
+      "status": "implemented",
+      "stage": "S3",
+      "implementation": "MixMeltingModule, MixCastingBlockEntity"
+    },
+    {
+      "id": "H11",
+      "seam": "Repair kit",
+      "class": "slimeknights.tconstruct.tools.item.RepairKitItem and CraftingTableRepairKitRecipe",
+      "method": "getRepairAmount, assemble",
+      "descriptor": "(multiple)",
+      "at": "varies",
+      "actor": "implicit from recipe/item context",
+      "phase": "at formula and result assembly",
+      "status": "unresolved",
+      "stage": "S3"
+    },
+    {
+      "id": "H12",
+      "seam": "Version detection",
+      "class": "net.minecraftforge.fml.ModList",
+      "method": "get().getModContainerById(...).get().getModInfo().getVersion()",
+      "descriptor": "Forge API",
+      "at": "N/A",
+      "actor": "none (static method)",
+      "phase": "startup",
+      "status": "implemented",
+      "stage": "S2",
+      "implementation": "TConstructProfile.detect()"
+    },
+    {
+      "id": "H13",
+      "seam": "Tinkers' Thinking death save",
+      "class": "com.creeping_creeper.tinkers_thinking.common.library.OnDeath",
+      "method": "onLivingDying",
+      "descriptor": "(Lnet/minecraftforge/event/entity/living/LivingDeathEvent;)V",
+      "at": "not injected - observed from Runic's own LivingDeathEvent bracket",
+      "actor": "LivingDeathEvent.getEntity(), cast to Player by the add-on",
+      "phase": "death resolution, default (NORMAL) priority",
+      "status": "implemented",
+      "stage": "2.1.0",
+      "implementation": "TConstructPerkHandler.onDeathResolutionBegin/End + TinkersThinkingAdapter",
+      "remap": "not applicable - no mixin",
+      "read_from": "Tinkers-Thinking-0.1.6.6.3.jar",
+      "behaviour": "When TinkerDataKey tinkers_thinking:sculk_struggle is above zero AND the player already carries tinkers_thinking:sculk_power, it cancels the death, sets health to 1 and applies tinkers_thinking:last_effort for level*60+180 ticks. It spends NO durability.",
+      "observable": "the cancelled LivingDeathEvent plus the tinkers_thinking:last_effort effect",
+      "modifier_ids": [
+        "tinkers_thinking:sculk_struggle",
+        "tinkers_thinking:sculk_struggle_curio"
+      ],
+      "capability": "ADDON_THINKING_DEATH_TRIGGER",
+      "note": "TinkerDataCapability.TinkerDataKey declares neither equals nor hashCode and TinkerDataKey.of allocates a fresh instance per call, so no consumer - with or without a compile dependency - can read a level the add-on stored under its own key. The effect is the only readable trace, which is why Last Thought is a reprieve after the save rather than a discount on its cost: there is no cost."
+    },
+    {
+      "id": "H14",
+      "seam": "Tinkers' Thinking experience conversion",
+      "class": "com.creeping_creeper.tinkers_thinking.common.library.OnExpPickUp",
+      "method": "onPlayerPickupXp",
+      "descriptor": "(Lnet/minecraftforge/event/entity/player/PlayerXpEvent$PickupXp;)V",
+      "at": "not injected - observed from Runic's own PickupXp handler at LOWEST with receiveCanceled",
+      "actor": "PlayerXpEvent.PickupXp.getEntity()",
+      "phase": "experience pickup, default (NORMAL) priority",
+      "status": "implemented",
+      "stage": "2.1.0",
+      "implementation": "TConstructPerkHandler.onAddonExperiencePickup + TinkersThinkingAdapter",
+      "remap": "not applicable - no mixin",
+      "read_from": "Tinkers-Thinking-0.1.6.6.3.jar",
+      "behaviour": "When TinkerDataKey tinkers_thinking:sculk_catalyse is above zero AND the player carries tinkers_thinking:sculk_power, it converts the orb into 60 ticks of that effect per point, cancels the pickup and discards the orb. The player keeps none of the experience.",
+      "observable": "the cancelled PickupXp, the orb's value, and the tinkers_thinking:sculk_power effect",
+      "modifier_ids": [
+        "tinkers_thinking:sculk_catalyse",
+        "tinkers_thinking:sculk_catalyse_curio"
+      ],
+      "capability": "ADDON_THINKING_XP_TRIGGER",
+      "note": "Studied Recall returns a SHARE of the destroyed orb, so it is bounded above by what the player would have collected with the add-on absent. It is a partial recovery, never a net gain."
+    },
+    {
+      "id": "H15",
+      "seam": "Tinkers' Jewelry undying save",
+      "class": "dev.ferriarnus.tinkersjewelry.DamageItemEvents",
+      "method": "undying",
+      "descriptor": "(Lnet/minecraftforge/event/entity/living/LivingDeathEvent;)V",
+      "at": "not injected - the durability it spends arrives at H1 (ToolDamageUtil.damage)",
+      "actor": "LivingDeathEvent.getEntity()",
+      "phase": "death resolution, default (NORMAL) priority",
+      "status": "implemented",
+      "stage": "2.1.0",
+      "implementation": "TConstructPerkHandler death bracket + TinkersJewelryAdapter, discounted at MixToolDamageUtil",
+      "remap": "not applicable - no mixin of this class",
+      "read_from": "tinkersjewelry-1.2.0.jar",
+      "behaviour": "Walks CuriosApi.getCuriosHelper().getEquippedCurios(entity) for a ModifiableItem that is unbroken and whose ToolStack.getModifierLevel(JewelryModifiers.UNDYING) is above zero, calls ToolDamageUtil.damage on it, restores health, applies regeneration/absorption/fire-resistance and cancels the death.",
+      "modifier_ids": [
+        "tinkersjewelry:undying",
+        "tinkersjewelry:polish",
+        "tinkersjewelry:subspace",
+        "tinkersjewelry:precious",
+        "tinkersjewelry:maintained",
+        "tinkersjewelry:ductile",
+        "tinkersjewelry:magnetic"
+      ],
+      "material_namespace": "tinkersjewelry",
+      "materials_read": 37,
+      "items_read": [
+        "tinkersjewelry:ring"
+      ],
+      "capability": "ADDON_JEWELRY_UNDYING",
+      "note": "tinkersjewelry:polish was read and is NOT a repair mechanic: polish.json is a single tconstruct:modifier_slot grant of one upgrade slot and nothing else. tc_polished_facet therefore keys on the repaired piece being a jewelry-material modifiable item, which is what a station repair of one actually is. tinkersjewelry:subspace is inventory storage (SubSpaceCapability, SubSpaceMenu, the tinkersjewelry:subspace attribute) and has no Runic channel, so tc_subspace_reserve stays unregistered."
+    },
+    {
+      "id": "H16",
+      "seam": "Tinkers' Katanas content",
+      "class": "none - the jar ships zero Java classes",
+      "method": "n/a",
+      "descriptor": "n/a",
+      "at": "n/a",
+      "actor": "n/a",
+      "phase": "n/a",
+      "status": "not-applicable",
+      "stage": "2.1.0",
+      "implementation": "data-only add-on; covered by core seams; no adapter, by design",
+      "remap": "not applicable - no mixin",
+      "read_from": "TinkersKatanas-1.20.1-1.4.5.jar",
+      "behaviour": "tinkers_katanas:katana and tinkers_katanas:fuma_shuriken are JsonThings tool definitions of type tconstruct:tool. The jar registers them into tconstruct:modifiable/melee/primary, /one_handed, /durability, /bonus_slots and (the shuriken) /ranged, so classification, wear, repair, ranged and keystone already reach them unchanged. The shuriken carries tconstruct:throwing and tconstruct:returning; the ranged ability tag adds tconstruct:hover. Every ranged modifier id it uses is a core tconstruct: id, so TraitFeatureRegistry needs no new mapping for it.",
+      "capability": "ADDON_KATANAS_CONTENT",
+      "note": "Two optional entries were added to runicskills:lucky_break_eligible so the two items are recognised as tools by DurabilityPerkRules even on an install where the Tinkers'-side tags are overridden. Part 1's remap fix is a hard prerequisite for the shuriken interacting with tc_measured_draw and tc_returning_hand at all."
+    }
+  ],
+  "perks": [
+    {
+      "id": "tc_cast_keeper",
+      "name": "Cast Keeper",
+      "skill": "Tinkering",
+      "capability": "WORKSHOP",
+      "level": "4"
+    },
+    {
+      "id": "tc_thermal_rhythm",
+      "name": "Thermal Rhythm",
+      "skill": "Tinkering",
+      "capability": "WORKSHOP",
+      "level": "8"
+    },
+    {
+      "id": "tc_repair_memory",
+      "name": "Repair Memory",
+      "skill": "Tinkering",
+      "capability": "WEAR_AVOIDANCE",
+      "level": "8"
+    },
+    {
+      "id": "tc_material_harmony",
+      "name": "Material Harmony",
+      "skill": "Tinkering",
+      "capability": "STATION_TRANSACTIONS",
+      "level": "12"
+    },
+    {
+      "id": "tc_tempered_edge",
+      "name": "Tempered Edge",
+      "skill": "Strength",
+      "capability": "CLASSIFICATION",
+      "level": "12"
+    },
+    {
+      "id": "tc_counterweight",
+      "name": "Counterweight",
+      "skill": "Dexterity",
+      "capability": "CLASSIFICATION",
+      "level": "12"
+    },
+    {
+      "id": "tc_precision_footing",
+      "name": "Precision Footing",
+      "skill": "Endurance",
+      "capability": "CLASSIFICATION",
+      "level": "12"
+    },
+    {
+      "id": "tc_slime_steward",
+      "name": "Slime Steward",
+      "skill": "Endurance",
+      "capability": "WEAR_AVOIDANCE",
+      "level": "16"
+    },
+    {
+      "id": "tc_plate_discipline",
+      "name": "Plate Discipline",
+      "skill": "Constitution",
+      "capability": "CLASSIFICATION",
+      "level": "16"
+    },
+    {
+      "id": "tc_measured_draw",
+      "name": "Measured Draw",
+      "skill": "Dexterity",
+      "capability": "PROJECTILES",
+      "level": "16"
+    },
+    {
+      "id": "tc_returning_hand",
+      "name": "Returning Hand",
+      "skill": "Dexterity",
+      "capability": "PROJECTILES",
+      "level": "20"
+    },
+    {
+      "id": "tc_ember_guard",
+      "name": "Ember Guard",
+      "skill": "Constitution",
+      "capability": "WORKSHOP",
+      "level": "20"
+    },
+    {
+      "id": "tc_field_service",
+      "name": "Field Service",
+      "skill": "Tinkering",
+      "capability": "REPAIR",
+      "level": "20"
+    },
+    {
+      "id": "tc_workshop_cadence",
+      "name": "Workshop Cadence",
+      "skill": "Tinkering",
+      "capability": "WORKSHOP",
+      "level": "24"
+    },
+    {
+      "id": "tc_adaptive_grip",
+      "name": "Adaptive Grip",
+      "skill": "Tinkering",
+      "capability": "CLASSIFICATION",
+      "level": "24"
+    },
+    {
+      "id": "tc_keystone_tinker",
+      "name": "Keystone Tinker",
+      "skill": "Tinkering",
+      "capability": "KEYSTONE",
+      "level": "32"
+    },
+    {
+      "id": "tc_mana_polisher",
+      "name": "Mana Polisher",
+      "skill": "Tinkering",
+      "capability": "ADDON_BOTANIA_REPAIR_CHARGE",
+      "level": "16",
+      "addon": "tcintegrations"
+    },
+    {
+      "id": "tc_source_tempering",
+      "name": "Source Tempering",
+      "skill": "Magic",
+      "capability": "ADDON_ARS_ARMOR_REPAIR",
+      "level": "16",
+      "addon": "tcintegrations"
+    },
+    {
+      "id": "tc_clockwork_alternation",
+      "name": "Clockwork Alternation",
+      "skill": "Tinkering",
+      "capability": "ADDON_OFFHAND_MELEE",
+      "level": "16",
+      "addon": "tcintegrations"
+    },
+    {
+      "id": "tc_soulsteel_resolve",
+      "name": "Soulsteel Resolve",
+      "skill": "Constitution",
+      "capability": "ADDON_SOUL_STAINED",
+      "level": "20",
+      "addon": "tcintegrations"
+    },
+    {
+      "id": "tc_seasoned_hands",
+      "name": "Seasoned Hands",
+      "skill": "Tinkering",
+      "capability": "ADDON_TOOL_LEVELLING",
+      "level": "16",
+      "addon": "tinkerslevellingaddon"
+    },
+    {
+      "id": "tc_banquet_of_cinders",
+      "name": "Banquet of Cinders",
+      "skill": "Wisdom",
+      "capability": "ADDON_CULINARY_EFFECT",
+      "level": "12",
+      "addon": "tinkers_delight"
+    },
+    {
+      "id": "tc_charged_craft",
+      "name": "Charged Craft",
+      "skill": "Tinkering",
+      "capability": "ADDON_TOOL_ENERGY",
+      "level": "24",
+      "addon": "tinkers_advanced"
+    },
+    {
+      "id": "tc_medallion_concord",
+      "name": "Medallion Concord",
+      "skill": "Wisdom",
+      "capability": "ADDON_MEDALLION",
+      "level": "16",
+      "addon": "tinkers_ingenuity",
+      "status": "reserved, unregistered",
+      "reason": "Tinkers' Ingenuity publishes no 1.20.1 artifact to any maven this release can resolve"
+    },
+    {
+      "id": "tc_thinking_last_thought",
+      "name": "Last Thought",
+      "skill": "Wisdom",
+      "capability": "ADDON_THINKING_DEATH_TRIGGER",
+      "level": "16",
+      "addon": "tinkers_thinking",
+      "hook": "H13",
+      "channel": "add-on wear avoidance"
+    },
+    {
+      "id": "tc_thinking_studied_recall",
+      "name": "Studied Recall",
+      "skill": "Wisdom",
+      "capability": "ADDON_THINKING_XP_TRIGGER",
+      "level": "20",
+      "addon": "tinkers_thinking",
+      "hook": "H14",
+      "channel": "add-on experience recovery"
+    },
+    {
+      "id": "tc_thinking_embellished_focus",
+      "name": "Embellished Focus",
+      "skill": "Tinkering",
+      "capability": "ADDON_THINKING_EMBELLISHMENT",
+      "level": "24",
+      "addon": "tinkers_thinking",
+      "hook": "H13",
+      "channel": "melee damage sum"
+    },
+    {
+      "id": "tc_jeweler_setting",
+      "name": "Jeweler's Setting",
+      "skill": "Tinkering",
+      "capability": "ADDON_JEWELRY_MATERIAL",
+      "level": "12",
+      "addon": "tinkersjewelry",
+      "hook": "H2",
+      "channel": "add-on wear avoidance"
+    },
+    {
+      "id": "tc_gem_attunement",
+      "name": "Gem Attunement",
+      "skill": "Wisdom",
+      "capability": "ADDON_JEWELRY_GEM_ATTRIBUTES",
+      "level": "16",
+      "addon": "tinkersjewelry",
+      "hook": "H15",
+      "channel": "melee damage sum"
+    },
+    {
+      "id": "tc_undying_lustre",
+      "name": "Undying Lustre",
+      "skill": "Constitution",
+      "capability": "ADDON_JEWELRY_UNDYING",
+      "level": "20",
+      "addon": "tinkersjewelry",
+      "hook": "H15 via H1",
+      "channel": "add-on wear avoidance"
+    },
+    {
+      "id": "tc_polished_facet",
+      "name": "Polished Facet",
+      "skill": "Tinkering",
+      "capability": "ADDON_JEWELRY_POLISH",
+      "level": "20",
+      "addon": "tinkersjewelry",
+      "hook": "H1/H5",
+      "channel": "paid repair share"
+    },
+    {
+      "id": "tc_subspace_reserve",
+      "name": "Subspace Reserve",
+      "skill": "Endurance",
+      "capability": "ADDON_JEWELRY_SUBSPACE",
+      "level": "24",
+      "addon": "tinkersjewelry",
+      "status": "reserved, unregistered",
+      "reason": "tinkersjewelry:subspace is pure inventory storage: it adds the tinkersjewelry:subspace attribute, which sizes the container behind SubSpaceCapability and SubSpaceMenu. It carries no durability, damage, repair or progression quantity for a Runic channel to join, and inventing one would be padding. Same treatment as tc_medallion_concord."
+    }
+  ],
+  "powers": [
+    {
+      "id": "tc_first_heat",
+      "name": "First Heat",
+      "tier": "Mark",
+      "capability": "CLASSIFICATION"
+    },
+    {
+      "id": "tc_plumb_line",
+      "name": "Plumb Line",
+      "tier": "Mark",
+      "capability": "CLASSIFICATION"
+    },
+    {
+      "id": "tc_quench",
+      "name": "Quench",
+      "tier": "Mark",
+      "capability": "STATION_TRANSACTIONS"
+    },
+    {
+      "id": "tc_working_memory",
+      "name": "Working Memory",
+      "tier": "Mark",
+      "capability": "STATION_TRANSACTIONS"
+    },
+    {
+      "id": "tc_hammer_and_tongs",
+      "name": "Hammer and Tongs",
+      "tier": "Seal",
+      "capability": "CLASSIFICATION"
+    },
+    {
+      "id": "tc_temper_reserve",
+      "name": "Temper Reserve",
+      "tier": "Seal",
+      "capability": "WEAR_AVOIDANCE"
+    },
+    {
+      "id": "tc_resonant_return",
+      "name": "Resonant Return",
+      "tier": "Seal",
+      "capability": "PROJECTILES"
+    },
+    {
+      "id": "tc_workshop_aegis",
+      "name": "Workshop Aegis",
+      "tier": "Seal",
+      "capability": "WORKSHOP"
+    },
+    {
+      "id": "tc_great_work",
+      "name": "The Great Work",
+      "tier": "Crown",
+      "capability": "STATION_TRANSACTIONS"
+    },
+    {
+      "id": "tc_last_temper",
+      "name": "Last Temper",
+      "tier": "Crown",
+      "capability": "WEAR_AVOIDANCE"
+    },
+    {
+      "id": "tc_foundry_heart",
+      "name": "Heart of the Foundry",
+      "tier": "Crown",
+      "capability": "WORKSHOP"
+    },
+    {
+      "id": "tc_many_hands",
+      "name": "Many Hands, One Forge",
+      "tier": "Crown",
+      "capability": "WORKSHOP"
+    }
+  ],
+  "pack_rules": {
+    "schema_version": 1,
+    "folder": "runicskills/tconstruct_rules"
+  },
+  "script_events": [
+    "tinkerOperationCheck",
+    "tinkerOperationCompleted",
+    "tinkerToolLevelChanged"
+  ],
+  "pending": [],
+  "notes": {
+    "stable_profile": "Tinkers' Construct 3.11.2.166 and Mantle 1.11.97 are the lowest supported API. Stage S0 pins compilation to stable; runtime execution is -PtinkersProfile=stable.",
+    "beta_profile": "3.12.0.220 is unverified as of 2.0.7. It exists for forward compatibility but the mod runs in conservative mode without Tinkers'-specific mixins when beta is selected. No perks or powers are active for Tinkers' when beta profile is in use.",
+    "hooks_h6_h9_h11": "H6 (workmanship rebuild) is implemented in S4 with KeystoneModifier VOLATILE_DATA addSlots and WorkmanshipModifier TOOL_STATS; H9 (ranged) is implemented in S3a; H10 (melting/casting) is implemented in S3b; H11 (repair kit) remains unresolved pending later implementation. All seams have been located and confirmed to exist in the jar.",
+    "jei_dependency": "JEI is pinned alongside Tinkers' because Tinkers' 1.20.1 ships JEI plugins and bumped its version between the stable and beta profiles.",
+    "addon_perks_s5": "Seven add-on perks added in S5: four from TCIntegrations (requiring Botania, Ars Nouveau, Create, or Malum as companions), one from Tinkers' Levelling Addon, one from Tinkers' Delight (requiring Farmer's Delight), one from Tinkers' Advanced (requiring EtSTLib). Each capability also has a corresponding entry in the Capability enum (ADDON_BOTANIA_REPAIR_CHARGE through ADDON_MEDALLION). The reserved eighth perk (tc_medallion_concord) is unregistered because Tinkers' Ingenuity publishes no 1.20.1 artifact.",
+    "addon_live_testing": "Levelling and Delight perks have live GameTest coverage in M4 profile. Charged Craft has live coverage in M5 (when Tinkers' Advanced server boots). Tinkers' Thinking gained live coverage in 2.1.0 via -PtinkersAddons=thinking, against the exact build the reference pack runs (0.1.6.6.3). Botania and Ars Nouveau are no longer dormancy-only either: -PtinkersAddons=tcintegrations,botania,ars puts Botania 1.20.1-455-forge and Ars Nouveau 4.12.7 - the reference pack's versions - on the runtime classpath, so ADDON_BOTANIA_REPAIR_CHARGE and ADDON_ARS_ARMOR_REPAIR can finally be exercised rather than only asserted absent. Create and Malum remain dormancy-only; ADDON_OFFHAND_MELEE and ADDON_SOUL_STAINED are verified as ABSENT-companion. Tinkers' Jewelry is dormancy-only BY CHOICE and not for want of an artifact: Modrinth's newest 1.20.1 Forge build is 1.1.0 while the reference pack runs 1.2.0, so a live profile would produce a green run about a jar nobody uses. TinkersJewelryPerksGameTest is registered whenever tinkersjewelry is loaded, so a pack developer who supplies 1.2.0 themselves gets the coverage.",
+    "addon_perks_2_1_0": "Seven further add-on perks in 2.1.0: three from Tinkers' Thinking (tinkers_thinking, no companion mod) and four from Tinkers' Jewelry (tinkersjewelry, Curios as the companion for the two that need a worn piece). Neither add-on is a compile dependency and neither contributes a mixin: everything is addressed by ResourceLocation - modifier ids, material namespace, mob effect ids - through TraitFeatureRegistry and ForgeRegistries, and both triggers are reached from FORGE events TConstructPerkHandler already subscribes. CLAUDE.md's Mixin Targets list and the count of 42 are therefore unchanged. TcAddonHooks gained two channels for this work, addWearAvoidanceContributor and addExperienceContributor, each summed and clamped once in TConstructPerkHandler by tconstructNewWearAvoidanceCap and tconstructNewExperienceBonusCap respectively - deliberately rather than folding a wear or experience effect into the melee sum because a channel was missing. A third addition, addRepairBonusContributor, is not a new channel: it joins the existing paid-repair share under the existing tconstructRepairBonusCap. Tinkers' Katanas gets no adapter, no capability flag and no perk (see H16), and tc_subspace_reserve is reserved and unregistered."
+  }
+}

@@ -30,7 +30,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ReforgingMenu.ReforgingResultSlot.class)
 public abstract class MixReforgingResultSlot {
 
-    @Inject(method = "onTake", at = @At("HEAD"), remap = false, require = 0)
+    // `onTake` is vanilla `Slot#onTake`, which Apotheosis overrides — so its own jar ships it
+    // SRG-renamed (`m_142406_`) exactly as Minecraft's does. `remap = false` therefore matched in dev
+    // and silently matched nothing in production, and `require = 0` made that silence total
+    // (RS10-041, same defect as the Tinkers' hooks). Remapped, with the descriptor spelled out so the
+    // annotation processor resolves it to an SRG refmap entry; `checkMixinRemapping` asserts it did.
+    @Inject(method = "onTake(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;)V",
+            at = @At("HEAD"), remap = true, require = 0)
     private void runicskills$upgradeRarity(Player player, ItemStack stack, CallbackInfo ci) {
         if (player == null || player.level().isClientSide()) return;
         if (stack.isEmpty()) return;

@@ -234,7 +234,7 @@ jobs:
         run: |
           set -euo pipefail
           # Hash every distributable, not "the first one ls returns": the build produces both
-          # runicskills-<v>.jar and the jarJar runicskills-<v>-all.jar, and -all sorts first, so
+          # the slim runicskills-<v>-slim.jar and the shipped jarJar runicskills-<v>.jar, so
           # picking one by ls order silently measures whichever happens to come out on top.
           rm -f "hash-${{ matrix.replica }}.txt"
           touch "hash-${{ matrix.replica }}.txt"
@@ -323,4 +323,63 @@ jobs:
         with:
           name: gametest-log
           path: gametest.log
+          retention-days: 7
+
+  # The same GameTestServer run with Tinker's Construct actually present (M1).
+  #
+  # The M0 job above proves the mod works when Tinkers' is absent; this one proves the optional
+  # integration does not break the suite when it is there. `-PtinkersProfile=stable` is the only
+  # difference: it puts the pinned Tinkers'/Mantle/JEI trio on the runtime classpath (see the
+  # comment block in build.gradle), so the tests under gametest/tconstruct/ register and run.
+  # Kept as a separate job rather than a matrix entry on gametest-server so an M1-only failure
+  # is legible at a glance in the checks list.
+  gametest-server-tinkers:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Accept the Minecraft EULA for this run
+        run: |
+          mkdir -p run
+          echo "eula=true" > run/eula.txt
+
+      # `jarJar` is asked for explicitly so the upload step below has something to publish even
+      # though runGameTestServer itself never produces a distributable. It is the shipped artifact
+      # (the one carrying MixinExtras); `jar` alone would publish the slim jar.
+      - name: Run GameTests with Tinkers' Construct present
+        run: ./gradlew --no-daemon jarJar runGameTestServer -PtinkersProfile=stable 2>&1 | tee gametest-tinkers.log
+
+      - name: Upload GameTest log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gametest-tinkers-log
+          path: gametest-tinkers.log
+          retention-days: 7
+
+      - name: Upload jar
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: runicskills-jar-tinkers
+          path: build/libs/*.jar
           retention-days: 7

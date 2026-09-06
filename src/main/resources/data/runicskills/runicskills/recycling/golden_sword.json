@@ -1,0 +1,7 @@
+{
+  "input": "minecraft:golden_sword",
+  "consumed": 1,
+  "outputs": [ { "item": "minecraft:gold_nugget", "count": 4 } ],
+  "max_recovery": 4,
+  "requires_empty_nbt": true
+}

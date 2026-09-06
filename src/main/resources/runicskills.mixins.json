@@ -42,8 +42,24 @@
     "MixReforgingResultSlot",
     "MixResultSlot",
     "MixSlot",
+    "MixServerPlayerGameMode",
     "MixPathingStuckHandler",
-    "WallOfFireEntityAccess"
+    "WallOfFireEntityAccess",
+    "tconstruct.MixToolDamageUtil",
+    "tconstruct.MixTinkerStationBlockEntity",
+    "tconstruct.MixLazyResultContainer",
+    "tconstruct.MixToolHarvestLogic",
+    "tconstruct.MixModifiableBowItem",
+    "tconstruct.MixModifiableCrossbowItem",
+    "tconstruct.MixThrownTool",
+    "tconstruct.MixThrowingModule",
+    "tconstruct.MixMeltingModule",
+    "tconstruct.MixCastingBlockEntity",
+    "tconstruct.addons.MixManaModifier",
+    "tconstruct.addons.MixArsNouveauBaseModifier",
+    "tconstruct.addons.MixToolAttackUtil",
+    "tconstruct.addons.MixToolLevellingUtil",
+    "tconstruct.addons.MixToolEnergyUtil"
   ],
   "injectors": {
     "defaultRequire": 1

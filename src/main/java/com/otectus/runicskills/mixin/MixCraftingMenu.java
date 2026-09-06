@@ -1,9 +1,10 @@
 package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
-import com.otectus.runicskills.common.util.ItemBonusTags;
-import com.otectus.runicskills.handler.HandlerCommonConfig;
-import com.otectus.runicskills.registry.RegistryPerks;
+import com.otectus.runicskills.common.crafting.CraftOperationKind;
+import com.otectus.runicskills.common.crafting.CraftOperationContext;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import com.otectus.runicskills.common.crafting.CraftResultTransformer;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +14,6 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.FakePlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -62,36 +62,40 @@ public abstract class MixCraftingMenu {
     }
 
     /**
-     * Tinker's Touch — "Items you craft gain X% bonus durability", written onto the result.
+     * The perks that change a crafted item itself, applied where the item is real.
      *
      * <p><b>Why here and not in {@code ItemCraftedEvent}.</b> Shift-clicking a result runs
      * {@code CraftingMenu.quickMoveStack}, which calls {@code moveItemStackTo} — inserting
      * {@code split()} copies into the inventory — <em>before</em> {@code slot.onTake} fires the
      * craft event. A take-time handler therefore receives an already-emptied original, and anything
-     * it writes onto that stack is thrown away. (The same copy is why Master Tinkerer's
-     * {@code setDamageValue} does nothing on a shift-click; that is a separate defect, noted, not
-     * fixed here.) The one place the result stack is real is where vanilla creates it, which is
-     * this method — and it is server-only by construction, so no side guard beyond the
-     * {@link ServerPlayer} check is needed.
+     * it writes onto that stack is thrown away. The one place the result stack is real is where
+     * vanilla creates it, which is this method — and it is server-only by construction, so no side
+     * guard beyond the {@link ServerPlayer} check is needed.
+     *
+     * <p>Master Tinkerer's durability restore used to be left in the event, where it did nothing on
+     * a shift-click, and this class recorded that as a known defect for three releases. It is now
+     * applied here alongside Tinker's Touch, in {@link CraftResultTransformer}, which also fixes the
+     * order the two must run in: the restore reads the item's unstamped maximum (RS207-05).
      *
      * <p>Both the crafting table and the 2x2 inventory grid route through this same static, so one
      * injection covers both.
-     *
-     * <p>The percentage is baked into the item now, not read later: see {@link ItemBonusTags}.
      */
     @Inject(at = @At("TAIL"), method = "slotChangedCraftingGrid")
-    private static void runicskills$stampTinkersTouch(AbstractContainerMenu menu, Level level, Player player,
-                                                      CraftingContainer container, ResultContainer resultContainer,
-                                                      CallbackInfo ci) {
-        // A FakePlayer is an automation block standing in for a person; it has no perks, and its
-        // capability lookup is the kind of thing that misbehaves on other mods' fake players.
-        if (!(player instanceof ServerPlayer) || player instanceof FakePlayer) return;
-        if (RegistryPerks.TINKERS_TOUCH == null || !RegistryPerks.TINKERS_TOUCH.get().isEnabled(player)) return;
-
+    private static void runicskills$transformCraftedResult(AbstractContainerMenu menu, Level level, Player player,
+                                                           CraftingContainer container, ResultContainer resultContainer,
+                                                           CallbackInfo ci) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
         ItemStack result = resultContainer.getItem(0);
-        if (result.isEmpty() || !result.isDamageableItem()) return;
-
-        ItemBonusTags.stamp(result, ItemBonusTags.BONUS_DURABILITY,
-                HandlerCommonConfig.HANDLER.instance().tinkersTouchPercent);
+        if (result.isEmpty()) return;
+        // Classify from the recipe vanilla just used, so a repair-by-crafting or a special
+        // recipe never receives a manufacturing restore (RS207-05).
+        CraftOperationKind kind = resultContainer.getRecipeUsed() instanceof CraftingRecipe recipe
+                ? CraftOperationContext.classifyGrid(CraftOperationContext.gridInputs(container), recipe, result)
+                : CraftOperationKind.UNKNOWN;
+        CraftResultTransformer.transform(serverPlayer, result, kind);
+        // And the adjustments that need the recipe and the grid rather than only the item — the
+        // repair-kit bonus is the difference between an input tool and this result, so it cannot be
+        // computed from the result alone.
+        CraftResultTransformer.adjustGrid(serverPlayer, container, resultContainer.getRecipeUsed(), result);
     }
 }

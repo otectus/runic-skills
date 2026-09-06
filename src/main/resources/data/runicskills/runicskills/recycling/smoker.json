@@ -1,0 +1,7 @@
+{
+  "input": "minecraft:smoker",
+  "consumed": 1,
+  "outputs": [ { "item": "minecraft:cobblestone", "count": 4 }, { "item": "minecraft:oak_log", "count": 2 } ],
+  "max_recovery": 6,
+  "requires_empty_nbt": true
+}

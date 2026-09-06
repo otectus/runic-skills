@@ -2,6 +2,7 @@ package com.otectus.runicskills.registry.powers;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
@@ -68,7 +69,14 @@ public final class PowerEligibility {
         /** Already equipped. */
         ALREADY_EQUIPPED,
         /** Equipping it would cost more Power Points than the player has earned. */
-        INSUFFICIENT_POWER_POINTS
+        INSUFFICIENT_POWER_POINTS,
+        /**
+         * The optional mod this Power acts through is absent, unrecognised, or the seam it needs
+         * did not apply. Distinct from {@link #MISSING_DEPENDENCY}, which is a mod id that is not
+         * installed, and from {@link #INERT_CONTENT}, which is code that was never written: this
+         * one says the Power is implemented and the install cannot currently run it (§14.4).
+         */
+        MISSING_CAPABILITY
     }
 
     /**
@@ -254,6 +262,15 @@ public final class PowerEligibility {
         // and this is what stops it firing, costing points, or being re-equipped (RS10-004).
         if (!com.otectus.runicskills.registry.content.ContentStatusIndex.isSelectable(power)) {
             return new Result(Reason.INERT_CONTENT, 0, 0);
+        }
+        // An Artifice Power whose native seam is unavailable is refused here rather than left
+        // equippable and quiet (§11.1). The catalogue answers this without a slimeknights type on
+        // the stack, so the refusal is the same on a server that has never had Tinker's Construct
+        // installed as on one where a hook failed to apply — with a different stated reason.
+        TConstructPowers.Unavailable unavailable = TConstructPowers.unavailable(power);
+        if (unavailable != null) {
+            return new Result(unavailable == TConstructPowers.Unavailable.DISABLED_BY_CONFIG
+                    ? Reason.DISABLED_BY_CONFIG : Reason.MISSING_CAPABILITY, 0, 0);
         }
 
         SkillCapability capability = SkillCapability.get(player);

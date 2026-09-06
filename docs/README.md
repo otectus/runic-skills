@@ -17,8 +17,15 @@ releases behind — and a reader had no way to tell which described the mod as i
 | [`API_EVENTS.md`](API_EVENTS.md) | The public Forge event surface for addons and KubeJS |
 | [`KUBEJS.md`](KUBEJS.md) | KubeJS server-side progression events — gate skill level-ups, including advancement-based rules (current) |
 | [`INTEGRATION_MATRIX.md`](INTEGRATION_MATRIX.md) | Which mods get item-lock generation, and how it is wired |
+| [`RECYCLING_RULES.md`](RECYCLING_RULES.md) | Datapack format for grindstone salvage rules: JSON schema, shipped defaults, reload behaviour |
+| [`TCONSTRUCT_PACK_RULES.md`](TCONSTRUCT_PACK_RULES.md) | Datapack format for `tconstruct_rules`: pack-authored use requirements and craft reward policies on Tinkers' Construct tools, precedence, limits, reload behaviour |
+| [`MIGRATING_TO_2.0.7.md`](MIGRATING_TO_2.0.7.md) | What changes for a server admin or pack author upgrading from 2.0.6: salvage, crafting rewards, protocol, config, and save compatibility |
+| [`TCONSTRUCT_HOOKS.md`](TCONSTRUCT_HOOKS.md) | Tinkers' Construct 1.20.1-3.11.2.166 hook manifest: verified mixin seams H1–H12, tag table, repair-kit detail |
+| [`TCONSTRUCT_INTEGRATION.md`](TCONSTRUCT_INTEGRATION.md) | Player and admin guide: supported versions, profile detection, conservative mode, configuration, equipment classification, wear avoidance, repair routing, workmanship, 16 perks (15 S4a + 1 S4 completion), Keystone Tinker station service, stack-aware requirements, diagnostics, and two add-on layers (S5: 7 perks from 4 add-ons; 2.1.0: 7 more from Tinkers' Thinking and Tinkers' Jewelry, plus Tinkers' Katanas' data-only coverage) |
+| [`TCONSTRUCT_TEST_MATRIX.md`](TCONSTRUCT_TEST_MATRIX.md) | Runtime compatibility matrix: all test profiles (M0 baseline through M9, 2.1.0's Tinkers' Thinking and TCIntegrations+Botania+Ars profiles), their exact artifact versions and SHA-256 hashes, gametest coverage per profile, how to run each, and the unsupported upstream list |
 | [`SMOKE_TESTS.md`](SMOKE_TESTS.md) | The runtime checklist that has to be walked before a release |
 | [`BUILD_REPRODUCIBILITY.md`](BUILD_REPRODUCIBILITY.md) | Build inputs, reproducible jars, the Gradle 9 baseline |
+| [`PACK_VERIFICATION.md`](PACK_VERIFICATION.md) | Proving a build's Tinkers' mixins will apply in a real pack: the static `tools/verify_against_pack.py` check and the `TCONSTRUCT_COMPAT` log line as a live check |
 | [`RUNIC_SKILLS_POWERS.md`](RUNIC_SKILLS_POWERS.md) | The Powers design. **A design document, not a description of what shipped** — read it against `CONTENT_STATUS.md` |
 
 ## Working documents

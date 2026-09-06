@@ -1,7 +1,10 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.actions.BlockBreakCommittedEvent;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.crafting.CraftOperationContext;
+import com.otectus.runicskills.common.crafting.CraftOperationKind;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.util.ContainerRewardLedger;
 import com.otectus.runicskills.common.util.ProcRoll;
@@ -26,7 +29,6 @@ import net.minecraftforge.event.entity.player.AnvilRepairEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,25 +38,36 @@ import net.minecraft.world.phys.AABB;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Mod.EventBusSubscriber(modid = RunicSkills.MOD_ID)
 public class CraftingEventHandler {
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onPlayerBreakBlock(BlockEvent.BreakEvent event) {
-        Player player = event.getPlayer();
+    /**
+     * Treasure Hunter — digging turns something up.
+     *
+     * <p><b>Listens to the committed break, not the attempted one (RS207-09).</b> It used to run at
+     * {@code HIGHEST} priority on {@code BlockEvent.BreakEvent} -- fired before the break and
+     * cancellable -- and then enqueue its drop for the following tick. So a break that a protection
+     * mod, a claim or any lower-priority listener refused still paid: swinging at dirt inside a
+     * protected region was a free item source that left the region untouched.
+     * {@link BlockBreakCommittedEvent} is posted only once the block is actually gone, and the drop
+     * is spawned there and then rather than a tick later, so there is no window in which the
+     * decision can still be reversed.
+     */
+    @SubscribeEvent
+    public void onBlockBreakCommitted(BlockBreakCommittedEvent event) {
+        ServerPlayer player = event.getPlayer();
         if (player instanceof FakePlayer) return;
-        if (RegistryPerks.TREASURE_HUNTER != null && player != null &&
-                event.getState().is(RegistryTags.Blocks.DIRT) && RegistryPerks.TREASURE_HUNTER.get().isEnabled(player)) {
-            Level level = player.level();
-            BlockPos pos = event.getPos();
-            ItemStack stack = TreasureHunterPerk.drop(player);
-            if (stack != null) {
-                ItemEntity itemEntity = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-                enqueueTask(level, () -> level.addFreshEntity(itemEntity), 0);
-            }
+        if (RegistryPerks.TREASURE_HUNTER == null
+                || !event.getState().is(RegistryTags.Blocks.DIRT)
+                || !RegistryPerks.TREASURE_HUNTER.get().isEnabled(player)) {
+            return;
         }
+        ItemStack stack = TreasureHunterPerk.drop(player);
+        if (stack == null) return;
+        BlockPos pos = event.getPos();
+        event.getLevel().addFreshEntity(
+                new ItemEntity(event.getLevel(), pos.getX(), pos.getY(), pos.getZ(), stack));
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -72,9 +85,18 @@ public class CraftingEventHandler {
         }
     }
 
-    /** The Convergence / Master Tinkerer / crafting-luck payouts, inside the re-entry guard. */
+    /** The Convergence payout, inside the re-entry guard. */
     private static void awardCraftingPerks(PlayerEvent.ItemCraftedEvent event, ServerPlayer player) {
         if (RegistryPerks.CONVERGENCE != null && RegistryPerks.CONVERGENCE.get().isEnabled(player)) {
+            // Only a craft that made something new. ItemCraftedEvent fires for repairs, for
+            // compression and decompression, and for any modded menu that chooses to fire it, none
+            // of which is "you crafted a thing" in the sense the perk describes (RS207-01). The
+            // classification sits inside the enablement check so nobody without the perk pays for
+            // the recipe lookup.
+            if (CraftOperationContext.fromVanillaCraftEvent(player, event).kind()
+                    != CraftOperationKind.MANUFACTURE) {
+                return;
+            }
             // The roll now sits INSIDE the enablement check. It used to run for every craft by
             // every player, so a configured probability of 0 threw out of this handler and broke
             // crafting server-wide for people who had never taken the perk (RS-029).
@@ -87,30 +109,16 @@ public class CraftingEventHandler {
             }
         }
 
-        // Tinker's Touch is deliberately NOT here. It writes NBT onto the crafted stack, and a
-        // shift-clicked craft reaches this event holding an already-emptied original:
+        // Neither Tinker's Touch nor Master Tinkerer is here. Both write to the crafted stack, and
+        // a shift-clicked craft reaches this event holding an already-emptied original:
         // CraftingMenu.quickMoveStack moves split() copies into the inventory before onTake fires
-        // the event, so anything stamped here is discarded. It is applied where the result stack is
-        // created instead, in MixCraftingMenu.
-        if (RegistryPerks.MASTER_TINKERER != null && RegistryPerks.MASTER_TINKERER.get().isEnabled(player)) {
-            ItemStack crafted = event.getCrafting();
-            if (crafted.isDamageableItem()) {
-                int bonusDurability = (int) (crafted.getMaxDamage() * HandlerCommonConfig.HANDLER.instance().masterTinkererPercent / 100.0);
-                if (bonusDurability > 0 && crafted.getDamageValue() > 0) {
-                    crafted.setDamageValue(Math.max(0, crafted.getDamageValue() - bonusDurability));
-                }
-            }
-        }
-
-        double craftingLuck = player.getAttributeValue(RegistryAttributes.CRAFTING_LUCK.get());
-        if (craftingLuck > 0) {
-            int chance = ThreadLocalRandom.current().nextInt(100);
-            if (chance < (int) craftingLuck && event.getCrafting().getMaxStackSize() > 1) {
-                ItemStack bonus = event.getCrafting().copy();
-                bonus.setCount(1);
-                player.drop(bonus, false);
-            }
-        }
+        // the event, so anything written here is discarded. They are applied where the result stack
+        // is created instead -- CraftResultTransformer, called from MixCraftingMenu (RS207-05).
+        //
+        // Crafting Luck is not here either. It handed out a copy of the result with no idea what
+        // the craft had been and no budget shared with the crafting perks that were doing the same
+        // thing in PerkEffectsHandler, so several of them together paid several copies for an
+        // operation that created nothing. It is one term in CraftRewardDispatcher now (RS207-10).
     }
 
     @SubscribeEvent

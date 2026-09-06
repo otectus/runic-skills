@@ -1,6 +1,5 @@
 package com.otectus.runicskills.gametest;
 
-import com.mojang.authlib.GameProfile;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.registry.RegistryCapabilities;
@@ -8,7 +7,6 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
@@ -18,7 +16,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-import java.util.UUID;
 
 /**
  * Behavioural coverage for the capability lifecycle (RS10-003).
@@ -56,16 +53,23 @@ public class PlayerLifecycleGameTest {
     // -- Helpers -------------------------------------------------------------------------------
 
     /**
-     * Builds a server player that is attached to the world but has no connection.
+     * Builds a server player that is attached to the world and has somewhere to send packets.
      *
-     * <p>Enough for the lifecycle paths under test: capabilities are attached in the {@code Entity}
-     * constructor, and clone handling only touches capabilities, attributes, titles and health.
+     * <p>Runic's own clone handling would be happy without a connection — capabilities are attached
+     * in the {@code Entity} constructor, and it only touches capabilities, attributes, titles and
+     * health. But {@link #fireClone} posts the event on the real bus, so every other mod on the
+     * classpath handles it too, and some of them answer a clone by sending the player a packet:
+     * Ars Nouveau's {@code CapabilityRegistry$EventHandler.playerClone} calls
+     * {@code sendToPlayerClient} unconditionally and dies on a null {@code connection}. That is not
+     * a defect in either mod, and it is not something these tests are entitled to have an opinion
+     * about — the event is genuinely fired on real players in production.
+     *
+     * <p>So the player gets {@code MockPlayers}' in-memory packet sink, exactly as
+     * {@code TinkerFixtures.connectedPlayer} already does for the same reason one package over. The
+     * player is otherwise identical, and nothing these tests assert changes.
      */
     private static ServerPlayer newPlayer(GameTestHelper helper, String name) {
-        ServerLevel level = helper.getLevel();
-        GameProfile profile = new GameProfile(
-                UUID.nameUUIDFromBytes(("runicskills-gametest:" + name).getBytes()), name);
-        return new ServerPlayer(level.getServer(), level, profile);
+        return MockPlayers.connectedServerPlayer(helper, name);
     }
 
     private static SkillCapability capabilityOf(GameTestHelper helper, ServerPlayer player, String who) {

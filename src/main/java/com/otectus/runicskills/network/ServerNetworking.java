@@ -43,7 +43,12 @@ public class ServerNetworking {
     //     a 32,767-character string.
     // Protocol 9 peers are refused outright rather than tolerated: the payload semantics differ,
     // so a partial handshake would be worse than a clear refusal (RS10-005, RS10-007, RS10-020).
-    private static final String PROTOCOL_VERSION = "11";
+    // 2.0.7: bumped "11" -> "12" — the Tinker's Construct workshop layer adds three registrations
+    // (WorkshopFocusSP, StationQuoteCP, WorkshopStatusCP). New message ids on the channel means an
+    // 11 peer would decode a stream whose ids it has no handler for, so the pair is refused at
+    // negotiation instead (spec §15.3: "update the channel predicate, documentation and consistency
+    // checks together"). The mod version and this number are separate values and always have been.
+    private static final String PROTOCOL_VERSION = "12";
     public static SimpleChannel instance;
 
     /**
@@ -107,6 +112,13 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, PowerOverridesSyncCP.class, PowerOverridesSyncCP::toBytes, PowerOverridesSyncCP::new, PowerOverridesSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, PowerProcCP.class, PowerProcCP::toBytes, PowerProcCP::new, PowerProcCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, PowerEquipSP.class, PowerEquipSP::toBytes, PowerEquipSP::new, PowerEquipSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        // Tinker's Construct workshop layer (2.0.7). The two clientbound packets carry presentation
+        // only — a quote this player would get, and where their own focus stands — and the one
+        // serverbound packet carries an intent, never a number the server then trusts.
+        instance.registerMessage(packetId++, StationQuoteCP.class, StationQuoteCP::toBytes, StationQuoteCP::new, StationQuoteCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, WorkshopStatusCP.class, WorkshopStatusCP::toBytes, WorkshopStatusCP::new, WorkshopStatusCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, WorkshopFocusSP.class, WorkshopFocusSP::toBytes, WorkshopFocusSP::new, WorkshopFocusSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static void sendToServer(Object message) {

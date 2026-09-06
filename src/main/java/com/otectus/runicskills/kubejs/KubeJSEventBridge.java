@@ -3,8 +3,12 @@ package com.otectus.runicskills.kubejs;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.progression.ProgressionHooks;
 import com.otectus.runicskills.common.progression.ProgressionService;
+import com.otectus.runicskills.common.scripting.TinkerScriptHooks;
 import com.otectus.runicskills.kubejs.events.CustomEvents;
 import com.otectus.runicskills.kubejs.events.LevelUpEvent;
+import com.otectus.runicskills.kubejs.events.TinkerOperationCheckEvent;
+import com.otectus.runicskills.kubejs.events.TinkerOperationCompletedEvent;
+import com.otectus.runicskills.kubejs.events.TinkerToolLevelChangedEvent;
 import com.otectus.runicskills.registry.skill.Skill;
 import dev.latvian.mods.kubejs.event.EventResult;
 import dev.latvian.mods.kubejs.script.ScriptType;
@@ -37,7 +41,44 @@ public class KubeJSEventBridge {
         ProgressionHooks.serverLevelUpVeto = KubeJSEventBridge::postServer;
         ProgressionHooks.clientLevelUpVeto = KubeJSEventBridge::postClient;
         ProgressionHooks.kubejsBridgeInstalled = true;
-        RunicSkills.getLOGGER().debug("Runic Skills KubeJS progression events enabled.");
+        // The three tinkering events (§14.5). Installed here rather than from the Tinkers'
+        // bootstrap: the surface has to exist on a server that has no Tinkers' at all, so that a
+        // pack shared between servers loads its scripts either way and simply sees nothing happen.
+        TinkerScriptHooks.operationGate = KubeJSEventBridge::postOperationCheck;
+        TinkerScriptHooks.operationObserver = KubeJSEventBridge::postOperationCompleted;
+        TinkerScriptHooks.toolLevelObserver = KubeJSEventBridge::postToolLevelChanged;
+        TinkerScriptHooks.kubejsTinkerBridgeInstalled = true;
+        RunicSkills.getLOGGER().debug("Runic Skills KubeJS progression and tinkering events enabled.");
+    }
+
+    /**
+     * The pre-commit gate.
+     *
+     * <p>Exceptions are deliberately <em>not</em> caught here: {@code TinkerScriptHooks} turns a
+     * throw into a denial, which is what §14.5 asks for, and catching it in the bridge would turn
+     * it into an allow before the hook could see it.
+     */
+    private static TinkerScriptHooks.Veto postOperationCheck(ServerPlayer player,
+                                                             TinkerScriptHooks.Operation operation) {
+        TinkerOperationCheckEvent event = new TinkerOperationCheckEvent(player, operation);
+        EventResult result = CustomEvents.TINKER_OPERATION_CHECK.post(ScriptType.SERVER, event);
+        boolean denied = event.isCancelled() || (result != null && result.interruptFalse());
+        if (!denied) return TinkerScriptHooks.Veto.ALLOW;
+        String message = event.getDenialMessage();
+        if (message == null && result != null && result.value() instanceof String s) message = s;
+        return TinkerScriptHooks.Veto.deny(message);
+    }
+
+    private static void postOperationCompleted(ServerPlayer player,
+                                               TinkerScriptHooks.Operation operation) {
+        CustomEvents.TINKER_OPERATION_COMPLETED.post(ScriptType.SERVER,
+                new TinkerOperationCompletedEvent(player, operation));
+    }
+
+    private static void postToolLevelChanged(ServerPlayer player,
+                                             TinkerScriptHooks.ToolLevelChange change) {
+        CustomEvents.TINKER_TOOL_LEVEL_CHANGED.post(ScriptType.SERVER,
+                new TinkerToolLevelChangedEvent(player, change));
     }
 
     private static ProgressionHooks.VetoResult postServer(ServerPlayer player, Skill skill,

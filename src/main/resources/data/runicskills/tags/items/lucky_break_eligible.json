@@ -1,4 +1,13 @@
 {
   "replace": false,
-  "values": []
+  "values": [
+    {
+      "id": "tinkers_katanas:katana",
+      "required": false
+    },
+    {
+      "id": "tinkers_katanas:fuma_shuriken",
+      "required": false
+    }
+  ]
 }

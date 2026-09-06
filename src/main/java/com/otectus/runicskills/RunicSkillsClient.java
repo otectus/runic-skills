@@ -62,6 +62,9 @@ public class RunicSkillsClient {
             // world being left, and a HUD card outliving its world would name a Power the next
             // world may not even register.
             com.otectus.runicskills.client.vfx.PowerProcVfxManager.reset();
+            // The workshop panel is per-session too: a focus, a token and a quote all belong to
+            // the server that issued them.
+            com.otectus.runicskills.client.integration.tconstruct.TinkerStationPanel.reset();
         }
 
         @SubscribeEvent
@@ -140,6 +143,15 @@ public class RunicSkillsClient {
                 // sfiomn.* symbols nor an adapter-class reference an eager verifier could
                 // resolve during startup.
                 event.enqueueWork(LegendaryTabsIntegration::registerClientTab);
+            }
+
+            if (net.minecraftforge.fml.ModList.get().isLoaded("tconstruct")) {
+                // The station panel names no slimeknights type at all — it recognises the native
+                // screens by class name and takes every fact it displays from the server — so it
+                // needs no probe-and-reflect facade, only this guard: without Tinkers' installed
+                // there is no screen for it to attach to and no status packet for it to receive.
+                event.enqueueWork(com.otectus.runicskills.client.integration.tconstruct
+                        .TinkerStationPanel::register);
             }
 
             if (CustomNpcsIntegration.isModLoaded()) {

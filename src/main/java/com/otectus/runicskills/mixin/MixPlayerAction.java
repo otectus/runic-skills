@@ -1,18 +1,23 @@
 package com.otectus.runicskills.mixin;
 
+import com.otectus.runicskills.common.actions.ActionOrigin;
+import com.otectus.runicskills.common.actions.RunicActionContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Two Dexterity perks that act on the player's own body rather than on anything around it.
+ * Two Dexterity perks that act on the player's own body rather than on anything around it, plus the
+ * seam that names a melee swing while it is happening.
  *
  * <p>Both target {@link Player}. The similarly-named {@code MixPlayer} does not — it targets
  * {@code Entity} so it can reach {@code getMaxAirSupply}, which is declared there — so neither of
@@ -84,5 +89,36 @@ public abstract class MixPlayerAction {
         // declare. See MixLivingEntityAccess.
         ((MixLivingEntityAccess) (Object) self).runicskills$setAttackStrengthTicker(
                 (int) (this.getCurrentItemAttackStrengthDelay() * share));
+    }
+
+    /** Whether the melee scope opened at HEAD actually pushed, so RETURN pops exactly as often. */
+    @Unique
+    private boolean runicskills$meleeActionOpen;
+
+    /**
+     * Names the whole of a melee swing as {@link ActionOrigin#MELEE}, for the wear stage.
+     *
+     * <p>Tinkers' 3.11 passes no cause into its durability helper, so §5.2 requires a positively
+     * identified ordinary use before this mod adjusts native wear; anything else gets native
+     * behaviour. {@code Player#attack} is the whole of one swing — the attack-strength check, the
+     * enchantment damage, the sweep and {@code ItemStack#hurtEnemy}, which is where a modded weapon
+     * actually spends its durability — so opening the scope here covers the loss without naming any
+     * particular weapon's implementation of it.
+     *
+     * <p>A Forge event could not do this: {@code AttackEntityEvent} fires and returns long before
+     * the durability is spent, and a scope that is not open across the spend identifies nothing.
+     */
+    @Inject(method = "attack", at = @At("HEAD"))
+    private void runicskills$openMeleeAction(Entity target, CallbackInfo ci) {
+        Player self = (Player) (Object) this;
+        this.runicskills$meleeActionOpen =
+                RunicActionContext.enter(ActionOrigin.MELEE, self.getUUID());
+    }
+
+    @Inject(method = "attack", at = @At("RETURN"))
+    private void runicskills$closeMeleeAction(Entity target, CallbackInfo ci) {
+        if (!this.runicskills$meleeActionOpen) return;
+        this.runicskills$meleeActionOpen = false;
+        RunicActionContext.exit();
     }
 }

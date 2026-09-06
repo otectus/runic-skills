@@ -3,7 +3,10 @@ package com.otectus.runicskills.common.capability;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.util.CapabilityBounds;
 import com.otectus.runicskills.common.model.Skills;
+import com.otectus.runicskills.common.equipment.RequirementDecision;
 import com.otectus.runicskills.common.util.LockCheck;
+import com.otectus.runicskills.integration.lock.LockAction;
+import com.otectus.runicskills.integration.lock.LockProviderRegistry;
 import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.network.packet.client.SkillOverlayCP;
@@ -65,6 +68,29 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     private static final String KEY_DATA_VERSION = "dataVersion";
     private static final String KEY_ORPHANS = "runicskills:retained";
 
+    /**
+     * The Runic-owned compound for integration state (§15.1), schema 1.
+     *
+     * <p>Additive: absent means empty, so a save written by any earlier version loads unchanged and
+     * one written here loads on an earlier version as a retained unknown key rather than as a
+     * corrupt field. It holds one thing so far — the Artifice Power cooldown debt — and it holds it
+     * as <em>remaining</em> ticks, because the runtime clock restarts at zero with the server and a
+     * saved absolute deadline would read as already elapsed after every restart (RS18).
+     */
+    private static final String KEY_TC_STATE = "runicskills:tc_state";
+
+    /** Schema version of {@link #KEY_TC_STATE}. A future shape change bumps this, not DATA_VERSION. */
+    private static final int TC_STATE_VERSION = 1;
+
+    private static final String KEY_TC_VERSION = "version";
+    private static final String KEY_TC_COOLDOWNS = "cooldowns";
+
+    /** §11.5: twelve cooldown records per player, and no more, whatever the file says. */
+    private static final int MAX_TC_COOLDOWNS = 12;
+
+    /** §15.1: one day of game ticks is the longest debt any of them may carry. */
+    private static final int MAX_TC_COOLDOWN_TICKS = 24000;
+
     /** Upper bound on retained unknown keys, so a pathological save cannot grow player NBT without limit. */
     private static final int MAX_ORPHAN_KEYS = 4096;
 
@@ -115,6 +141,16 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     public Map<String, Long> powerCooldowns = new HashMap<>();
     /** powerId → absolute server game-time at which a buffered window/proc expires. */
     public Map<String, Long> powerWindows = new HashMap<>();
+    /**
+     * Artifice Power cooldowns, as absolute server game-time, mirroring {@code PowerRuntime}.
+     *
+     * <p>Kept here as well as in the runtime map because the runtime map is cleared on logout and
+     * §15.1 requires the debt to outlive that: "serialize the debt, clear runtime references, and
+     * restore cleanly". Written at the moment a cooldown starts, converted to remaining ticks on
+     * save and back to absolute on load, and restored into the runtime map at login by
+     * {@link com.otectus.runicskills.common.powers.PowerCooldownDebt}.
+     */
+    public Map<String, Long> tcPowerCooldowns = new HashMap<>();
 
     private Map<String, Integer> mapSkills() {
         Map<String, Integer> map = new HashMap<>();
@@ -477,8 +513,42 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     // — on the server during a use/attack/equip, mid-gameplay — instead of gracefully allowing it.
     // This mirrors the null check already present in ClientCapabilityAccess.canUseItemClient.
     public boolean canUseItem(Player player, ItemStack item) {
+        Boolean stackVerdict = stackLockVerdict(player, item, LockAction.USE, true);
+        if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
         return id == null || canUse(player, id);
+    }
+
+    /**
+     * The stack-aware lock verdict for {@code item}, or {@code null} when no provider claims it and
+     * the unchanged item-id path should decide.
+     *
+     * <p>Stack providers are asked first, not last. A provider that reads the stack knows something
+     * the id cannot express — which material an item is made of, whether it is a hybrid tool being
+     * swung rather than dug with — so an id rule that also matched would be the coarser of two
+     * answers about the same item, and letting the coarse one win would make the fine one
+     * unreachable.
+     */
+    private Boolean stackLockVerdict(Player player, ItemStack item, LockAction action, boolean notify) {
+        if (item == null || item.isEmpty()) return null;
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) return null;
+        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return null;
+
+        java.util.Optional<RequirementDecision> resolved =
+                LockProviderRegistry.resolveStack(serverPlayer, item, action);
+        if (resolved.isEmpty()) return null;
+        RequirementDecision decision = resolved.get();
+        if (decision.allowed()) return Boolean.TRUE;
+
+        if (notify) {
+            if (decision.reason() != null) {
+                serverPlayer.sendSystemMessage(decision.reason());
+            } else {
+                ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
+                if (id != null) SkillOverlayCP.send(player, id.toString());
+            }
+        }
+        return Boolean.FALSE;
     }
 
     /**
@@ -489,10 +559,20 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      * action events (attack swing, left/right-click).
      */
     public boolean canUseItemSilent(Player player, ItemStack item) {
+        Boolean stackVerdict = stackLockVerdict(player, item, LockAction.USE, false);
+        if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
         return id == null || canUse(player, id.toString(), false);
     }
 
+    /**
+     * The lock decision for an item known only by its registry id.
+     *
+     * <p><b>Caveat.</b> This overload cannot enforce a requirement that depends on what an
+     * individual stack is made of: every stack sharing a registry id is one item to it. Prefer
+     * {@link #canUseItem(Player, ItemStack)} wherever a stack is in hand — it consults the
+     * stack-aware providers first and falls through to exactly this rule when none claims the item.
+     */
     public boolean canUseItem(Player player, ResourceLocation resourceLocation) {
         return canUse(player, resourceLocation);
     }
@@ -594,9 +674,61 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         }
         nbt.put("powerWindows", powerWinTag);
 
+        nbt.put(KEY_TC_STATE, writeIntegrationState());
+
         nbt.putString("playerTitle", this.playerTitle);
         nbt.putDouble("betterCombatEntityRange", this.betterCombatEntityRange);
         return nbt;
+    }
+
+    /**
+     * The integration compound: schema version, and the cooldown debt as remaining ticks.
+     *
+     * <p>An elapsed cooldown is not written at all, so a player who has not used a Power for a
+     * month carries nothing for it. Time that passed while the server was down or the player was
+     * offline does not count against the debt, which is exactly what storing what is <em>left</em>
+     * rather than when it ends means.
+     */
+    private CompoundTag writeIntegrationState() {
+        CompoundTag state = new CompoundTag();
+        state.putInt(KEY_TC_VERSION, TC_STATE_VERSION);
+        CompoundTag cooldowns = new CompoundTag();
+        long now = serverTick();
+        for (Map.Entry<String, Long> entry : this.tcPowerCooldowns.entrySet()) {
+            if (cooldowns.size() >= MAX_TC_COOLDOWNS) break;
+            long remaining = entry.getValue() - now;
+            if (remaining <= 0L) continue;
+            cooldowns.putInt(entry.getKey(), (int) Math.min(remaining, MAX_TC_COOLDOWN_TICKS));
+        }
+        state.put(KEY_TC_COOLDOWNS, cooldowns);
+        return state;
+    }
+
+    /**
+     * The integration compound, read back as absolute ticks against the clock running now.
+     *
+     * <p>Every value is bounded on the way in for the same reason the timer maps are: the file is
+     * not a trusted input, and a debt of two billion ticks is a Power the player never gets back.
+     */
+    private void readIntegrationState(CompoundTag nbt) {
+        this.tcPowerCooldowns.clear();
+        if (!nbt.contains(KEY_TC_STATE, Tag.TAG_COMPOUND)) return;
+        CompoundTag state = nbt.getCompound(KEY_TC_STATE);
+        if (state.getInt(KEY_TC_VERSION) != TC_STATE_VERSION) return;
+        CompoundTag cooldowns = state.getCompound(KEY_TC_COOLDOWNS);
+        long now = serverTick();
+        for (String key : cooldowns.getAllKeys()) {
+            if (this.tcPowerCooldowns.size() >= MAX_TC_COOLDOWNS) break;
+            if (!CapabilityBounds.isStorableKey(key)) continue;
+            int remaining = cooldowns.getInt(key);
+            if (remaining <= 0) continue;
+            this.tcPowerCooldowns.put(key, now + Math.min(remaining, MAX_TC_COOLDOWN_TICKS));
+        }
+    }
+
+    /** The running server's tick count, or {@code 0} when there is no server (unit tests). */
+    private static long serverTick() {
+        return RunicSkills.server == null ? 0L : RunicSkills.server.getTickCount();
     }
 
     /**
@@ -726,6 +858,10 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         java.util.Collections.addAll(consumed,
                 "perkCooldowns", "power.equippedMarks", "power.equippedSeals", "power.equippedCrown",
                 "powerCooldowns", "powerWindows", "playerTitle", "betterCombatEntityRange",
+                // Known, not orphaned: the retention pass writes back anything it does not
+                // recognise, and a compound this class both reads and rewrites must not also be
+                // replayed from a stale copy.
+                KEY_TC_STATE,
                 // Consumed by migrate(): read once and deliberately not carried forward.
                 "counterAttackTimer", "counterAttack", "limitBreakerCooldown");
         retainOrphans(nbt, consumed);
@@ -777,6 +913,8 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
             skippedTimers += readBoundedTimers(winTag, this.powerWindows, winTag::getLong);
         }
 
+        readIntegrationState(nbt);
+
         this.playerTitle = nbt.contains("playerTitle") ? nbt.getString("playerTitle") : RegistryTitles.getTitle("titleless").getName();
         this.betterCombatEntityRange = nbt.getDouble("betterCombatEntityRange");
 
@@ -815,6 +953,8 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         this.equippedCrown = source.equippedCrown;
         this.powerCooldowns = new HashMap<>(source.powerCooldowns);
         this.powerWindows = new HashMap<>(source.powerWindows);
+        // §15.1: death, respec and a dimension change remove a Power's benefit and keep its debt.
+        this.tcPowerCooldowns = new HashMap<>(source.tcPowerCooldowns);
 
         this.playerTitle = source.playerTitle;
         this.betterCombatEntityRange = source.betterCombatEntityRange;

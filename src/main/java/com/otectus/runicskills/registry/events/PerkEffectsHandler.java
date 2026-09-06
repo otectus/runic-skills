@@ -6,6 +6,9 @@ import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.durability.DurabilityPerkRules;
 import com.otectus.runicskills.common.durability.PassiveRepairAccumulator;
+import com.otectus.runicskills.common.durability.RepairBudget;
+import com.otectus.runicskills.common.durability.RepairService;
+import com.otectus.runicskills.common.durability.RepairSource;
 import com.otectus.runicskills.common.util.GameTimeWindow;
 import com.otectus.runicskills.common.util.ItemBonusTags;
 import com.otectus.runicskills.common.util.ProcRoll;
@@ -844,13 +847,47 @@ public class PerkEffectsHandler {
         // HERITAGE_BUILDER, which were summed in here through 2.0.5 while their tooltips described
         // six other mechanics. Each now lives where the thing it names happens; the list and the
         // new homes are in PassiveRepairAccumulator. AUTO_REPAIR is the only term left.
+        // The rate is credited as a fraction and spent only when a whole point has accrued. The
+        // old pass rounded with max(1, round(rate / 100 * 4)), which paid one point per second for
+        // every configured rate from 0% to 37% -- the perk's scale was unreachable and there was
+        // no setting at which it was gentle (RS207-06). The remainder lives in RepairBudget, in
+        // memory only: a stored fraction is a stored reward, and this perk must not bank one.
         if (repairRate > 0) {
-            int amt = Math.max(1, (int) Math.round(repairRate / 100.0 * 4));
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
-                ItemStack s = player.getItemBySlot(slot);
-                if (!s.isEmpty() && s.isDamaged()) { s.setDamageValue(Math.max(0, s.getDamageValue() - amt)); break; }
+            int points = RepairBudget.accrue(player.getUUID(),
+                    repairRate / 100.0 * c.autoRepairPointsPerSecondAt100);
+            for (int paid = 0; paid < points; paid++) {
+                if (!repairOneSlot(player)) break;
             }
+        } else {
+            // No rate means no perk, or a perk that has just been disabled or respecced away.
+            // Credit earned under conditions that no longer hold is dropped rather than kept.
+            RepairBudget.clear(player.getUUID());
         }
+    }
+
+    /**
+     * Spends one whole point of Auto Repair credit on the next damaged slot in rotation.
+     *
+     * <p>Starts at the rotation cursor rather than at slot zero. The old pass always wrote to the
+     * first damaged slot {@code EquipmentSlot.values()} listed, which is the feet for anyone
+     * wearing boots, so a player's held tool was mended only once their armour was whole. The
+     * cursor advances after a successful payout, so consecutive points land on different slots.
+     *
+     * @return whether a point was actually spent; {@code false} means nothing eligible is damaged,
+     *         and the caller stops rather than burning the rest of the budget on nothing
+     */
+    private static boolean repairOneSlot(net.minecraft.server.level.ServerPlayer player) {
+        EquipmentSlot[] slots = EquipmentSlot.values();
+        int start = RepairBudget.cursor(player.getUUID(), slots.length);
+        for (int step = 0; step < slots.length; step++) {
+            EquipmentSlot slot = slots[(start + step) % slots.length];
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !stack.isDamaged()) continue;
+            if (RepairService.repair(player, stack, 1, RepairSource.AUTO_REPAIR) <= 0) continue;
+            RepairBudget.advance(player.getUUID());
+            return true;
+        }
+        return false;
     }
 
     // ── experience ──────────────────────────────────────────────────────────────
@@ -1360,66 +1397,17 @@ public class PerkEffectsHandler {
     }
 
     // ── crafting output ─────────────────────────────────────────────────────────────
-
-    /**
-     * The bonus-output crafting perks: Assembly Line, Mass Production, Alloy Master, Master
-     * Woodworker and Medieval Architecture.
-     *
-     * <p><b>Side authority.</b> {@code ItemCraftedEvent} fires on both logical sides, and this
-     * handler inserts items. It therefore starts from a {@link ServerPlayer}, which rejects the
-     * client-side firing. {@link FakePlayer} is a {@code ServerPlayer} subclass, so it is not
-     * covered by that check and is rejected on its own line: an automated crafter has no player
-     * progression to reward and no inventory a reward belongs in.
-     *
-     * <p><b>Independent rolls.</b> Each eligible perk is now rolled on its own instead of having
-     * its percentage added into one shared chance. The expected number of bonus items is the sum
-     * of the eligible percentages exactly as it was while that sum stayed below 1 — but the sum
-     * no longer saturates at a single bonus item, and it no longer becomes an unconditional proc
-     * once several crafting perks are taken or a pack raises the values. Two perks at 60% used to
-     * mean "always exactly one bonus"; they now mean "one bonus 48% of the time, two 36% of the
-     * time, none 16% of the time".
-     *
-     * <p><b>Efficient Crafting is not here.</b> Its tooltip promises a chance not to consume
-     * materials, which "+1 output" only imitates for recipes whose entire cost happens to equal
-     * one result item. It is implemented as a real refund at the result-take boundary instead —
-     * see {@code MixResultSlot} and {@code CraftingRefund}.
-     */
-    @SubscribeEvent
-    public void onCraft(PlayerEvent.ItemCraftedEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
-        ItemStack result = event.getCrafting();
-        if (result.isEmpty()) return;
-        // A reward inserted below can be observed by another mod's menu as a craft of its own.
-        // Only the outermost craft pays out; see CraftingExecutionGuard.
-        if (CraftingExecutionGuard.isReentrant()) return;
-        try (CraftingExecutionGuard.Scope scope = CraftingExecutionGuard.enter()) {
-            int copies = bonusCopies(player, result);
-            for (int i = 0; i < copies; i++) {
-                ItemStack bonus = result.copy();
-                bonus.setCount(1);
-                player.getInventory().placeItemBackInInventory(bonus);
-            }
-        }
-    }
-
-    /**
-     * How many bonus copies of {@code result} this craft earned: one per crafting perk that is
-     * both eligible for this result and passes its own roll.
-     */
-    private static int bonusCopies(Player player, ItemStack result) {
-        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(result.getItem());
-        HandlerCommonConfig c = cfg();
-        int copies = 0;
-        if (on(RegistryPerks.ASSEMBLY_LINE, player) && ProcRoll.rollsPercent(c.assemblyLinePercent)) copies++;
-        if (on(RegistryPerks.MASS_PRODUCTION, player) && ProcRoll.rollsPercent(c.massProductionPercent)) copies++;
-        if (on(RegistryPerks.ALLOY_MASTER, player) && path(id, "ingot")
-                && ProcRoll.rollsPercent(c.alloyMasterPercent)) copies++;
-        if (on(RegistryPerks.MASTER_WOODWORKER, player) && path(id, "planks")
-                && ProcRoll.rollsPercent(c.masterWoodworkerPercent)) copies++;
-        if (on(RegistryPerks.MEDIEVAL_ARCHITECTURE, player) && result.getItem() instanceof BlockItem
-                && ProcRoll.rollsPercent(c.medievalArchitecturePercent)) copies++;
-        return copies;
-    }
+    // The bonus-output crafting perks -- Assembly Line, Mass Production, Alloy Master, Master
+    // Woodworker and Medieval Architecture -- used to be paid here, and Crafting Luck was paid a
+    // few files away in CraftingEventHandler. Neither knew what the other had already granted and
+    // neither asked what the craft had been, so a repair-by-crafting or an ingot/block cycle could
+    // be paid several copies of a result that no material had been spent on (RS207-01, RS207-10).
+    // Both now go through CraftRewardDispatcher, which classifies the craft once and spends one
+    // bounded budget across every perk.
+    //
+    // Efficient Crafting was never here: its tooltip promises a chance not to consume materials,
+    // which "+1 output" only imitates for recipes whose entire cost happens to equal one result
+    // item. It is a real refund at the result-take boundary -- MixResultSlot and CraftingRefund.
 
     // ── anvil repair cost ───────────────────────────────────────────────────────────
     @SubscribeEvent

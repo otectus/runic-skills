@@ -1,25 +1,24 @@
 package com.otectus.runicskills.registry.events;
 
+import com.otectus.runicskills.common.crafting.RecyclingIndex;
+import com.otectus.runicskills.common.crafting.RecyclingRule;
+import com.otectus.runicskills.common.util.ContainerInteraction;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.MobEffectEvent;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.GrindstoneEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,54 +27,31 @@ import java.util.List;
  */
 public class WorkshopPerkHandler {
 
-    // ── Lucky Charm ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Lucky Charm — "All negative effects have shorter duration".
-     *
-     * <p>Applied as the effect arrives, which is the only point its duration is still open. Re-added
-     * rather than mutated: {@code MobEffectInstance}'s duration is not safely writable from a
-     * handler, and re-adding is the same path any other source would take.
-     */
-    @SubscribeEvent
-    public void onHarmfulEffect(MobEffectEvent.Added event) {
-        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()) return;
-        MobEffectInstance added = event.getEffectInstance();
-        if (added == null || added.isInfiniteDuration()) return;
-        if (added.getEffect().getCategory() != MobEffectCategory.HARMFUL) return;
-        if (RegistryPerks.LUCKY_CHARM == null || !RegistryPerks.LUCKY_CHARM.get().isEnabled(player)) {
-            return;
-        }
-        double cut = Math.min(0.90, HandlerCommonConfig.HANDLER.instance().luckyCharmPercent / 100.0);
-        if (cut <= 0) return;
-
-        int shortened = (int) (added.getDuration() * (1.0 - cut));
-        if (shortened >= added.getDuration()) return;
-        if (shortened <= 0) {
-            player.removeEffect(added.getEffect());
-            return;
-        }
-        player.addEffect(new MobEffectInstance(added.getEffect(), shortened,
-                added.getAmplifier(), added.isAmbient(), added.isVisible()));
-    }
-
     // ── Salvage ─────────────────────────────────────────────────────────────────────────────
 
     /**
      * Disassembler and Salvage Master — recover materials from an item that has just broken.
      *
-     * <p>"Recovering components" needs a moment where an item ceases to exist and its make-up is
-     * still known. Vanilla gives exactly one: the tool that broke in your hand. Both perks stack, so
-     * a player who has taken both recovers proportionally more.
+     * <p>What comes back is read from {@link RecyclingIndex}, a datapack allowlist, rather than
+     * derived from whatever recipe happens to produce the item. Deriving it meant walking the whole
+     * recipe manager per event and treating "there is a recipe" as "this is worth its ingredients",
+     * which is not the same statement and is not one any pack ever made (RS207-03).
+     *
+     * <p>This one stays a trigger rather than moving to the grindstone: the item is genuinely gone,
+     * consumed by its own breaking, so there is nothing here to consume twice.
      */
     @SubscribeEvent
     public void onItemDestroyed(PlayerDestroyItemEvent event) {
         Player player = event.getEntity();
         if (player.level().isClientSide()) return;
-        ItemStack broken = event.getOriginal();
-        if (broken.isEmpty()) return;
-
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        if (!config.recyclingEnabled) return;
+
+        RecyclingRule rule = RecyclingIndex.get().ruleFor(event.getOriginal());
+        // An item with no rule yields nothing. Silence is the correct answer: a pack that wants a
+        // broken pickaxe to return scrap says so in a rule.
+        if (rule == null) return;
+
         double chance = 0.0;
         if (RegistryPerks.DISASSEMBLER != null && RegistryPerks.DISASSEMBLER.get().isEnabled(player)) {
             chance += config.disassemblerPercent / 100.0;
@@ -85,28 +61,42 @@ public class WorkshopPerkHandler {
         }
         if (chance <= 0) return;
 
-        for (ItemStack ingredient : ingredientsOf(player.level(), broken)) {
-            if (player.getRandom().nextDouble() >= Math.min(1.0, chance)) continue;
-            ItemStack recovered = ingredient.copy();
-            recovered.setCount(salvagedCount(player));
+        for (ItemStack recovered : recover(rule, player, chance)) {
             if (!player.getInventory().add(recovered)) player.drop(recovered, false);
         }
     }
 
     /**
-     * Resource Efficiency and Salvage Expert — breaking a workstation returns part of what built it.
+     * Resource Efficiency and Salvage Expert — a workstation can be taken apart for part of what
+     * built it, at a grindstone.
      *
-     * <p>Only blocks the player crafted rather than found, since "returns materials" means the
-     * materials that went in. The recipe lookup is what decides that: a stone block has no crafting
-     * recipe of interest, a crafting table does.
+     * <p><b>Why the grindstone and not a block break (RS207-02).</b> Both perks used to pay out on
+     * {@code BlockEvent.BreakEvent}, which consumes nothing: the block dropped as an item as usual,
+     * <em>and</em> its materials came back. Placing and breaking one crafting table in a loop
+     * therefore produced planks forever. A salvage has to cost the thing being salvaged, and the
+     * grindstone is the vanilla surface that already does exactly that — Forge's
+     * {@code GrindstoneEvent} lets a mod set the output, and vanilla's own take path then clears
+     * the inputs. The payout <em>is</em> the output, so closing the menu returns the input and
+     * produces nothing.
+     *
+     * <p>The event carries no player, which is what {@link ContainerInteraction} exists for: the
+     * click being processed knows who is clicking.
      */
     @SubscribeEvent
-    public void onBlockBroken(BlockEvent.BreakEvent event) {
-        Player player = event.getPlayer();
-        if (player == null || player.level().isClientSide()) return;
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
-
+    public void onGrindstoneChange(GrindstoneEvent.OnPlaceItem event) {
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        if (!config.recyclingEnabled) return;
+        // Bottom slot empty: with something in it the player is combining or disenchanting, and
+        // vanilla's own result is what they asked for.
+        if (!event.getBottomItem().isEmpty()) return;
+
+        RecyclingRule rule = RecyclingIndex.get().ruleFor(event.getTopItem());
+        if (rule == null) return;
+
+        if (!(ContainerInteraction.currentPlayer() instanceof ServerPlayer player)
+                || player instanceof FakePlayer) {
+            return;
+        }
         double chance = 0.0;
         if (RegistryPerks.RESOURCE_EFFICIENCY != null
                 && RegistryPerks.RESOURCE_EFFICIENCY.get().isEnabled(player)) {
@@ -118,30 +108,64 @@ public class WorkshopPerkHandler {
         }
         if (chance <= 0) return;
 
-        BlockState state = event.getState();
-        ItemStack asItem = new ItemStack(state.getBlock());
-        if (asItem.isEmpty()) return;
+        List<ItemStack> recovered = recover(rule, player, chance);
+        if (recovered.isEmpty()) return;
 
-        for (ItemStack ingredient : ingredientsOf(level, asItem)) {
-            if (player.getRandom().nextDouble() >= Math.min(1.0, chance)) continue;
-            ItemStack recovered = ingredient.copy();
-            recovered.setCount(salvagedCount(player));
-            Block.popResource(level, event.getPos(), recovered);
+        // One output slot, so one stack. The first recovered material is what the grindstone
+        // offers; a rule that wants several materials states them in the order it wants them
+        // offered.
+        event.setOutput(recovered.get(0));
+        // Vanilla's grindstone experience is the enchantments it is stripping. There are none here,
+        // and paying experience for a salvage would make the perk an XP source as well as a
+        // material one.
+        event.setXp(0);
+    }
+
+    /**
+     * What one salvage of {@code rule} returns for {@code player}, each output rolled separately.
+     *
+     * <p>Rolled with {@link AnvilPerkHandler#stableRoll} rather than from the player's random
+     * source. {@code GrindstoneEvent.OnPlaceItem} fires on every change to the inputs, so a live
+     * roll would let a player take the item out and put it back until the salvage succeeded, and
+     * would flicker the preview in between. Seeding on the item and the player means the only route
+     * to a different answer is a different item — which costs something.
+     */
+    private static List<ItemStack> recover(RecyclingRule rule, Player player, double chance) {
+        List<ItemStack> recovered = new ArrayList<>();
+        ItemStack seedStack = new ItemStack(rule.input());
+        int total = 0;
+        for (RecyclingRule.Output output : rule.outputs()) {
+            String salt = "salvage:" + rule.id() + ":" + output.item() + ":" + player.getUUID();
+            if (!AnvilPerkHandler.stableRoll(seedStack, ItemStack.EMPTY, salt, Math.min(1.0, chance))) {
+                continue;
+            }
+            int count = output.count() * salvagedCount(rule, player, output);
+            // The rule's own ceiling, applied across every output together, so a yield perk cannot
+            // multiply one salvage past what the pack said the item was worth.
+            count = Math.min(count, Math.max(0, rule.maxRecovery() - total));
+            if (count <= 0) continue;
+            ItemStack stack = new ItemStack(output.item());
+            stack.setCount(count);
+            recovered.add(stack);
+            total += count;
         }
+        return recovered;
     }
 
     /**
      * How many of a recovered material a single successful salvage hands back.
      *
      * <p>Salvage Luck — "Salvaging items yields more materials" — is the whole of this: without it
-     * every recovery is one item, and with it each recovery has a proportional chance of being two.
-     * It multiplies the yield rather than the odds on purpose, so it reads differently from
-     * Disassembler and Salvage Master, which are what decide whether a material comes back at all.
+     * every recovery is the rule's stated count, and with it each recovery has a proportional
+     * chance of being doubled. It multiplies the yield rather than the odds on purpose, so it reads
+     * differently from Disassembler and Salvage Master, which are what decide whether a material
+     * comes back at all.
      *
      * <p>Rolled rather than rounded, so a bonus below 100% is not lost: a 15% perk means three
-     * doubled recoveries in twenty, not zero.
+     * doubled recoveries in twenty, not zero. Rolled <em>stably</em>, for the reason given on
+     * {@link #recover}.
      */
-    private static int salvagedCount(Player player) {
+    private static int salvagedCount(RecyclingRule rule, Player player, RecyclingRule.Output output) {
         if (RegistryPerks.SALVAGE_LUCK == null || !RegistryPerks.SALVAGE_LUCK.get().isEnabled(player)) {
             return 1;
         }
@@ -149,28 +173,10 @@ public class WorkshopPerkHandler {
         if (extra <= 0) return 1;
         int guaranteed = (int) extra;
         double remainder = extra - guaranteed;
-        return 1 + guaranteed + (player.getRandom().nextDouble() < remainder ? 1 : 0);
-    }
-
-    /**
-     * One example of each ingredient of the recipe that produces {@code result}, or empty if nothing
-     * crafts it.
-     *
-     * <p>Takes the first matching recipe: an item with several recipes is being valued, not
-     * reconstructed, and averaging across variants would be arbitrary in a different way.
-     */
-    private static List<ItemStack> ingredientsOf(Level level, ItemStack result) {
-        for (Recipe<?> recipe : level.getRecipeManager().getRecipes()) {
-            ItemStack produced = recipe.getResultItem(level.registryAccess());
-            if (produced.isEmpty() || !produced.is(result.getItem())) continue;
-            List<ItemStack> parts = new java.util.ArrayList<>();
-            for (Ingredient ingredient : recipe.getIngredients()) {
-                ItemStack[] options = ingredient.getItems();
-                if (options.length > 0 && !options[0].isEmpty()) parts.add(options[0]);
-            }
-            return parts;
-        }
-        return List.of();
+        String salt = "salvage-luck:" + rule.id() + ":" + output.item() + ":" + player.getUUID();
+        boolean doubled = remainder > 0 && AnvilPerkHandler.stableRoll(
+                new ItemStack(rule.input()), ItemStack.EMPTY, salt, remainder);
+        return 1 + guaranteed + (doubled ? 1 : 0);
     }
 
     // ── Farming ─────────────────────────────────────────────────────────────────────────────

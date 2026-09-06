@@ -472,3 +472,36 @@ steady_hammer	hammer	steel	gold	shieldb	steel	Steady smithing hammer — salvage
 blueprint_savant	blueprint	lapis	gold	plus	lapis	Studied blueprint — bonus Uses progress
 metallurgist	furnace	ember	gold	plus	fire	Alloy furnace — bonus smelting output
 master_smith	anvil	gold	fire	starb	gold	Master's anvil — chance for a higher quality tier
+# ===== TINKER'S CONSTRUCT =====
+tc_cast_keeper	gem_socket	sand	gold	up	sand	Sand cast returned after a completed pour
+tc_thermal_rhythm	furnace	ember	fire	flameb	ember	Faster melting at a focused smeltery
+tc_repair_memory	hammer	prismarine	iron	clockb	prismarine	Repaired tool remembers the repair and wears slower
+tc_material_harmony	gem	emerald	amethyst	sparkle	emerald	Many materials repair better together
+tc_tempered_edge	sword	ember	steel	flameb	ember	Fully wound-up strike with a tempered blade
+tc_counterweight	warhammer	slate	copper	up	slate	Broad weapon balanced to swing faster
+tc_precision_footing	boot	moss	stone	up	moss	Planted feet mine faster
+tc_slime_steward	drop	moss	nature	shieldb	moss	Spent overslime still shields the tool
+tc_plate_discipline	chestplate	slate	iron	shieldb	slate	A full set of plate resists knockback
+tc_measured_draw	bow	frost	steel	starb	frost	A fully drawn shot flies true
+tc_returning_hand	hand	storm	gold	boltb	storm	A returned tool throws faster next time
+tc_ember_guard	round_shield	ember	fire	flameb	fire	The forge you tend burns you less
+tc_field_service	wrench	leather	copper	plus	copper	A repair kit goes further in the field
+tc_workshop_cadence	hourglass	prismarine	water	dropb	water	A rhythm of casts cools the next ones faster
+tc_adaptive_grip	fist	orange	steel	boltb	orange	Switching roles with one tool sharpens the next action
+tc_keystone_tinker	key	amethyst	steel	plus	amethyst	Keystone fitted at the station — one permanent upgrade slot
+# ===== TINKER'S CONSTRUCT ADD-ONS =====
+tc_mana_polisher	potion	mana	steel	dropb	mana	Mana-fed repair, asking for less mana
+tc_source_tempering	wand	arcane	ember	sparkle	arcane	Source-repaired armour tempers the next spell
+tc_clockwork_alternation	gear	copper	slate	clockb	copper	Alternating hands keep the tool turning over
+tc_seasoned_hands	hand	leather	gold	starb	gold	Practised hands teach the tool faster
+tc_banquet_of_cinders	drumstick	ember	fire	flameb	ember	A smith's meal still burning in you
+tc_soulsteel_resolve	skull	eldritch	steel	shieldb	eldritch	Soul-stained steel holds you steady
+tc_charged_craft	anvil	storm	steel	boltb	storm	A charged tool spends less of its own energy
+# ===== TINKERS' THINKING / TINKERS' JEWELRY (2.1.0) =====
+tc_thinking_last_thought	heart_crack	eldritch	bone	shieldb	eldritch	Dragged back from a death, and still standing
+tc_thinking_studied_recall	xp_orb	eldritch	emerald	starb	emerald	Experience the sculk drank still teaches you something
+tc_thinking_embellished_focus	dagger	eldritch	steel	boltb	eldritch	A Thinking modifier sharpened by the smith who set it
+tc_jeweler_setting	ring	amethyst	gold	plus	gold	A stone freshly set holds its setting
+tc_gem_attunement	gem	amethyst	arcane	sparkle	amethyst	The gem you wear answers the hand that swings
+tc_undying_lustre	gem_socket	amethyst	holy	shieldb	holy	The ring that refuses a death, and survives doing it
+tc_polished_facet	crystal_ball	diamond	amethyst	dropb	diamond	A jewel takes a repair as well as a blade does

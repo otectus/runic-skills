@@ -52,6 +52,9 @@ SCHOOL_COLORS = {
     "MOBILITY": (0x7A6CE0, 0xFFFFFF),
     "WEAPON_CASTER": (0xC8813F, 0x6FA8DC),
     "UTILITY": (0xF2F0E4, 0x8FE0C0),
+    # Artifice (spec 11.1): hot bronze on pale brass. Distinct from WEAPON_CASTER, the only
+    # other warm-metal school, by a redder ring and a light rather than blue accent.
+    "TINKERING": (0xB86E2E, 0xF0DFA8),
 }
 
 OUTLINE = (0x14, 0x12, 0x1A, 0xFF)

@@ -5,14 +5,12 @@ import com.otectus.runicskills.common.util.ItemBonusTags;
 import com.otectus.runicskills.common.util.LogOnce;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.common.equipment.EquipmentProfileService;
+import com.otectus.runicskills.common.equipment.EquipmentRole;
 import com.otectus.runicskills.registry.RegistryPerks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.inventory.ResultContainer;
@@ -222,7 +220,7 @@ public class AnvilPerkHandler {
      * on a hash. Roll-free also makes preview and result trivially identical on both sides.
      *
      * <p>Weapon Smith uses the same weapon rule as Weapon Master (sword, axe, trident). An axe is
-     * both a {@link DiggerItem} and a weapon, so a player holding both perks stamps both bonuses
+     * both a digger and a weapon, so a player holding both perks stamps both bonuses
      * onto one axe: two perks paying out, not one paying twice.
      */
     private static boolean applyRepairBonuses(Player player, ItemStack left, ItemStack result) {
@@ -230,7 +228,7 @@ public class AnvilPerkHandler {
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
         boolean changed = false;
 
-        if (result.getItem() instanceof DiggerItem
+        if (EquipmentProfileService.hasRole(result, EquipmentRole.DIGGER)
                 && RegistryPerks.TOOL_SMITH != null
                 && RegistryPerks.TOOL_SMITH.get().isEnabled(player)) {
             ItemBonusTags.stamp(result, ItemBonusTags.TOOL_SMITH, config.toolSmithPercent);
@@ -295,11 +293,16 @@ public class AnvilPerkHandler {
         return result.getDamageValue() < left.getDamageValue();
     }
 
-    /** The Weapon Master weapon rule: a blade or a thrown point, never a digging tool. */
+    /**
+     * The Weapon Master weapon rule: a blade or a thrown point, never a digging tool.
+     *
+     * <p>Asked of {@code EquipmentProfileService} rather than tested with {@code instanceof} so a
+     * modded weapon that does not extend {@code SwordItem} can be recognised by its own adapter.
+     * The vanilla adapter encodes exactly the sword/axe/trident rule this method used to hold, so
+     * every vanilla item classifies as it always did.
+     */
     private static boolean isWeapon(ItemStack stack) {
-        return stack.getItem() instanceof SwordItem
-                || stack.getItem() instanceof AxeItem
-                || stack.getItem() instanceof TridentItem;
+        return EquipmentProfileService.hasRole(stack, EquipmentRole.MELEE_WEAPON);
     }
 
     /**

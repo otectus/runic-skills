@@ -5,7 +5,7 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryCapabilities;
 import com.otectus.runicskills.registry.RegistryPerks;
-import com.otectus.runicskills.registry.events.PerkEffectsHandler;
+import com.otectus.runicskills.registry.events.CraftRewardDispatcher;
 import com.otectus.runicskills.registry.perks.Perk;
 import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
@@ -28,11 +28,13 @@ import net.minecraftforge.registries.RegistryObject;
 /**
  * The crafting bonus perks are server-authoritative and roll independently (RS-205-03, spec 7/9).
  *
- * <p>Two defects are covered. The handler used to accept any {@link Player}, and
+ * <p>Three defects are covered. The handler used to accept any {@link Player}, and
  * {@code ItemCraftedEvent} fires on both logical sides — so a client that had the perk inserted a
  * bonus stack the server never granted, which the player sees as an item that vanishes on the next
- * sync. And the perk percentages were summed into one chance that rolled once, so several crafting
- * perks capped at a single bonus item and, past 100% together, produced one on every craft.
+ * sync. The perk percentages were then summed into one chance that rolled once, so several crafting
+ * perks capped at a single bonus item and, past 100% together, produced one on every craft. And once
+ * they rolled independently nothing bounded the total, so a player holding several of them was paid
+ * several copies of a result whose materials had been spent once (RS207-10).
  *
  * <p>Percentages are pinned to 100 and 0 rather than sampled, because what is asserted here is the
  * <em>count</em> of independent successes, not a rate: three perks that all certainly proc must
@@ -67,9 +69,17 @@ public class CraftingAuthorityGameTest {
         helper.succeed();
     }
 
-    /** Three certain perks, three bonus items: the summed-chance version could only ever give one. */
+    /**
+     * Three certain perks roll independently up to the budget, and never past it.
+     *
+     * <p>Both halves matter, and they used to contradict each other. Summing the percentages into
+     * one roll meant three perks could only ever grant one item; rolling them independently with
+     * nothing bounding the total meant a player holding several crafting perks was paid several
+     * copies of a result whose materials had been spent once (RS207-10). So the perks still roll one
+     * by one — raise the budget and all three pay — and the budget is what decides the total.
+     */
     @GameTest(template = EMPTY)
-    public static void threeCertainPerksYieldThreeBonuses(GameTestHelper helper) {
+    public static void certainPerksRollIndependentlyUpToTheCap(GameTestHelper helper) {
         ServerPlayer player = newPlayer(helper, "crafting_authority_three_perks");
         enablePerk(player, RegistryPerks.ASSEMBLY_LINE);
         enablePerk(player, RegistryPerks.MASS_PRODUCTION);
@@ -79,21 +89,30 @@ public class CraftingAuthorityGameTest {
         int assembly = config.assemblyLinePercent;
         int mass = config.massProductionPercent;
         int medieval = config.medievalArchitecturePercent;
+        int cap = config.craftRewardMaxExtraOutputs;
         try {
             config.assemblyLinePercent = 100;
             config.massProductionPercent = 100;
             config.medievalArchitecturePercent = 100;
+
             // Stone is a BlockItem and is neither an "ingot" nor a "planks", so exactly the three
             // perks under test are eligible for it.
+            config.craftRewardMaxExtraOutputs = 3;
             fireCraft(player, new ItemStack(Items.STONE));
+            assertInventory(player, Items.STONE, 1, 3,
+                    "three perks at 100% with a budget of 3 must roll independently and grant three");
+
+            player.getInventory().clearContent();
+            config.craftRewardMaxExtraOutputs = 1;
+            fireCraft(player, new ItemStack(Items.STONE));
+            assertInventory(player, Items.STONE, 1, 1,
+                    "the same three perks with a budget of 1 must grant exactly one (RS207-10)");
         } finally {
             config.assemblyLinePercent = assembly;
             config.massProductionPercent = mass;
             config.medievalArchitecturePercent = medieval;
+            config.craftRewardMaxExtraOutputs = cap;
         }
-
-        assertInventory(player, Items.STONE, 1, 3,
-                "three perks at 100% must roll independently and grant three bonus items");
         helper.succeed();
     }
 
@@ -180,12 +199,18 @@ public class CraftingAuthorityGameTest {
     // -- fixtures --------------------------------------------------------------------------------
 
     private static void fireCraft(Player player, ItemStack result) {
-        new PerkEffectsHandler().onCraft(
+        new CraftRewardDispatcher().onItemCrafted(
                 new PlayerEvent.ItemCraftedEvent(player, result, grid(player)));
     }
 
     /**
-     * A 3x3 crafting grid holding one oak log, the shape the event carries during a real craft.
+     * A 3x3 crafting grid holding the torch recipe, the shape the event carries during a real craft.
+     *
+     * <p>Two distinct ingredients, deliberately. A grid holding one item type is the shape of every
+     * compression and decompression recipe in the game, and {@code CraftRewardPolicy} refuses those
+     * outright — so a single-ingredient fixture would make every positive case below assert nothing
+     * (RS207-01). The result stack is supplied by each test; what the grid decides is how the
+     * operation classifies.
      *
      * <p>Filled through the {@code NonNullList} constructor rather than {@code setItem}, so the
      * container never calls back into the menu it is attached to — the menu is only a required
@@ -193,7 +218,8 @@ public class CraftingAuthorityGameTest {
      */
     private static Container grid(Player player) {
         NonNullList<ItemStack> slots = NonNullList.withSize(9, ItemStack.EMPTY);
-        slots.set(0, new ItemStack(Items.OAK_LOG));
+        slots.set(0, new ItemStack(Items.COAL));
+        slots.set(3, new ItemStack(Items.STICK));
         return new TransientCraftingContainer(player.inventoryMenu, 3, 3, slots);
     }
 

@@ -25,7 +25,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -94,6 +93,11 @@ public class PlayerLifecycleHandler {
                 GameplayConfigCP.sendToPlayer(serverPlayer);
                 PerkGroupsSyncCP.sendToPlayer(serverPlayer);
                 PowerOverridesSyncCP.sendToPlayer(serverPlayer);
+                // A Power cooldown that the save carried as remaining ticks becomes a deadline
+                // against the clock this session is running (§15.1). Done at login rather than at
+                // capability load because only here is the tick count the debt must be measured
+                // against the one the runtime map will be read with.
+                com.otectus.runicskills.common.powers.PowerCooldownDebt.restore(serverPlayer);
             }
         }
     }
@@ -104,6 +108,13 @@ public class PlayerLifecycleHandler {
         PerkEffectsHandler.clearPlayer(event.getEntity().getUUID());
         FortunePerkHandler.clearPlayer(event.getEntity().getUUID());
         EnchantingLorePerkHandler.clearPlayer(event.getEntity().getUUID());
+        // Auto Repair's unspent fraction is credit earned in a session that has ended. It is never
+        // written to NBT, and it must not survive the logout in memory either: the perk promises
+        // repair while you play, not a balance you accrue and collect later (RS207-06).
+        com.otectus.runicskills.common.durability.RepairBudget.clear(event.getEntity().getUUID());
+        // A workshop focus is a claim on a block made by a player who is standing at it. Both
+        // halves of that stop being true at logout, and §6.4 says the claim stops with them.
+        com.otectus.runicskills.common.workshop.WorkshopFocusService.clear(event.getEntity().getUUID());
     }
 
     @SubscribeEvent
@@ -124,6 +135,7 @@ public class PlayerLifecycleHandler {
         com.otectus.runicskills.network.PacketRateLimiter.clear();
         com.otectus.runicskills.common.util.ContainerRewardLedger.clear();
         com.otectus.runicskills.common.powers.PowerRuntime.clearAll();
+        com.otectus.runicskills.common.durability.RepairBudget.clearAll();
         PerkEffectsHandler.clearAll();
         FortunePerkHandler.clearAll();
         EnchantingLorePerkHandler.clearAll();
@@ -131,6 +143,8 @@ public class PlayerLifecycleHandler {
         // in a JVM that hosts a second world they must not answer for the first one's content.
         EnchantingLorePerkHandler.clearCache();
         com.otectus.runicskills.common.crafting.MasterResearcherRecipeIndex.invalidate();
+        com.otectus.runicskills.common.crafting.RecyclingIndex.clear();
+        com.otectus.runicskills.common.workshop.WorkshopFocusService.clearAll();
     }
 
     @SubscribeEvent
@@ -193,11 +207,6 @@ public class PlayerLifecycleHandler {
     }
 
     @SubscribeEvent
-    public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(SkillCapability.class);
-    }
-
-    @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
         event.addListener(new PerkGroupsReloadListener());
         event.addListener(new com.otectus.runicskills.registry.skill.SkillVisualsReloadListener());
@@ -206,6 +215,15 @@ public class PlayerLifecycleHandler {
         // replaces every recipe in it. Nothing to prepare, so the listener is just the drop.
         event.addListener((ResourceManagerReloadListener)
                 manager -> com.otectus.runicskills.common.crafting.MasterResearcherRecipeIndex.invalidate());
+        // The salvage allowlist. Unlike the index above this one is REPLACED rather than dropped:
+        // clearing first and rebuilding second would leave a window in which salvage silently does
+        // nothing, and a datapack that failed to parse would leave that window open.
+        event.addListener(new com.otectus.runicskills.common.crafting.RecyclingRuleLoader());
+        // The pack rule set (§13.3). Registered whether or not Tinker's Construct is installed:
+        // the craft-reward half of the schema speaks about any item, the loader names no
+        // slimeknights type, and a rule file that a server cannot yet resolve is skipped by its own
+        // requires_mods rather than by never being read.
+        event.addListener(new com.otectus.runicskills.common.rules.TConstructRulesLoader());
     }
 
     @SubscribeEvent
@@ -234,6 +252,12 @@ public class PlayerLifecycleHandler {
                 if (event.isWasDeath()) {
                     PerkEffectsHandler.clearCombatWindows(serverPlayerOld.getUUID());
                     EnchantingLorePerkHandler.clearCombatWindows(serverPlayerOld.getUUID());
+                    // A death ends the repair budget too. The gear that earned the fraction is on
+                    // the ground, and a fraction carried onto the replacement body would be credit
+                    // for wear that the new body has not done.
+                    com.otectus.runicskills.common.durability.RepairBudget.clear(serverPlayerOld.getUUID());
+                    // And the workshop: a player who has just died is not operating anything.
+                    com.otectus.runicskills.common.workshop.WorkshopFocusService.clear(serverPlayerOld.getUUID());
                 }
                 serverPlayerOld.invalidateCaps();
             }

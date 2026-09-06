@@ -1,5 +1,7 @@
 package com.otectus.runicskills.integration.lock;
 
+import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.common.equipment.RequirementDecision;
 import com.otectus.runicskills.config.models.LockItem;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.IceAndFireIntegration;
@@ -8,10 +10,13 @@ import com.otectus.runicskills.integration.LocksIntegration;
 import com.otectus.runicskills.integration.MoreVanillaIntegration;
 import com.otectus.runicskills.integration.SamuraiDynastyIntegration;
 import com.otectus.runicskills.integration.SpartanIntegration;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -28,6 +33,16 @@ public final class LockProviderRegistry {
 
     private static final List<LockItemProvider> PROVIDERS = new ArrayList<>();
 
+    /**
+     * Stack-aware providers, consulted before the id-only list above.
+     *
+     * <p>A second list rather than a widened interface: the id-only providers generate config
+     * entries at startup and are iterated by {@code HandlerSkill} to build the lock table, while a
+     * stack provider answers one live question per attempted action. Folding them together would
+     * mean every generated-lock integration implementing a method it can never answer.
+     */
+    private static final List<StackLockProvider> STACK_PROVIDERS = new ArrayList<>();
+
     static {
         registerDefaults();
     }
@@ -43,6 +58,41 @@ public final class LockProviderRegistry {
     /** Immutable snapshot of all registered providers, in registration order. */
     public static synchronized List<LockItemProvider> providers() {
         return Collections.unmodifiableList(new ArrayList<>(PROVIDERS));
+    }
+
+    /** Registers a stack-aware provider. Order of registration is preserved as iteration order. */
+    public static synchronized void registerStackProvider(StackLockProvider provider) {
+        if (provider != null) STACK_PROVIDERS.add(provider);
+    }
+
+    /** Immutable snapshot of the stack-aware providers, in registration order. */
+    public static synchronized List<StackLockProvider> stackProviders() {
+        return Collections.unmodifiableList(new ArrayList<>(STACK_PROVIDERS));
+    }
+
+    /**
+     * The first stack-aware verdict on {@code stack}, or empty when no provider claims it.
+     *
+     * <p>First answer wins rather than most restrictive: a provider speaks about its own mod's
+     * items, so two providers claiming one stack means one of them is wrong about it, and picking
+     * the harsher verdict would hide that behind a plausible-looking refusal. A provider that
+     * throws is treated as having declined — an integration's failure must not lock a player out
+     * of an item the rest of the mod would have allowed.
+     */
+    public static Optional<RequirementDecision> resolveStack(ServerPlayer player, ItemStack stack,
+                                                             LockAction action) {
+        if (player == null || stack == null || stack.isEmpty()) return Optional.empty();
+        for (StackLockProvider provider : stackProviders()) {
+            try {
+                Optional<RequirementDecision> decision = provider.resolve(player, stack, action);
+                if (decision != null && decision.isPresent()) return decision;
+            } catch (RuntimeException e) {
+                RunicSkills.getLOGGER().warn(
+                        "[Runic Skills] stack lock provider {} threw; the item-id rules decide instead",
+                        provider.id(), e);
+            }
+        }
+        return Optional.empty();
     }
 
     /** Convenience adapter for the existing static {@code generateLockItems()} methods. */

@@ -3,6 +3,7 @@ package com.otectus.runicskills.registry;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.client.core.Value;
 import com.otectus.runicskills.client.core.ValueType;
+import com.otectus.runicskills.common.perk.ScaledRequirement;
 import com.otectus.runicskills.common.util.DisabledContentMatcher;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerResources;
@@ -3831,6 +3832,357 @@ public class RegistryPerks {
                     new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().masterArtificerPercent)
             ));
 
+
+    // ── Tinker's Construct ────────────────────────────────────────────────────────────────────
+    //
+    // Sixteen single-rank perks from spec section 10.2, fifteen of which are registered here.
+    //
+    // <b>Dormant when Tinkers' is absent.</b> Same idiom as the 470 perks above: a null
+    // RegistryObject is the dormancy signal, and every consumer already null-checks before reading
+    // one. The probe is a mod id through {@link TConstructPresence}, never a class of that mod's,
+    // so this class's constant pool stays free of anything an install without Tinkers' cannot load.
+    //
+    // <b>Presence is not capability.</b> Being registered says the perk exists to be selected; it
+    // says nothing about whether the seam it needs applied on this particular Tinkers' build. That
+    // second question is asked at the point of use, by TConstructPerkHandler, against
+    // TConstructCompatibilityStatus — so an unavailable capability makes the effect inert and
+    // visible in the diagnostic, rather than deleting a perk a player has already spent a point on.
+    //
+    // <b>Levels are scaled.</b> The spec's numbers are written against the stock cap of 32 and are
+    // converted by {@link ScaledRequirement} to whatever cap the server runs, which is why these
+    // registrations read a config field through it while the older perks pass theirs straight
+    // through. Rebuilding on /skillsreload re-runs this lambda, so a changed cap re-scales.
+
+    public static final RegistryObject<Perk> TC_CAST_KEEPER = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_cast_keeper", () -> register(
+                    "tc_cast_keeper",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcCastKeeperRequiredLevel),
+                    HandlerResources.TC_CAST_KEEPER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcCastKeeperPercent)
+            ));
+    public static final RegistryObject<Perk> TC_THERMAL_RHYTHM = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_thermal_rhythm", () -> register(
+                    "tc_thermal_rhythm",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcThermalRhythmRequiredLevel),
+                    HandlerResources.TC_THERMAL_RHYTHM_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcThermalRhythmPercent)
+            ));
+    public static final RegistryObject<Perk> TC_REPAIR_MEMORY = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_repair_memory", () -> register(
+                    "tc_repair_memory",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcRepairMemoryRequiredLevel),
+                    HandlerResources.TC_REPAIR_MEMORY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcRepairMemoryPercent),
+                    new Value(ValueType.TICKS, HandlerCommonConfig.HANDLER.instance().tcRepairMemoryCharges),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcRepairMemorySeconds)
+            ));
+    public static final RegistryObject<Perk> TC_MATERIAL_HARMONY = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_material_harmony", () -> register(
+                    "tc_material_harmony",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcMaterialHarmonyRequiredLevel),
+                    HandlerResources.TC_MATERIAL_HARMONY_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcMaterialHarmonyPercent)
+            ));
+    public static final RegistryObject<Perk> TC_TEMPERED_EDGE = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_tempered_edge", () -> register(
+                    "tc_tempered_edge",
+                    RegistrySkills.STRENGTH,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcTemperedEdgeRequiredLevel),
+                    HandlerResources.TC_TEMPERED_EDGE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcTemperedEdgePercent),
+                    new Value(ValueType.TICKS, HandlerCommonConfig.HANDLER.instance().tcTemperedEdgeCooldownTicks)
+            ));
+    public static final RegistryObject<Perk> TC_COUNTERWEIGHT = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_counterweight", () -> register(
+                    "tc_counterweight",
+                    RegistrySkills.DEXTERITY,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcCounterweightRequiredLevel),
+                    HandlerResources.TC_COUNTERWEIGHT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcCounterweightPercent)
+            ));
+    public static final RegistryObject<Perk> TC_PRECISION_FOOTING = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_precision_footing", () -> register(
+                    "tc_precision_footing",
+                    RegistrySkills.ENDURANCE,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcPrecisionFootingRequiredLevel),
+                    HandlerResources.TC_PRECISION_FOOTING_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcPrecisionFootingPercent)
+            ));
+    public static final RegistryObject<Perk> TC_SLIME_STEWARD = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_slime_steward", () -> register(
+                    "tc_slime_steward",
+                    RegistrySkills.ENDURANCE,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcSlimeStewardRequiredLevel),
+                    HandlerResources.TC_SLIME_STEWARD_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcSlimeStewardPercent)
+            ));
+    public static final RegistryObject<Perk> TC_PLATE_DISCIPLINE = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_plate_discipline", () -> register(
+                    "tc_plate_discipline",
+                    RegistrySkills.CONSTITUTION,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcPlateDisciplineRequiredLevel),
+                    HandlerResources.TC_PLATE_DISCIPLINE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().tcPlateDisciplineAmount)
+            ));
+    public static final RegistryObject<Perk> TC_MEASURED_DRAW = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_measured_draw", () -> register(
+                    "tc_measured_draw",
+                    RegistrySkills.DEXTERITY,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcMeasuredDrawRequiredLevel),
+                    HandlerResources.TC_MEASURED_DRAW_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcMeasuredDrawPercent)
+            ));
+    public static final RegistryObject<Perk> TC_RETURNING_HAND = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_returning_hand", () -> register(
+                    "tc_returning_hand",
+                    RegistrySkills.DEXTERITY,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcReturningHandRequiredLevel),
+                    HandlerResources.TC_RETURNING_HAND_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcReturningHandPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcReturningHandSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_EMBER_GUARD = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_ember_guard", () -> register(
+                    "tc_ember_guard",
+                    RegistrySkills.CONSTITUTION,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcEmberGuardRequiredLevel),
+                    HandlerResources.TC_EMBER_GUARD_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcEmberGuardPercent)
+            ));
+    public static final RegistryObject<Perk> TC_FIELD_SERVICE = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_field_service", () -> register(
+                    "tc_field_service",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcFieldServiceRequiredLevel),
+                    HandlerResources.TC_FIELD_SERVICE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcFieldServicePercent)
+            ));
+    public static final RegistryObject<Perk> TC_WORKSHOP_CADENCE = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_workshop_cadence", () -> register(
+                    "tc_workshop_cadence",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcWorkshopCadenceRequiredLevel),
+                    HandlerResources.TC_WORKSHOP_CADENCE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcWorkshopCadencePercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcWorkshopCadenceSeconds),
+                    new Value(ValueType.TICKS, HandlerCommonConfig.HANDLER.instance().tcWorkshopCadenceCasts)
+            ));
+    public static final RegistryObject<Perk> TC_ADAPTIVE_GRIP = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_adaptive_grip", () -> register(
+                    "tc_adaptive_grip",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcAdaptiveGripRequiredLevel),
+                    HandlerResources.TC_ADAPTIVE_GRIP_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcAdaptiveGripPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcAdaptiveGripWindowSeconds)
+            ));
+    // No configured Value: the service grants exactly one upgrade slot and always has. A number
+    // here would be a knob that changes nothing, since the slot count is fixed by the modifier.
+    public static final RegistryObject<Perk> TC_KEYSTONE_TINKER = !TConstructPresence.isModLoaded()
+            ? null : registerPerk("tc_keystone_tinker", () -> register(
+                    "tc_keystone_tinker",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcKeystoneTinkerRequiredLevel),
+                    HandlerResources.TC_KEYSTONE_TINKER_PERK
+            ));
+
+
+    // ── Tinker's Construct add-ons ────────────────────────────────────────────────────────────
+    //
+    // Seven single-rank perks from spec section 10.3. The eighth, tc_medallion_concord, is a
+    // RESERVED id and is deliberately absent: Tinkers' Ingenuity publishes no 1.20.1 artifact to
+    // any maven this build can resolve, so its medal slot could not be read, compiled against or
+    // tested. Section 10.3 says not to ship a selectable no-op, so nothing is registered for it and
+    // TConstructCompatibilityStatus records it as UPSTREAM_UNAVAILABLE with that reason.
+    //
+    // <b>Registered on the add-on, gated on the companion.</b> Each entry exists when its Tinkers'
+    // add-on is installed — that is what a player can spend a point on. Whether the effect can do
+    // anything also depends on the companion mod that add-on integrates with (Botania, Ars Nouveau,
+    // Create, Malum, Farmer's Delight, EtSTLib), which is a capability question asked at the point
+    // of use through TConstructCompatibilityStatus. Registering on presence and gating on
+    // capability is §10.3's "retain the acquired perk ID but mark it unavailable"; deciding
+    // registration on the companion instead would delete a perk a player had already bought the
+    // moment they removed an optional mod.
+    //
+    // The probe is a mod id through {@link TcAddonPresence}, never a class of the add-on's.
+
+    public static final RegistryObject<Perk> TC_MANA_POLISHER =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TCINTEGRATIONS)
+            ? null : registerPerk("tc_mana_polisher", () -> register(
+                    "tc_mana_polisher",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcManaPolisherRequiredLevel),
+                    HandlerResources.TC_MANA_POLISHER_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcManaPolisherPercent)
+            ));
+    public static final RegistryObject<Perk> TC_SOURCE_TEMPERING =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TCINTEGRATIONS)
+            ? null : registerPerk("tc_source_tempering", () -> register(
+                    "tc_source_tempering",
+                    RegistrySkills.MAGIC,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcSourceTemperingRequiredLevel),
+                    HandlerResources.TC_SOURCE_TEMPERING_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcSourceTemperingPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcSourceTemperingWindowSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_CLOCKWORK_ALTERNATION =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TCINTEGRATIONS)
+            ? null : registerPerk("tc_clockwork_alternation", () -> register(
+                    "tc_clockwork_alternation",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcClockworkAlternationRequiredLevel),
+                    HandlerResources.TC_CLOCKWORK_ALTERNATION_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcClockworkAlternationPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcClockworkAlternationWindowSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_SEASONED_HANDS =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_LEVELLING)
+            ? null : registerPerk("tc_seasoned_hands", () -> register(
+                    "tc_seasoned_hands",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcSeasonedHandsRequiredLevel),
+                    HandlerResources.TC_SEASONED_HANDS_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcSeasonedHandsPercent)
+            ));
+    public static final RegistryObject<Perk> TC_BANQUET_OF_CINDERS =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_DELIGHT)
+            ? null : registerPerk("tc_banquet_of_cinders", () -> register(
+                    "tc_banquet_of_cinders",
+                    RegistrySkills.WISDOM,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcBanquetOfCindersRequiredLevel),
+                    HandlerResources.TC_BANQUET_OF_CINDERS_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcBanquetOfCindersPercent)
+            ));
+    public static final RegistryObject<Perk> TC_SOULSTEEL_RESOLVE =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TCINTEGRATIONS)
+            ? null : registerPerk("tc_soulsteel_resolve", () -> register(
+                    "tc_soulsteel_resolve",
+                    RegistrySkills.CONSTITUTION,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcSoulsteelResolveRequiredLevel),
+                    HandlerResources.TC_SOULSTEEL_RESOLVE_PERK,
+                    new Value(ValueType.AMPLIFIER, HandlerCommonConfig.HANDLER.instance().tcSoulsteelResolveAmount),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcSoulsteelResolveSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_CHARGED_CRAFT =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_ADVANCED)
+            ? null : registerPerk("tc_charged_craft", () -> register(
+                    "tc_charged_craft",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcChargedCraftRequiredLevel),
+                    HandlerResources.TC_CHARGED_CRAFT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcChargedCraftPercent)
+            ));
+
+    // Tinkers' Thinking and Tinkers' Jewelry (2.1.0), on the same rule as the seven above:
+    // registered on the add-on's mod id, gated at the point of use on the capability. The eighth id
+    // in this set, tc_subspace_reserve, is RESERVED and deliberately absent — Tinkers' Jewelry's
+    // subspace modifier is inventory storage, which has no Runic channel to join, and §10.3 says a
+    // content id with nowhere honest to land stays reserved rather than shipping as a selectable
+    // no-op. TConstructCompatibilityStatus records it as UPSTREAM_UNAVAILABLE with that reason.
+    //
+    // Tinkers' Katanas has no perk of its own and needs none: it ships no Java classes, and its two
+    // tools register into the tconstruct:modifiable tags the existing perks already read.
+
+    public static final RegistryObject<Perk> TC_THINKING_LAST_THOUGHT =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_THINKING)
+            ? null : registerPerk("tc_thinking_last_thought", () -> register(
+                    "tc_thinking_last_thought",
+                    RegistrySkills.WISDOM,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcThinkingLastThoughtRequiredLevel),
+                    HandlerResources.TC_THINKING_LAST_THOUGHT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcThinkingLastThoughtPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcThinkingLastThoughtSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_THINKING_STUDIED_RECALL =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_THINKING)
+            ? null : registerPerk("tc_thinking_studied_recall", () -> register(
+                    "tc_thinking_studied_recall",
+                    RegistrySkills.WISDOM,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcThinkingStudiedRecallRequiredLevel),
+                    HandlerResources.TC_THINKING_STUDIED_RECALL_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcThinkingStudiedRecallPercent)
+            ));
+    public static final RegistryObject<Perk> TC_THINKING_EMBELLISHED_FOCUS =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_THINKING)
+            ? null : registerPerk("tc_thinking_embellished_focus", () -> register(
+                    "tc_thinking_embellished_focus",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcThinkingEmbellishedFocusRequiredLevel),
+                    HandlerResources.TC_THINKING_EMBELLISHED_FOCUS_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcThinkingEmbellishedFocusPercent)
+            ));
+    public static final RegistryObject<Perk> TC_JEWELER_SETTING =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_JEWELRY)
+            ? null : registerPerk("tc_jeweler_setting", () -> register(
+                    "tc_jeweler_setting",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcJewelerSettingRequiredLevel),
+                    HandlerResources.TC_JEWELER_SETTING_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcJewelerSettingPercent),
+                    new Value(ValueType.DURATION, HandlerCommonConfig.HANDLER.instance().tcJewelerSettingSeconds)
+            ));
+    public static final RegistryObject<Perk> TC_GEM_ATTUNEMENT =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_JEWELRY)
+            ? null : registerPerk("tc_gem_attunement", () -> register(
+                    "tc_gem_attunement",
+                    RegistrySkills.WISDOM,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcGemAttunementRequiredLevel),
+                    HandlerResources.TC_GEM_ATTUNEMENT_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcGemAttunementPercent)
+            ));
+    public static final RegistryObject<Perk> TC_UNDYING_LUSTRE =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_JEWELRY)
+            ? null : registerPerk("tc_undying_lustre", () -> register(
+                    "tc_undying_lustre",
+                    RegistrySkills.CONSTITUTION,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcUndyingLustreRequiredLevel),
+                    HandlerResources.TC_UNDYING_LUSTRE_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcUndyingLustrePercent)
+            ));
+    public static final RegistryObject<Perk> TC_POLISHED_FACET =
+            !TcAddonPresence.isAddonLoaded(TcAddonPresence.TINKERS_JEWELRY)
+            ? null : registerPerk("tc_polished_facet", () -> register(
+                    "tc_polished_facet",
+                    RegistrySkills.TINKERING,
+                    ScaledRequirement.forConfiguredCap(
+                            HandlerCommonConfig.HANDLER.instance().tcPolishedFacetRequiredLevel),
+                    HandlerResources.TC_POLISHED_FACET_PERK,
+                    new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tcPolishedFacetPercent)
+            ));
+
     private static Perk register(String name, Supplier<Skill> skillSupplier, int requiredLvl, ResourceLocation texture, Value... configValues) {
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
         return new Perk(key, skillSupplier, requiredLvl, texture, configValues);
@@ -3894,10 +4246,27 @@ public class RegistryPerks {
     }
 
 
+    /**
+     * How many perks the player is actually paying for.
+     *
+     * <p><b>An id the registry cannot resolve does not count.</b> Saved data outlives a
+     * registration: a perk gated on an optional mod is dormant while that mod is absent, and a perk
+     * this release does not ship at all may still sit in a save written by one that did. Counting a
+     * rank the player cannot use — and cannot clear, because a dormant perk has no entry in the UI
+     * to switch off — charged them budget for nothing and could push them over their cap, which
+     * freezes perk activation until they respec.
+     *
+     * <p>So the count is over ids that resolve, which is the same set the UI shows and the same set
+     * the effects read. Removing the optional mod therefore returns the budget rather than
+     * confiscating it, and reinstalling it charges the budget again with the selection intact.
+     */
     public static int countEnabledPerks(com.otectus.runicskills.common.capability.SkillCapability capability) {
         int count = 0;
-        for (Integer rank : capability.perkRank.values()) {
-            if (rank != null && rank >= 1) count++;
+        for (Map.Entry<String, Integer> entry : capability.perkRank.entrySet()) {
+            Integer rank = entry.getValue();
+            if (rank == null || rank < 1) continue;
+            if (getPerk(entry.getKey()) == null) continue;
+            count++;
         }
         return count;
     }

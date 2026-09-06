@@ -1,0 +1,7 @@
+{
+  "input": "minecraft:grindstone",
+  "consumed": 1,
+  "outputs": [ { "item": "minecraft:stick", "count": 1 }, { "item": "minecraft:oak_planks", "count": 1 } ],
+  "max_recovery": 2,
+  "requires_empty_nbt": true
+}

@@ -50,12 +50,46 @@ public final class DurabilityPerkRules {
      * pack's opt-out back on. Read them as "the mod's definition of a tool", stated once here.
      *
      * <p>Ineligible is checked first so a pack's opt-out always beats the class rule.
+     *
+     * <p><b>Where the rule now lives.</b> The tag checks stay here, because they are this class's
+     * published data surface and must be answered before anything else gets an opinion. The class
+     * rule underneath them has moved to {@code VanillaEquipmentAdapter}, so an item whose class
+     * says nothing — a modded drill, and every Tinkers' tool from 2.0.7 onward — can be recognised
+     * by an adapter instead of needing a line added here. A pack that has not tagged anything gets
+     * byte-identical answers either way.
      */
     public static boolean isTool(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
         if (stack.is(LUCKY_BREAK_INELIGIBLE)) return false;
         if (stack.getItem() instanceof TieredItem || stack.getItem() instanceof ShearsItem) return true;
-        return stack.is(LUCKY_BREAK_ELIGIBLE);
+        if (stack.is(LUCKY_BREAK_ELIGIBLE)) return true;
+        return toolByAdapter(stack);
+    }
+
+    /**
+     * Whether an adapter other than the vanilla one calls this a tool.
+     *
+     * <p>The vanilla adapter is skipped deliberately: its {@code TOOL} role is derived from this
+     * very method, and asking it would recurse. Everything above this line is that adapter's rule
+     * already, so consulting it would also be asking the same question twice.
+     */
+    private static boolean toolByAdapter(ItemStack stack) {
+        for (com.otectus.runicskills.common.equipment.EquipmentAdapter adapter
+                : com.otectus.runicskills.common.equipment.EquipmentProfileService.adapters()) {
+            if (adapter == com.otectus.runicskills.common.equipment.VanillaEquipmentAdapter.INSTANCE) {
+                continue;
+            }
+            try {
+                java.util.Optional<com.otectus.runicskills.common.equipment.EquipmentProfile> profile =
+                        adapter.profile(stack);
+                if (profile != null && profile.isPresent()) {
+                    return profile.get().has(com.otectus.runicskills.common.equipment.EquipmentRole.TOOL);
+                }
+            } catch (RuntimeException e) {
+                // An adapter that throws has not answered; the next one, or "not a tool", stands.
+            }
+        }
+        return false;
     }
 
     /**

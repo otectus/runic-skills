@@ -1,5 +1,400 @@
 # Changelog
 
+## [2.1.0] - 2026-09-06 — Tinkers' Thinking and Tinkers' Jewelry perks, Katanas covered by the core seams
+
+No network protocol change (stays at 12) and no capability or NBT schema change: the add-on state
+`TcAddonState` holds is server-memory only and never touches a save. No new mixins either — neither
+adapter contributes one; both are wired entirely through the FORGE events `TConstructPerkHandler`
+already subscribes and through `ForgeRegistries`/`IToolContext.getModifierLevel` lookups by
+registry id. `runicskills.mixins.json`'s common list is unchanged from 2.0.7 (5 client, 47 common,
+of which 15 target Tinkers' Construct — see the 2.0.7 entry's Release verification).
+
+### Tinkers' Thinking (three perks, no companion mod)
+
+Detected by mod id alone; no compile dependency and no class of the add-on is ever named. Both
+triggers are reached from the add-on's own registry-visible mob effects rather than its internal
+state, because `TinkerDataCapability.TinkerDataKey` declares neither `equals` nor `hashCode` and
+`TinkerDataKey.of` allocates a fresh instance per call — no consumer, with or without a compile
+dependency, can read a level the add-on stored under its own key. This is recorded as a known
+constraint, not worked around by guessing: detection keys on the mob effects the add-on applies
+instead (`tinkers_thinking:last_effort`, `tinkers_thinking:sculk_power`).
+
+- **Last Thought** (`tc_thinking_last_thought`, Wisdom 16): triggers on a death Tinkers' Thinking's
+  own `OnDeath.onLivingDying` refused (cancelled `LivingDeathEvent` plus the `last_effort` effect).
+  Adds `tcThinkingLastThoughtPercent`% (default 12) durability-loss avoidance for
+  `tcThinkingLastThoughtSeconds`s (default 15) afterward, through the new add-on wear-avoidance
+  channel. **This is a reprieve after the save, not a discount on its cost, because the add-on's own
+  death save spends no durability at all** — there is no cost to discount.
+- **Studied Recall** (`tc_thinking_studied_recall`, Wisdom 20): triggers when the add-on's
+  `OnExpPickUp.onPlayerPickupXp` cancels an experience pickup and converts it into
+  `sculk_power` instead. Returns `tcThinkingStudiedRecallPercent`% (default 15) of the consumed
+  orb's value as ordinary experience through the new add-on experience-recovery channel — bounded
+  above by what the orb was worth, so it is a partial recovery and never a net gain.
+- **Embellished Focus** (`tc_thinking_embellished_focus`, Tinkering 24): triggers while the main-hand
+  weapon carries one of Tinkers' Thinking's own melee modifiers (`attack_advanced`, `bane_of_pigs`,
+  `clay`, `hellish`, `overdose`, `lightly_attack`, `sharp_circumstance` — read off the shipped jar's
+  modifier folder, mapped by `TraitFeatureRegistry.Feature.THINKING_EMBELLISHMENT`). Adds
+  `tcThinkingEmbellishedFocusPercent`% (default 4) to the existing melee-damage sum.
+
+### Tinkers' Jewelry (four perks, one reserved)
+
+No compile dependency and no stub source set: everything is addressed by material id, modifier id,
+or the `tconstruct:modifiable/durability` tag, the way Tinkers' itself addresses it. Two of the four
+read a worn piece from vanilla equipment slots rather than Curios, since Curios types are not on
+this build's classpath; **a piece worn in a Curios-only slot does not count for Gem Attunement.**
+
+- **Jeweler's Setting** (`tc_jeweler_setting`, Tinkering 12): triggers on any Tinker Station take that
+  delivers a jewelry-material piece (not only a repair — setting a stone is the moment a piece is
+  finished). Adds `tcJewelerSettingPercent`% (default 10) durability-loss avoidance on that specific
+  piece for `tcJewelerSettingSeconds`s (default 30) through the add-on wear-avoidance channel.
+- **Gem Attunement** (`tc_gem_attunement`, Wisdom 16): triggers while the player wears a jewelry piece
+  in a vanilla equipment slot. Adds `tcGemAttunementPercent`% (default 3) to the melee-damage sum.
+- **Undying Lustre** (`tc_undying_lustre`, Constitution 20): triggers only inside the death-resolution
+  bracket, on the specific ring Tinkers' Jewelry's own `DamageItemEvents.undying` is charging (which
+  spends durability through the same `ToolDamageUtil.damage` seam this mod already owns). Adds
+  `tcUndyingLustrePercent`% (default 25) durability-loss avoidance to that save's cost, through the
+  add-on wear-avoidance channel.
+- **Polished Facet** (`tc_polished_facet`, Tinkering 20): triggers on a paid station repair of a
+  jewelry-material piece. Adds `tcPolishedFacetPercent`% (default 8) to the existing paid-repair
+  share, bounded by `tconstructRepairBonusCap` with Material Harmony and the repair Powers. **Keys on
+  the piece being jewelry-material, not on the add-on's `polish` modifier** — `polish.json` is a
+  single `tconstruct:modifier_slot` grant of one upgrade slot with no repair semantics of any kind, so
+  a perk keyed on it would be named after a mechanic that does not exist.
+- **`tc_subspace_reserve` is a reserved, unregistered id.** Tinkers' Jewelry's `subspace` modifier
+  sizes a private inventory (`SubSpaceCapability`/`SubSpaceMenu`) behind the `tinkersjewelry:subspace`
+  attribute and carries no durability, damage, repair or progression quantity for a Runic channel to
+  join. Same treatment as `tc_medallion_concord`: the diagnostic reports `UPSTREAM_UNAVAILABLE` with
+  the reason rather than shipping a selectable no-op.
+
+Both wear-avoidance contributions (Last Thought, Jeweler's Setting, Undying Lustre) are summed and
+clamped once by the new `tconstructNewWearAvoidanceCap` (default 0.25) before joining the one
+avoidance sum every wear perk shares; the experience contribution is summed and clamped once by the
+new `tconstructNewExperienceBonusCap` (default 0.20).
+
+### Tinkers' Katanas needs no adapter
+
+The jar ships zero Java classes. Its `tinkers_katanas:katana` and `:fuma_shuriken` are JsonThings
+tool definitions that register into `tconstruct:modifiable/melee/primary`, `/one_handed`,
+`/durability`, `/bonus_slots` and (the shuriken) `/ranged`, so classification, wear, repair, ranged
+and keystone already reach them unchanged with no new code. Two optional entries were added to
+`runicskills:lucky_break_eligible` (`tinkers_katanas:katana`, `tinkers_katanas:fuma_shuriken`) so
+`DurabilityPerkRules` still recognises them as tools on an install where the Tinkers'-side tags are
+overridden.
+
+### Config
+
+New flags: `enableTinkersThinkingIntegration`, `enableTinkersJewelryIntegration` (both default on).
+New shared caps: `tconstructNewWearAvoidanceCap` (0.25), `tconstructNewExperienceBonusCap` (0.20).
+Seven percent/duration tuning fields (`tcThinkingLastThoughtPercent`, `tcThinkingLastThoughtSeconds`,
+`tcThinkingStudiedRecallPercent`, `tcThinkingEmbellishedFocusPercent`, `tcJewelerSettingPercent`,
+`tcJewelerSettingSeconds`, `tcGemAttunementPercent`, `tcUndyingLustrePercent`,
+`tcPolishedFacetPercent` — nine fields in total) and seven required-level fields
+(`tcThinkingLastThoughtRequiredLevel`, `tcThinkingStudiedRecallRequiredLevel`,
+`tcThinkingEmbellishedFocusRequiredLevel`, `tcJewelerSettingRequiredLevel`,
+`tcGemAttunementRequiredLevel`, `tcUndyingLustreRequiredLevel`, `tcPolishedFacetRequiredLevel`).
+
+### Testing
+
+- New GameTests: `TinkersThinkingPerksGameTest` (`lastThoughtReducesDeathWear()`,
+  `studiedRecallAddsXpShare()`, `embellishedFocusAddsMeleeShare()`) and
+  `TinkersJewelryPerksGameTest` (`jewelerSettingAffectsStationTake()`,
+  `gemAttunementClassifiesJewelryMaterial()`, `undyingLustreReducesSaveWear()`,
+  `polishedFacetAffectsRepair()`). `TcAddonAbsenceGameTest` gains
+  `subspaceIsReservedAndUnregistered()` and `katanasIsDataOnlyAndNeedsNoAdapter()`, and its two
+  existing dormancy methods now cover the two new add-ons as well.
+- New opt-in gametest profiles: `-PtinkersAddons=thinking` puts Tinkers' Thinking 0.1.6.6.3 — the
+  exact build the reference pack runs — on the runtime classpath, giving `TinkersThinkingPerksGameTest`
+  live coverage. `-PtinkersProfile=stable -PtinkersAddons=tcintegrations,botania,ars` puts Botania
+  1.20.1-455-forge and Ars Nouveau 4.12.7 alongside TCIntegrations, so `ADDON_BOTANIA_REPAIR_CHARGE`
+  and `ADDON_ARS_ARMOR_REPAIR` are exercised live instead of asserted `ABSENT` only; it registers no
+  gametest class of its own, so the whole-suite count matches the M1 baseline. Tinkers' Jewelry has no
+  live profile: Modrinth's newest 1.20.1 Forge build is 1.1.0 while the reference pack runs 1.2.0, so
+  a profile against 1.1.0 would be a green run about a jar nobody uses; `TinkersJewelryPerksGameTest`
+  still registers whenever `tinkersjewelry` is loaded, for a pack developer who supplies 1.2.0
+  themselves.
+- Gametest counts (whole-suite total, measured 2026-09-06): M0 (no profile) 116, unchanged.
+  M1 (`-PtinkersProfile=stable`) 202, up from 200 — the two new `TcAddonAbsenceGameTest` methods.
+  `-PtinkersAddons=thinking` 205 (M1 + the three Thinking methods).
+  `-PtinkersProfile=stable -PtinkersAddons=tcintegrations,botania,ars` 202 (matches M1; no new class).
+  See [`docs/TCONSTRUCT_TEST_MATRIX.md`](docs/TCONSTRUCT_TEST_MATRIX.md).
+
+## [2.0.7] - 2026-09-05 — Salvage moved to grindstone, crafting rewards streamlined, Tinkers' Construct 3.11 preparation
+
+Network protocol bumped to 12 (from 11). Config schema gains three fields: `autoRepairPointsPerSecondAt100`, `craftRewardMaxExtraOutputs`, `recyclingEnabled`, and six Tinkers' workshop fields: `tconstructWorkshopFocusSeconds`, `tconstructWorkshopFocusRadius`, `tconstructMaxFocusedWorkshops`, `tconstructMaxCastingAssociations`, `tconstructWorkshopBonusCap`, `tconstructAllowAutomationRewards`. Dev Forge is 47.4.23; `forge_version_range` remains `[47,)`. Build: optional compile-only Tinkers' Construct 3.11.2.166 and Mantle 1.11.97 dependencies, runtime selectable via `-PtinkersProfile=stable|beta`.
+
+### Economy and core fixes
+
+**Crafting rewards:**
+- **Bonus-copy perks now route through one operation policy**, denying rewards for repairs, conversions, unstackable/damageable/NBT/capability items, and compression (all inputs equal). One `craftRewardMaxExtraOutputs` cap (default 1) covers all eligible perks together per craft, honoring per-perk roles (Assembly Line, Mass Production, Alloy Master, Master Woodworker, Medieval Architecture).
+- **Master Tinkerer's restore now applies at result creation**, before Tinker's Touch stamping and before shift-click copies the result, so the restored durability is visible and does not regress on shift-click.
+
+**Salvage redesigned:**
+- **Block-break salvage (Resource Efficiency, Salvage Expert breaking crafting blocks) has been removed.** Both perks now operate at the grindstone via `GrindstoneEvent.OnPlaceItem`, consuming the target once and returning materials subject to the cost cap and a datapack allowlist (`data/<ns>/runicskills/recycling/*.json`). Recipes are no longer inferred from the recipe manager.
+- **Disassembler and Salvage Master move to item-destroy triggers** (on-break or on-empty), reading the recycling allowlist to determine what materials return. An item breaking now has a stated chance to recover its materials, rather than trying to salvage "on demand" when a block is broken.
+- **Recycling rules are datapack-driven:** each file under `data/<ns>/runicskills/recycling/*.json` (keyed by item id) names an input item count, output items+counts, a recovery cap, and an NBT-empty requirement. Unknown fields reject the rule (a misspelled field is caught, not silently skipped); rules naming absent items are skipped. On reload failure, last-good rules are retained. Shipped defaults cover crafting table, furnace, smoker, blast furnace, anvil (2 tiers), grindstone, and common vanilla tools.
+
+**Lucky Charm:**
+- Now applies once at effect application (via a `@ModifyVariable` on `LivingEntity.addEffect`), not at every observer update. Duration is reduced via NBT save/load to preserve hidden-effect chains and curative items. Infinite-duration effects are skipped.
+
+**Auto Repair:**
+- Durability credit now uses fractional accumulation: once per second, `repairRate / 100 * autoRepairPointsPerSecondAt100` raw points accrue to a budget. When a full point accrues, it repairs the next eligible slot via rotation, ensuring no slot is favoured and small percentages repair proportionally slower. Budget clears on logout, death, perk disable, or when no eligible item exists. Creative-mode breaks no longer pay Treasure Hunter.
+
+**Treasure Hunter:**
+- Payout only on confirmed block removal (posting a new `BlockBreakCommittedEvent` after `ServerPlayerGameMode.removeBlock` succeeds and `canHarvestBlock` passes). Cancellations from LOWEST-priority listeners yield zero payout.
+
+**Equipment roles:**
+- New `StackLockProvider` interface and `EquipmentProfileService` utility class for behaviour-neutral stack-aware classification and repair provision. Vanilla rules (TieredItem/ShearsItem + tags) are preserved in `VanillaEquipmentAdapter`. Tinkers' integration hooks in S2 without changing vanilla item behaviour.
+
+### Build and Tinkers' foundation
+
+- **Gradle:** optional compile-only dependencies for Tinkers' Construct and Mantle pinned to stable 3.11.2.166 and 1.11.97. Runtime classpath controlled by `-PtinkersProfile=stable|beta` property (default: profile disabled, M0 baseline). New `checkSidedImports` rule forbids `slimeknights.` imports outside `integration/tconstruct/**`, `mixin/tconstruct/**`, `client/integration/tconstruct/**`, and gametest directories.
+- **Tinkers' hook manifest:** all thirteen hook seams from the spec are resolved in `docs/TCONSTRUCT_HOOKS.md` and `docs/tconstruct/compat-manifest.json` (machine-readable). Mixin targets, SHA-256 hashes, and version detection are confirmed from the real 3.11.2.166 jar. No Tinkers' mixins are implemented yet (S2+ work).
+
+### Tinkers' Construct foundation
+
+- **Version support:** Tinkers' Construct 1.20.1-3.11.2.166 and Mantle 1.11.97 are the minimum and compiled-against versions. Tinkers' 3.12 is recognised but runs in conservative mode (classification and repair work; wear avoidance and workmanship are not mixed in). `TConstructProfile.detect()` reads the version once at startup from Forge's mod container.
+- **Conservative mode:** When Tinkers' is absent, on an unrecognised version, or when `enableTConstructIntegration` is off, classification and repair routing still work (ordinary API calls against stable signatures); native wear reduction and workmanship stamping are skipped (no mixin is applied). A player on 3.12 has functional durability perks without wear avoidance; a future 2.0.8 will compile against 3.12.
+- **Profile detection:** The major and minor version decide the profile; patch versions do not differ. The profile gates mixin application during class transformation and cannot change without a restart.
+- **Equipment classification:** Native tools (items in `tconstruct:modifiable`) are recognised and roles (TOOL, DIGGER, MELEE_WEAPON, RANGED_WEAPON, ARMOR, SHIELD) are read from Tinkers' own tags, so modpack tools are automatically classified.
+- **Wear avoidance (S2):** A new mixin on `ToolDamageUtil.damage` redirects the `directDamage` call, applying the combined wear probability (perks: Lucky Break, Precision Tools, Unbreakable, Unbreaking Mastery, Gadgeteer, Lock Expert; capped at 90%) only when the player is performing an ordinary action (confirmed block break or melee swing). Unidentified origins get native behaviour.
+- **Repair factor:** Native repairs evaluate the tool's own repair factor (composed from modifiers via `ModifierHooks.REPAIR_FACTOR`) before calling `ToolDamageUtil.repair`, respecting modifiers that forbid or reduce repair.
+- **Workmanship modifier (`runicskills:workmanship`):** Stores Tool Smith / Weapon Smith / Tinker's Touch bonuses in namespaced persistent data, reads and applies only the durability bonus as a `TOOL_STATS.DURABILITY` percentage. Lazy migration of old root-tag stamps (first read/write moves the value, adds the modifier, rebuilds once). Idempotent by construction (a pure function of the stamped percentage); stamps keep the maximum of old and new values.
+- **Keystone modifier (`runicskills:keystone`):** Registered with a VOLATILE_DATA hook adding one UPGRADE slot (KeystoneModifier.java:40-54); the modifier id is a save-visible identity, so registering it in 2.0.7 allows tools stamped now to load correctly in future releases.
+- **Stack-aware requirements (material-tier locks, off by default):** `enableTConstructLockItems` (default false) gates automatic material-tier skill requirements derived from a tool's highest material tier. Precedence: explicit pack rule > existing item-id lock > automatic profile > allowed. Unknown materials do not crash and are reported as "undetermined" in inspection. Levels scale from stock cap of 32 to the server's `skillMaxLevel`.
+- **Diagnostics:** `tconstructCompatibilityDiagnostics` (default on) logs the capability status at startup and reports it via `/skills tinkers compat` (stage S3). Each of ten capabilities (CLASSIFICATION, REPAIR, WEAR_AVOIDANCE, WORKMANSHIP, STACK_REQUIREMENTS, STATION_TRANSACTIONS, HARVEST_AOE, PROJECTILES, WORKSHOP, KEYSTONE) reports SUPPORTED, VERSION_UNVERIFIED, UPSTREAM_INCOMPATIBLE, HOOK_UNAVAILABLE, DISABLED_BY_CONFIG, or ABSENT with a reason.
+- **GameTests:** `NativeWearGameTest`, `NativeRepairGameTest`, `WorkmanshipGameTest`, `StackRequirementGameTest`, `CompatibilityStatusGameTest`.
+
+### Testing
+
+- New GameTests: `CraftRewardPolicyGameTest`, `CraftResultTransformGameTest`, `RecyclingGameTest`, `LuckyCharmGameTest`, `AutoRepairBudgetGameTest`, `TreasureHunterCommitGameTest`. Extended `DurabilityPerksGameTest` with assertions that `EquipmentProfileService` classifies vanilla items identically to prior rules.
+
+### Tinkers' Construct station, harvesting and projectiles (S3a)
+
+**Station operations:**
+- Native Tinker Station takes are classified by recipe type (assemble, repair, part swap, modify) and paid via the same reward policy as vanilla crafts, never twice.
+- The delivered result is transformed once (Master Tinkerer restore + Tinker's Touch stamp) in `LazyResultContainer` at copy time, applying to both click and shift-click paths.
+- Skill-lock checks apply at `Slot.mayPickup` before any take via `ForeignResultSlots` registration, the same seam that checks a crafting table.
+- Per-player quotes (not shared) include fingerprints of inputs and base result, allowing the server to detect if the setup changed between quote and take via monotonically incrementing revision tokens.
+
+**Harvesting:**
+- Each block of a native area harvest (hammers, excavators) opens its own action frame (NATIVE_AOE_CHILD) sharing the swing's root action id with all siblings.
+- Each child block that actually breaks posts `BlockBreakCommittedEvent`, published from `ToolHarvestLogic.breakBlock` after loot drops.
+- Protection checks (claim mods, protection plugins) run natively and refuse before the seam, so Runic never attempts to reward a refused break.
+- One root proc per swing — perks claiming "once per action" use the shared root id.
+
+**Projectiles:**
+- Native bow, crossbow, and launcher releases open a RANGED action frame for the duration of the release method. All projectiles spawned inside take the same root action id.
+- As each projectile spawns via `EntityJoinLevelEvent`, its launch facts are recorded to persistent data: owner UUID, root action id, launcher item id, and hand. Bounded to 16 claims and 2 KiB per projectile; over-budget writes are refused entirely (no partial snapshots).
+- Genuine returns (thrown tools flying back with physics disabled) are detected at `ThrownTool.tryPickup`, distinct from pickups of items lying on the ground or put there by commands (which never reach the seam).
+
+**Mixins:** `MixTinkerStationBlockEntity`, `MixLazyResultContainer`, `MixToolHarvestLogic`, `MixModifiableBowItem`, `MixModifiableCrossbowItem`, `MixThrownTool`.
+
+### Tinkers' workshop, station panel, commands and networking (S3b)
+
+**Workshop focus:**
+- A player standing at a smeltery, foundry, melter, or alloyer may focus it to accelerate both melting and casting. Focus is claimed via a button in the native station panel or via `/skills tinkers workshop focus` at the controller they are facing. Casting tables and basins within eight blocks of the controller may be associated with the focus.
+- A focus lasts `tconstructWorkshopFocusSeconds` (default 60 seconds) before expiring, and is immediately dropped on logout, dimension change, or walking past `tconstructWorkshopFocusRadius` (default 16 blocks).
+- The server holds at most `tconstructMaxFocusedWorkshops` (default 32) active focuses; revalidation (distance, dimension, controller) happens at most once per second.
+- A focus issued a new revision token on each change, so replayed requests (L07's completed action token) are stale by definition and refused.
+
+**Melting and casting bonus:**
+- A focused workshop melts and casts faster. Smelter and Overclock perks feed the melting speed; Overclock feeds the casting speed. The combined bonus is capped at `tconstructWorkshopBonusCap` (default 0.25, or 25%).
+- Bonuses below one unit are carried as fractional debt between ticks, so modest bonuses are not lost to truncation.
+- The completing tick (the native one that finishes a melt or cast) is always native code, so recipes, fuel, and outputs are never mutated by bonus logic.
+
+**Station panel:**
+- A small panel beside native Tinker Station, Melter, Alloyer, and Crafting Station screens shows the player's would-get result (after Runic transforms), their focus status, and a keyboard-accessible Focus button.
+- The panel recognises native screens by class name; upstream renames leave it inert rather than breaking.
+- Placement avoids the native modifier, repair and information tabs, JEI controls, and add-on extensions.
+
+**Commands:**
+- `/skills tinkers inspect [<player>]` — lists how the held item is classified and what it requires.
+- `/skills tinkers workshop focus` — claims the controller the player is facing.
+- `/skills tinkers workshop release` — drops the caller's own focus.
+- `/skills tinkers compat` — shows compatibility status for all Tinkers' capabilities (CLASSIFICATION, REPAIR, WEAR_AVOIDANCE, WORKMANSHIP, STACK_REQUIREMENTS, STATION_TRANSACTIONS, HARVEST_AOE, PROJECTILES, WORKSHOP).
+- **Permission change (2.0.7):** The `/skills` root's operator gate moved to the `player` argument, allowing `/skills tinkers inspect` and `/skills tinkers workshop` to run without OP while `/skills <other player> <skill> <level>` still requires OP level 2. Nothing became more permissive.
+
+**Networking:**
+- Protocol 12 adds three packets: `WorkshopFocusSP` (server-bound, carries focus request), `WorkshopStatusCP` (client-bound, sent at most twice per second with focus status), and `StationQuoteCP` (client-bound, sent when station inputs or result change, with a per-player preview).
+- Validation is strict: sender is a real player, rate limits apply, container id matches, revision token matches current, distance is checked before chunk-load checks, and chunk-loaded state is verified.
+
+**Mixins:** `MixMeltingModule` (AT HEAD on speed argument; `serverTick` is private and injected by name), `MixCastingBlockEntity` (AT HEAD on cooling).
+
+### Tinkers' Construct perks (S4a)
+
+**Fifteen new perks, single-rank each, levels scaled by skill cap (§10.2), all dormant when Tinkers' is absent and gated on `enableTConstructPerks` and their required capability:**
+
+- **Wear avoidance (§5.2, one shared cap `tconstructMaxAvoidance`):**
+  - **Repair Memory** (Tinkering 8): After paying for station repair, durability ignored for X uses (up to Y, default 16 uses / 120 seconds). Contributed percentage: `tcRepairMemoryPercent` (default 10%). One charge per root action; charges clear on tool swap, logout, or expiry.
+  - **Slime Steward** (Endurance 16): Tool with spent overslime shield wears slower. Contributed percentage: `tcSlimeStewardPercent` (default 5%). Reads native shield, never writes it; non-invasive.
+
+- **Melee and mining (three shared caps: `tconstructNewDamageBonusCap`, `tconstructNewMiningBonusCap`, `tconstructNewActionSpeedBonusCap`):**
+  - **Tempered Edge** (Strength 12): Fully wound-up melee strike bonus +`tcTemperedEdgePercent`% (default 6%), once per `tcTemperedEdgeCooldownTicks` (default 60 ticks). Bonus joins `tconstructNewDamageBonusCap`.
+  - **Counterweight** (Dexterity 12): Holding broad native weapon, swing speed +`tcCounterweightPercent`% (default 5%). Bonus joins `tconstructNewActionSpeedBonusCap`.
+  - **Precision Footing** (Endurance 12): Mining with correct tool, grounded and not sprinting, speed +`tcPrecisionFootingPercent`% (default 8%). Bonus joins `tconstructNewMiningBonusCap`.
+  - **Adaptive Grip** (Tinkering 24): Switch between mining and melee with same hybrid tool, next action +`tcAdaptiveGripPercent`% (default 8%) for `tcAdaptiveGripWindowSeconds` seconds (default 4). Consumed once per committed action, not per role. Bonus joins either cap depending on the action committed. Requires `tcAdaptiveGripSwitchSeconds` (default 8) between mode changes.
+
+- **Ranged (no shared cap; `PROJECTILES` capability):**
+  - **Measured Draw** (Dexterity 16): Fully charged native bow or fired crossbow, inaccuracy reduced to `(1 - tcMeasuredDrawPercent/100)` of original (default 10% reduction = 0.90x multiplier). Applied at release before projectile velocity is set.
+  - **Returning Hand** (Dexterity 20): After thrown tool returns natively, next throw within `tcReturningHandSeconds` seconds (default 8) draws `tcReturningHandPercent`% faster (default 10%), once per `tcReturningHandCooldownTicks` (default 100 ticks). Bonus joins `tconstructNewActionSpeedBonusCap`.
+
+- **Armor and workshop (attribute and facility perks):**
+  - **Plate Discipline** (Constitution 16): Wearing 3+ Tinkers' armor pieces, +`tcPlateDisciplineAmount` knockback resistance (default 0.05 per piece state). Applied as a transient attribute modifier, not permanent.
+  - **Ember Guard** (Constitution 20): Fire damage while focused on a heated workshop (fuel present, temperature > 0), reduction -`tcEmberGuardPercent`% (default 5%). Bonus joins `tconstructNewDamageReductionCap`.
+  - **Cast Keeper** (Tinkering 4): Completing a cast at focused workshop, `tcCastKeeperPercent`% chance (default 15%) to return the consumed disposable cast.
+  - **Thermal Rhythm** (Tinkering 8): Melting at focused workshop, +`tcThermalRhythmPercent`% progress (default 10%), never produces extra metal or fuel. Bonus joins `tconstructWorkshopBonusCap`.
+  - **Workshop Cadence** (Tinkering 24): Three casts (configurable `tcWorkshopCadenceCasts`, default 3) of the same recipe under focus within a window (`tcWorkshopCadenceWindowSeconds`, default 60), then +`tcWorkshopCadencePercent`% cooling speed (default 10%) for `tcWorkshopCadenceSeconds` seconds (default 30), once per `tcWorkshopCadenceCooldownTicks` (default 200 ticks). Bonus joins `tconstructWorkshopBonusCap`.
+
+- **Repair bonuses (shared cap `tconstructRepairBonusCap`, default 0.50):**
+  - **Material Harmony** (Tinkering 12): Paid repair on a tool built from 3+ distinct materials, +`tcMaterialHarmonyPercent`% extra durability restored (default 5%), capped by `tconstructRepairBonusCap`. Reads material variant ids, counts each distinct material once.
+  - **Field Service** (Tinkering 20): Repair kit used at crafting table, +`tcFieldServicePercent`% extra durability restored (default 10%), capped by `tconstructRepairBonusCap`. Station repairs are Repair Expert's (game design, not technical limitation).
+
+**Shared caps (all inclusive sums, applied once per effect):**
+- `tconstructNewDamageBonusCap` (default 0.30) — melee damage bonus ceiling
+- `tconstructNewMiningBonusCap` (default 0.25) — mining speed bonus ceiling
+- `tconstructNewActionSpeedBonusCap` (default 0.20) — action speed bonus ceiling (attack speed, thrown-tool draw speed)
+- `tconstructNewDamageReductionCap` (default 0.25) — incoming damage reduction ceiling
+- `tconstructRepairBonusCap` (default 0.50) — repair bonus ceiling (Material Harmony + Field Service + vanilla Repair Expert)
+- `tconstructMaxAvoidance` (default 0.90) — wear avoidance ceiling (Repair Memory + Slime Steward + six vanilla wear perks)
+- `tconstructWorkshopBonusCap` (default 0.25) — melting and casting speed bonus ceiling (Thermal Rhythm + Workshop Cadence)
+
+**Level scaling:**
+All base levels are scaled from the stock cap 32 to `skillMaxLevel` using: `max(1, min(cap, ceil(baseLevel * cap / 32)))`. So a level-32 perk on cap-64 becomes level 64; on cap-16 it becomes level 16.
+
+**Perk-budget fix:**
+Unresolvable saved perk ids (from removed mods) no longer count against the budget, so a player with a dormant `tc_*` perk on their profile when Tinkers' is absent is not locked out of other perks. See `RegistryPerks.countEnabledPerks(SkillCapability)` and `PerkBudgetDormancyGameTest`.
+
+**Mixin:**
+- `MixThrowingModule` (S4a): calls `TConstructPerkHandler.returningHandCharge()` when a native thrown tool is launched, so returning-hand tracking can be updated; string target, `remap = false`, applied only when `enableTConstructPerks` and PROJECTILES capability supported (S4b adds the return detection).
+
+**Keystone Tinker (tc_keystone_tinker) (S4 completion):**
+Fits a permanent upgrade slot on a native tool at the Tinker Station for one netherite ingot and one amethyst shard. The slot is granted by the `runicskills:keystone` modifier's VOLATILE_DATA hook; one per tool, authoritative at `Slot.mayPickup` to ensure ineligible smiths and FakePlayer never consume materials. Permanence: no removal recipe ships, and the slot survives turning the service off with `enableTConstructPerks`. Turning the whole integration off with `enableTConstructIntegration` unregisters the modifier, so the slot it grants is not applied until the integration is enabled again. Eligible tools are those in `#tconstruct:modifiable/bonus_slots` (datapack-editable via `runicskills:keystone_eligible` tag delegation). Six GameTests assert eligible take with click and shift-click, ineligible refusal with both paths, FakePlayer rejection, double-keystone refusal, and permanence after disable.
+
+**GameTests:**
+- `TcCorePerksGameTest` — 16 test methods covering enablement, inactivity, dormancy, and boundary conditions (e.g., Repair Memory one charge per action, Tempered Edge melee-only, Adaptive Grip role-switch-only, Plate Discipline 3+ pieces); some perks have multiple tests (Repair Memory, Tempered Edge) and Material Harmony, Field Service share one.
+- `PerkBudgetDormancyGameTest` (base suite, always runs) — ensures dormant perk ids do not count against the budget even in M0 where Tinkers' is absent.
+
+### Tinkers' Construct Powers (Artifice) (S4b)
+
+**Twelve new Powers, all FULL status, school `runicskills:tinkering` (Artifice), gated on `enableTConstructPowers` and their required capability seam:**
+
+**Marks (4, tier cost 1 PP):**
+- **First Heat** (tc_first_heat, 100t cooldown): Three primary hits with native weapon in sequence window prepare the fourth for melee damage. Triggers on the fourth hit, joins the melee damage cap.
+- **Plumb Line** (tc_plumb_line, 120t): Three committed mining actions with native tool on ground in sequence window prepare mining speed. Joins the mining speed cap.
+- **Quench** (tc_quench, 600t): Substantial paid repair grants fire damage reduction for a duration, minimum restoration threshold. Joins the incoming reduction cap.
+- **Working Memory** (tc_working_memory, 600t): Paid part change prepares repair restoration on the next paid repair of that tool within a window. Joins station rewards.
+
+**Seals (4, tier cost 2 PP):**
+- **Hammer and Tongs** (tc_hammer_and_tongs, 200t): Shield block stopping sufficient damage prepares the next melee hit for damage bonus within window. Joins the melee cap.
+- **Temper Reserve** (tc_temper_reserve, 1200t): Substantial paid repair grants that tool wear avoidance for duration. Joins the wear avoidance cap.
+- **Resonant Return** (tc_resonant_return, 300t): After thrown tool returns, next throw within window carries first-hit damage bonus. Joins the projectile damage cap.
+- **Workshop Aegis** (tc_workshop_aegis, 400t): Completing an attributed cast grants damage reduction while in workshop. Joins the incoming reduction cap.
+
+**Crowns (4, tier cost 3 PP):**
+- **The Great Work** (tc_great_work, 3600t): One assembly, one paid repair and one manual cast within sequence window trigger Inspired: mining speed and wear avoidance for duration. Joins both caps.
+- **Last Temper** (tc_last_temper, 3600t): Lethal ordinary wear on usable native Tinkers' tool leaves it on exactly 1 durability. Does not compose into a cap; per-player, one per cooldown. Tested separately as a wear clamp (D08 spec).
+- **Heart of the Foundry** (tc_foundry_heart, 6000t): N melting operations from personal insertions prepare melting/cooling progress bonus for duration. Joins workshop acceleration cap.
+- **Many Hands, One Forge** (tc_many_hands, 3600t): You and ally both working same focused workshop within window grant every contributor repair restoration for duration. Joins the repair bonus cap.
+
+**Eligibility:** Reachable at configured governing skill threshold. Unequippable with `MISSING_CAPABILITY` reason when Tinkers' absent, the required capability unsupported, or `enableTConstructPowers` off. Eligibility rechecked on every proc; saves retain ids so reinstalling Tinkers' later restores them.
+
+**Cooldown persistence:** Cooldown debt survives logout (§15.1). Serialized as remaining ticks into `runicskills:tc_state` (schema 1, 12-entry map bound, per `PowerCooldownDebt`), written at the moment a cooldown starts (not save time), read back into runtime map at login never shortened by session-local cooldown that started first. Only the twelve Artifice ids persisted; addon keys cannot grow player NBT.
+
+**Presentation:** School `runicskills:tinkering`, primary colour 0xB86E2E (tan-brown) + glow 0xF0DFA8 (sand), motion RISING. Icons are checked-in assets regenerated by manually running `python tools/icongen/powers.py`; collision probe walks `sorted(power_ids)` parsed from RegistryPowers.java across all schools, so three Powers share regenerated icons at positions where rune slots differ (still distinct per Power). The build only verifies coverage via `PowerIconCoverageTest`.
+
+**GameTests:**
+- `TcArtificePowersGameTest` — one method per Power (C09 spec: correct behaviour when equipped, nothing when not equipped, cooldown gates second firing, effect magnitude stays within the seam cap). Each drives the real seam except Last Temper.
+- `LastTemperGameTest` — covers D08 spec separately (lethal loss leaves 1 durability, cooldown spent, second loss inside cooldown not saved, survivable loss untouched and free).
+- `CooldownPersistenceGameTest` — suite in base package (L01 spec: cooldown round-trip survives save/load, only Artifice ids persisted).
+
+### Tinkers' Construct add-on integrations (S5)
+
+**Seven new perks from optional add-on layers, each gated on the add-on's `enable…Integration` flag and its required capability seam. Four unavailable companions (Botania, Ars Nouveau, Create, Malum) preclude live behavior test execution but dormancy is verified in every profile.**
+
+**Four from TCIntegrations (requires Tinkers' Construct + TCIntegrations, plus companion mods for each effect):**
+- **Mana Polisher** (tc_mana_polisher, Tinkering 12): Botania-backed tool repair, mana cost −`tcManaPolisherPercent`% (default 10%), min 1. Capability: `ADDON_BOTANIA_REPAIR_CHARGE`. Mixin gate: `MixManaModifier` (`require = 0`, optional seam).
+- **Source Tempering** (tc_source_tempering, Magic 12): Ars Nouveau armour repair, next spell +`tcSourceTemperingPercent`% damage (default 5%) within `tcSourceTemperingWindowSeconds`s (default 8). Capability: `ADDON_ARS_ARMOR_REPAIR`. Mixin gate: `MixArsNouveauBaseModifier` (`require = 0`, optional seam).
+- **Clockwork Alternation** (tc_clockwork_alternation, Tinkering 12): Create Mechanical Arm offhand attack, next tool use avoids `tcClockworkAlternationPercent`% durability (default 10%) within window (default 5s). Capability: `ADDON_OFFHAND_MELEE`. Mixin gate: `MixToolAttackUtil` (required; no companion mod check in mixin, only in registry).
+- **Soulsteel Resolve** (tc_soulsteel_resolve, Constitution 16): Malum soul-stained equipment, primary hit grants knockback resistance +`tcSoulsteelResolveAmount` (default 0.06) for `tcSoulsteelResolveSeconds`s (default 4). Capability: `ADDON_SOUL_STAINED`. Mixin gate: `MixToolAttackUtil`.
+
+**One from Tinkers' Levelling Addon (requires add-on only):**
+- **Seasoned Hands** (tc_seasoned_hands, Tinkering 12): Tool experience award ×(1 + `tcSeasonedHandsPercent`/100, default 10%). Fractional remainder carries per player per tool item; no scaling past the add-on's cap. Capability: `ADDON_TOOL_LEVELLING`. Mixin gate: `MixToolLevellingUtil` (required).
+
+**One from Tinkers' Delight (requires add-on + Farmer's Delight):**
+- **Banquet of Cinders** (tc_banquet_of_cinders, Wisdom 12): Primary melee damage +`tcBanquetOfCindersPercent`% (default 3%) only while Nourishment effect active; summed under `tconstructNewDamageBonusCap`. Capability: `ADDON_CULINARY_EFFECT`. No mixin gate (reads `ModEffects.NOURISHMENT`).
+
+**One from Tinkers' Advanced (requires add-on + EtSTLib library):**
+- **Charged Craft** (tc_charged_craft, Tinkering 12): FE cost −`tcChargedCraftPercent`% (default 10%), min 1 FE, for identified tool operations only (machines and cables pay full price). Capability: `ADDON_TOOL_ENERGY`. Mixin gate: `MixToolEnergyUtil` (required). Note: Tinkers' Advanced beta.13 (main project) cannot boot dedicated server (upstream unqualified EventBusSubscriber); test environment uses split Core beta.5.
+
+**Reserved (unregistered, no artifact available):**
+- **Medallion Concord** (tc_medallion_concord, Wisdom 16, Tinkers' Ingenuity): No public 1.20.1 artifact could be resolved from any maven; perk id retained but unregistered. Capability: `ADDON_MEDALLION` reports `UPSTREAM_UNAVAILABLE` so the absence is explained rather than mysterious.
+
+**Adapter class architecture:** Each add-on has its own adapter class in `integration/tconstruct/addons/`, loaded reflectively by `TcAddonRegistry` only after presence check. If the adapter load fails, the perk stays dormant with a logged reason. Adapter `install()` methods register mixin hooks (e.g., `MeleeDamageContributor`), read upstream APIs, and verify seam shapes reflectively before committing to injection points.
+
+**Mixin plugin gate:** `RunicSkillsMixinPlugin.applyAddon(simpleName, addonModId)` checks three conditions in order: Tinkers' present, version supported, integration enabled; then the add-on's own mod id. Result recorded so `TConstructCompatibilityStatus.describe()` reports why a mixin did or did not apply.
+
+**Capability diagnostic:** Seven capabilities added to `TConstructCompatibilityStatus.Capability` enum. Each is set by `TcAddonRegistry.describe()` based on: adapter installed and running, companion mods present (if required), seam shape verified (optional mixins), and mixin applied. Possible statuses: `SUPPORTED`, `ABSENT`, `UPSTREAM_INCOMPATIBLE`, `HOOK_UNAVAILABLE`, `DISABLED_BY_CONFIG`, `UPSTREAM_UNAVAILABLE`.
+
+**Temporary state:** Four perks (Clockwork Alternation, Seasoned Hands carry, Source Tempering, Soulsteel Resolve) hold per-player server memory in `TcAddonState` (sibling to `TConstructPerkState`). Clears on logout, death, respec, dimension change, server stop, and perk disable. State never travels with items; no benefit survives a relog without continuous session.
+
+**Config expansion:** Four `enable…Integration` flags (enableTcIntegrationsIntegration, enableTinkersLevellingIntegration, enableTinkersDelightIntegration, enableTinkersAdvancedIntegration) plus 13 tuning fields per add-on (cooldown ticks, window seconds, percent/amount values). Levels scale per-perk by skill cap (formula in S4a section).
+
+**GameTests (§18.3 C08 spec: active, inactive, dormant, boundary):**
+- `TcAddonAbsenceGameTest.addonPerksExistOnlyWithTheirAddon()` — runs every profile, asserts registry presence exactly matches add-on presence.
+- `TcAddonAbsenceGameTest.addonCapabilitiesNameWhatIsMissing()` — capabilities report `ABSENT` when missing companion, no false `SUPPORTED`.
+- `TcAddonAbsenceGameTest.medallionConcordIsReservedAndUnregistered()` — id never registered, capability always `UPSTREAM_UNAVAILABLE`.
+- `TcAddonPerksGameTest.seasonedHandsScalesOneAward()`, `seasonedHandsIgnoresCommandAndNegativeAwards()`, `banquetPaysOnlyWhileNourished()` — live behavior on M4/M6 profiles.
+- `LevellingCoexistenceGameTest` — four methods asserting player XP and tool XP never mix, carry never travels, cap respected, perk off/on produces only intended difference.
+- `TcChargedCraftGameTest.chargedCraftDiscountsWithAPositiveMinimum()` — live behavior on M5/M6 profiles (if Advanced can boot).
+
+**Profiles:**
+- **M0 (absent):** No add-on perks registered.
+- **M1 (stable 3.11.2.166):** No add-ons; all seven perks dormant, capabilities `ABSENT`.
+- **M3 (TCIntegrations only):** Four perks registered, companions absent so capabilities `ABSENT`.
+- **M4 (Levelling + Delight):** Seasoned Hands and Banquet tests live; Levelling coexistence tests live.
+- **M5 (Advanced):** Charged Craft test live (if server boots).
+- **M6 (all add-ons):** All live tests combined (minus companion-dependent seams).
+
+See [`docs/TCONSTRUCT_TEST_MATRIX.md`](docs/TCONSTRUCT_TEST_MATRIX.md) for exact artifact versions, SHA-256 hashes, gametest counts, and run commands per profile.
+
+### Pack rules, scripting and migration (S6)
+
+**Pack rules (datapack-authored, off by default in the sense that no default rule ships):**
+- New `runicskills/tconstruct_rules` datapack folder (`data/<ns>/runicskills/tconstruct_rules/*.json`), parsed by `TConstructRulesLoader` into an immutable, revisioned `PackRuleIndex`. A pack may state a `use_requirement` (skill levels a native tool's definition/materials/role/tier/action must meet) or a `craft_reward_policy` (whether a station result may be paid a bonus copy). Precedence is pack rule > existing item-id lock > the automatic material-tier profile (still gated by `enableTConstructLockItems`); a `craft_reward_policy` allow can never lift the mandatory bonus-copy exclusions, only a refusal is honoured. Unknown fields refuse the file by name; a duplicate id or an equal-priority disagreement at lookup time produces no verdict rather than picking by filesystem order; any unreadable file in a reload refuses the whole reload and keeps the last-good ruleset — except when there is no last-good ruleset yet, in which case the files that did parse are installed and the failure is only reported. See [`docs/TCONSTRUCT_PACK_RULES.md`](docs/TCONSTRUCT_PACK_RULES.md).
+
+**KubeJS tinkering events:**
+- Three new server-only events observing native Tinker Station operations: `tinkerOperationCheck` (cancellable pre-commit gate; a throwing script denies), `tinkerOperationCompleted` (read-only, post-commit), and `tinkerToolLevelChanged` (read-only, posted on a real Tinkers' Levelling Addon transition). A denial from `tinkerOperationCheck` stops only the Runic payout, repair top-up, or Keystone service; the native Tinkers' operation is never cancelled from it. See [`docs/KUBEJS.md`](docs/KUBEJS.md#tinkers-construct-tinkering-events).
+
+**Advancement triggers:**
+- Three new criteria for quest packs, registered whether or not Tinkers' Construct is installed: `runicskills:tinker_assembly`, `runicskills:tinker_paid_repair`, and `runicskills:great_work`. Fired only from the committed, once-per-take points inside the station bridge and the Great Work Power completion, never from a preview or quote. Documented in [`docs/API_EVENTS.md`](docs/API_EVENTS.md#advancement-criteria-quest-pack-integration).
+
+**GameTests:** `RulesReloadGameTest` (five methods covering a valid reload, an unknown field, a broken reload leaving the last-good ruleset, an equal-priority conflict, and a duplicate id), `DormantContentGameTest` (three methods covering saved `tc_` selections surviving a load/save, a dormant perk id costing no budget, and an unavailable Power being neither active nor re-equippable), and `KubeJsTinkerEventsGameTest` (three methods covering the hook contract, a throwing script, and — where a live KubeJS server-scripts environment is available — a real script denying a Keystone service without affecting other operations).
+
+### Fixed
+
+**Capability registration.** `RegisterCapabilitiesEvent` is an `IModBusEvent`, posted only to the MOD bus, but the listener that called `event.register(SkillCapability.class)` lived on `PlayerLifecycleHandler`, a FORGE-bus `@Mod.EventBusSubscriber`. It never fired, so `RegistryCapabilities.SKILL` was an unregistered `Capability` in every shipped build — a latent defect predating 2.0.7, not introduced by it. It went unnoticed because `LazySkillCapability` hands the capability out itself and nothing on the hot path calls `Capability#isRegistered()`. The listener now lives on `RegistryCapabilities`, a MOD-bus `@Mod.EventBusSubscriber` where the capability is declared; `PlayerLifecycleHandler`'s other FORGE-bus listeners are unchanged.
+
+**Salvage perk descriptions.** `resource_efficiency.description` and `salvage_expert.description` still described breaking a crafting or crafted block, though both perks now add a recovery chance at a grindstone (`WorkshopPerkHandler.onGrindstoneChange`). `salvage_master.description` said salvaging yielded more materials, though it adds to the recovery chance rolled when an item breaks in the inventory (`WorkshopPerkHandler.onItemDestroyed`) — the yield wording belongs to Salvage Luck, not Salvage Master. All three lang strings are corrected; see [`docs/RECYCLING_RULES.md`](docs/RECYCLING_RULES.md) for the mechanism.
+
+**Tinkers' mixins crashed the released 2.0.7 jar in a Tinkers' pack.** `@Mixin(targets = ..., remap = false)` makes every member reference in a Tinkers'-targeting mixin literal. `MixModifiableBowItem`, `MixThrownTool`, and `MixLazyResultContainer` hook `releaseUsing`, `tryPickup`, `getItem`, `removeItem`, and `removeItemNoUpdate` — vanilla-declared methods that ship SRG-obfuscated (`m_5551_`, `m_142470_`, `m_8020_`, `m_7407_`, `m_8016_`) inside the Tinkers' jar. Dev and GameTests run Mojang-mapped, so the literal names resolved there and the 200-test Tinkers' suite never caught it; a real pack does not, and Mixin treats a failed injector as fatal for the whole mixin config, so the released jar crashed on load. The three affected mixins now declare `remap = true` with descriptor-qualified selectors on the individual injectors; the class-level `remap = false` is unchanged, since class names are not obfuscated. (The nested `@At` in `MixModifiableBowItem` targeting `ModifierUtil.getInaccuracy` stays `remap = false`, because that member is Tinkers'-declared, not vanilla.)
+
+**Arcane Reforging has been silently inactive for every player, in every shipped build.** The same class of defect was already present in `MixReforgingResultSlot`, which hooks Apotheosis's `ReforgingMenu.ReforgingResultSlot#onTake` — itself an override of vanilla `Slot#onTake`, and therefore SRG-renamed in production exactly like the Tinkers' hooks above. With `remap = false` and `require = 0`, the mixin matched in dev and matched nothing at all in production, with no crash and no log line to notice. Fixed the same way: the injector is now `remap = true` with the descriptor spelled out.
+
+**Tinkers' mixins no longer take down the mixin config on a failed hook, and say so.** Every injector under `mixin/tconstruct/**` now declares `require = 0, expect = 1`: none of these hooks is load-bearing — each one only adds an effect, so its absence costs a perk, never correctness — and a hard crash in a large pack over one missing Tinkers' hook is the wrong failure mode. `TConstructHookLedger` records, from Mixin's own `postApply` callback, which hooks actually applied (as opposed to which ones were merely offered), so the silence a lenient `require = 0` would otherwise cause is made visible instead: a `TCONSTRUCT_COMPAT` line in the startup log, and `/skills tinkers compat`, now distinguish a hook that was offered and did not match (`HOOK_UNAVAILABLE`) from one that was never offered because Tinkers' is absent (`ABSENT`) or the integration is off (`DISABLED_BY_CONFIG`).
+
+**New build checks catch this class of bug before a build ships.** `checkMixinRemapping` (wired into `check`) resolves every hooked member through the real class hierarchy of the target jars with ASM, classifies it by its declaring package, and fails the build if a `remap = false` mixin references a `net.minecraft.**`-declared member — or, by the mirror rule, if a `remap = true` mixin references a member that isn't vanilla-declared. It is what found the Arcane Reforging defect above. `verifyShippedRefmap` asserts the *shipped* jar carries the expected SRG refmap entries and the bundled MixinExtras, and that README names the jar it just inspected. New `tools/verify_against_pack.py` proves, without launching the game, that every member each Tinkers' mixin will look for at runtime exists in a real pack's obfuscated jars — see [`docs/PACK_VERIFICATION.md`](docs/PACK_VERIFICATION.md).
+
+**Distribution defect: the plain jar never bundled MixinExtras, and Forge does not supply it.** Forge 1.20.1 47.x does not provide MixinExtras — confirmed absent from the launcher libraries and from the forge/fmlcore/fmlearlydisplay jars of the 47.4.22 runtime in a live pack — and seven mixins depend on MixinExtras annotations, three of them core (`MixItemStack`, `MixGrindstoneMenu`, `MixExperienceOrb`). The unclassified `runicskills-<version>.jar` was the un-bundled `jar` task output, so it worked only on packs where some unrelated mod happened to bundle MixinExtras itself. The `jar`/`jarJar` classifiers are swapped: the distributable `runicskills-<version>.jar` is now the `jarJar` bundle, carrying MixinExtras under `META-INF/jarjar/`; the un-bundled build is `runicskills-<version>-slim.jar` and is not for distribution.
+
+### Release verification
+
+- 468 unique perk ids registered in `RegistryPerks`, of which 23 are `tc_` (16 core + 7 add-on). The spec proposed 24; the 24th, `tc_medallion_concord`, is reserved and unregistered because Tinkers' Ingenuity has no 1.20.1 artifact.
+- 87 `RegistryObject<Power>` declarations in `RegistryPowers` (75 pre-existing + 12 Artifice).
+- 52 mixins: 5 client, 47 common, of which 15 target Tinkers' Construct (10 core + 5 add-on).
+- GameTests: 116 pass with no profile, 200 with `-PtinkersProfile=stable`.
+- `check_mod.py`: 0 errors, 1 warning — a false positive at `CustomNpcsIntegration.java:17`, where the only `net.minecraft.client.` text is a String constant fed to `Class.forName` in a reflective drift probe; no client type enters the constant pool.
+- The packaged jar ships no third-party classes and no API stub classes (MixinExtras remains a declared jar-in-jar dependency under `META-INF/jarjar/`), with the version expanded into `META-INF/mods.toml`.
+
 ## [2.0.6] - 2026-09-04 — Inventory tabs: the built-in strip is the guaranteed fallback
 
 No protocol, config schema, or save-data change; network protocol stays at 11. Dev Forge is 47.4.23; `forge_version_range` remains `[47,)`.
@@ -58,1914 +453,3 @@ Unified `common/combat/DamageContext.java` — every Runic-emitted secondary dam
 ### KubeJS
 
 **Fixed:**
-- **Documentation.** The old example referenced a nonexistent inner class name (`PlayerEvent$SkillLevelUpEvent`) and relied on the ForgeEvents bridge from server_scripts, which is not the supported API. The JUnit test `KubeJSSurfaceInvariantTest` now fails the build if docs reintroduce the nonexistent class name or the broken ForgeEvents example.
-- **Event registration.** The KubeJS event was registered `client`-only, which meant server_scripts listeners were never invoked. Changed to `common` so the server post runs on the server and is authoritative.
-- **Event dispatch.** Bridge failures are now logged at ERROR instead of silently swallowed, so "KubeJS is present but gates never fire" is visible instead of invisible.
-- **Javadoc.** `SkillLevelUpEvent` Javadoc corrected to reflect that it fires before mutation (not after) and that it fires for both increases and decreases.
-
-**Added:**
-- **Server-side event gate.** `RunicSkillsEvents.skillLevelUp` now posts to `kubejs/server_scripts/` where cancellation is authoritative and charges no XP. Old `ForgeEvents` path (pre-1.2.0) never worked in server_scripts and is not supported.
-- **Event fields.** `oldLevel`, `newLevel`, `cause` (as lowercase string: `'purchase'` | `'command'` | `'respec'`), `serverSide` and `clientSide` boolean flags, both `setCanceled` and `setCancelled` spellings, `cancel()` and `cancel('message')` with native KubeJS throw, `deny(text)` as the preferred denial method.
-- **Advancement helpers.** `hasAdvancement(id)`, `getAdvancementProgress(id)` (0.0–1.0), `getCompletedAdvancementCriteria(id)`, `getTotalAdvancementCriteria(id)`, `completedAdvancementCount` (advancements with display, recipes excluded). Queries the server registry (return safe defaults on client post).
-- **GameTests:** `KubeJSScriptGateGameTest` loads a real server_scripts gate via `kubejs reload server_scripts` and proves it vetoes; `ProgressionVetoGameTest` covers veto and XP semantics.
-- **Integration:** `ProgressionHooks` indirection point lets the GameTests inject a veto without a test-only seam in production code.
-
-No network protocol, config schema, or save-data change; KubeJS remains optional. Compiled against build.14; tested through build.26.
-
-### Testing
-
-New JUnit tests: `ProcRollTest` additions, `CraftingExecutionGuardTest`, `CraftingRefundTest`, `LogOnceTest`, `ReverseIndexTest`, `InventoryTabLayoutTest`, `DamageContextTest`, `DamageMathTest`, `DurabilityMathTest`.
-
-New GameTests: `DurabilityPerksGameTest`, `CraftingAuthorityGameTest`, `EfficientCraftingGameTest`, `MasterResearcherGameTest`, `MasterArtificerGameTest`, `DamageContextGameTest`, `SmithingPerksGameTest` (15 tests), plus `MockPlayers` helper.
-
-### Internal
-
-- New `common/util/ReverseIndex`, `LogOnce`, `ProcRoll.chance01`.
-- `build.gradle` checkSidedImports allowlist gained `api/client`.
-- `src/customnpcsApi/java` stub source set and `integration/InventoryTabOwnership` unify multiple external-tabs tests.
-
-## [2.0.4] - 2026-09-03 — Audit remediation: 16 findings
-
-No protocol, config schema, or save-data change; network protocol stays at 11.
-
-### High severity
-
-- **HIGH-01**: Arcane Reprieve and Continuous Flow are now reachable. Mana-change handler split into gain, spend, and zero-crossing paths; refactored timestamp logic to avoid sentinel overflow.
-- **HIGH-02**: Apotheosis gem socketing now attributes the actual clicking player via container-interaction context. Removed the `onRightClickBlock` handler and the `findItemOwner` recent-interactor fast path along with the cache.
-- **HIGH-03**: Scholar now hides enchantment names per player (Scholars read names; when `enableScholarEnchantmentHiding` is off the perk is disabled rather than selectable-and-inert). Effect-coverage tests now ignore comments and string literals.
-- **HIGH-04**: Wisdom XP Bonus passive now multiplies positive XP gains with per-player fractional carry.
-- **HIGH-05**: Enchanting Power passive now raises enchanting-table power on the vanilla table (before the vanilla 15-shelf cap) and Apotheosis's table (eterna). Added Intelligence+Wisdom modifier under toggles `apothEnableEnchantingScaling` and `apothEnchantingScalePerLevel`.
-- **HIGH-06**: Iron's Magic-level cooldown reduction now applied with settings `ironsEnableCooldownReduction`, `ironsCooldownReductionPerLevel`, and `ironsMaxCooldownReduction`, stacking independently with Tempo.
-
-### Medium severity
-
-- **MEDIUM-01**: Break-speed passive no longer doubles base speed at rank 0; now adds only the delta to existing speed.
-- **MEDIUM-02**: Integration master toggles (`ironsEnable*`, `arsEnable*`) no longer suppress unrelated perks and synergies; each feature now guards itself.
-- **MEDIUM-03**: Reforge the Shadow owner now stored on the bear entity; death burst survives reload and restart.
-- **MEDIUM-04**: Scorched Earth now extends Wall of Fire lifetime.
-- **MEDIUM-05**: Perk timers switched to world game time so respawn no longer leaves stale windows/cooldowns. Combat windows clear on death; cooldowns persist.
-- **MEDIUM-06**: Iron's Spellweaver and Arcane Reprieve state now cleared on logout and server stop.
-- **MEDIUM-07**: Power overrides limited to IDs with a registered Power (any namespace), with packet limits enforced on load and send (closes RS-069).
-- **MEDIUM-08**: Duration value consistency: `ValueType.TICKS` added; Counter Attack, Fighting Spirit, and Quick Reposition now use exactly 20 ticks per configured second. **Balance note:** Counter Attack's default 3 previously lasted 6s and now lasts 3s (set to 6 to restore); Fighting Spirit and Quick Reposition lose a hidden 0.5s each. Catch of the Day also goes through `DurationMath.secondsToTicks` (was a `* 20` literal; no behaviour change).
-
-### Low severity
-
-- **LOW-01**: Mortal Strike subtitle localized.
-- **LOW-02**: Removed dead `HandlerConfigCommon`, `ItemListGroup`, `BossesOfMassDestructionIntegration`, `JetAndEliasIntegration`.
-
-### Testing
-
-Added source-stripping coverage tests, duration-unit consistency tests, sound-subtitle lang test, packet bounds validation, XP bonus gametest.
-
-### Internal
-
-- New `common/util/TransientModifiers` helper is now the shared idempotent attribute-modifier reconcile used by the Iron's Spells and Apotheosis integrations.
-- New `common/util/GameTimeWindow` is the shared elapsed/cooldown helper for combat timers.
-- `PerkEffectsHandler` renamed `BERSERK_UNTIL` to `BERSERK_SINCE` and `SURVIVE_COOLDOWN` now stores the trigger time rather than a deadline; `BERSERK_WINDOW` (100 ticks) and `SURVIVE_LOCKOUT` (1200 ticks) are now named constants.
-
-## [2.0.3] - 2026-09-02 — Every Iron's Spells Power now does something
-
-No protocol, config, or save-data change; 2.0.2 and 2.0.3 pair freely. Network protocol stays at 11.
-
-### Added
-
-- **The 19 Iron's Spells school Powers that shipped inert now have real effects.** Marrow Sense,
-  Kinetic Affinity, Piercing Insight, Arcane Echo, Black Hole Resonance, Creeper Cascade Mastery,
-  Fang Follow-Through, Shield Wall, Ember Trail, Heat Haze, Scorched Earth, Wings of Judgment,
-  Frost Echo, Reforge the Shadow, Shatter, Conduit Mark, Static Cling, Blight Spread and Venomous
-  Harvest each gained a server-side handler in the new `IronsSpellbooksSchoolPowerDispatcher`,
-  implementing what their tooltips promise. `docs/CONTENT_STATUS.md` now lists zero inert Powers,
-  and the build-time allowlist that tracked them is empty. Eighteen are exact; one is a documented
-  substitution:
-  - **Reforge the Shadow** is `APPROXIMATE`: Iron's Spells 3.16.3 has no "Ice Shadow" summon, so
-    the +40% health and the Chill burst on death apply to the Summon Polar Bear, its only Ice-school
-    summon. The tooltip says so.
-- **Every magnitude, duration and chance is a datapack tunable** under the existing
-  `data/<namespace>/powers/<power>.json` `values` map, with the tooltip numbers as defaults.
-- **Two optional mixins into Iron's Spells**, both gated on the mod being present:
-  `MixAbstractMagicProjectile` publishes ice-projectile block hits for Frost Echo (Forge's
-  `ProjectileImpactEvent` is only posted for entity hits), and `MixCreeperHeadProjectile` exposes
-  the chain count so Creeper Cascade Mastery can add a hop.
-- **Static Cling's "Shocked"** is an internal 4-second mark (Lightning-school spell damage taken
-  +20%, plus Slowness I so the victim visibly shows it), not a registered effect.
-
-### Changed
-
-- `IronsSpellbooksPowerCompat` gained the wrappers the new Powers need (spell ids on damage
-  events, spell resist, cast-time attribute, Telekinesis target, AoE duration, summoner lookup, and
-  spawners for phantom missiles, extra creeper heads and shield panels), keeping every Iron's Spells
-  import quarantined in that one file.
-- `PowerRuntime` gained `TimedModifiers` (expiring transient attribute modifiers) and `Counters`
-  (expiring per-key integers), both cleared on server stop.
-
-## [2.0.2] - 2026-09-02 — The inventory tab strip stops losing a fight it should not have been in
-
-No protocol, config, or save-data change; 2.0.1 and 2.0.2 pair freely.
-
-### Fixed
-
-- **The inventory tab strip's close reset never ran alongside Highlighter.** `MixInventoryScreen`
-  cleared `DrawTabs`' click latch from a plain `public void onClose()`. `InventoryScreen` inherits
-  `onClose` rather than declaring it, so that method was an implicit *overwrite* and not an
-  injection — and when a second mod's `InventoryScreen` mixin declares one too, Mixin keeps exactly
-  one and drops the rest. Highlighter's does, and ours was the one dropped, logged on every start as
-  `Method overwrite conflict for m_7379_ in runicskills.mixins.json:MixInventoryScreen, previously
-  written by com.anthonyhilyard.highlighter.mixin.InventoryScreenMixin. Skipping method.` The
-  visible symptom was a click that closed the inventory arming a tab switch that then fired in the
-  next screen that drew the strip. The reset now lives in
-  `client/event/InventoryTabsCloseHandler`, listening to Forge's `ScreenEvent.Closing` — the funnel
-  every close path reaches — so it composes with other mods instead of competing with them, and the
-  startup warning is gone.
-
-## [2.0.1] - 2026-09-01 — Powers you can see, and documents that describe the code
-
-2.0.0 closed the gap between what the mod claimed and what it did. This closes the gap between
-what it does and what you can *see* it doing — and between the code and the documents describing
-it, several of which had been wrong for three releases with nothing in the build able to notice.
-
-### Breaking changes
-
-- **Network protocol 10 → 11. Client and server must both be on 2.0.1.** The proc packet's payload
-  changed shape and a new configuration field changes the config schema hash, so a 2.0.0 peer would
-  agree on the protocol number and then misread the wire. A mismatch is refused at connect with a
-  named error, which is the whole reason the number exists.
-- **Discovered item locks classify differently.** Keyword matching moved from bare substring to
-  `_`-delimited segments, so items that were being locked by accident — bowls, `waxed_*` blocks,
-  fishing rods — are no longer gated. A pack that had worked around this by disabling a mod's
-  locks entirely can re-enable them, and can now opt out one item at a time with
-  `disabledDiscoveredLockItems`. No save data is affected.
-
-### Powers you can see
-
-- **Every Power has its own icon.** Both registration helpers passed `HandlerResources.NULL_PERK`,
-  so all seventy-five shared one placeholder square and the panel could not tell you what anything
-  was before you read its name. The set is generated by `tools/icongen/powers.py` from
-  `RegistryPowers` itself, so tier and school in the art cannot drift from tier and school in the
-  code, and `PowerIconCoverageTest` fails the build if one goes missing, is orphaned by a rename, or
-  duplicates another.
-
-- **A proc is now a thing that happened somewhere.** `PowerProcCP` carried a Power name and a
-  game-time stamp; the client used neither, ignoring the stamp entirely and spawning eight randomly
-  placed vanilla `ENCHANT` particles around **the local player** whatever the Power was and wherever
-  it had actually occurred. It was sent only to the caster, so a proc was invisible to everyone else
-  in the fight, and the name was decoded with the `readUtf` default of 32,767 characters for a value
-  that is never more than about thirty.
-
-  It now carries source, optional target, origin, variant, intensity, a seed and presentation flags,
-  bounded and validated on both sides, and goes to every client tracking the area. A damage
-  amplifier brands **the mob**; a chain detonation draws at **each corpse**. `intensity` is
-  normalised 0-255 and is never raw damage - sending damage would publish balance numbers to every
-  client in range and make the visual scale with gear rather than with the Power.
-
-- **A visual grammar, not more particles.** Tier is the glyph silhouette - broken ring, closed ring,
-  triple ring - plus count and duration, so Mark, Seal and Crown are tellable apart **in grayscale**.
-  School is colour, motion motif and sound. Nothing is carried by hue alone, so a colour-vision
-  deficiency, a grayscale display or a muted client each costs one channel out of three.
-
-- **Capped, not best-effort.** 64 tracked procs, 128 particles, 8 concurrent sounds, 3 HUD cards.
-  Past a cap it coalesces - a repeat increments a counter on its card instead of adding one - and
-  never allocates through. A server-side throttle collapses repeats of the same
-  `(caster, power, target)` first, so a Power that keys off every hit does not multiply by the crowd.
-
-- **The HUD card is the channel that always works.** Particles are off at `OFF` quality, sound is off
-  for a muted or deaf player, and both are useless when the effect happened behind you.
-
-- **Accessibility is configuration, and the safe values are the defaults.** `powerVfxQuality`
-  (`OFF`/`REDUCED`/`FULL`), `powerHudFeedback`, `powerProcSounds`, `highContrastRunes` and a particle
-  multiplier - with `powerScreenShake` and `powerFlashes` **defaulting off**, because both are common
-  migraine and photosensitivity triggers and neither carries information the silhouette and the card
-  do not.
-
-- **`PowerProcEvent` is public API**, fired after a Power's behaviour commits. The built-in
-  presentation is just its first subscriber.
-
-- **The Powers panel is reachable and readable.** A button on the Skills screen opens it - the
-  keybind ships unbound, because no default can be chosen safely without testing against a real
-  pack's controls, which left a whole shipped screen reachable only by someone who already knew it
-  existed. Rows show the Power's icon, pulse when **your** Power fires, and say **why** a Power
-  cannot be equipped: the server has produced structured denial reasons since earlier in this
-  release, and the screen previously just declined to light up. Every literal is localised, and the
-  row label is composed rather than concatenated, so a translated name keeps its styling.
-
-### Items, commands and correctness
-
-- **Discovered item locks stopped gating unrelated items.** `LockGen` matched keywords by bare
-  substring across every item of a scanned namespace, so `bow` claimed `bowl` and `rainbow`, `axe`
-  claimed every `waxed_*` block, and `rod` claimed fishing and lightning rods. Matching is on
-  `_`-delimited segments now, with a short never-gear list for the collisions a segment match cannot
-  resolve - a mushroom cap really is a `cap`. New `disabledDiscoveredLockItems` opts out one item;
-  previously the only remedy was disabling a whole mod's locks. Covered by `LockGenTest`.
-
-- **Commands are namespaced.** All nine literals - `/skills`, `/titles`, `/powers`, `/respec` among
-  them - were generic top-level words, and Brigadier resolves a collision by letting whichever mod
-  registered last own the name. A `/runicskills <sub>` root now mirrors every one of them by
-  redirect, carrying the same permission predicate. The short forms are unchanged.
-
-- **Two overlays ran at double speed.** `OverlayNoticeGui` and `OverlaySkillGui` decremented on both
-  client tick phases, so every notice and skill-lock overlay lasted half its configured duration.
-
-- **Blend state is no longer leaked.** Twelve `enableBlend()` calls against two `disableBlend()`;
-  whatever rendered after one of this mod's overlays inherited blending and a possibly non-white
-  shader colour.
-
-- **The KubeJS level-up veto is authoritative.** It was posted from the Skills screen's click
-  handler, on the client, so a script cancelling it only suppressed that one packet - a command or a
-  hand-sent packet walked straight past. It fires from `ProgressionService` now, and the shim's
-  removal has a version rather than an open-ended promise: 2.1.0.
-
-- **Power runtime state is bounded.** Expired proc windows and internal cooldowns were read for
-  expiry but never removed, so a key accumulated per Power per player for the rest of the session.
-  The unused `SummonRegistry` was deleted; `DamageTypeMemory` is documented as reserved for the
-  deferred half of The Grove Remembers rather than left looking abandoned.
-
-- Two silent failures now log: a mana grant that fails inside the Iron's Spells compat layer, and
-  Angler's Luck when its upstream loot table is renamed away.
-
-### Documentation and repository
-
-- **The documents describe the code again.** `CLAUDE.md` said the mod was 1.7.0 and counted 14
-  mixins where there are 28; the README gave the network protocol as `7` in one place and `5` in
-  another where it is `10`, offered a `1.5.4` download, documented a `setCustomName` title mechanism
-  this release deleted, and said `/respec` preserved skill levels when it sets every one to 1; the
-  store page headlined 1.8.1 and told players the protocol was unchanged from 1.7.0.
-  `docs/API_EVENTS.md` named two packet classes that no longer exist and a KubeJS example class that
-  never did. `docs/INTEGRATION_MATRIX.md` omitted eight lock providers and is now generated from the
-  registry.
-
-- **New guards, because nothing checked any of that.** `checkVersionConsistency` now covers the
-  README's protocol literal and jar filename and `CLAUDE.md`'s version; `checkLangParity` fails on a
-  stale locale key or a placeholder-count mismatch; `checkMixinInventory` keeps `CLAUDE.md`'s mixin
-  list honest against `runicskills.mixins.json`.
-
-- **A core tooltip was broken in all sixteen non-English locales.** `tooltip.skill.level_up` still
-  carried the three-argument wording from before the call site changed to two, so vanilla fell back
-  to the raw template and those players saw a literal `%s`. Fixed, and switched to indexed
-  placeholders so languages that order the arguments differently can. Ten stale keys left over from
-  the Blood Magic removal in 1.5.0 were dropped from all sixteen.
-
-- **The repository has a reading order.** `docs/README.md` indexes what is current, what is a
-  historical snapshot, and which asset paths are authored versus generated. Five point-in-time
-  documents moved to `docs/history/` with dated banners saying what has since changed; two
-  byte-identical duplicates carrying AI research-tool residue and a committed AI prompt were deleted,
-  along with a 9.8 MB untracked clone of the repository that had been sitting inside the working tree
-  making every local search return doubled hits.
-
-- The five `[Unreleased]` sections that had sat in this file since the 1.3.x line are grouped and
-  labelled for what they are, and `[1.3.7]` no longer appears above `[1.3.8]`.
-
-### Known limitations
-
-- **The VFX and accessibility matrix in `docs/SMOKE_TESTS.md` §8 is written but not yet run.** The
-  presentation path is compile- and logic-verified, and the caps, coalescing and validation are
-  covered by construction, but the grayscale tier-recognition check and the proc-storm budget test
-  need a real client. Treat the rendering as unverified until §8 is walked and recorded.
-- **The proc sound palette is vanilla sound events chosen per tier and school**, not the bespoke
-  layered stems the design describes. Vanilla's palette is wide enough to give every school an
-  audibly distinct character and every event already carries a translated subtitle, so the
-  accessibility requirement is met rather than deferred — but it is a substitution, and recorded
-  here as one.
-- **Non-English locales remain roughly a quarter translated.** This release fixes the one key that
-  was actively broken and deletes ten stale ones; the 1,731-key gap per locale is declared in
-  `tools/lang/intentional_fallbacks.json` and guarded against regression, not closed.
-- The integration matrix that would validate the nineteen inert Iron's Spells Powers still has not
-  run. Unchanged from 2.0.0.
-
----
-
-## [2.0.0] - 2026-08-28 — Everything the mod claims, it now does
-
-This is the remediation release for the 1.10 audit, and it is a correctness and trust release rather
-than a content expansion. The headline is simple: **at 1.9.0, 129 of 462 registered perks and 44 of
-75 Powers did nothing at all** — registered, selectable, with config, icons and tooltips, and no
-gameplay hook anywhere. A player could spend a scarce rank or Power slot on any of them and find out
-only by noticing that nothing happened. That backlog is now empty, and the build fails if it ever
-reopens.
-
-Alongside it: the server's configuration is finally authoritative over the client's, player data is
-bounded and migrated, the effect mixin no longer replaces vanilla's semantics for every player in the
-game, and titles stopped overwriting other mods' names every ten seconds.
-
-### Breaking changes
-
-- **Network protocol 9 → 10.** Client and server must both be on 2.0.0. A mismatch is refused at
-  connect with a named error rather than misinterpreted.
-- **17 perks were removed.** Their ids are retained dormantly in existing saves (the capability's
-  orphan-retention store preserves unrecognised keys), so nothing is corrupted and they would return
-  if a pack ever re-added them. See *Removed* below for the list and the reasoning.
-- **The two hand-written config sync packets are gone.** `CommonConfigSyncCP` and
-  `DynamicConfigSyncCP` are replaced by a generated schema; see *Configuration authority*.
-- **`PassiveLevelUpSP` and `PassiveLevelDownSP` are replaced by `AdjustPassiveSP`**, which carries a
-  signed amount instead of one level per packet.
-- **`titlesUseCustomName` is deprecated and ignored.** Titles are never written to a player's vanilla
-  custom name now, so the conflict the option existed to work around cannot occur.
-- **`magicResistValue`'s bound changed from 0–10000 to 0–0.95.** It is a fraction of damage resisted,
-  and the old ceiling let a hand-edited config turn a hit into healing. Existing values above 0.95
-  are clamped on load.
-- **The KubeJS content-registration claim is withdrawn** from the README and store page. It was never
-  wired; see *Documentation*.
-
-### Perks — the inert backlog is closed
-
-**129 → 0.** 112 perks were given the effect their tooltip describes, and 17 were removed because the
-mechanic they described does not exist in this build and could not be reached from it.
-`PerkEffectCoverageTest` now runs against an empty allowlist, so a newly registered perk with no
-effect site fails the build unless somebody deliberately adds a line and says why.
-
-Where a perk named a system this build cannot see — a colony mod, a backpack mod, a zipline, a mana
-pool in a pack that has none — it was pointed at the nearest mechanic the game really has **and its
-tooltip was rewritten to say so**. A reinterpretation that leaves the old wording in place is not an
-implementation; it is a second bug. Forty-nine perk tooltips were rewritten in the final pass alone.
-A few examples:
-
-| Perk | Was | Now |
-| --- | --- | --- |
-| Colony Guardian | "…while in colony territories" | "…while inside a village" (vanilla's own village test) |
-| Zipline Expert | "Zipline travel speed increased" | "Minecarts you ride travel faster" |
-| Waystone Tinker | "Waystone teleportation cost reduced" | "Ender pearls deal less damage on arrival" |
-| Architect | "Placed blocks gain bonus hardness" | "Blocks around you have a chance to survive each explosion" |
-| Grand Sage | "All wisdom-based bonuses are amplified" | "Raising Wisdom costs less experience" |
-| Soul Binding | "Items with Soul Bound never drop on death" | "The item in your hand goes to your ender chest on death" |
-| Mechanical Knowledge | "Redstone devices work faster" | "Hoppers near you move items faster" |
-| Lock Expert | "All locks take less time to pick" | "Lock picks lose less durability" |
-
-The implementations reach for the mechanism each perk actually describes rather than a generic stat
-bonus: explosion block-lists for the blast perks, the anvil's update event for the enchantment perks,
-Forge global loot modifiers for the Fortune-tree loot perks, the villager trade generator for
-Linguist and Bookcraft, the recipe book for Master Researcher and Inventor, the stonecutter's result
-slot, hopper transfer cooldowns, dispenser scheduling, brewing-stand ingredient consumption, and the
-grindstone — which carries no player at all, so a small mixin publishes the interacting player for
-the duration of a container click and every future container perk gets it for free.
-
-Three perks were kept but gated on the mod that gives them meaning, so they no longer register at all
-in a pack that cannot support them: **Modular Equipment** (Apotheosis sockets), **Lock Expert** and
-**Safe Builder** (Locks Reforged).
-
-#### Removed
-
-Seventeen perks described a mechanic that does not exist here and could not be reached. Each had a
-config value, an icon and a tooltip promising something the game had no way to deliver, which is
-worse than not shipping the perk at all.
-
-| Perks | Why |
-| --- | --- |
-| Colony Advisor, Colony Builder, Construction Haste, Dimensional Builder, Master Mason, Scaffold Master, Structural Engineer | All seven describe block-placement or build speed. Minecraft has no placement-speed mechanic to accelerate. |
-| Aura Attunement, Aura Manipulation, Aura of Vitality, Aura Shield, Nature Sage, Nature's Wisdom | All six act on Nature's Aura's aura value. That mod is not a dependency of this build at any scope, so there is no API to call and nothing that could be tested. `NaturesAuraIntegration` went with them. |
-| Backpack Engineer, Gadget Upgrade | Both describe backpack slots. No backpack mod is a dependency, and vanilla has no expandable container to enlarge. |
-| Circuit Breaker | "Redstone signal range increased by N blocks." Redstone power is a block-state property bounded at 15; there is no range to extend. |
-| Clockwork Mastery | "Timed mechanisms are N% more accurate." Vanilla's timings are exact. There is no inaccuracy to reduce. |
-
-If Nature's Aura is ever added as a dependency, those six are the natural first candidates to
-restore — their config fields, icons and lang keys are recoverable from this commit's parent.
-
-### Powers — split, gated, and honest about what they do
-
-- **The dispatcher was split in two.** All behaviour used to live in one class that imports Iron's
-  Spells event types, so it could only be registered when that mod was installed — while all thirty
-  cross-cutting Powers register unconditionally. In a pack without Iron's Spells they were visible,
-  selectable and guaranteed to do nothing, and per-player Power state was never released either
-  because the logout handler lived in the gated class too. `VanillaPowerEventDispatcher` now carries
-  the cross-cutting half and triggers on the vanilla action as well as the spell: an arrow is a
-  projectile, an ender pearl is a teleport, a drawn bow is a channel. **25 Powers gained behaviour.**
-
-- **Eligibility is a real, single answer.** The tier gates were hardcoded at Mark 30 / Seal 60 /
-  Crown 90, taken from a design document written for a 100-per-skill scale — against this mod's
-  default cap of 32, every Seal and Crown was permanently unreachable and no configuration fixed it.
-  Thresholds are now percentages of whatever caps the pack uses. The secondary-skill gate, the
-  total-skill gate, the same-school prerequisite chain and the Power Point budget — all documented,
-  all advertised as "checked server-side", none of them implemented — now exist, and every proc
-  re-checks them, so losing a skill stops the effect immediately instead of at the next relog.
-  Denials carry a structured reason, so the UI can say *why*.
-
-- **Content status is declared and enforced.** `ContentStatus` gives every definition one of `FULL`,
-  `PARTIAL`, `APPROXIMATE`, `INERT` or `UNAVAILABLE_DEPENDENCY`, and `ContentStatusIndex` is the
-  whole list of exceptions — short enough to read in one sitting. The **19 Iron's Spells Powers with
-  no dispatcher case are declared inert**: not equippable, not shown, and costing no Power Points if
-  one is sitting in a slot from an older save, while the id itself is retained. A new
-  `powerEnableExperimentalContent` (default off) brings them back for development.
-
-- **Nine Powers implemented through a documented substitution are declared `APPROXIMATE`**, badged in
-  the list and explained in the tooltip, with the tooltip rewritten to describe the lever that ships:
-  Step Between gives damage rather than cast time, Herald of Dawn triggers on *your* health rather
-  than an ally's, Thunder Lord has no cooldown half, Glacial Sovereign extends Chilled and nothing
-  else. An approximation the player is told about is a design decision; one they are not told about
-  is a bug.
-
-- `ContentStatusTest` asserts the runtime status table and the build-time coverage allowlist name the
-  same Powers in both directions, and that the equip path, the UI and the budget all still consult
-  it. Two mechanisms describing one fact are only useful while they agree.
-
-- **Power overrides are datapack-driven** (`PowerOverridesManager`), so a pack can retune internal
-  cooldowns, windows and required levels without a code change.
-
-### Player data and progression
-
-- **Loaded capability data is bounded.** Deserialization used to accept saved skill levels, passive
-  levels, perk ranks, perk cooldowns, Power cooldowns and Power windows with no range or entry-count
-  check at all. A negative level breaks eligibility maths and overflows the global-level sum; an
-  `Integer.MAX_VALUE` rank bypasses every rank limit; a corrupt compound with a million entries
-  becomes permanent per-tick work for as long as that player is online. `CapabilitySanitizer` runs as
-  the **1 → 2 data migration** and defensively after every load, reporting one summary per player
-  rather than one line per bad key.
-
-  These are **corruption bounds, not balance caps**: lowering `skillMaxLevel` from 32 to 20 must not
-  destroy players' earned progress, so effective caps stay a use-time concern and the stored bounds
-  only reject what no legitimate configuration could have produced.
-
-- **Every attribute modifier this mod applies is inventoried and transient.** Modifiers used to be
-  identified by display name, and the cleanup sweep matched only the exact string `"runicskills"` —
-  missing `"runicskills:wellspring"`, `"runicskills.perk"` and every integration modifier. Combined
-  with integrations that wrote them permanently, a player could disable a perk, turn off an
-  integration, or uninstall Iron's Spells entirely and keep the mana, spell power, crit, dodge,
-  lifesteal and healing bonuses forever, with nothing left in the game able to reach them.
-  `RunicAttributeModifiers` is now the single table, keyed by UUID, and `RunicAttributeOwnershipTest`
-  fails the build if a modifier is applied that is not declared in it.
-
-- **One mutation path for skill levels.** `ProgressionService` replaces four paths that disagreed
-  about almost everything. The admin commands wrote straight into the capability — no event, no
-  attribute reconciliation, no title re-evaluation, no quest notification — and validated against a
-  Brigadier range captured *at command registration*, so after `/skillsreload` changed the cap the
-  command was checking a number the server no longer used. `/skills set|add|subtract` and the
-  level-up packet now share one path that clamps against the live configuration, fires the public
-  `SkillLevelUpEvent`, and reconciles once. Relative moves saturate instead of overflowing —
-  `add 2147483647` used to wrap negative and write a negative level into the save.
-
-- **Bulk passive levelling works.** The skills screen advertises Shift for 5, Ctrl for 10, Alt for the
-  rest, and implemented it by sending that many packets in a loop — while the rate limiter admits one
-  packet of a given type every two ticks. Every packet after the first was discarded in silence, so a
-  Ctrl-click reliably bought exactly one level and said nothing. `AdjustPassiveSP` sends the amount
-  once and the server decides the outcome, applying it atomically. `PassiveLevelUpEvent` fires once
-  per accepted request carrying before and after, not once per level crossed.
-
-### Configuration authority
-
-- **All 1,133 config fields now reach the client, by construction.** Two hand-written packets carried
-  128 of them across ~800 lines of boilerplate; the other 1,005 were never sent, so a connected
-  client resolved perk requirements, budgets, disabled-content lists and integration behaviour from
-  its own file — and nothing existed that would ever notice a new field had been forgotten.
-  `ConfigSchema` derives the payload from the class by reflection behind a schema hash, and
-  `ConfigSchemaCoverageTest` fails the build on a field type the format cannot carry.
-
-- **`GameplayConfigSnapshot` makes the server's values authoritative** at all 1,909 places that read
-  gameplay configuration, without any of them changing. Publication is a single reference swap, so no
-  tick or render pass sees a half-updated configuration. The local file applies again before a world
-  is open and after disconnecting, which is what the singleplayer setup screens need.
-
-- **`/skillsreload` reports honestly.** Every field is classified `LIVE_SERVER` (the default),
-  `RESTART_REQUIRED` or client-local, so an operator can tell which of their edits took effect.
-
-- **Config values are clamped on load** (`ConfigClamps`). 1,042 fields declared a range through YACL
-  annotations and only 9 enforced one, so a hand-edited file — the only way to configure a dedicated
-  server, where YACL is absent entirely — put every other value straight into runtime maths
-  unchecked. `ClampCoverageTest` keeps that closed.
-
-- **Packet counts are validated before allocation** (`PacketBounds`): a negative varint count crashes
-  the decode thread and a huge one is an allocation DoS.
-
-### Mixins and mod compatibility
-
-- **The effect mixin no longer replaces vanilla's semantics for every player.** It used to cancel
-  *both* public `addEffect` overloads and reimplement the method body — rebuilding the instance with
-  a three-argument constructor, so **ambient state, particle visibility, icon visibility, the
-  hidden-effect chain and Forge's curative-item list were silently dropped from every effect a player
-  received**, and passing the affected player to Forge's event as the source, so a splash potion
-  thrown by somebody else reported its victim as its cause. It is now one narrow argument
-  modification at the merge point; when neither perk applies the original instance is returned
-  untouched, so a player with both perks off is byte-for-byte vanilla.
-
-- **Magic Resist is actually a magic classifier.** The test was `DamageSource#isIndirect()` — true
-  for a mundane arrow and a thrown trident, false for a mob's direct magical touch — so players were
-  resisting archery and taking spells at full price. It is now a shipped, datapack-extensible
-  `runicskills:affected_by_magic_resistance` damage-type tag, clamped at 0.95 at the point of use with
-  non-finite values rejected, and the tooltip rewritten to name exactly what the tag contains.
-
-- **The crafting lock no longer leaves a ghost result.** The result slot was cleared *after* vanilla
-  had computed it, recorded the client as up to date, and sent it — so the client kept displaying an
-  item the server did not have, and `broadcastChanges` could not correct it. The clear now
-  synchronizes the menu, and because a display filter is not enforcement, an authoritative refusal
-  sits at `mayPickup`, which covers ordinary clicks, shift-clicks and the quick-move loop alike.
-
-- **Enchanting discounts no longer compound.** The discount was applied where offers are *spent*, so
-  repeating a rejected button — which a client can do freely — walked any offer down to 1 before
-  vanilla validated the action, and the price shown disagreed with the price paid. It moved to where
-  offers are *generated*.
-
-- **Optional dependencies are declared with real ranges.** Nine mods this jar links against directly
-  — Iron's Spells, Placebo, Curios, Better Combat, L2Tabs, and four gun mods — had no `mods.toml`
-  entry at all, so `ModList.isLoaded` was satisfied by any version and an API change surfaced as a
-  `NoSuchMethodError` deep in gameplay rather than a clean refusal at load. Each range starts at the
-  version this build compiles against, taken from that jar's own metadata.
-
-- New mixins this release: crafting result take, stonecutter output, hopper cooldown, dispenser
-  scheduling, minecart speed, player exertion and swap timing, brewing-stand ingredients, thrown
-  potion area, furnace, grindstone, container-click attribution, and two Apotheosis menus (applied
-  only when Apotheosis is present).
-
-### Titles
-
-- **Titles no longer own player names.** `RegistryTitles.syncTitles` called `setCustomName`
-  unconditionally — on join, on clone, on every passive change and on a 200-tick timer — ignoring the
-  `titlesUseCustomName` option that was supposed to govern it, so a nickname, chat, team or tab-list
-  mod had its name overwritten every ten seconds and the option to stop it did nothing. The name
-  formatter also flattened the incoming display name with `getString()` and rebuilt it with
-  `String.format`, discarding every style, hover event, click event and translatable child another
-  mod had put there.
-
-  Nothing touches a custom name now. The title is composed as a prefix with `Component`
-  concatenation in `PlayerEvent.NameFormat`, so a styled nickname keeps its structure. A name this
-  mod wrote in an earlier version is cleared once on login — and **only** when the component is
-  provably one of this mod's own title keys.
-
-### Client
-
-- **The perk tooltip reported three different states as one.** A perk you had earned but not yet
-  switched on said "Perk Disabled" in red, because the status line was driven by a check that is
-  false both for an unmet skill requirement *and* for a met requirement with rank still 0. Those are
-  opposite situations — the first needs levelling, the second needs a click. Since every perk starts
-  at rank 0, a new character saw "Perk Disabled" on all 445 of them. The tooltip now distinguishes
-  **Perk Enabled**, **Perk Available — click to activate**, **Perk Locked** and **Perk Disabled**,
-  and only the last is a state the player cannot act on.
-
-  The level-requirement line also never said whether the requirement was satisfied — it printed
-  "Available at level N." identically at level 1 and level 10 — and a rank-0 multi-rank perk showed
-  "I" in its title and "-" in its rank line, so one tooltip gave two answers. Both fixed. Server-side
-  gating was already correct; this was entirely about what the client said.
-
-- **Ore Detector renders.** Blocks cannot glow — the outline vanilla draws through walls is an entity
-  effect — so the perk draws its own, entirely client-side with no packets, using the block data the
-  client already has. Depth testing is off, which is what "through walls" means; every vanilla line
-  type bakes depth testing into its render state, so borrowing one would have drawn outlines that
-  stone hides.
-
-- The Powers screen badges non-`FULL` content and explains the denial reason rather than simply
-  refusing to light up.
-
-### Update checking and metadata
-
-- **The update checker is Forge's now.** The home-grown one fetched a bare `VERSION` file from
-  `otectus/runicskills` — a repository that does not exist; the real one is `otectus/runic-skills` —
-  so it silently failed for every user who ever ran it. Had it worked, it compared with `!equals`, so
-  it would have told anyone on a newer development build that an "update" was available. `mods.toml`
-  now carries an `updateJSONURL` and the repository serves `update.json`, and
-  `checkVersionConsistency` fails the build if that manifest falls behind `mod_version` — the exact
-  way the old checker rotted unnoticed.
-
-### Build, tests and documentation
-
-- New build-time invariants, in the style of the existing ones: perk and **Power** effect coverage,
-  content-status agreement, attribute-modifier ownership, config schema coverage, clamp coverage, and
-  version/update-manifest consistency.
-- Forge GameTests for capability lifecycle, config authority and Power eligibility
-  (`src/gametest`).
-- Legendary Tabs builds from an in-repo API source set, so a fresh clone needs no manually supplied
-  jar.
-- Dependabot, and `docs/BUILD_REPRODUCIBILITY.md`.
-- New documents: `docs/PERK_AUDIT.md` (the closed backlog and the removal reasoning) and
-  `docs/CONTENT_STATUS.md` (what the mod admits it is not doing).
-- **The KubeJS content-registration claim is gone.** The README and store page advertised registering
-  custom skills, perks, passives, titles and conditions from scripts. It was never wired, and the
-  obstacle is not a missing binding: this content is Forge `DeferredRegister` content, frozen before
-  any script runs. Making it real needs a startup registry event feeding a data-driven catalog — a
-  feature, not a binding. The event bridge that does work is documented as the whole of it.
-
-### Known limitations
-
-- The perks and Powers gated on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai
-  Dynasty, Locks Reforged and Siege Machines are written against those mods' APIs or registry ids,
-  and every one of those mods is `compileOnly` or detected by namespace. **This build compiles them
-  but has never executed them.** They are covered by the integration-matrix work that still gates the
-  nineteen inert Iron's Spells Powers, and should be treated as unverified until that runs.
-- An inert Power already sitting in a slot from an older save still occupies that slot until the
-  player removes it. Freeing it automatically would let them fill the slot and then exceed the cap
-  the moment that Power is implemented; evicting it would delete a saved choice. It is labelled, it
-  costs no Power Points, and one click reclaims it.
-
-## [1.9.0] - 2026-08-25 — Death no longer wipes progression; spell attunement removed
-
-**Every player who died since 1.7.0 lost their character.** That is fixed here. This release also
-removes the spell-attunement system, so no school has to be selected to cast.
-
-### Fixed — skills, perks, passives, powers and titles were wiped on death (since 1.7.0)
-
-- **`PlayerEvent.Clone` silently copied nothing, and the blank result was then saved over the real
-  character.** The Clone handler itself was correct; the capability *provider* was not.
-  `LazySkillCapability` builds one `LazyOptional` in its constructor, keeps it in a `final` field and
-  returns that same instance from every `getCapability` call. 1.7.0's RS-007 fix then registered
-  `lazySkillCapability::invalidate` as an attach-time invalidation listener — correct in intent, since a
-  handed-out optional must stop resolving once its entity is discarded, but `LazyOptional#invalidate`
-  is irreversible and there was only ever the one optional to kill.
-
-  On the respawn path that is fatal. `PlayerList#respawn` discards the old entity first —
-  `removePlayerImmediately` → `Entity#remove` → `invalidateCaps()` → the mod's listener — and only then
-  builds the new `ServerPlayer` and fires `PlayerEvent.Clone`. By that point the optional is dead;
-  `reviveCaps()` only flips the provider's own `valid` flag, so `getCapability(...).ifPresent(...)`
-  no-opped, `copyFrom` never ran, and the respawned player kept the empty capability created at
-  attach time: every skill back to 1, every perk and passive to 0, no powers, no title. The next
-  autosave wrote that over their real data. It was never a display glitch — the sync layer was
-  faithfully transmitting zeroes — and it hit both death respawn and the End-portal return.
-
-  `invalidate()` now installs a fresh `LazyOptional` as it retires the old one. Callers still holding
-  the previous optional stop resolving it, so the RS-007 guarantee is intact, while the capability is
-  resolvable again after `reviveCaps()`. The underlying `SkillCapability` is untouched, so no data is
-  recreated. **Characters wiped by earlier 1.7.x/1.8.x builds cannot be recovered from this fix** —
-  the zeroed state was already written to disk. Restore from a world backup if you have one.
-
-- **Added `LazySkillCapabilityInvariantTest`.** No test covered capability persistence, which is why
-  this shipped. The test source set is deliberately Forge-free, so this is a source-scanning guard in
-  the same idiom as `PerkTextureResolutionTest`: it fails if the optional field goes back to `final`
-  or if `invalidate()` stops re-creating it. Verified against the broken revision.
-
-### Removed — spell attunement
-
-- **Spell schools no longer have to be attuned.** Casting an Iron's Spells spell required first
-  enabling that school's attunement perk, capped at `ironsMaxSchoolSelections` (default 2). The
-  denial message even directed players to "School Selection", a screen that has never existed. The
-  nine attunement perks (`fire`/`ice`/`lightning`/`holy`/`nature`/`blood`/`ender`/`evocation`/
-  `eldritch_attunement`), the cast-blocking check in `IronsSpellbooksIntegration`, and the
-  school cap in `TogglePerkSP` are gone, along with their 11 config fields, icons, and lang keys in
-  all 17 locales.
-
-- **Kept, because they never consulted the selected school:** the 27 school specialist perks
-  (Pyromancer / Fire Warded / Fire Catalyst and their eight siblings) key off their own perk and the
-  cast spell's school; the six cross-mod school bridges read spell attributes. `ironsEnableSchoolGating`
-  (spells gated on Magic level) and `ironsEnableSchoolBonuses` are untouched — neither involves
-  selecting a school. `Gem`, `Aura`, `Mystic` and `Source Attunement` are unrelated Apotheosis,
-  Nature's Aura, native and Ars Nouveau perks and remain.
-
-- **Existing saves keep their data dormant.** The capability's orphan-retention store preserves
-  unrecognised NBT keys, so `perk.fire_attunement` survives inertly with no schema bump, and would
-  come back if a pack ever re-added the perks. Perk registries already carry `.disableSync()`, so the
-  smaller perk set does not break the login handshake.
-
-- **Side effect:** `eldritch_attunement` was gated on cast but missing from the school-cap set, so it
-  had always been an effectively free third school. Moot now.
-
-- Deleting the attunement lang block also resolved the eight duplicate `school.runicskills.*` keys in
-  `en_us.json` (audit RS-171); the Powers screen's block survives and is a superset.
-## [1.8.1] - 2026-08-24 — Config screen reopened; Skills tab on late-registered screens
-
-Two unrelated regressions. The in-game config screen has been impossible to open since **1.5.0**:
-clicking Configure in the mod list did nothing visible and logged an error blaming the player's
-YACL install, which was never the cause. Separately,
-1.8.0 ported the tab to the Legendary Tabs 2.0 API and stopped the crash, but left the tab missing
-from any screen Legendary Tabs registers *after* startup — most visibly Sophisticated Backpacks'
-backpack screen, where the strip showed every other tab but not Skills.
-
-### Fixed — in-game config screen (broken since 1.5.0)
-
-- **Clicking Configure in the mod list opens the config screen again.** YACL's `ListGroupImpl`
-  refuses any `@ListGroup` field whose `@AutoGen` also declares a group — *"@ListGroup fields cannot
-  be inside a group as lists act as groups"* — and `ConfigClassHandlerImpl` rethrows that as
-  `YACLAutoGenException: Failed to create option for field '<name>'`, aborting the **entire** screen on
-  the first offender. `disabledPerks` acquired `group = "general"` when it was added in 1.5.0, and four
-  more list fields followed, so the screen has been unopenable on every YACL 3.x ever since. The five
-  `@AutoGen` annotations now omit `group`; each list renders as its own group box in *Common
-  configuration*. No config file migration is needed — the on-disk JSON5 schema is unchanged.
-
-- **Every option now shows a readable name.** 273 of the 741 generated options had no display-name
-  translation key and would have rendered as raw `yacl3.config.runicskills:config.<field>` strings. They
-  accumulated unnoticed precisely because nobody could open the screen to see them, concentrated in the
-  groups added since 1.5.0 (Iron's Spells 113, Apothic Attributes 41, Perks 26, Ars Nouveau 23, cross-mod
-  29). Fifteen of those were fields that had been renamed without their lang key following along — e.g.
-  `thickSkinPercent` → `thickSkinAmplifier` — so those keys were renamed in place rather than duplicated,
-  which also clears the dead originals.
-
-- **A failure to build the screen no longer blames YACL for the mod's own bugs.** The catch block
-  reported every failure as a YACL version mismatch and told the player to install a different YACL —
-  advice that could not have helped, since they already had the right one. It also logged only
-  `e.getClass().getName(): e.getMessage()`, discarding the cause chain that named the real problem;
-  that is why this survived three releases misdiagnosed. `LinkageError` (YACL genuinely absent or
-  binary-incompatible) and `RuntimeException` (a bug in this mod's config schema) are now reported
-  separately, the offending field name is extracted from the exception chain and shown both in the log
-  and on the fallback screen, and the full stack trace is written to `latest.log`.
-
-### Changed — build-time guards
-
-- **`./gradlew checkYaclAutogen`** fails the build if any field carries both `@ListGroup` and an
-  `@AutoGen` with a non-empty `group`, so this class of mistake cannot reach a release again. It joins
-  `checkSidedImports`, `checkLockProviders` and `checkVersionConsistency` on the `check` task.
-- **`checkVersionConsistency` now also pins the YACL version.** `YaclConfigUiBuilder`'s
-  `YACL_COMPILED_VERSION` is quoted verbatim in the error players see; it was a hand-copied literal of
-  `yacl_version`, so a dependency bump would silently have made that message name the wrong build.
-
-### Fixed — Skills tab placement
-
-- **The Skills tab now appears on companion screens that Legendary Tabs registers on world join.**
-  `LegendaryTabsClientIntegration.synchronizeTabStripAcrossScreens()` was a one-shot at
-  `FMLLoadCompleteEvent`, justified by the assumption that "every mod's `FMLClientSetupEvent` has
-  finished, so `TabsMenu.tabsScreens` is fully populated". That held for Legendary Tabs 1.x. In 2.0
-  most tabs are datapack-defined, pushed to the client by `SyncTabsPacket`, and installed by
-  `TabRegistry.reloadTabs()` — which seeds new screen classes *and* calls
-  `TabsMenu.fanOutInventoryTab()`. That first runs on **world join**, well after load-complete, and
-  again on every `/reload`. Screens entering the registry at that point were never revisited, so the
-  Skills tab silently never reached them. The launch log recorded the symptom plainly:
-  `reverse: Skills tab onto 1 inventory-like screen(s)` — only Curios qualified. The sync is now
-  re-entrant and additionally runs from a `ScreenEvent.Init.Pre` listener at `EventPriority.HIGHEST`
-  for the screen being opened, which lands before Legendary Tabs' `Init.Post` listener builds the
-  `TabButton` widgets, so a tab added there is picked up on the same frame.
-
-- **The "is this screen inventory-like?" test no longer keys off Legendary Tabs' inventory tab.**
-  The reverse pass only added the Skills tab to screens that already contained
-  `sfiomn.legendarytabs.client.tabs_menu.InventoryTab`. That is not a reliable signal: addons
-  legitimately remove that tab from screens where they supply their own equivalent — Sophisticated
-  Tab does exactly this on `BackpackScreen` — which would have made the Skills tab vanish from any
-  screen another mod curates. The gate is now "Legendary Tabs already has a `ScreenInfo` for this
-  screen", i.e. it already draws a strip there. That check also has to stay a *read*:
-  `addTabToScreen` routes through `ensureScreenInfo`, a `computeIfAbsent`, so calling it for an
-  unregistered screen would create the entry and grow a tab strip on a screen never meant to have
-  one — every chest, for instance.
-
-- **The registered tab instance is now held directly rather than rediscovered.** The reverse pass
-  used to locate its own tab by scanning `InventoryScreen`'s priority buckets for a
-  `LegendaryTabRunicSkills`, and bailed out with a log line if the scan came up empty.
-  `registerTab()` now keeps the reference it constructs, which removes that failure mode and the
-  `OUR_TAB_CLASS` name-matching constant with it.
-
-### Changed
-
-- **Failures reaching into Legendary Tabs' registry are now latched.** The strip sync runs per
-  screen init rather than once per launch, so the existing "internals changed?" warning is emitted
-  at most once per session instead of on every screen that opens.
-
-## [1.8.0] - 2026-08-14 — Legendary Tabs 2.0 compatibility
-
-Legendary Tabs `1.20.1-2.0` reshaped the `TabBase` API it asks integrations to implement. Runic
-Skills' tab was written against the 1.x shape, so **installing Legendary Tabs 2.0 crashed the client
-the moment the tab strip drew** — which is every time the inventory opened. This release ports the
-tab to the 2.0 API and adds the version gate that should have caught the mismatch at load time.
-
-### Fixed — client crash on Legendary Tabs 2.0
-
-- **Opening the inventory no longer crashes with `AbstractMethodError`.** Legendary Tabs 2.0 added
-  two abstract members to `TabBase`, `getId()` and `getIconTexture()`, and changed `render` from
-  `render(GuiGraphics, int, int, boolean)` to
-  `render(GuiGraphics, int, int, boolean, ResourceLocation, int, int)` — now a concrete method that
-  draws the button chrome and then calls `getIconTexture()` for the icon. `LegendaryTabRunicSkills`
-  implemented neither new member, and its `render` override silently stopped overriding anything
-  once the signature moved, so the base implementation ran instead and hit the unimplemented
-  `getIconTexture()`. The crash surfaced as `Rendering screen` on `InventoryScreen`, killing the
-  client rather than degrading the tab.
-- **The tab was also pointing at a deleted texture.** It blitted a 26×22 cell — chrome and icon
-  baked together — from `legendarytabs:textures/gui/tab_menu_buttons.png` at `(u=27, v=92)`. Version
-  2.0 removed that atlas entirely, replacing it with a 64×64 `buttons.png` chrome sheet plus one
-  bare 18×18 icon per tab, so the old coordinates had nothing left to read from.
-
-### Changed — tab rendering and dependency declaration
-
-- **The tab now supplies only an icon and lets Legendary Tabs draw the chrome.** `render` is gone
-  from `LegendaryTabRunicSkills`; `getIconTexture()` returns `legendarytabs:textures/gui/skills.png`,
-  an 18×18 icon Legendary Tabs 2.0 ships, and `getIconTexX()`/`getIconTexY()` keep their `0,0`
-  defaults because that file is a bare icon rather than a region of a sheet. The tab now inherits
-  per-screen button skins and icon offsets automatically, and its hover/selected state is the base
-  class's job — the old manual `+54` U-shift has no successor. Expect a slightly different look: the
-  sword glyph is replaced by Legendary Tabs' own skills icon.
-- **`getId()` returns `runicskills_skills`.** Legendary Tabs 2.0 ids are global across every addon,
-  so the value is namespaced to avoid colliding with another integration.
-- **Minimum Legendary Tabs is now `1.20.1-2.0`, declared in `mods.toml`.** Previously there was no
-  `legendarytabs` dependency entry at all — the integration was gated purely by
-  `ModList.isLoaded("legendarytabs")`, which any version satisfies. That is precisely how an
-  incompatible pairing reached a running client instead of being refused during mod loading. The
-  dependency stays `mandatory = false`, so Legendary Tabs remains optional; the range is enforced
-  only when it is actually present.
-- **The compile-time jar in `libs/` moved from `legendarytabs-1.20.1-1.1.3.1.jar` to
-  `legendarytabs-1.20.1-2.0.jar`,** and `build.gradle`'s `compileOnly` coordinate with it. A 1.x jar
-  will no longer compile against this source.
-
-## [1.7.0] - 2026-08-13 — Audit remediation: exploits, data safety, server authority
-
-Remediation pass driven by the 1.6.1 technical audit (`RUNIC_SKILLS_AUDIT.md`, 195 findings).
-Finding ids below are that document's. **This release closes four item/XP duplication exploits and
-changes how three perks behave** — see "Balance" before updating a live server.
-
-### Fixed — duplication and progression exploits (Critical)
-- **Locksmith** (RS-001) granted vanilla XP on *any* container open, with no cooldown and no
-  per-container state. Because vanilla XP is the only currency skill levels are bought with, holding
-  right-click on a crafting table was an unlimited, zero-cost progression bypass. The perk now pays
-  out per *block* container, once per configurable window, with a floor between any two rewards
-  (`locksmithContainerCooldownMinutes`, `locksmithMinSecondsBetweenRewards`).
-- **Silk Touch Mastery** (RS-002) popped the block item *in addition to* the normal drops, making it
-  a literal duplicator for every block in the game. It now replaces the drop, as silk touch does.
-- **Lucky Drop** (RS-003) multiplied any freshly-spawned item entity near a corpse, so a stack the
-  player dropped by hand at the right moment was multiplied too. It now multiplies only the drops
-  the death actually produced.
-- **Double Down** (RS-012) applied to *every* block rather than ores, making a place-and-break loop
-  on cobblestone net-positive. Now bounded to ores, like its nine sibling perks.
-- **Lore Mastery** (RS-058) multiplied any XP orb collected while a grindstone screen happened to be
-  open. Now limited to freshly-spawned orbs, so an XP farm cannot be funnelled through it.
-
-### Fixed — configuration data safety (Critical)
-- **A single typo no longer resets your config** (RS-004). Parsing was all-or-nothing across a
-  1,141-key document, and the failure path overwrote the operator's file with defaults. Fields now
-  bind one at a time — a bad value costs that one setting and names it in the log — and a file that
-  cannot be parsed at all is **left untouched** rather than replaced.
-- Unrecognised config keys are now **retained and written back** (RS-093), so a mod update that
-  renames a field, or a temporarily removed addon, no longer deletes a pack author's tuning.
-- A trailing comma in a JSON5 array no longer injects a `null` that NPE'd the lock loader (RS-030).
-- Single-quoted JSON5 strings containing `//` are no longer mangled by the comment stripper (RS-092).
-- Config writes are now fsynced and use a mod-namespaced temp file (RS-176).
-- **All 883 range-annotated config fields are now enforced at load time** (RS-028). `@IntField`
-  described the range and `@Clamp` enforced it, but only 9 fields had both — so on a dedicated
-  server, where the config UI does not exist, hand-edited values reached runtime unchecked. A new
-  `ClampCoverageTest` scans the source and fails the build if the two ever drift apart again.
-
-### Fixed — crash and denial-of-service vectors
-- A non-numeric title condition threw out of the title scan, disconnecting every joining player and
-  then crashing the server tick every 200 ticks (RS-017). Evaluation is now guarded, and bad values
-  are reported once at load with the offending title id.
-- A perk probability of `0` threw `IllegalArgumentException` out of crafting, container-open and
-  kill handlers — for every player, whether or not they had the perk (RS-029). All rolls now go
-  through a shared, tested `ProcRoll`, which also fixes a configured 1-in-1 chance meaning "never"
-  instead of "always" (RS-154).
-- An unknown title id from the server enqueued `null` and NPE'd the HUD overlay every frame, wedging
-  the title queue for the rest of the session (RS-022).
-- `DynamicConfigSyncCP` packed sixteen int arrays into a `-`-delimited string, which could not
-  represent a negative level or an empty array — either one disconnected the client during login
-  (RS-027). Now length-prefixed varint arrays. **Network protocol bump `8` → `9`.**
-- One unparseable item id in `treasureHunterItemList` left a null hole that NPE'd on block break
-  (RS-130); `treasureHunterProbability = 0` silently meant "always" and is now "never" (RS-129).
-- An empty passive-level array divided by zero and installed a NaN attribute modifier (RS-042).
-
-### Added — save-schema versioning and orphan retention
-- Player capability NBT now carries a `dataVersion` with an ordered migration hook (RS-005). This is
-  the precondition for every future change to stored data.
-- NBT keys the current build does not recognise are **retained across save/load and death** (RS-006).
-  Titles are registered from an editable config file, so removing one previously destroyed every
-  player's record of having earned it.
-
-### Fixed — server authority and security
-- **The global level cap is now enforced server-side** (RS-008). It was checked only in the client
-  GUI, so a modified client could walk past a limit operators set with `/globallimit` — and, because
-  the perk budget scales from global level, grant itself extra perk slots.
-- **The `administrator` title is now revoked on de-op** (RS-056). Unlocks were monotonic with no
-  re-lock branch, so a de-opped player kept an "Administrator" chat prefix permanently — a
-  staff-impersonation vector on public servers. Achievement titles remain monotonic.
-- **Vein Miner** cascaded up to 47 breaks that fired no `BlockEvent.BreakEvent`, so land-claim and
-  protection mods never saw them, Fortune and Silk Touch were silently dropped, and block-mined stats
-  under-counted (RS-013). Every cascaded break is now a real event other mods can veto.
-- **Cleave** re-entered `hurt()` from inside a `LivingHurtEvent` dispatch, re-running the full
-  outgoing perk stack per splash target and hitting villagers, other players' pets and players in
-  claims (RS-014). It is now deferred a tick, capped (`cleaveMaxTargets`), and respects PvP and
-  ownership.
-- **Counter Attack**'s `setCounterAttack(true)` was a no-op, so its ATTACK_DAMAGE bonus was permanent
-  and NBT-persisted with nothing able to remove it (RS-011). It is now a real, self-expiring window.
-- Attribute modifiers are **transient rather than permanent** (RS-018, RS-073). Permanent modifiers
-  outlived the perk that granted them; a one-time migration strips the ones existing saves carry.
-- Packet rate limiting now runs **before** work is queued to the main thread (RS-150).
-- The ender-chest packet now checks alive/spectator/sleeping state (RS-151).
-- `disableSync()` on all five custom registries (RS-015) — their contents are config-derived and had
-  no business in the login handshake, where a server with customised perk gates or titles could fail
-  or silently remap client logins.
-- The capability's `LazyOptional` is now invalidated with the entity (RS-007).
-- Equipped Powers are cleared by `/respec`, along with cooldowns and perk-swap locks (RS-020, RS-128).
-- `/respec` with no argument now resets **your own** progression and needs no permission (RS-052).
-  Lowering a perk budget could otherwise strand a whole playerbase behind an op-only command.
-- Static tick baselines reset on server stop (RS-132); five `PowerRuntime` maps that mutated outside
-  their lock are now synchronized (RS-131).
-
-### Fixed — performance
-- Per-tick mob-effect re-application (~40 packets/second/player) now refreshes only when the effect
-  is missing or nearly expired (RS-009).
-- Attribute application is idempotent, so unchanged values no longer mark `ARMOR`/`ATTACK_DAMAGE`
-  dirty every tick (RS-010).
-- `Perk.isEnabled` no longer builds a `modid:path` string on every call — it is called ~100× per
-  melee hit (RS-057).
-- `Skill#getPerks`/`getPassives` rebuilt the whole registry list twice per iteration, ~450,000
-  redundant element copies per GUI rebuild (RS-077).
-- The Powers dispatcher no longer does per-tick work for players with nothing equipped, and its
-  periodic scans are phase-shifted per player instead of all landing on the same tick (RS-066).
-- The tab strip no longer allocates two full `Screen`s and a GameProfile-tagged `ItemStack` every
-  frame (RS-025).
-
-### Fixed — compatibility
-- `MixForgeGui` no longer cancels `renderAir` unconditionally, and **increments** Forge's shared
-  right-side HUD cursor instead of assigning it — it was displacing every other mod's overlay
-  (RS-078).
-- The three optional-mod mixins use `require = 0`, so a target mod's update degrades gracefully
-  instead of crashing the pack at startup (RS-048).
-- `MixTargetFinder` moved to the client mixin list; it targets a client-only class but was declared
-  common (RS-105).
-
-### Fixed — UI
-- **The Powers panel is reachable.** Its keybind was documented but never registered, leaving the
-  whole equip screen as dead code (RS-023). Bound in Controls; unbound by default.
-- Both Runic Skills keybinds now close the screen they opened (RS-195).
-- The title pop-in animation is tick-driven rather than frame-driven, so it no longer runs 4× faster
-  on a 240 Hz display, and no longer divides by zero at the ends (RS-083).
-- The skill-icon lookup no longer writes to authoritative capability state from inside a render pass
-  (RS-081, RS-090).
-- `Utils.intToRoman` no longer throws outside 0–3999 (RS-169); adjacent tabs no longer overlap by one
-  pixel (RS-170).
-
-### Changed — build and CI
-- **Pinned the build** (RS-036): the SNAPSHOT mixingradle plugin and two dynamic version ranges meant
-  the same commit could produce a different jar on a different day.
-- **CI now boots a real dedicated server** (RS-115). The project's own smoke-test notes record
-  server-side classloading as its worst historical regression class, and compiling does not catch it.
-  CI also publishes test results, and its build step is labelled with what it actually runs.
-
-### Balance
-Four exploits are now closed, so affected perks yield less than they did in 1.6.1 — that is the
-point, but it is a live balance change. Locksmith in particular moves from unlimited XP to a
-rate-limited per-container reward. Both of its new limits can be set to `0` to restore the previous
-uncapped behaviour if a pack depends on it.
-
-### Migration
-- Player data is migrated automatically on load; no action required.
-- Permanent attribute modifiers written by earlier versions are stripped once, per player, on first
-  login. Active bonuses are re-applied immediately.
-- **Clients and servers must both be on 1.7.0** — the network protocol moved from `8` to `9`.
-
-## [1.6.1] - 2026-07-08 — Hide disabled content from the UI
-
-### Added — hide disabled content from the UI
-Previously a perk/passive/power listed in `disabledPerks` / `disabledPassives` / `disabledPowers`
-was blocked but still **shown** (locked/greyed), which playtesters read as a bug — the entry looks
-usable but isn't. Three new server-authoritative common-config booleans (all default `false`) let
-pack makers hide disabled content entirely instead:
-
-- **`hideDisabledPerks`**, **`hideDisabledPassives`**, **`hideDisabledPowers`** — when a flag is on,
-  entries in the matching `disabled*` list are **omitted entirely** from the skills/powers screens,
-  their level-up/equip buttons, and their tooltips (not greyed out). When off (default), behavior is
-  exactly as before — nothing changes for existing packs.
-- **Disabling** and **hiding** are now distinct: `disabled*` always blocks effects/leveling/equipping
-  server-side regardless of the hide flag; `hideDisabled*` only controls UI visibility.
-- The op-gated `/powers list` admin command deliberately keeps showing disabled powers with the
-  `[disabled]` marker — it is a diagnostic tool, not player-facing.
-- The duplicated disabled-name matching in the three registries was extracted into a Forge-free
-  `common/util/DisabledContentMatcher` (unit-tested: bare-path vs full-id matching, addon namespaces,
-  exact-match/no-prefix-collision, null/empty safety). Each registry gains an `isHiddenFromUi(...)`
-  helper (`disabled` AND the hide flag) that the screens filter through.
-- **Network protocol bump `7` → `8`**: `CommonConfigSyncCP` now also syncs `disabledPowers` (which
-  was previously enforced server-side only) plus the three hide flags, so a dedicated server controls
-  what clients see. Mismatched client/server pairs are rejected at the handshake.
-
-## [1.6.0] - 2026-07-06 — Culinary layer, Starcatcher & Overgeared compatibility
-
-### Added — culinary/agriculture integration layer (Farmer's Delight addons + Let's Do series)
-The farmersdelight-only `FarmersDelightIntegration` was generalized into a namespace-driven
-`CulinaryIntegration`. Food is detected as "registry namespace ∈ `culinaryIntegrationNamespaces`
-AND the item is edible" — no per-item lists, no upstream API imports. Default namespaces
-(verified against upstream mods.toml, not display names): `farmersdelight`, `dungeonsdelight`,
-`fruitsdelight`, `rusticdelight`, `vintagedelight`, `brewinandchewin`, plus the Let's Do series
-(`vinery`, `bakery`, `brewery`, `candlelight`, `meadow`, `farm_and_charm`, `beachparty`,
-`herbalbrews`).
-
-- **Master Chef** is unchanged in id/config/save data but its food-effect duration boost now
-  covers every configured culinary namespace (toggle: `culinaryEnableFoodEffectBoost`).
-  **Culinary Expert**'s saturation bonus was generalized the same way. With
-  `enableCulinaryIntegration` off, both fall back to Farmer's Delight-only (pre-1.6.0 behavior).
-- **New perks**: **Green Thumb** (Wisdom 8) — bonemeal has a 15% chance to trigger one extra
-  growth attempt on any bonemealable block (vanilla, FD and Let's Do crops alike; event-driven,
-  no random-tick or world-scan cost). **Nourishing Meal** (Wisdom 10) — culinary meals grant 20%
-  of their saturation again as a bonus (capped at the food level, per vanilla rules).
-  **Comfort Food** (Constitution 12) — culinary meals have a 25% chance to clear one harmful effect.
-- **Item locks**: generic namespace lock providers for `dungeonsdelight` (base 6),
-  `fruitsdelight`/`rusticdelight`/`vintagedelight`/`brewinandchewin` (base 4) and the Let's Do
-  namespaces (base 5). Only gear-like items (knives, tools, armor) classify — **ordinary food,
-  crops, seeds, ingredients and decoration are never locked**.
-
-### Added — Starcatcher integration (fishing minigame)
-Forge-only: Starcatcher posts vanilla `ItemFishedEvent` for every successful catch and its
-treasure loot table is addressable by id, so no Starcatcher classes are referenced
-(`enableStarcatcherIntegration` master toggle; verified against Starcatcher 2.3, Forge 1.20.1).
-
-- **Angler's Luck** (Fortune 12) — successful Starcatcher catches have a 7% chance to grant one
-  additive bonus roll of `starcatcher:gameplay/fishing/treasure`. Never mutates or duplicates the
-  catch itself, and only fires on a legitimate catch, so Starcatcher's biome/weather/daytime
-  restrictions have already applied.
-- **Catch of the Day** (Fortune 8) — the first Starcatcher catch each Minecraft day grants Luck
-  for 60s. **Angler's Insight** (Dexterity 10) — +3 XP per Starcatcher catch.
-- **Item locks** via a bespoke provider (LockGen's `rod` keyword means MAGIC, so generic keyword
-  classification would have misfiled fishing rods): rods → Fortune 8 / Dexterity 6, reusable
-  hooks/bobbers → Fortune 6. Bait, fish, bottles, trophies and the tackle box stay unlocked.
-- *Not implemented (no safe upstream hook)*: `steady_hand`-style minigame difficulty changes
-  (difficulty is data-driven `FishProperties` consumed internally) and `tackle_master`-style bait
-  preservation (bait consumption is an internal rod data write with no event). Catches routed
-  through Starcatcher's vanilla-loot path carry no starcatcher-namespaced drop and are not boosted.
-
-### Added — Overgeared integration (realistic forging)
-Forge-only: Overgeared fires vanilla `ItemCraftedEvent` when a forged result is taken from its
-smithing anvils, stores forging quality as the item-NBT string `ForgingQuality` (stats are derived
-from it dynamically), and its alloy/nether-alloy/cast furnaces use vanilla `FurnaceResultSlot`
-(→ `ItemSmeltedEvent`). No Overgeared classes are referenced (`enableOvergearedIntegration`
-master toggle; verified against Overgeared 1.6.x, Forge 1.20.1).
-
-- **Steady Hammer** (Tinkering 12) — 15% chance a Poorly Forged result is salvaged to Well Forged.
-- **Blueprint Savant** (Tinkering 14) — 25% chance the blueprint used in a forging gains one bonus
-  point of Uses progress (level-up itself stays with Overgeared's own `>= usesToLevel` check).
-- **Metallurgist** (Tinkering 18) — 10% chance of one bonus output item when taking Overgeared
-  alloy/cast smelting results (same bonus-copy idiom as the crafting perks; dupe-safe on quick-move).
-- **Master Smith** (Tinkering 24) — 10% chance a forged result comes out one quality tier higher,
-  **hard-capped at Perfectly Forged** — Masterwork remains exclusive to Overgeared's own reward path.
-- **Item locks** via a bespoke provider: smithing hammers → Tinkering 8 / Strength 6, tongs →
-  Tinkering 8, blueprints → Tinkering 6; finished gear falls through to generic classification
-  with a material-tiered base (copper 6 → iron 8 → steel 12 → netherite 16). Crafting components
-  (`*_head`, `*_blade`, plates, casts, heated ingots, arrows) are explicitly never locked.
-- *Not implemented (no safe upstream hook)*: forging-minigame tolerance changes (client-side
-  static state), failure-roll reduction and fuel/input preservation (internal to block entities).
-
-### Changed
-- `FarmersDelightIntegration` was removed; its registration line and the five perk gates that
-  referenced it now go through `CulinaryIntegration.isAnyLoaded()`. Master Chef and Culinary
-  Expert behavior for Farmer's Delight food is byte-for-byte equivalent.
-- New config fields (all in `runicskills.common.json5`): `enableCulinaryIntegration`,
-  `culinaryEnableFoodEffectBoost`, `culinaryIntegrationNamespaces`, `enableStarcatcherIntegration`,
-  `enableOvergearedIntegration`, plus `<perk>RequiredLevel` / effect-value fields for all ten new
-  perks (required level `-1` disables a perk, as everywhere else).
-- New pure-logic tests: culinary namespace matching, forging-quality tier math, and Starcatcher /
-  Overgeared lock classification rules.
-
-### Fixed — skill level-up could spend more XP than the player had
-With a low `skillLevelUpCostMultiplier` (e.g. `0.1`) a level-up could deduct more experience than
-the player actually owned, driving XP negative (symptom: after gaining XP the bar reset to 0 then
-climbed normally). Root cause: the server affordability gate in `SkillLevelUpSP` was an OR across
-two *different* currencies — XP **points** OR XP **levels** — while the deduction always removed
-points. A player with enough displayed levels but too few points passed the check and was charged
-the full point cost. The client button mirrored the same bypass, so it even lit green.
-
-- XP **points are now the single authoritative currency**. Affordability is a single points
-  comparison (`SkillLevelUpMath.canAfford` against the player's derived spendable balance) shared by
-  the server validation and the client button/tooltip, so they can never diverge. The alternate
-  "enough experience levels" branch (and `requiredExperienceLevels`) is gone.
-- XP deduction is now **clamped and consistent**: the resulting total can never go negative, and
-  `experienceLevel` / `experienceProgress` are always recomputed from the vanilla curve (no negative
-  progress or NaN). A rejected level-up packet resyncs the player so a stale/tampered client can't
-  linger in a misleading state.
-- The vanilla XP-curve math (previously copy-pasted, untested, in three places) was extracted into a
-  Forge-free `common/util/ExperienceMath` helper with unit tests covering the cost formula at skill
-  levels 1/15/30/31/max across multipliers, the exact affordability boundary, the enough-levels /
-  too-few-points rejection, and the negative-clamp guarantees.
-
-### Changed — level-up cost display & minimum cost
-- New config field **`skillLevelUpMinCost`** (default `1`, server-authoritative, synced to clients):
-  the minimum XP-point cost of a non-creative level-up. Prevents low multipliers from rounding a
-  real level-up down to a free one; set to `0` to explicitly allow free level-ups when the scaled
-  cost rounds to `0`.
-- The level-up tooltip now shows the **exact XP-point cost only** (`"Spend %s xp to level up %s."`),
-  matching what the server enforces, instead of a separately-rounded and misleading "levels" figure.
-
-## [1.5.4] - 2026-07-02 — Original perk icon set
-
-### Changed — every perk icon replaced with an original generated texture
-All 461 registered perk icons were replaced with original 16x16 pixel-art textures in a
-consistent visual style (shared outline, 3-tone shading, themed palettes, corner badges
-encoding the effect modifier). The 82 perks that previously borrowed Iron's Spellbooks /
-Ars Nouveau / Apotheosis item sprites now ship their own icons under
-`assets/runicskills/textures/skill/<skill>/<perk_id>.png`, so integration perks no longer
-render as missing textures when the perk-icon path changes upstream. The
-`ironsItem`/`arsItem`/`apothItem` helpers in `HandlerResources` were removed accordingly.
-
-- 21 orphaned PNGs from removed perk sets (old Blood Magic / Enigmatic Legacy era, plus two
-  stale `passive_*` duplicates under `wisdom/`) were deleted; passive, locked and null icons
-  are untouched.
-- New `PerkTextureResolutionTest` asserts every referenced texture resolves on disk, that no
-  perk constant points at a foreign namespace, and that every registered perk id has a
-  matching `textures/skill/<skill>/<id>.png`.
-- All 38 Passive attribute icons (`passive_*.png`) — shown as the first row of each
-  skill page — were regenerated in the same style, replacing the remaining old
-  16x16/20x20 item-style art (including the icons with the baked-in "S" badge).
-- Full per-perk and per-passive tracking tables: `docs/PERK_ICON_AUDIT.md`.
-
-## [1.5.3] - 2026-06-21 — Apotheosis "Fortune 0" fix, earned-level perk budget, lock source metadata
-
-### Fixed — bogus "You need Fortune 0" denial on Apotheosis-affixed gear
-Equipping armor that carried Apotheosis affix data could be blocked with the nonsensical
-message *"You need Fortune 0 to use … items!"*, with no matching config entry to be found.
-
-Root cause: in `ApotheosisIntegration.onEquipAffixItem`, the item was dropped and
-`item.setCount(0)` **emptied the stack first**, and only *then* did the code recompute the
-required Fortune level and rarity for the message — on a now-empty stack, which returns `0` /
-"Unknown". The real requirement was lost and surfaced as "Fortune 0". An item whose rarity was
-not present in the `apothRarity*Level` config (default-deny → `Integer.MAX_VALUE`) hit the same
-path and also displayed as `0`.
-
-Fixes:
-- The required level and rarity are now captured **before** the stack is mutated, and a required
-  level of `0` (common/ungated rarity, no affixes, or gating disabled) **never** blocks or
-  messages. The denial now reads *"Requires Fortune X to use <Rarity> Apotheosis-affixed gear."*
-- Unmapped rarities are reported distinctly (*"…rarity isn't configured — ask an admin to set the
-  apothRarity\*Level options."*) instead of as a meaningless numeric level.
-- Items with an active affix gate now show an **"Apotheosis Affix Gate: Requires Fortune X"**
-  tooltip line, distinct from manual/integration item-lock attribution.
-- The decision logic is extracted to the pure, unit-tested `ApothGateMath`.
-- Affix-rarity gating stays **on by default** (affixed gear is rarity-based loot, intended RPG
-  progression). The `apothEnableAffixRarityGating` config comment now explains that it gates *any*
-  Apotheosis-affixed equipment (including vanilla armor/tools that rolled an affix), that it is
-  **separate** from gem-socket gating, and how to disable it. Gem-rarity gating already only
-  affected gem socketing and is unchanged.
-
-### Added — perk budget scaled from *earned* global level
-The optional `perksPerGlobalLevel` cap now scales from a player's **earned** global level
-(`max(0, totalSkillLevels − startingBaseline)`) instead of the raw skill-level sum. A fresh
-player is earned-level 0, so `0.5` grants the first perk slot after 2 earned levels and 3 slots
-after 6 — matching the intuitive "0.5 perks per level" request. `getGlobalLevel()` itself is
-**unchanged** (commands, FTB Quests, docs still see the raw sum). Legacy behavior is preserved:
-the default `perksPerGlobalLevel = 0` disables the scaled cap entirely.
-
-- New optional `maxPerkBudgetCap` (default 0 = none) clamps the scaled budget to a hard ceiling
-  without affecting the flat `maxActivePerks` cap. Synced to clients and re-applied by
-  `/skillsreload`.
-- **Over-budget = frozen until respec.** If a config reload, skill-level loss, or a lowered
-  `perksPerGlobalLevel` leaves a player above budget, perk activation is frozen (existing perks
-  are **not** disabled or lost) and the player is told to respec. Disabling perks remains allowed.
-- Perk tooltips now show the active/cap count, the **earned global level that unlocks the next
-  slot**, and an over-budget warning.
-
-### Added — item-lock source metadata
-`LockItem` gained an optional `Source` field (backwards-compatible; legacy `lockItems.json5`
-without it loads unchanged and a null source is never written). Every integration-generated lock
-is stamped with its provider id, and locked-item tooltips now show **"Locked by: …"** so players
-can tell whether a lock came from manual config, Ice and Fire, Iron's Spells, Spartan, etc. —
-distinct from the Apotheosis affix gate, which is a runtime check rather than an item lock.
-
-### Integration compatibility audit
-All advertised integration toggles default **on** (`enableIceAndFireIntegration`,
-`iceFireEnableLockItems`, `enableSpartanIntegration`, `spartanEnableLockItems`,
-`enableIronsSpellbooksIntegration`, `enableIronsSpellbooksLockItems`). Ice and Fire and Iron's
-Spells both register lock providers that scan their whole namespace and tier gear by keyword
-(`LockGen`), in addition to curated lists. Exact per-item coverage is best confirmed in a loaded
-dev client; the new "Locked by:" tooltip makes that verification straightforward.
-
-| Integration | Perks / passives | Item locks | Event hooks |
-| --- | --- | --- | --- |
-| Apotheosis / Apothic Attributes | ✅ (gem/affix perks, 10 attribute perks) | ⚠️ affix-rarity gate (runtime, not item-lock entries) + gem-socket gate | ✅ |
-| Ice and Fire (`iceandfire`) | ✅ (Dragon Slayer, Mythic Fortitude) | ✅ curated + namespace discovery | ✅ |
-| Spartan Weaponry / Shields / Fire | — | ✅ curated + discovery (incl. `spartanfire`) | — |
-| Iron's Spells (`irons_spellbooks`) | ✅ (schools, many built-ins) | ✅ namespace discovery (gear tiers; ingredients/ink intentionally unlocked) | ✅ |
-| Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft | — | ✅ curated | some |
-| Epic Knights, Aquaculture, Cataclysm, Mowzie's, Undergarden, … | varies | ✅ generic namespace discovery | varies |
-| TacZ, CGM, Scorched Guns, Curios, FTB Quests, KubeJS, Ars Nouveau | ✅ / hooks | — (no item-lock entries) | ✅ |
-
-"Has perks" does **not** imply "has item-lock coverage" — the two are tracked separately, which
-was the source of earlier confusion.
-
-### Changed — network protocol bump `6` → `7`
-`CommonConfigSyncCP` gained the `maxPerkBudgetCap` field, changing the packet payload. Mixed
-1.5.3 / pre-1.5.3 client-server pairs are now rejected cleanly at the connection screen instead
-of passing the handshake and desyncing on a misread config-sync buffer. **Both sides must run
-1.5.3+.**
-
-### Removed — stale `botania` optional dependency in mods.toml
-All Botania integration was removed in 1.5.0; the leftover optional-dependency declaration (and
-its version-range enforcement) is now gone too.
-
-### Build — version-consistency guard
-`./gradlew check` now fails if `VERSION`, `gradle.properties` `mod_version`, and the top
-CHANGELOG entry disagree — the stale-`VERSION` drift that showed users false "new version
-available" banners can no longer reach a release build.
-
-### Fixed — full security/stability review remediation
-A complete codebase review (security, stability, performance, build) landed these fixes:
-
-- **`/skillsreload` title desync**: reloading replaced every title's registry binding with null,
-  so ALL titles silently stopped being evaluated (with per-scan "desync" warnings) until a
-  restart. Reload now re-binds titles to the frozen registry, re-runs the default-merge (newly
-  shipped built-in titles appear without a restart), and reports config titles added after
-  startup as restart-required.
-- **Memory leaks on long-running servers**: per-player combat memory (`PerkEffectsHandler`'s
-  seven UUID-keyed maps), Power runtime target tags, and the Barrage/Long Note/Pyroclasm
-  dispatcher state are now all purged on logout.
-- **Atomic config saves**: `ConfigHolder.save()` writes a `.tmp` sibling and moves it into
-  place, so a crash or full disk mid-write can no longer truncate a config and silently reset
-  it to defaults on the next boot.
-- **Load-time config validation**: core progression fields (`skillMaxLevel`,
-  `perksPerGlobalLevel`, `maxActivePerks`, `maxPerkBudgetCap`, …) are clamped into their
-  documented ranges when read from disk, with a WARN naming the field and both values — the
-  YACL UI ranges previously only applied inside the config screen.
-- **At-cap level-up packets**: a level-up request at `skillMaxLevel` consumed XP, fired
-  `SkillLevelUpEvent`, and pinged the quest bridge even though the level couldn't change.
-  Now rejected up front (creative included — creative bypasses the cost, never the cap).
-- **Client decode hardening**: `NoticeOverlayCP` and `CommonConfigSyncCP` now bound their
-  list/array counts before allocating (matching `PerkGroupsSyncCP`), so a corrupt or hostile
-  server can't crash the client decode thread or force huge allocations.
-- **NPE-proof skill lookups**: `getSkillLevel` now resolves unknown skill names to the default
-  level 1 instead of unboxing null (e.g. a lock referencing a skill from a removed addon).
-- **AttributesLib isolation**: the ten Apothic Attributes perks moved to their own
-  reflectively-loaded `ApothicAttributesPerksIntegration`, so an AttributesLib version mismatch
-  degrades only those perks instead of also killing affix-rarity and gem gating.
-- **Combat/tick performance**: capability lookups are memoized per player-tick (a melee hit
-  previously re-resolved the capability hundreds of times across eight handlers); per-perk
-  attribute-modifier UUIDs are precomputed (was ~40 MD5 hashes per player per second); attribute
-  modifiers (incl. MAX_HEALTH) are only touched when their value actually changes; title
-  conditions are parsed once per config load instead of re-split on every 10-second scan.
-- **Clean-checkout build**: the Gradle wrapper jar and the two compile-only stub jars in
-  `libs/` were blanket-ignored by `.gitignore`'s `*.jar` rule, so a fresh clone could not
-  build. They are now tracked via targeted ignore exceptions.
-
-## [1.5.2] - 2026-06-18 — Legacy config-read fix + 20 new titles
-
-### Fixed — legacy snake_case configs silently mis-parsed
-Config files written before the 1.1.0 `ConfigHolder` refactor were serialized by the old
-YACL serializer, which named **nested-POJO** fields in `snake_case` (`title_id`,
-`hide_requirements`, `item`, `skill`, `level`). The current loader uses plain Gson with
-IDENTITY field naming, so none of those keys matched the Pascal-case Java fields. Gson
-constructed each object via its no-arg constructor and overrode nothing:
-
-- **Titles:** every entry in a legacy `titles.json5` collapsed to the constructor default
-  (`rookie`). After the registry's dedup-by-id, only **Rookie** survived — so the Title tab
-  showed just Rookie + the two system titles (Administrator, Titleless) instead of the full
-  list. This was the reported "only three titles" bug.
-- **Item locks:** every entry in a legacy `lockItems.json5` collapsed to the default
-  (`minecraft:diamond` / Strength 2), silently breaking configured item gating.
-
-Fixed by adding Gson `@SerializedName(value = "<Pascal>", alternate = {"<snake>"})` to the
-nested model fields (`TitleModel`, `LockItem`, `LockItem.Skill`). Both legacy snake_case and
-current Pascal-case files now load correctly; new writes stay Pascal. Top-level `@SerialEntry`
-fields (`common.json5`) were written verbatim camelCase and were never affected.
-
-### Added — title default-merge on load
-`ConfigHolder` loads an existing file as-is with no merge, so titles added to the built-in
-defaults never reached players who already had a config. `RegistryTitles.load()` now unions
-any built-in title whose id is missing from the loaded list (preserving existing entries and
-custom tunings) and saves — which also rewrites a legacy snake_case file in Pascal-case.
-
-### Added — 20 modpack-themed titles
-Boss kills (Ice & Fire gorgon/hydra/sea serpent, Cataclysm ignis/ender guardian, Bosses of
-Mass Destruction night lich/obsidilith, Mowzie's ferrous wroughtnaut, vanilla warden/wither),
-spellcaster titles (spellweaver/summoner/elementalist), Tinkering titles
-(artificer/master artificer/engineer), martial hybrids (gladiator/berserker/monk), and a
-spelunker title (mine ancient debris).
-
-## [1.5.1] - 2026-06-18 — Item-gating enforcement fix ("inert in hand")
-
-Item locks were defined and shown in tooltips but not reliably enforced: a player below an
-item's skill requirement could still **wield, attack with, and mine** using a locked item
-(e.g. the iron sword at 1 Strength despite its "requires 8 Strength" tooltip). The decision
-logic was correct; enforcement was incomplete and bypassable. This release makes a locked
-item **inert in hand** — it stays in the inventory/hand but cannot attack, mine, or be used
-until its requirements are met. `dropLockedItems` remains an opt-in and is unchanged.
-
-### Fixed — gating enforcement gaps
-- **Melee attacks were bypassable.** Enforcement relied solely on `AttackEntityEvent`
-  (`CombatEventHandler.onPlayerAttackEntity`), which combat-overhaul mods such as **Better
-  Combat** never fire (they perform their own hit detection — note `MixTargetFinder`), so
-  locked weapons could still deal damage. Added a server-side `LivingAttackEvent` backstop at
-  `HIGHEST` priority that cancels the hit when the attacker's main-hand item is locked. This
-  fires before `LivingHurtEvent` and the bonus-damage handlers, so it is order-independent and
-  catches modded weapons. The original `AttackEntityEvent` cancel is kept for the client-side
-  early-out and one-shot overlay warning.
-- **Block-breaking/mining was ungated.** A locked tool could break blocks freely. Added a
-  `BlockEvent.BreakEvent` cancel and a zero-break-speed guard in `onPlayerMining` so the block
-  never visibly cracks.
-- **Wielding was effectively unenforced under default config.** With the above, holding a
-  locked item is now functionally inert without requiring `dropLockedItems`.
-
-### Changed — single source of truth + overlay anti-spam
-- Extracted the level comparison into a pure, Forge-free `common/util/LockCheck` helper
-  (unit-tested headlessly like `PerkCapMath`); `SkillCapability.canUse` now delegates to it.
-- Added `SkillCapability.canUseItemSilent` for the per-hit / per-break backstops so they do
-  not spam the `SkillOverlayCP` client overlay — the one-shot warning still comes from the
-  discrete action events (attack swing, left/right-click).
-- Closed a latent unboxing NPE in the gating path via a null-safe `safeLevel` (a skill from a
-  no-longer-loaded addon now resolves to the default level 1 instead of throwing).
-
-### Notes / out of scope
-- Gun mods: TacZ already gates server-side. Crayfish, Scorched Guns 2 and PointBlank remain
-  **client-side gated only** (bypassable by a modified client) — a server-authoritative fire
-  gate is a possible follow-up.
-- Added `LockCheckTest` (7 cases: requirement boundary, null/empty, multi-skill, unknown-skill default).
-
-## [1.5.0] - 2026-06-15 — Over-GUI denial messaging, perk-backlog drain, mod-perk purge & proper Apotheosis
-
-Broad audit/stabilization pass, a unified over-GUI denial-message system (network protocol 5 → 6),
-the Runecraft lock-provider coverage audit, a large drain of the inert-perk backlog, removal of the
-Botania / Blood Magic / Enigmatic Legacy perk sets (mods absent from the target pack), and proper
-Apotheosis incorporation (audit, enchantment-cap perk, and gem rarity gating).
-
-### Removed — Botania / Blood Magic / Enigmatic Legacy perks (not in the Runecraft pack)
-Purged every perk tied to these three mods (identified authoritatively by each perk's
-`<Integration>.isModLoaded()` gate, not just naming), removing the bloat and config surface for mods
-the target pack doesn't ship:
-- **Botania (~40 perks):** the entire `BotaniaIntegration` perk block (all `BOTANIA_*`, the rune /
-  seasonal / sin / capstone perks) plus `BotaniaIntegration`, `BotaniaCompat`, the `botania` config
-  group (83 fields), all `perk.runicskills.botania_*` lang, the namespace texture helper, and the
-  Botania `compileOnly` build dependency.
-- **Blood Magic (12 perks):** `BLOOD_MASTERY`, `RITUAL_SAGE`, `CRIMSON_BOND`, `BLOOD_SACRIFICE_RECOVERY`,
-  `BLOOD_SHIELD`, `BLOOD_WARD`, `BLOOD_RITUALIST`, `BLOOD_INSCRIPTION`, `SACRED_GEOMETRY`,
-  `BLOOD_CHANNEL`, `BLOOD_EMPOWER`, `RITUAL_EFFICIENCY` + `BloodMagicIntegration` and its lock-item
-  provider. **Kept:** the Iron's Spellbooks *blood-school* perks (`BLOOD_ATTUNEMENT`, `BLOOD_MANCER`,
-  `BLOOD_WARDED`, `BLOOD_CATALYST` — ISS is in the pack) and `BLOOD_FURY` (generic crit life-steal,
-  re-gated to drop its Blood-Magic dependency).
-- **Enigmatic Legacy (7 perks):** `ANCIENT_STRENGTH`, `CURSE_WARD`, `ARTIFACT_HUNTER`,
-  `ENIGMATIC_VITALITY`, `ENIGMATIC_PROTECTION`, `ENIGMATIC_WISDOM`, `ENIGMATIC_UNDERSTANDING` +
-  `EnigmaticLegacyIntegration` and the `enigmaticlegacy` lock-discovery provider. **Kept:** the generic
-  perks that were merely flavored that way (`ARMOR_OF_FAITH`, `SOUL_SUSTENANCE`, `MYSTIC_ANALYSIS`,
-  `SAGES_FOCUS`) and `CATACLYSMS_WRATH` (gated on Cataclysm, which is in the pack).
-- Removed the corresponding effect sites (`BLOOD_WARD`/`BLOOD_EMPOWER` in `PerkEffectsHandler`,
-  `BLOOD_SHIELD` in `CombatEventHandler`), the integration enable-toggles and their `CommonConfigSyncCP`
-  sync, 125 config fields, 126 lang keys, 61 orphaned texture constants, and `BOTANIA_RUNIC_SKILLS_INTEGRATION.md`.
-
-### Apotheosis — proper incorporation (audit + wire inert perks)
-Audited the 14 existing Apotheosis perks against the real 7.4.8 deobf API: **zero drift** — every
-`ALObjects.Attributes.*` id, `GetItemSocketsEvent`/`ItemSocketingEvent` usage, and `AffixHelper`/
-`SocketHelper`/`DynamicHolder` call is correct. Wired the inert `APOTHEOSIS_WISDOM` via Placebo's
-`GetEnchantmentLevelEvent` (the same event Apotheosis uses to extend caps), raising present
-enchantments' effective levels by the perk's amplifier for the holder. `APOTHEOSIS_GEMS` stays
-allowlisted with a documented reason: gem rarity is rolled inside `GemLootPoolEntry` with no
-player-attributable Forge event in 7.4.8, so there is no faithful hook short of fragile loot-internal ASM.
-
-### Added — Apotheosis gem rarity gating
-Gems are not affix items, so the existing Fortune affix-rarity gating never covered them. Now gem
-**socketing** is gated by the gem's own `LootRarity` (i.e. how powerful it is), reusing the same
-per-rarity Fortune thresholds (`apothRarityUncommonLevel` … `apothRarityAncientLevel`). Implemented
-via Apotheosis's `ItemSocketingEvent.CanSocket` (`@HasResult` → `setResult(DENY)`), reading rarity
-through `GemInstance.unsocketed(stack).rarity()`, with an over-GUI denial banner. Toggle:
-`apothEnableGemRarityGating` (default on; common gems are always ungated).
-
-### Fixed — crashes & correctness
-- **P0 capability-sync NPEs.** `SyncSkillCapabilityCP.send()`/`.handle()` dereferenced the `@Nullable`
-  `SkillCapability.get()`/`getLocal()` with no guard; `send()` is reached from ~30 sites incl. player
-  world-join, so a capability-attach race could crash login. Both are now null-guarded.
-- **`/registeritem` first-launch crash.** `HandlerLockItemsConfig.lockItemList`, plus `LockItem.Skills`
-  (field default and varargs constructor) were immutable `List.of(...)`/`Stream.toList()`; the command's
-  `.add()/.remove()/.set()` threw `UnsupportedOperationException` until the config file had been written
-  once. All three are now mutable `ArrayList`s.
-- **`InteractionEventHandler` NPE** on unregistered/removed-mod items (`Objects.requireNonNull(getKey())`)
-  — now deny-safe, matching the `SkillCapability` fix.
-- **`PlayerLifecycleHandler` title NPE** — re-fetched the title and dereferenced the nullable result
-  despite null-checking a different variable (fires on every chat/tab render); reuses the checked ref.
-- **`CraftingEventHandler` LUCKY_DROP** captured a `Player` ref in a deferred `TickTask` that could be
-  offline a tick later; now captures the UUID and re-resolves.
-- **`TacZIntegration`** — guarded the unchecked `ModernKineticGunItem` cast (ClassCastException) and the
-  unchecked `SkillCapability.get()` (NPE).
-- **Capability serialization** — `serializeNBT`/`copyFrom` used unguarded `.get()` for skill/passive/title
-  maps (NPE/dataloss if a registry entry was missing); now `getOrDefault` like the perk path.
-
-### Fixed — robustness & hardening
-- Client-bound packet decoders `DynamicConfigSyncCP`, `PerkGroupsSyncCP`, `PowerOverridesSyncCP` now
-  bounds-check counts/splits (`DecoderException`) so a malformed/hostile server can't crash clients
-  (matches the existing `ConfigSyncCP` guard).
-- Rate limiters added to `PassiveLevelUpSP`/`PassiveLevelDownSP`/`SetPlayerTitleSP`/`OpenEnderChestSP`.
-- Null guards on `Perk.getToggle()`, `Skill.getLevel()`, `OverlaySkillGui`, and `MixForgeGui`'s
-  camera-entity cast (spectator/detached camera).
-- `MixTrueInvisibilityEffect` now gated on `irons_spellbooks` in the mixin plugin (no classloader WARN
-  when ISS is absent).
-- `/globallimit` and `/updateskilllevel` reject `< 1` (a non-positive `skillMaxLevel` broke the rank
-  divisor); `/updateskilllevel` now reports failure instead of success on its rejection path.
-
-### Fixed — denial messages now render over open GUIs
-- **Item-lock warning hidden behind the crafting menu.** The skill-requirement overlay
-  (`runicskills:skill_overlay`) is a Forge HUD layer, which Forge does **not** render while a container
-  `Screen` is open — so trying to craft a too-high-level item (e.g. a lockpick) fired the
-  "You can't use this item yet" warning but it never drew. `OverlaySkillGui` now also renders via a
-  `ScreenEvent.Render.Post` hook, so the warning always shows over the GUI. The HUD and screen paths are
-  mutually exclusive (no double-draw).
-- **Other denial messages were also behind/again in chat.** Spell-gating (Iron's Spellbooks
-  `school_locked`/`spell_gated`, Ars Nouveau `ars_spell_gated`/`ars_familiar_gated`) used
-  `sendSystemMessage` (chat, hidden behind screens), and the Apotheosis affix-rarity gate was sent
-  through `PlayerMessagesCP`, which never handled that key — so it **displayed nothing at all** (and
-  carried only one of its two args). All of these now route through a new `OverlayNoticeGui` /
-  `NoticeOverlayCP` over-GUI banner. The Apotheosis banner now passes both the required Fortune level
-  and the rarity name.
-- Network `PROTOCOL_VERSION` bumped `5 → 6` for the added `NoticeOverlayCP` packet.
-
-### Integration — lock-provider coverage audit (Runecraft)
-- Re-verified lock namespaces against the Runecraft item-registry dump and the mod jars' asset folders.
-  Added two previously-uncovered gear mods: **Epic Knights: Antique Legacy** (real namespace
-  `antiquelegacy`, not `epic_knights_antique_legacy`) and **Call of the Yucatan** (`call_of_yucutan`).
-- `docs/INTEGRATION_MATRIX.md` updated (1.3.9) with the audit provenance and corrected install flags.
-- Corrected stale "scaffold / lands in batch 4" javadoc + log lines on the Saints' Dragons, Nichirin
-  Dynasty, and Enigmatic Legacy integrations — their `onLivingHurt` perk effects (DRACONIC_FURY,
-  NICHIRIN_BLADE, ANCIENT_STRENGTH) are already implemented, not pending.
-
-### Docs / metadata
-- `pack.mcmeta` data-pack format 12 → 15 (1.20.1); `mod_description` filled in; dead `mapping_channel`/
-  `mapping_version` properties removed; `CLAUDE.md` mixin count corrected (14: 4 client / 10 common).
-- README/CurseForge command names (`/skillsreload`, `/registeritem`, `/respec`, `/listskills`) and config
-  paths (`config/RunicSkills/runicskills.common.json5`) corrected.
-- Removed dead `CounterAttackSP` packet class and an unused YACL group lang key.
-- Added a guard comment in `RegistryCommonEvents` explaining the deliberate static-via-annotation /
-  instance-via-manual-register split (so it isn't "deduplicated" into breakage).
-
-### Perk backlog (completion pass — ongoing)
-New `registry/events/PerkEffectsHandler` (data-driven effect tables) plus extensions to
-`CombatEventHandler`. Implemented real gameplay effects for **122** of the 340 inert perks
-(allowlist 340 → 218), each gated on `isEnabled` + its existing config field and removed from
-`perk_no_effect_allowlist.txt` (enforced by `PerkEffectCoverageTest`). Categories wired so far:
-damage-type/conditional damage reduction, knockback resistance, block-reflect, attribute modifiers
-(movement/armor/attack-speed/health/reach/luck), experience multipliers + XP-orb healing, mob & ore/
-block bonus drops, mining speed, outgoing-damage conditionals (mounted/boss/weapon-id/life-steal),
-arrow on-hit effects + recovery + ranged bonuses, absorption/regen/barrier, food (saturation/buffs/
-iron-stomach), crafting output, anvil-cost reduction, passive item repair, and potion-duration perks
-(via the `BENEFICIAL_EFFECT` attribute). Approximations are flagged with `APPROX` comments.
-
-**1.4.0 batch — +49 perks (allowlist 218 → 169).** A second drain of the backlog, all faithful
-vanilla-1.20.1 hooks gated on `isEnabled` + the perk's config field:
-- *Dodge subsystem:* `DODGE_ROLL`/`EVASION`/`SPELL_DODGE` cancel a qualifying `LivingHurtEvent` and
-  open a window consumed by `PHANTOM_STRIKE` (next-hit bonus).
-- *Survive-lethal:* `UNDYING_WILL` (chance) and `MYTHICAL_BERSERKER` (+ rage window) cancel
-  `LivingDeathEvent` to 1 HP with a 60 s lockout (not a permanent totem); `BLOODLUST` (post-kill
-  attack-speed window) and `STALWART_STRIKER` (heal on hostile-mob kill) on the killer side.
-- *Defense:* `THICK_SKIN` (flat), `SHIELD_WALL` (blocking), `SIEGE_DEFENSE` (inside any structure),
-  `DRACONIC_CONSTITUTION` (elemental), `SAMURAI_RESOLVE` (post-hit window), `ADAPTATION` (same-source
-  decay), `IMMOVABLE_OBJECT` (no knockback while blocking), `POISON_IMMUNITY`.
-- *Combat/ranged:* `CRITICAL_MASTERY` (`CriticalHitEvent`), `RAPID_FIRE`/`CROSSBOW_EXPERT` (draw
-  speed), `MULTISHOT_MASTERY` (`EntityJoinLevelEvent` fan), `RICOCHET`/`TRICK_SHOT` (arrow on-hit),
-  `CHAIN_LIGHTNING_STRIKE`, `ENCHANTED_MISSILES`, `THORNS_MASTERY`, `TRACKING` (Glowing).
-- *Attributes:* `FLEET_FOOTED`/`SWIMMERS_ENDURANCE` (move/swim speed), `WAR_TACTICIAN` (attack speed),
-  `TELEKINESIS` (block reach), and the LUCK-loot group (`TREASURE_SENSE`, `SCAVENGER`, `RARE_FIND`,
-  `MASTER_LOOTER`, `LUCKY_EXPLORER`, `LUCKY_FISHING`, `ADVENTURERS_LUCK`).
-- *Gathering/world:* `VEIN_MINER` (bounded flood-fill), `LUMBERJACK`/`TERRAFORMER` (break speed),
-  `PROSPECTOR`/`FORTUNES_FAVOR`/`SERENDIPITY` (bonus ore), `RAINBOW_LOOT` (enchanted drops),
-  `NATURES_BLESSING` (heal on natural blocks), `UNBREAKABLE`/`UNBREAKING_MASTERY` (durability),
-  `SMOKE_BOMB` (low-HP invisibility), `PHOENIX_RISING` (respawn HP).
-
-The remaining 169 inert perks and the Power backlog continue in subsequent batches; many of those
-describe effects with no faithful vanilla-1.20.1 hook (mod-pool mechanics, enchant-table internals,
-stamina/zipline/colony/dynamic-light/ore-X-ray features) that require the optional mod's API or custom
-client rendering — these stay transparently allowlisted rather than faked.
-
-## [1.3.8] - 2026-06-11 — Scaled perk cap, centralized lock providers, perk-coverage guard
-
-Builds on the perk audit (522 registered perks, 340 still inert at the start of this pass) and the
-config-reliability work in 1.3.7. Adds the user-requested scaled perk cap, replaces the hard-coded lock
-injection with a registry that the build enforces, broadens item-lock coverage to the mods actually in
-the Lorecraft pack (and the rest of the advertised list), and lands a guard so no registered perk can be
-silently inert again. See [`docs/PERK_AUDIT.md`](docs/PERK_AUDIT.md) and
-[`docs/INTEGRATION_MATRIX.md`](docs/INTEGRATION_MATRIX.md).
-
-### Added
-
-- **Scaled active-perk cap (`perksPerGlobalLevel`).** Optional cap = `floor(globalLevel * perksPerGlobalLevel)`, on top of the existing flat `maxActivePerks`. When both are non-zero the smaller wins; a derived cap of 0 (very low global level) never overrides the flat cap. Pure math lives in [`PerkCapMath.computeEffectiveCap`](src/main/java/com/otectus/runicskills/common/util/PerkCapMath.java) (unit-tested), wrapped by `RegistryPerks.effectivePerkCap`. Enforced server-side on the 0→1 enable transition in `TogglePerkSP`, synced to clients via `CommonConfigSyncCP`, and surfaced as an "Active perks: X / Y" line in the perk tooltip (`tooltip.perk.active_cap`).
-- **Centralized lock-provider registry.** New [`LockItemProvider`](src/main/java/com/otectus/runicskills/integration/lock/LockItemProvider.java) + [`LockProviderRegistry`](src/main/java/com/otectus/runicskills/integration/lock/LockProviderRegistry.java) replace the hard-coded chain in `HandlerSkill.injectIntegrationItems()`. The 7 curated integrations (Spartan, Blood Magic, Ice & Fire, Locks, Samurai Dynasty, More Vanilla, Jewelcraft) are wrapped as adapters with identical order/semantics (`putIfAbsent` manual-override precedence preserved).
-- **Iron's Spells item locks.** New `IronsSpellbooksLockProvider` (registry-scan, no ISS API imports so it's safe to register unconditionally) locks spellbooks, staves, scrolls, mage armor, rings/amulets and upgrade orbs by Magic/Intelligence/Endurance. Config: `enableIronsSpellbooksLockItems`, `ironsLevelMultiplier`.
-- **Registry-driven discovery for installed + advertised mods.** New `GenericNamespaceLockProvider` + [`LockGen`](src/main/java/com/otectus/runicskills/integration/lock/LockGen.java) keyword classifier add lock coverage for Epic Knights (5 namespaces incl. Japanese Armory / Dark Ages / Ice & Fire add-ons), Aquaculture, Galosphere, Undergarden, Deeper Darker, Dragonsteel, Cataclysm, Mowzie's Mobs, Farmers Delight, Siege Machines, plus the previously-uninjected README mods (Enigmatic Legacy, Fantasy Armor, Nature's Aura, Bosses of Mass Destruction, Jet & Elias, Nichirin Dynasty, Saints Dragons, Stalwart Dungeons). Shared config: `discoveredLockLevelMultiplier`, `disabledDiscoveredLockMods`. Providers no-op when their mod is absent.
-- **Perk-coverage guard + backlog.** [`PerkEffectCoverageTest`](src/test/java/com/otectus/runicskills/registry/PerkEffectCoverageTest.java) asserts every registered perk has an effect site or is in the explicit backlog ([`perk_no_effect_allowlist.txt`](src/test/resources/perk_no_effect_allowlist.txt)), that implemented perks are removed from the backlog, and that the backlog has no dead names — so the inert set is transparent and can only shrink.
-- **Build/test guards.** `checkLockProviders` Gradle task (wired into `check`) + `LockProviderRegistryTest` fail the build if an integration with `generateLockItems()` is not registered.
-
-### Fixed (perks wired)
-
-- **Deferred Strength perks** — `CLEAVE` (AoE splash to nearby enemies, reentrancy-guarded), `TITANS_GRIP` (heavy-Spartan-weapon + offhand damage bonus), `GLADIATOR` (offhand-shield melee bonus), `RUNIC_MIGHT` (runic-weapon damage bonus). `PRIMAL_FURY`/`UNSTOPPABLE_FORCE` were already implemented and verified. New config: `cleavePercent`, `cleaveRangeBlocks`, `titansGripPercent`.
-- **Constitution defensive perks** — `SEARING_RESISTANCE`, `WITHER_RESISTANCE`, `ARMOR_OF_FAITH`, `SURVIVAL_INSTINCT`, `BLOOD_SHIELD`, `RUNIC_FORTIFICATION` now reduce the appropriate damage type (additive, clamped at 80% total) via a new `onLivingHurtConstitutionDefense` handler, reusing their existing `*Percent` config fields.
-
-### Known limitations
-
-- 340 perks remain inert and are tracked in the enforced backlog (`perk_no_effect_allowlist.txt`); they are mod-gated (their optional mod is absent) or pending native implementation in later batches. The guard guarantees none are *silently* inert.
-- `TITANS_GRIP` and `GLADIATOR` approximate their lang text (Spartan two-handed bypass / shield bash) without invasive mixins into Spartan internals; see `docs/PERK_AUDIT.md`.
-- Lock providers for mods not present locally are compiled and registered but only runtime-verified when that mod is installed.
-
-## [1.3.7] - 2026-06-10 — Configuration reliability audit
-
-Audit pass focused on config lifecycle, the YACL config screen, item locking, and integration gating. Driven by two user reports: "disabling item locking does nothing" and "the YACL config screen does nothing."
-
-### Fixed
-
-- **`/skillsreload` now reloads every config file, not just lock items.** `HandlerSkill.ForceRefresh()` previously re-read only `runicskills.lockItems.json5`, so edits to `runicskills.common.json5` — including the `enableItemLocks` master toggle, the disabled perk/passive/power lists, integration toggles and multipliers — never took effect until a full restart (and the command re-synced the stale in-memory values to clients). A new `Configuration.reloadAll()` reloads all four holders before rebuilding the lock cache and re-syncing. (Root cause of "disabling item locking does nothing.")
-- **The config screen no longer silently no-ops on a YACL version mismatch.** `YaclConfigUiBuilder.buildScreen` caught only `NoClassDefFoundError | RuntimeException`; a present-but-incompatible YACL (e.g. installing "the latest" YACL whose API drifted from the 3.5.0 build) throws `LinkageError` subtypes that escaped the catch, so clicking *Configure* did nothing. It now catches `LinkageError | RuntimeException`, logs one actionable ERROR naming the installed YACL version, and shows a vanilla fallback screen pointing at the log instead of a blank no-op. (Root cause of "the YACL config screen does nothing.")
-- **Integration master toggles now gate lock-item generation.** Disabling e.g. `enableSpartanIntegration` previously still injected that integration's generated locks (only the finer `spartanEnableLockItems` was checked). Setting `enableItemLocks = false` now also stops *all* integration lock generation, not just enforcement.
-- **`disabledPowers` is now editable in the config screen** — it was persisted but missing its `@AutoGen` annotation, unlike `disabledPerks`/`disabledPassives`.
-- Config (re)generation now logs at INFO naming the file; an unparseable config is backed up to `<name>.invalid` before defaults are rewritten, so a typo never silently destroys a hand-edited file.
-- Hardened registry lookups (`canUseItem/Block/Entity`, the lock tooltip, `/registeritem`) against `NullPointerException` for unregistered/modded entries.
-- Defensive `ResourceLocation` parsing for user-supplied config strings (lock-item ids, advancement title conditions) — a malformed entry is logged and skipped instead of crashing config load.
-- Replaced production-disabled `assert x != null` guards (Shulker-bullet mixin, client message packet) with real null checks.
-- Added the 17 missing YACL config-group translation keys; documented the intentionally file-only config fields.
-- Resolved an unresolved git merge conflict in `gradle.properties` and synced the version across `gradle.properties`, `VERSION`, and `CLAUDE.md`.
-
-### Added
-
-- JUnit test suite for config round-trip/recovery, JSON5 comment stripping, and lock-evaluation gating.
-- `AUDIT.md`, `VERIFICATION.md`, and `FOLLOW_UPS.md`; a "Disabling item locking" section in the README/CurseForge description.
-
-## Development notes — the 1.2.x / 1.3.x line
-
-Five sections below were headed `[Unreleased]` for two years. Their content shipped somewhere
-across 1.2.0–1.3.6, but which heading landed in which release was never recorded, so they are
-grouped and labelled here rather than attributed to versions that would be a guess. They are kept
-for provenance — the perk-wiring and multi-rank work they describe is the ancestry of the backlog
-that 2.0.0 finally closed. Treat every "deferred" and "in progress" note in them as historical:
-`docs/PERK_AUDIT.md` is the current state.
-
-### Phase 1 dead-perk wiring
-
-Implementation of Phase 1 from the 2026-05 perk audit (`~/.claude/plans/you-are-a-senior-zazzy-thompson.md`). The audit confirmed five user-reported "active but ineffective" perks (Mowzie's Might, Sniper, Eagle Eye, Spell Quickening, Key Forge) as part of a wider pattern: 358 of 522 registered perks had zero references outside `RegistryPerks.java`. Phase 1 wires the five named perks; Phases 2-9 cover the remaining trees in subsequent commits.
-
-### Fixed
-
-- **Mowzie's Might** — `MOWZIES_MIGHT` was registered with config/lang/texture but never read by any code. [`MowziesMobsIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/MowziesMobsIntegration.java#L57) now applies `mowziesMightPercent` damage bonus when the player's main hand matches a curated Mowzie weapon allow-list (`geomancer_staff`, `ice_crystal`, `naga_fang_dagger`, `solar_spear_item`, `axe_of_a_thousand_metals_item`, `wrought_axe`, `spear`, `dart`, `wing_blade`, `spear_throwing`). Missing IDs from the list are filtered at runtime via `ForgeRegistries.ITEMS.containsKey`, so updates to Mowzie that rename or drop items never crash.
-- **Sniper** — `SNIPER` had no distance check in the arrow handler. [`CombatEventHandler.onPlayerShootArrow`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java#L549) now adds a flat `sniperPercent` bonus when the impact distance exceeds the new `sniperDistanceThreshold` config (default 30 blocks).
-- **Eagle Eye** — `EAGLE_EYE` similarly had no distance scaling. Same handler now adds a linear ramp from `eagleEyeRampStartBlocks` (default 10) to `eagleEyeRampFullBlocks` (default 40); composes additively with Sniper for long-range archer builds.
-- **Key Forge** — `KEY_FORGE` was registered against a non-existent "Sniper's Skills" integration in the audit notes; the real source is Locks Reforged (`locks:key` → `locks:master_key`). New [`LocksIntegration.onItemCrafted`](src/main/java/com/otectus/runicskills/integration/LocksIntegration.java#L40) handler rolls `keyForgePercent` chance to replace a crafted `locks:key` stack with a `locks:master_key` of the same count. LocksIntegration is now event-bus-registered in [`RunicSkills.java`](src/main/java/com/otectus/runicskills/RunicSkills.java#L121) when the locks mod is loaded.
-
-### Deprecated
-
-- **Spell Quickening** — `SPELL_QUICKENING` was a duplicate of the working `QUICKENING` perk ([`IronsSpellbooksIntegration.java:468`](src/main/java/com/otectus/runicskills/integration/IronsSpellbooksIntegration.java#L468) wires `QUICKENING` to `CAST_TIME_REDUCTION`, but no equivalent code exists for `SPELL_QUICKENING`). The two had overlapping tooltips and adding a second modifier would have stacked invisibly with the working perk. `spellQuickeningRequiredLevel` default is now `-1` so the registration's `< 0` gate disables the perk entirely; the `@IntField(min = 1)` annotation was relaxed to `min = -1` to permit the sentinel value. Players who already unlocked Spell Quickening keep their skill points; only the unlockable node is removed from the Magic tree.
-
-### Added
-
-- **`sniperDistanceThreshold`** (default 30) — Sniper's minimum impact distance, [`HandlerCommonConfig.java:1083`](src/main/java/com/otectus/runicskills/handler/HandlerCommonConfig.java#L1083).
-- **`eagleEyeRampStartBlocks`** (default 10) and **`eagleEyeRampFullBlocks`** (default 40) — Eagle Eye's ramp endpoints, [`HandlerCommonConfig.java:943`](src/main/java/com/otectus/runicskills/handler/HandlerCommonConfig.java#L943).
-
-### Phase 2A: Strength tree easy-wins
-
-Four additional Strength perks wired into the existing [`CombatEventHandler.onLivingHurtStrengthAttacker`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java#L284) block. All reuse the additive-bonus composition pattern (`bonus += dmg * pct/100`).
-
-- **PRIMAL_FURY** — bonus damage when the player's HP fraction is below 50%. Stacks with Berserker (different trigger surface — Berserker is crit-only).
-- **SPARTANS_DISCIPLINE** — bonus damage when the main hand is any `spartanweaponry:*` item. Namespace match, no item-allow-list to keep stale.
-- **SACRED_FIRE** — sets the target on fire for 4 seconds. No damage bonus; the perk has no `Value` array — it's a binary on/off trigger.
-- **UNSTOPPABLE_FORCE** — `unstoppableForcePercent` chance per hit to apply Slowness II for 30 ticks (~1.5s). The percent is the proc chance, not a damage multiplier — matches the tooltip ("%s chance to briefly stun").
-
-### Audit follow-up
-
-- **Phase 2B (remaining Strength)** — BLOODLUST (kill→attack-speed; needs new transient-modifier infrastructure), BLOOD_FURY (Blood Magic-gated crit lifesteal), CLEAVE (multi-target AoE), TITANS_GRIP (shield + 2H — likely mixin), MYTHICAL_BERSERKER (last-stand variant), STALWART_STRIKER (dungeon-mob heal), WARLORDS_PRESENCE (ally aura), GLADIATOR (no shield-bash mechanic in vanilla to hook), POLEARM_MASTERY (Spartan polearm subset), DRAGON_BONE_MASTERY (Ice and Fire item allow-list), CATACLYSMS_WRATH (Cataclysm item allow-list), CHAIN_LIGHTNING_STRIKE (ISS lightning entity spawn), RUNIC_MIGHT (source mod unclear), SIEGE_BREAKER (Cataclysm boss detection).
-- **Phase 3 (Dexterity tree, 36 dead perks)** — additional arrow perks (PRECISION_SHOT, SHARPSHOOTER, MULTISHOT_MASTERY, ...) and movement perks (ACROBAT, FLEET_FOOTED, ...).
-- **Phase 4 (Magic tree, 35 dead perks)** — most are ISS attribute reconciliations via the existing `reconcileModifier` pattern.
-- Phases 5-9 — remaining aptitudes (Constitution, Endurance, Intelligence, Wisdom, Building, Tinkering, Fortune).
-
-### R0 Hardening
-
-Implementation of the R0 hardening release from `plan-the-full-implementation-floofy-quokka.md` against findings in `perk-audit-2026-05-18.md`. Surgical bug fixes only; no perk content added.
-
-### Fixed
-
-- **B1 (P1) — `STEALTH_MASTERY` visibility values inverted.** [`mixin/MixLivingEntity.java:195`](src/main/java/com/otectus/runicskills/mixin/MixLivingEntity.java#L195) now reads `Value[1]` (sneak %) when crouched and `Value[0]` (unsneak %) when standing, matching the registration order in [`RegistryPerks.java:111-113`](src/main/java/com/otectus/runicskills/registry/RegistryPerks.java#L111). Pre-fix: crouching made the player MORE visible. The fix also uses `getActiveValue(player)` to pre-emptively bake in rank-awareness (R1 work).
-- **B5 (P3) — `STEALTH_MASTERY` mixin guard order.** `isEnabled` check folded into the outer `null`-guard so the value array is only read when the perk would actually apply.
-- **B6 (P3) — Integration `@SubscribeEvent` handlers ungated by `isModLoaded()`.** Added an early-return `if (!isModLoaded()) return;` to the `onLivingHurt` / `onItemUseFinish` handlers in [`IceAndFireIntegration`](src/main/java/com/otectus/runicskills/integration/IceAndFireIntegration.java#L196), [`MowziesMobsIntegration`](src/main/java/com/otectus/runicskills/integration/MowziesMobsIntegration.java#L22), [`CataclysmIntegration`](src/main/java/com/otectus/runicskills/integration/CataclysmIntegration.java#L33), [`FarmersDelightIntegration`](src/main/java/com/otectus/runicskills/integration/FarmersDelightIntegration.java#L24). These integration classes are loaded unconditionally; without the guard, every relevant Forge event paid the cost of a `ForgeRegistries` lookup even when the target mod was absent.
-- **B7 (P3) — `ARS_HEDGEWITCH` declared two `Value`s the handler never read.** [`ArsNouveauIntegration.java:121` and `:271`](src/main/java/com/otectus/runicskills/integration/ArsNouveauIntegration.java#L121) now read the cost% and damage% from `perk.getActiveValue(player)[0]` / `[1]` instead of `HandlerCommonConfig.HANDLER.instance().arsHedgewitchCostPercent` / `…DamagePercent`. Tooltip substitution and gameplay now share the same source of truth.
-- **Curios NPE silently swallowed.** [`handler/HandlerCurios.java:38`](src/main/java/com/otectus/runicskills/handler/HandlerCurios.java#L38) `catch (NullPointerException ignored)` replaced with a logged catch (`LOGGER.warn`). Still defaults to `DENY` for safety, but unexpected NPEs now surface in the log instead of hiding bugs.
-
-### Added
-
-- **S6 — Perk-keyed cooldown helpers** on `SkillCapability`: `getCooldown(Perk)` and `setCooldown(Perk, int)` derive the cooldown key as `"perk." + perk.getName()`. New perks needing a cooldown no longer require updating the hardcoded `COOLDOWN_*` constants. Existing constants (`COOLDOWN_LIMIT_BREAKER`, `COOLDOWN_PERK_SWAP`, `COOLDOWN_COUNTER_ATTACK`, `COOLDOWN_COUNTER_ATTACK_TIMER`) retained for the three existing call sites.
-- **`disabledPowers` config field** in `HandlerCommonConfig`. Pre-existing in-progress Powers code referenced this without a declaration; added as a `List<String>` matching the `disabledPerks` / `disabledPassives` shape. Comment documents its semantics: equipped powers from the list are filtered out at runtime.
-
-### Deferred
-
-- **B8 — 17 non-uniform `RequiredLevel` field name standardisation.** Investigation showed the rename touches ~40 fields across `HandlerCommonConfig`, `RegistryPerks`, `ArsNouveauIntegration`, `DynamicConfigSyncCP`, and YACL UI lang labels (12+ locales). Combined with the existing-config-file migration risk, B8 doesn't fit R0. Tracked for a dedicated hygiene release after R13.
-
-### Audit follow-up
-
-- B2 (multi-rank values systemically ignored): completed in R1 (see below).
-- B3 + B4 (Apotheosis rarity ordinal + interactor race): rolling out in R2.
-- The 373 inert perks: rolling out per-tree in R3–R12.
-
-### R1 Multi-rank rollout (B2)
-
-Implementation of the R1 multi-rank rollout from `plan-the-full-implementation-floofy-quokka.md`. Strategy (a): mechanical replacement of every `perk.getValue()[N]` callsite with `perk.getActiveValue(player)[N]` so rank-aware values flow through to gameplay.
-
-### Fixed
-
-- **B2 (P1, systemic) — Multi-rank perk values silently ignored.** 28 `RegistryPerks.<NAME>.get().getValue()[N]` callsites across `CombatEventHandler` (10), `CraftingEventHandler` (10), `TickEventHandler` (4), `BotaniaIntegration` (16), `ApotheosisIntegration` (1), `IronsSpellbooksIntegration` (1), `MixLivingEntity` (2), `MixPlayer` (1), `MixVillager` (1), `MixEnchantmentMenu` (1), `TreasureHunterPerk` (1) replaced with `getActiveValue(player)[N]`. Previously, a multi-rank perk would always apply rank-1 values regardless of the player's actual rank. No currently-shipping perks were multi-rank, so this is a latent-bug fix, not a behavior change for existing playthroughs — but it unblocks every future multi-rank perk in R3–R12.
-
-### Changed
-
-- **`TreasureHunterPerk.drop()` signature.** Now takes a `Player` argument so rank-aware value lookup has a player context. Only caller (`CraftingEventHandler.java:49`) was updated.
-
-### R3 Strength tree (in progress, 15 of 35 perks)
-
-Per-tree perk-content rollout from `plan-the-full-implementation-floofy-quokka.md`, continued. Batch 1 closed the trivial weapon/armor modifiers; batch 2 closes the always-available, no-new-integration subset (state-bearing perks: target-HP gates, last-attacker memo, recent-hit ring buffer, save-from-fatal); batch 3 scaffolds the four new mod-integration classes; batch 4 wires the mod-gated Strength perks through those scaffolds via reflective namespace matching (no new build deps). 20 perks remain in R3: 6 vague-batch (deferred for clarification) + 10 in existing integrations (deferred to a follow-up cleanup batch) + 4 cosmetic/system-rewrite perks audit-flagged out of plan scope.
-
-### Added — Strength perks (batch 1: trivial weapon/armor modifiers)
-
-- **WEAPON_MASTER.** Flat % bonus damage on melee hits when the player's main hand holds a Sword / Axe / Trident. Tools (pickaxe, shovel) explicitly excluded. Multi-rank-aware via `getActiveValue(player)`.
-- **ARMOR_PIERCING.** Bonus damage scales linearly with target armor (0 → 20 armor). Approximates "ignore X% of armor" in a `LivingHurtEvent`-side calculation rather than recomputing vanilla's armor formula.
-- **HEAVY_STRIKES.** Bonus damage when the target is actively blocking with a shield (`target.isBlocking()`).
-- **WARMONGER.** Bonus damage when the target's armor value > 0. Composes multiplicatively with `HEAVY_STRIKES` and `ARMOR_PIERCING` per lang descriptions.
-- **POWER_ATTACK.** Critical hits get an additional % damage on top of vanilla's 1.5×. Wired into `onPlayerCriticalHit` after the existing `BERSERKER` branch.
-
-### Added — Strength perks (batch 2: state-bearing on-hit triggers)
-
-- **EXECUTE.** Bonus % damage when the target's post-armor HP fraction is below 25%. Threshold baked into the lang description; no config knob. Composes into the bonus accumulator alongside the batch-1 stack.
-- **DEVASTATING_BLOW.** Bonus % damage on the opening hit (`target.getHealth() >= target.getMaxHealth()`); the `>=` (rather than `==`) tolerates float regen edge-cases.
-- **VENGEANCE.** New victim-side handler `onLivingHurtStrengthVictim` (LOWEST priority) records the last `LivingEntity` to damage the player into a transient static `Map<UUID, AttackerMemo>` on `CombatEventHandler`. The attacker-side handler reads the memo and applies the % bonus when the current target UUID matches and the hit happened within `vengeanceWindowTicks` (default 600 ticks / 30 s, configurable). Self-damage and indirect damage (no living entity source) skip memo recording. Mirrors the R2 `ApotheosisIntegration.recentInteractors` pattern — transient, no NBT, no protocol bump.
-- **BLADE_STORM.** Recent-hit ring buffer per attacker UUID (`Map<UUID, Deque<HitRecord>>`, cap 16, synchronized — modelled on `PowerRuntime.SpellHistory`). Each attacker-side hit pushes a `HitRecord(targetUUID, gameTime)`; when the count of distinct target UUIDs in the last `bladeStormWindowTicks` (default 80) reaches `bladeStormMinTargets` (default 2), the player gets a transient `ATTACK_SPEED` `AttributeModifier` (`MULTIPLY_BASE`, +`Value[0]%`) keyed by a deterministic UUID, refreshed on each subsequent qualifying hit and removed by the 100-tick `onServerTick` pruner when the window lapses. Attack-speed not damage — matches the lang description.
-- **LAST_STAND.** Save-from-fatal interpretation. The new victim handler clamps a hit that would otherwise kill the player (`incoming >= currentHP`) to leave 1 HP, opens a 40-tick bonus-damage window in a static `Map<UUID, Long>`, and sets the S6 perk-keyed cooldown to 1200 ticks (60 s) via `cap.setCooldown(perk, 1200)`. While the active window is current, the attacker-side handler applies `+Value[0]%` outgoing damage. The clamp never amplifies a hit; further fatal hits inside the cooldown kill normally.
-
-Three new tuning fields in `HandlerCommonConfig`: `vengeanceWindowTicks` (default 600), `bladeStormWindowTicks` (default 80), `bladeStormMinTargets` (default 2). All server-side reads — not synced to clients, no protocol bump.
-
-New static state on [`CombatEventHandler`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java): `RECENT_HITS`, `LAST_ATTACKER`, `LAST_STAND_ACTIVE_UNTIL`, `BLADE_STORM_ACTIVE_UNTIL`. All four maps are pruned every 100 ticks in `onServerTick(Phase.END)`; the BLADE_STORM pruner additionally strips the `ATTACK_SPEED` modifier from any online player whose window has lapsed. State is transient (no NBT, no sync, dies with the server) — matches the R2 Apotheosis precedent.
-
-### Added — Integration scaffolding (batch 3)
-
-Four new mod-integration classes registered on the Forge bus via `RunicSkills.tryLoadIntegration(modId, fqcn)`. Each is a reflective-load class with a no-op `@SubscribeEvent onLivingHurt(LivingHurtEvent)` handler at NORMAL priority that batch 4 will populate with perk-effect code. The reflective-load path keeps the JVM from resolving the upstream APIs when the target mod is absent (same pattern as the existing Botania / Ars Nouveau / ISS / Apotheosis integrations).
-
-- **[`SaintsDragonsIntegration`](src/main/java/com/otectus/runicskills/integration/SaintsDragonsIntegration.java)** (mod id `saintsdragons`) — landing site for `DRACONIC_FURY`, `GLADIATOR`, `TROPHY_HUNTER` (R3 batch 4) plus the ~5 cross-tree perks (`DRAGON_BREATH_SHIELD`, `DRAGON_HEART`, `HEARTY_FEAST`, `DRAGON_RIDER`, `UNDYING_WILL`) wired in R4/R5/R6.
-- **[`NichirinDynastyIntegration`](src/main/java/com/otectus/runicskills/integration/NichirinDynastyIntegration.java)** (mod id `nichirin_dynasty`) — landing site for `NICHIRIN_BLADE`, `DRAGON_BONE_MASTERY` (R3 batch 4) plus `BLOODLUST` (later).
-- **[`SamuraiDynastyIntegration`](src/main/java/com/otectus/runicskills/integration/SamuraiDynastyIntegration.java)** (mod id `samurai_dynasty`) — pre-existing 277-line lock-generator class extended with event-handler scaffolding. Lock-generation paths (weapon / armor / katana / accessory) and the HandlerSkill call site are untouched. Landing site for `CLEAVE`, `TITANS_GRIP`, `SAMURAIS_EDGE` (R3 batch 4) plus 6 cross-tree perks (`LIGHTNING_ROD`, `NINJA_TRAINING`, `OBSIDIAN_SKIN`, `POISON_ARROW`, `WIND_RUNNER`, `SAMURAI_RESOLVE`) across R5/R6.
-- **[`EnigmaticLegacyIntegration`](src/main/java/com/otectus/runicskills/integration/EnigmaticLegacyIntegration.java)** (mod id `enigmaticlegacy`) — landing site for `ANCIENT_STRENGTH`, `CATACLYSMS_WRATH`, `CURSE_WARD` (R3 batch 4) plus ~8 cross-tree perks (`ARMOR_OF_FAITH`, `ARTIFACT_HUNTER`, `ENIGMATIC_PROTECTION`, `ENIGMATIC_UNDERSTANDING`, `ENIGMATIC_VITALITY`, `ENIGMATIC_WISDOM`, `MYSTIC_ANALYSIS`, `SAGES_FOCUS`, `SOUL_SUSTENANCE`) across R4/R7/R11.
-
-Bootstrap wiring added to [`RunicSkills.java`](src/main/java/com/otectus/runicskills/RunicSkills.java) alongside the existing reflective-load block. Each scaffold class includes a defensive `isModLoaded()` guard inside its handler (R0 B6 hardening pattern — belt-and-braces against a future refactor changing the registration path).
-
-### Added — Strength perks (batch 4: mod-gated, reflective namespace match)
-
-Four mod-gated perks wired into their batch-3 scaffold handlers + one always-available perk (TROPHY_HUNTER) in `CombatEventHandler`. All five detect their target items / entities by ResourceLocation namespace + path patterns instead of importing the upstream mod APIs — no new build dependencies, no Compat-wrapper classes, no stub jars.
-
-- **NICHIRIN_BLADE** ([`NichirinDynastyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/NichirinDynastyIntegration.java)). Bonus % damage when the player's main-hand item is in the `nichirin_dynasty` namespace.
-- **SAMURAIS_EDGE** ([`SamuraiDynastyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/SamuraiDynastyIntegration.java)). Bonus % damage when the main-hand item is in `samurai_dynasty` and its registry-id path contains `katana`, `wakizashi`, `odachi`, or `nagamaki` — matches the lang's "katana weapons" while excluding polearms, clubs, and short blades.
-- **ANCIENT_STRENGTH** ([`EnigmaticLegacyIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/EnigmaticLegacyIntegration.java)). Bonus % damage when the main-hand item is in `enigmaticlegacy`.
-- **DRACONIC_FURY** ([`SaintsDragonsIntegration.onLivingHurt`](src/main/java/com/otectus/runicskills/integration/SaintsDragonsIntegration.java)). Bonus % damage AND `target.setSecondsOnFire(2 + pct/25)` when the main-hand item is in `saintsdragons` and its path contains a draconic-anatomy keyword (`fang`/`claw`/`horn`/`tooth`/`wing`/`scale`/`dragon`). Two-part effect honours the lang's "bonus fire damage" with a visible ignite alongside the % bonus.
-- **TROPHY_HUNTER** (`CombatEventHandler.onLivingHurtStrengthAttacker`). Bonus % damage when the target qualifies as elite/boss by either (a) entity-type namespace ∈ `trophyHunterBossNamespaces` (default: apotheosis, cataclysm, iceandfire, mowziesmobs, saintsdragons, bossesofmass), OR (b) `MOB_CATEGORY == MONSTER && getMaxHealth() >= trophyHunterMinHealthForElite` (default 100). Vanilla Ender Dragon (200 HP) and Wither (300 HP) match (b); Elder Guardian (80 HP) does not at the default threshold — adjust if it should.
-
-New shared utility [`integration/IntegrationHelpers.java`](src/main/java/com/otectus/runicskills/integration/IntegrationHelpers.java) with three null-safe static methods (`itemFromMod`, `entityFromMod`, `itemPathContains`). Replaces the inline namespace-match idiom every integration was re-implementing. Reused by all 5 batch-4 handlers; older integrations (Spartan, IceAndFire, Mowzies, FarmersDelight) still use their inline copies but could migrate in a future hygiene pass.
-
-Two new config fields in `HandlerCommonConfig` for TROPHY_HUNTER tunables: `trophyHunterBossNamespaces` (`List<String>`) and `trophyHunterMinHealthForElite` (int, default 100). The four mod-gated perks reuse their existing `*Percent` fields. No protocol bump.
-
-### Deferred — R3 vague-batch (expanded from 3 to 6 — pending clarification session)
-
-Six Strength perks register but their lang descriptions don't uniquely determine a mechanic. Per the parent plan's vague-perk pause protocol, they're held for a single decision-batch session before R3 ships as `1.3.0`:
-
-- **`RUNIC_MIGHT`** (original) — "Runic ore weapons deal %s bonus damage." No vanilla "runic ore"; candidate gates: Apotheosis-affixed items, Ars Nouveau Source weapons, Ice and Fire dragonsteel, a datapack-driven item tag, or the mod's own items.
-- **`PRIMAL_FURY`** (original) — "When below 50%% health, your desperation grants %s bonus attack damage." Threshold is baked into the lang but has no Value slot; unclear if 50% should be configurable, and how it stacks with `LAST_STAND` active window.
-- **`UNSTOPPABLE_FORCE`** (original) — "Your strikes have a %s chance to briefly stun enemies." No vanilla stun effect, no duration slot in Value array. Candidate effects: `Slowness V`, `Wither I`, `irons_spellbooks:stun` (if ISS loaded), or a per-tick `setDeltaMovement(ZERO)`.
-- **`CLEAVE`** (batch 4) — "Your melee attacks cleave through enemies, hitting additional nearby targets." No `Value[]` declaration in `RegistryPerks`, no `cleavePercent` config. Need: AABB radius, target-count cap, damage scaling (flat split, per-target percent, or both).
-- **`TITANS_GRIP`** (batch 4) — "Your immense strength allows you to wield two-handed weapons alongside a shield." No `Value[]`. Need: definition of "two-handed weapon" (per-item-id list, per-attribute, or `SamuraiDynastyIntegration.WeaponType` enum), and the actual relaxation mechanic (allow shield in off-hand while wielding two-handed? bonus damage? speed-penalty removal?). Gated on `SpartanIntegration` per registration.
-- **`GLADIATOR`** (batch 4) — "Your shield bash damage is increased by %s." Vanilla has no shield bash. Need: definition (mod-provided shield-bash event detection? Re-interpret as "damage while blocking with shield raised"? Spartan Shields integration?). Currently always-available — the resolution may move the gate.
-
-Implementation lives in [`CombatEventHandler.onLivingHurtStrengthAttacker`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java) at NORMAL priority (attacker side) and [`CombatEventHandler.onLivingHurtStrengthVictim`](src/main/java/com/otectus/runicskills/registry/events/CombatEventHandler.java) at LOWEST priority (victim side). Compile-clean; full `./gradlew build` passes including `:checkSidedImports`.
-
-### Fixed (1.3.4 hotfix — boot crash regression)
-
-- **`IllegalArgumentException: Duplicate registration rookie` at mod construction.** The 1.3.3 deploy crashed on first boot inside [`RegistryTitles.load`](src/main/java/com/otectus/runicskills/registry/RegistryTitles.java) — the per-title `forEach` over `HandlerTitlesConfig.titleList` invoked `DeferredRegister.register("rookie", …)` twice, with the second call throwing. Investigation found the on-disk `runicskills.titles.json5` has exactly one rookie entry, the compiled `List.of(new TitleModel(), …)` default has exactly one (the no-arg `TitleModel()` ctor sets `TitleId = "rookie"`), and YACL 3.6.6's `GsonConfigSerializer.loadSafely` does a plain reflective field-replacement (`field.set(instance, gson.fromJson(…))`). The doubling could not be explained from bytecode alone — the most plausible cause is a behavior shift between YACL 3.5.0 (compile-against version) and 3.6.6 (runtime version) in handling fields initialized to immutable `List.of(…)` defaults. Fix: defensive dedup in `RegistryTitles.load` — a `HashSet<String>` of seen `TitleId`s skips second occurrences with a one-line warning, and a null/empty TitleId guard precedes it. Correct regardless of where the doubling enters; surface area minimal. Investigation notes preserved in [the continue-r3-strength-tree plan file](C:\Users\crims\.claude\plans\continue-r3-strength-tree-curried-porcupine.md).
-
-### Fixed (1.3.5 hotfix — world-join crash regression)
-
-- **`Connection Lost — Invalid player data` on world entry.** The 1.3.4 dedup fixed the boot crash but exposed a downstream NPE: `serverPlayerTitles` iterated the raw `HandlerTitlesConfig.HANDLER.instance().titleList` (still containing the runtime-duplicated `TitleModel`) and called `getTitle().setRequirement(...)` on every entry. The skipped duplicate's `_title` field was never initialized (the 1.3.4 dedup skipped its `title.registry(TITLES)` call) → NPE → Forge aborts player placement and disconnects the client with the vanilla "Invalid player data" message. Fix: `RegistryTitles.load` now also replaces `HandlerTitlesConfig.HANDLER.instance().titleList = List.copyOf(uniqueTitles)` after registration, so downstream consumers see only the registered entries. `serverPlayerTitles` also gains a defensive `getTitle() != null` guard with a warning log as defense-in-depth.
-
-### Fixed (1.3.6 hotfix — world-join crash, third stage: unregistered Powers packets)
-
-- **`IllegalArgumentException: Invalid message PowerOverridesSyncCP` on world entry (same "Invalid player data" disconnect message).** Pre-existing latent bug unmasked by the 1.3.5 title-NPE fix. The 1.1.0 CHANGELOG entry claimed `PROTOCOL_VERSION` was bumped from 3 → 5 and that three new Powers packets (`PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP`) were added, but [`ServerNetworking.init`](src/main/java/com/otectus/runicskills/network/ServerNetworking.java#L21) had `PROTOCOL_VERSION = "4"` and zero `registerMessage(...)` calls for the three Powers packets. `PlayerLifecycleHandler.onPlayerLoggedInEvent` calls `PowerOverridesSyncCP.sendToPlayer` on join, which made Forge's `IndexedMessageCodec.build` throw `Invalid message …`; Forge's `firePlayerLoggedIn` propagated the exception and the server aborted player placement. The 1.3.4 title NPE was firing earlier in the same player-join code path and masked this — once 1.3.5 fixed the NPE, this surfaced. Fix: register `PowerOverridesSyncCP` (PLAY_TO_CLIENT), `PowerProcCP` (PLAY_TO_CLIENT), and `PowerEquipSP` (PLAY_TO_SERVER) in `ServerNetworking.init`, and bump `PROTOCOL_VERSION` to `"5"` to match the documented 1.1.0 wire format. No new build dependencies; no wire-format change beyond what 1.1.0 already documented.
-
-### R2 Apotheosis hardening (B3 + B4)
-
-Implementation of the R2 Apotheosis hardening release from `plan-the-full-implementation-floofy-quokka.md`.
-
-### Fixed
-
-- **B3 (P2) — Apotheosis rarity ordinal hardcode replaced with name-keyed lookup.** [`ApotheosisIntegration.getRequiredFortuneLevel`](src/main/java/com/otectus/runicskills/integration/ApotheosisIntegration.java#L80) and [`countRareAffixItems`](src/main/java/com/otectus/runicskills/integration/ApotheosisIntegration.java#L408) now match rarity by `DynamicHolder.getId().getPath()` (`"common"`, `"uncommon"`, `"rare"`, `"epic"`, `"mythic"`, `"ancient"`) instead of `ordinal()`. Unknown rarity paths log once via `warnOnceForUnknownRarity` and default-deny (`Integer.MAX_VALUE`) — a future Apotheosis update that inserts a new tier can no longer be silently equipped without a config update.
-- **B4 (P2) — Apotheosis `lastInteractingPlayer` static-field race replaced with bounded UUID-keyed map.** Replaced the single `private static Player lastInteractingPlayer` with `recentInteractors: ConcurrentHashMap<UUID, Long>` keyed on player UUID and time-stamped to the current game tick. Reads via `resolveInteractor()` return only the most-recent interactor inside `INTERACTION_WINDOW_TICKS` (20 ticks / 1 second). Entries past the window are pruned every 100 ticks from `onPlayerTickPhase2a`. Two-player concurrent interactions no longer cross-pollinate socketing attribution; if no recent interactor exists, the perk-aware branch defaults to no-op and Apotheosis vanilla behavior takes over.
-
-## [1.1.0] - 2026-05-08
-
-Consolidated post-1.0.0 release. Bundles the Botania integration (originally tagged 1.0.1), the magic-tree cross-mod expansion (originally tagged 1.0.2), the eight-alpha Powers framework development (originally tagged 1.1.0-alpha1..alpha8), the dedicated-server YACL safety refactor that the README has been advertising since 1.0.1 was actually fixed, the L2Tabs class-load fix (same shape as the 1.0.0 Legendary Tabs fix, missed at the time), and triage of three CurseForge user reports. **120 perks across five mod integrations + 75 Powers metadata stubs (28 with wired behavior) + a meaningful capability change** — the mod now actually runs on dedicated servers without YACL installed.
-
-### Added — Botania (42 perks; 18 with effects, 24 default-disabled pending future implementation)
-
-- **Optional integration**, class-load-isolated. `BOTANIA_*` perks register only when `botania` is loaded and the perk's `required_level >= 0`; otherwise the `RegistryObject<Perk>` is `null` and every event path short-circuits via the existing `RegistryPerks.X != null` idiom. Botania API confined to two files:
-  - `integration/BotaniaCompat.java` — wraps `vazkii.botania.api.BotaniaForgeCapabilities`, `ManaItemHandler`, `ManaReceiver`, `ManaPool`. Offers `drainNearbyPool` / `hasNearbyPoolMana` / `drainPlayerMana` / `chargePlayerMana` / `getPlayerManaTotal`. Scans bounded to a 12×6×12 AABB.
-  - `integration/BotaniaIntegration.java` — Forge-bus event subscriber, registered via `RunicSkills.tryLoadIntegration("botania", ...)`. Hooks `ManaProficiencyEvent`, `ManaDiscountEvent`, `ManaItemsEvent` and Forge `TickEvent.PlayerTickEvent`, `LivingHurtEvent`, `CriticalHitEvent`, `LivingDeathEvent`, `BlockEvent.BreakEvent`, `LivingEntityUseItemEvent.Finish`.
-- **Tier layout** mirrors Botania's rune / season / sin / Gaia progression:
-  - **Wisdom low-tier** — Petal-Reader, Rune of Mana: Resonance, Sparkle-Sense, Dowser's Twig, Green Thumb, Livingbark Student.
-  - **Wisdom mid-tier (Seasonal)** — Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query.
-  - **Wisdom high-tier (Sin / Gaia / Elven)** — Greed: Cartographer-Prospector, Pride: Far Reach, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes.
-  - **Magic low-tier (Rune)** — Inner Wellspring, Rune of Water: Tidewoven, Rune of Fire: Emberheart, Rune of Earth: Stone-Rooted, Rune of Air: Featherstep, Band of Aura: Passive Channel.
-  - **Magic mid-tier (Seasonal / Lens)** — Spring: Verdant Pulse, Summer: Solar Conduit, Autumn: Harvest Tithe, Winter: Frostbound, Lens Mastery: Velocity, Lens Mastery: Potency.
-  - **Magic high-tier (Sin / Gaia / relic)** — Lust: Pixie Affinity, Gluttony: Cake Combustion, Greed: Magnetite, Sloth: Unbound Step, Envy: Mirrored Wrath, Pride: Crown of Reach, Wrath: Thundercall, Gaia's Gift: Relic Attunement, Terrasteel Ascension, Flügel's Grace, Manastorm.
-- **Full effect implementations (18 perks):** Tidewoven, Resonance, Inner Wellspring, Mirrored Wrath, Emberheart, Solar Conduit, Featherstep, Frostbound, Thundercall, Harvest Tithe, Green Thumb, Livingbark Student, Cake Combustion, Stone-Rooted, Terrasteel Ascension, Crown of Reach, Far Reach, Magnetite. Attribute modifiers piggy-back on the existing `RegistryAttributes.RegisterAttribute` helper; reach bonuses use Forge's `ENTITY_REACH` and `BLOCK_REACH` attributes.
-- **Default-disabled (24 perks)** — every keybind-activated, custom-render, custom-capability, and projectile/physics perk has its `*RequiredLevel` defaulted to `-1`, eliding the perk from the registry until a future implementation pass ships its handler. Pack authors who want them visible (for cosmetic display or a future patch) can set the level back to a positive value: Petal-Reader, Sparkle-Sense, Dowser's Twig, Spring: Agricultor's Eye, Summer: Forager's Palate, Autumn: Loot-Hunter's Intuition, Winter: Still Listener, Manaseer's Lens, Corporea Query, Greed: Cartographer-Prospector, Sloth: Lazy Swap, Envy: Mirror's Read, Elven Knowledge, Gaia's Witness, Oracle of the Nine Runes, Band of Aura: Passive Channel, Spring: Verdant Pulse, Lens Velocity, Lens Potency, Lust: Pixie Affinity, Sloth: Unbound Step, Gaia's Gift: Relic Attunement, Flügel's Grace, Manastorm.
-- **Perk icons** reuse Botania's own 16×16 item textures via the `botania:` namespace. Nothing redistributed; paths resolve at render time from Botania's assets.
-- Build: `maven.blamejared.com` added to repositories, `compileOnly fg.deobf("vazkii.botania:Botania:1.20.1-451-FORGE:api")` added to dependencies. No runtime jar shipped.
-- mods.toml: optional `botania` dependency, `mandatory = false`, `ordering = "AFTER"`, `versionRange = "[1.20.1-441,)"`.
-
-### Added — Iron's Spells 'n Spellbooks (46 perks)
-
-**Phase 1a — generic mana & casting (16 perks):** Wellspring, Quickening, Reservoir, Tempo, Arcane Recovery, Focus, Mana Bulwark, Arcane Reprieve, Mana Surge, Spellweaver, Resonant Casting, Imbued Focus, Quickcast, Long Channel, Continuous Flow, Charge Mastery. Five are reconciled as permanent `irons_spellbooks:*` attribute modifiers on a 10-tick throttle (Wellspring → `max_mana`, Quickening → `cast_time_reduction`, Reservoir → `mana_regen`, Tempo → `cooldown_reduction`, Mana Surge transient on `spell_power`/`mana_regen` while HP ≤ threshold). The remainder hook ISS events: `LivingDeathEvent` (Arcane Recovery), `LivingAttackEvent` on `CastType.LONG` (Focus), `LivingHurtEvent` (Mana Bulwark redirects damage→mana at 2:1), `ChangeManaEvent` (Arcane Reprieve auto-refill with 120s cooldown, Continuous Flow per-tick drain reduction on `CastType.CONTINUOUS`), `SpellOnCastEvent` (Spellweaver every-Nth-cast free, 10s combo window), `SpellDamageEvent` (Resonant Casting above-95%-mana damage bonus, Long Channel `CastType.LONG` bonus, Charge Mastery `CastType.LONG` bonus), `ModifySpellLevelEvent` (Imbued Focus +1 level), and `SpellCooldownAddedEvent.Pre` (Quickcast `CastType.INSTANT`-filtered cooldown reduction).
-
-Charge Mastery: ISS 3.x has no `CastType.CHARGE` (only `NONE/INSTANT/LONG/CONTINUOUS`), so the perk treats `CastType.LONG` as the held-cast equivalent and applies a configurable `chargeMasteryPercent` damage bonus (default `+25%`). Stacks multiplicatively with Long Channel.
-
-**Phase 1b — school specialist triplets (28 perks):** for each of nine ISS schools (Fire, Ice, Lightning, Holy, Ender, Blood, Evocation, Nature, Eldritch) a three-perk triad plus the previously-missing Eldritch Attunement gate. X-mancer grants `+%` to the school's `<school>_spell_power` (Magic tree). X-Warded grants `+%` to `<school>_magic_resist` (Endurance tree). X-Catalyst is a 1-in-N-chance on-cast signature-effect proc — lightning/holy/ender/evocation/nature/eldritch apply `CHARGED`/`FORTIFY`/`PLANAR_SIGHT`/`ECHOING_STRIKES`/`OAKSKIN`/`ABYSSAL_SHROUD` to the caster; fire/ice/blood apply `IMMOLATE`/`CHILLED`/`REND` to the victim.
-
-**Phase 1c — summon/utility (2 perks):** Lord of the Dead (caster gains `+%` `summon_damage`; newly-spawned `IMagicSummon` entities owned by the player get `+%` `MULTIPLY_BASE` on `MAX_HEALTH` via `EntityJoinLevelEvent`). Life Leech Bound (when a player-owned summon damages a target, `%` of damage returns as mana via `MagicData.addMana`).
-
-### Added — Apotheosis & Apothic Attributes (12 perks)
-
-Socket Virtuoso (`+N` effective sockets via `GetItemSocketsEvent`). Affix Affinity (counts Rare-or-better equipped affixes via `AffixHelper.getRarity()`, multiplies `ATTACK_DAMAGE` and caps damage reduction at `1 - count × reduction` on `LivingHurtEvent`). Ten stat-stick perks reconciled on a 10-tick throttle against `ALObjects.Attributes.*`: Apothic Critical Mastery (`CRIT_CHANCE` + `CRIT_DAMAGE`), Vampiric Fangs (`LIFE_STEAL`), Reaper's Edge (`CURRENT_HP_DAMAGE`), Evasive (`DODGE_CHANCE`), Arrow Mastery (`ARROW_DAMAGE` + `ARROW_VELOCITY`), Earthbreaker (`MINING_SPEED`), Apothic Scholar (`EXPERIENCE_GAINED`), Spectral Ward (`PROT_PIERCE` flat + `PROT_SHRED` percent), Ghostbound (`GHOST_HEALTH`), Heart of the Healer (`HEALING_RECEIVED` + `OVERHEAL`). Two rename clashes resolved against existing Fortune-tree `CRITICAL_MASTERY` and Intelligence-tree `SCHOLAR` by prefixing `apothic_`.
-
-### Added — Ars Nouveau (11 perks)
-
-**Form & utility (4 perks):** Form Focus filters by `Spell.getCastMethod()` identity on the `MethodProjectile`/`MethodTouch`/`MethodSelf` singletons — Projectile and Self reduce mana cost via `SpellCostCalcEvent`, Touch boosts outgoing damage via `SpellDamageEvent.Pre`. Wild Manipulation reduces cost for any spell whose recipe contains a `SpellSchools.MANIPULATION`-tagged glyph (via a shared `spellContainsSchool` helper).
-
-**Per-school (7 perks):** Hedgewitch (Water cost + damage), Emberforged (Fire damage), Stormcaller (Air damage), Geomancer (Earth damage), Conjurer (Conjuration cost), Abjurer (Abjuration damage/magnitude), Arcane Weaver (Manipulation damage). All cost reductions floor at 1 Source. The doc's Necromant variant was dropped — Ars Nouveau 4.12.x `SpellSchools` has no NECROMANCY enum (only Abjuration/Conjuration/Manipulation and the four elementals).
-
-### Added — Cross-mod synergy (9 perks)
-
-Six **Schoolbridges** (require ISS + Ars): each reads the caster's ISS `<school>_spell_power` attribute and bleeds a configurable fraction into outgoing Ars damage of the matched school — Fire→ELEMENTAL_FIRE, Ice→ELEMENTAL_WATER, Lightning→ELEMENTAL_AIR, Nature→ELEMENTAL_EARTH, Holy→ABJURATION, Ender→MANIPULATION. **Unified Arcana** (ISS + Ars): refunds a percent of Ars cast cost to the caster's ISS mana pool via `SpellResolveEvent.Post`. **Triple Threat** (ISS + Ars + Apotheosis): tick-reconciled `+%` modifiers on `max_mana`/`mana_regen`/`spell_power`, only active when all three mods are loaded. **Affix Focus** (ISS + Apotheosis): on `ModifySpellLevelEvent`, grants `+N` effective spell levels when the player has `N` or more Rare-or-better Apothic affix items equipped. Every cross-mod perk is null-registered when any required mod is missing — perks disappear from the tree rather than rendering as inert icons.
-
-### Added — Powers framework (75 catalogue, 28 wired, 11 of 15 Crowns)
-
-A new tiered abilities subsystem (Marks / Seals / Crowns) sits as a peer to the existing Perks tree. 75 Powers metadata entries are registered (5 per ISS school × 9 + 5 per cross-cutting category × 6); 28 have wired event-handler behaviors; the remaining 47 are equip-eligible no-op stubs that the UI can enumerate while their handlers ship in a follow-up. ISS-school Powers null-register when `irons_spellbooks` is absent; cross-cutting Powers are mod-agnostic. See `RUNIC_SKILLS_POWERS.md` for the full design spec.
-
-**Framework infrastructure:**
-- **`Power` / `PowerTier` / `PowerSchool`** ([registry/powers/](src/main/java/com/otectus/runicskills/registry/powers/)) — `Power` is pure metadata (tier, school `ResourceLocation`, governing skill, level gate, ICD, optional required mod-id); behavior lives in `PowerEventDispatcher` keyed by `Power.getName()`, matching the existing Perk pattern.
-- **`RegistryPowers`** — `DeferredRegister<Power>` parallel to `RegistryPerks`, with 75 `RegistryObject<Power>` entries and `getPower`/`getByTier`/`getBySchool`/`isDisabled` static helpers.
-- **`SkillCapability` extended** — new fields `equippedMarks: List<String>` (cap 5), `equippedSeals: List<String>` (cap 3), `equippedCrown: String`, `powerCooldowns: Map<String,Long>` (absolute game-time), `powerWindows: Map<String,Long>`. NBT keys `power.equippedMarks` / `power.equippedSeals` / `power.equippedCrown` / `powerCooldowns` / `powerWindows`, round-tripped in `serializeNBT` / `deserializeNBT` / `copyFrom`. Slot caps enforced inside `equipPower()`.
-- **`PowerOverrides` JSON loader** at `data/<ns>/powers/*.json`. Schema: `{ required_skill_level, icd_ticks, values: { k: number } }` — every field optional; packs can tune one knob without overriding the rest. `PowerOverridesReloadListener extends SimpleJsonResourceReloadListener` mirrors the `PerkGroupsReloadListener` pattern. Dispatcher reads via `PowerOverridesManager.valueOr(power, "damage_multiplier_bonus", fallback)`.
-- **Three new network packets** — `PowerOverridesSyncCP` (server → client, pushes tuned values on login and `/skillsreload`), `PowerProcCP` (server → client, 8-particle enchant-rune burst at the player for proc feedback), `PowerEquipSP` (player → server, equip/unequip with server-authoritative skill/tier/mod-gate validation).
-- **`PowerEventDispatcher`** ([registry/events/PowerEventDispatcher.java](src/main/java/com/otectus/runicskills/registry/events/PowerEventDispatcher.java)) — single Forge-bus subscriber registered only when ISS is loaded. Subscribes to `SpellOnCastEvent`, `SpellDamageEvent`, `LivingDamageEvent`, `LivingDeathEvent`, `LivingHurtEvent`, `CriticalHitEvent`, `SpellTeleportEvent`, `LivingDropsEvent`, `PlayerTickEvent`, `PlayerLoggedOutEvent`. Every handler short-circuits via `isEquipped(player, ro)` which honours the `disabledPowers` config.
-- **`PowerRuntime`** ([common/powers/](src/main/java/com/otectus/runicskills/common/powers/)) — bundles 8 shared per-player services into one static container: nested `SpellHistory` (ring-buffer of recent casts), `DamageTypeMemory`, `ProcWindows`, `InternalCooldowns`, `TargetTags`, `AllyDetector` (same-team players + owned-summon chains), `PositionBuffer` (60-tick rolling snapshot for Unraveled), `SummonRegistry`. Cleared on `PlayerLoggedOutEvent`; transient (persistent Power state lives on `SkillCapability`).
-- **`IronsSpellbooksPowerCompat`** — class-load-isolated wrapper for every `io.redspace.ironsspellbooks.*` symbol the dispatcher touches (`MagicData`, `AttributeRegistry.MAX_MANA`, `SchoolRegistry`, `SpellRegistry`, 10 `MobEffectRegistry` entries, event accessors). Same pattern as `BotaniaCompat`; ISS API is quarantined.
-- **`disabledPowers` config** — list of Power registry ids or fully-qualified names, admin kill-switch parallel to `disabledPerks`/`disabledPassives`.
-
-**75 Powers catalogue:**
-- **45 ISS-school Powers** — 5 per school (Mark/Mark/Seal/Seal/Crown) across Fire, Ice, Lightning, Holy, Ender, Evocation, Nature, Blood, Eldritch. All Magic-gated (30/60/90 for Mark/Seal/Crown).
-- **30 cross-cutting Powers** — 5 per category (Mark/Mark/Seal/Seal/Crown) across Projectile (Dexterity), Channel (Magic), Summon (Wisdom), Mobility (Dexterity), Weapon-Caster (Strength), Utility (Wisdom).
-
-**28 wired behaviors (47 still-stubbed):**
-- **11 Marks** — Sanctified Strike (HOLY +25% vs UNDEAD), Poisoner's Thumb (+15% vs poisoned), Brittle (+15% vs `chilled`), Blind Witness (+20% vs blinded), Crimson Tithe (heal 10% of blood-school damage dealt), Kindle (+20% FIRE vs `immolate`), Fortifying Bond (`fortify` self-pulse on HOLY casts), Forbidden Knowledge (Eldritch cast → 10s window where kills double drops), Rooted (`Regeneration I` pulse while standing still under `oakskin`), Step Between (`SpellTeleportEvent` opens a 30-tick window; next spell +20%), Vex Taunt (player-summon hits → 30% chance to redirect mob aggro).
-- **6 Seals** — Skybreaker (airborne Lightning cast opens window for +25% next damage; lightning-school kill clears Ascension cooldown), Guided Fate (any projectile +20% vs `guiding_bolt`-marked target), Harvest the Weak (blood-school kill on ≤30%-HP target stacks `HEALTH_BOOST`), Crackle Arc (player-melee + self-`charged` chains 4 magic damage to nearest hostile within 4 blocks; 10-tick ICD), Sacrifice Cascade (`irons_spellbooks:sacrifice` cast applies REND in 8-block radius + flat 15-mana refund), Counterspell Riposte (`irons_spellbooks:counterspell` cast opens 4s window; next damage +20%).
-- **11 Crowns** (9 of 9 ISS-school + 2 of 6 cross-cutting):
-  - **The Heart's Toll (Blood)** — `SpellOnCastEvent` deducts 5% of current HP via `magic` source on blood-school casts; `SpellDamageEvent` applies +30% above the 10%-HP floor and −50% below it. JSON-tunable on all four magnitudes.
-  - **Pyroclasm (Fire)** — entities dying with `immolate` near a Pyroclasm-equipped player detonate a 3-block fire AOE for 6 damage and reapply 4s `immolate`. Per-player rolling cap of 6 detonations per 2s window prevents chain-collapse.
-  - **Unraveled (Ender)** — first consumer of `PowerRuntime.PositionBuffer`. Cancels `LivingDeathEvent`, teleports the player to a 60-tick-old snapshot, restores 30% HP / 50% mana, clears all `MobEffect`s. 10-minute ICD, committed only on a successful rewind (no-ops cleanly if there's no past position).
-  - **The Apocrypha Awakens (Eldritch)** — inverted mana relationship: ≤20% mana → Eldritch costs 50% less + damage +40%; ≥80% mana → damage −20%; between thresholds → unchanged.
-  - **Thunder Lord (Lightning)** — every lightning-school damage instance opens a 4s proc window; while active, `onPlayerTick` every 40 ticks strikes the nearest hostile mob within 10 blocks for 3 magic damage. Non-recursive (uses vanilla `magic()` source, not ISS lightning).
-  - **The Grove Remembers (Nature)** — `LivingDamageEvent` from the player; if target carries ≥3 harmful `MobEffect`s, +30% damage on that hit.
-  - **Herald of Dawn (Holy)** — `LivingHurtEvent` on the equipped player, only on the hit that *crosses* the 30%-HP threshold (HP-fraction was above 30% before this damage, ≤30% after); heals self for 8 HP, applies 8s `fortify`, AABB-scans 12 blocks for {allies (heal+fortify) | hostile mobs in combat (10 holy damage)}. 30s ICD.
-  - **Glacial Sovereign (Ice)** — first non-trivial consumer of `PowerRuntime.SpellHistory.countSinceTick`. Every 20 ticks, if the player has cast ≥3 ice-school spells in the last 15s, scans a 12-block AABB and extends every active `chilled` instance on non-ally living entities by 20 ticks (capped at 200 ticks total).
-  - **Folded Space (Mobility cross-cutting)** — `SpellTeleportEvent` opens a 60-tick window; the next teleport-class spell to cast within that window pays 50% mana cost. Teleport spells matched via explicit allowlist (`teleport`, `blink`, `frost_step`, `blood_step`) — Magic Missile and Eldritch Blast also live in Ender school and would falsely qualify under a school filter.
-  - **Warmage's Covenant (Weapon-Caster cross-cutting)** — first `CriticalHitEvent` subscriber. A successful melee crit (vanilla or `Result.ALLOW`) opens a 10-tick window; the next `SpellDamageEvent` from the player consumes it for +25% damage.
-  - **Trickster's Aria (Evocation)** — first ISS-targeted mixin in the project. `MixTrueInvisibilityEffect` injects at HEAD of `io.redspace.ironsspellbooks.effect.TrueInvisibilityEffect.onDealDamage(LivingHurtEvent)` and cancels the invisibility-strip when the attacker has the Power equipped, the suppress window is active, and the damage's directEntity is a `Projectile`. Melee/touch damage still breaks invis (preserves the spec's counterplay clause). Sibling `.firstshot` window: first projectile-form `SpellDamageEvent` while active fires for +50%. Mixin uses `@Pseudo` + `remap = false` so the project still loads cleanly when ISS is absent — sets the pattern for future ISS-targeted hooks.
-
-**`PowersScreen` UI** ([client/screen/PowersScreen.java](src/main/java/com/otectus/runicskills/client/screen/PowersScreen.java)): three-column Marks/Seals/Crown panel with school-color-coded names (Fire orange, Ice cyan, Lightning yellow, Holy ivory, Ender violet, Blood crimson, Evocation green, Nature olive, Eldritch mint), Equip/Unequip vanilla `Button` per row, hover tooltip (translated name, tier, school, description, skill requirement, disabled-config flag), independent per-column scroll. Equip clicks send `PowerEquipSP`; the `SyncSkillCapabilityCP` resync rebuilds the buttons on the next frame. Runestone-slab visual polish: translucent dark title band with amber rules + amber title text; color-coded slot counter (`Marks 3/5 · Seals 2/3 · Crown 1/1`, red when full / green when free / dim grey when empty); per-column translucent backing panels with amber column-header underlines; equipped-row marker (2px amber stripe + `✓` prefix + bright-green name); amber-tinted hover band; footer hint band (`Esc to close · Scroll to navigate · Hover for details`). All chrome via `GuiGraphics.fill` calls — no new texture assets.
-
-**`/powers` admin command** (op-2 gated, mirrors `/titles`): `/powers list [mark|seal|crown]` (color-coded by equipped/disabled/grey), `/powers view` (caller's slot counter + equipped names), `/powers equip <power>` (tab-completion, bypasses skill-level gate for testing but respects tier slots and `disabledPowers`), `/powers unequip <power>` (suggestions narrow to equipped names).
-
-**`OPEN_POWERS_SCREEN` keybind** (unbound by default, alongside the existing `Y` for Skills; assign it under Options → Controls). Registered in `RunicSkillsClient.ClientProxy.registerKeys`.
-
-**75 new lang keys** in `en_us.json`: `power.runicskills.<id>` + `power.runicskills.<id>.description` for every Power, plus `key.runicskills.open_powers`, `screen.runicskills.powers.{title,equip,unequip,no_capability}`, 3 `tier.runicskills.*`, 6 `school.runicskills.*`. Other locales fall back to en_us pending native translations.
-
-### Added — Comment-triage configs
-
-- **`enableScholarEnchantmentHiding`** (`HandlerCommonConfig`, default `false`). Decouples the Scholar perk from the global enchantment-hiding mixin — see Fixed below. Mirrored through `CommonConfigSyncCP`.
-- **`chargeMasteryPercent`** (`HandlerCommonConfig`, default `25`, range `1–200`). Damage-bonus percent on `CastType.LONG` ISS spells when Charge Mastery is enabled.
-- **`docs/SMOKE_TESTS.md`** — runtime regression checklist, populated for the 1.1.0 fixes.
-- **`COMMENT_TRIAGE.md`** at repo root — public-facing per-comment ledger mapping each CurseForge report to its fix or "needs more info" status.
-
-### Fixed
-- **Dedicated server crashed on boot when YACL was absent.** `mods.toml` had YACL declared `mandatory=true, side="CLIENT"` so the FML manifest check passed, but `RunicSkills.<init>` unconditionally called `Configuration.Init()`, triggering the static initializer of every `Handler*Config` class — each of which built a `ConfigClassHandler` from `dev.isxander.yacl3.config.v2.api.*`. With YACL declared `runtimeOnly` and absent from the server's `mods/` folder, the JVM threw `NoClassDefFoundError: dev/isxander/yacl3/config/v2/api/ConfigClassHandler` mid-construction. README has been advertising "YACL is **not** required server-side" since 1.0.1 — the code now matches. Fixed by introducing `com.otectus.runicskills.config.storage.ConfigHolder<T>`, a server-safe wrapper that mirrors the previous `ConfigClassHandler` API surface (`.instance()`, `.load()`, `.save()`, `.generateGui()`) without referencing any YACL type in its bytecode. Persistence uses plain Gson against the existing `runicskills.*.json5` files, with a JSON5-comment-stripper for backward compat with YACL-written files. The YACL UI moves to `client/config/YaclConfigUiBuilder` (loaded only when the user opens the in-game config screen, reached via reflection from `ConfigHolder`). `mods.toml` flips to `mandatory=false`.
-- **Client crashed at mod construction when L2Tabs was absent.** Identical shape to the 1.0.0 Legendary Tabs crash, missed at the time: `RunicSkillsClient$ClientProxy` is a `@EventBusSubscriber` class loaded by Forge via `Class.forName(..., true, loader)` at mod construction. The `clientSetup` method contained an inline lambda `() -> TabRegistry.registerTab(3500, TabRunicSkills::new, ...)` — the verifier eager-resolved `TabRunicSkills`'s `BaseTab` superclass, which fails when L2Tabs is absent even though the `if (isModLoaded())` guard means the lambda would never run. Fixed by extracting registration into `client/integration/L2TabsClientIntegration.registerTab()` and passing it as a method reference, mirroring the Legendary Tabs treatment.
-- **`/globallimit <n>` rejected every in-game invocation as "client-side"** (CurseForge report). The `execute` method had a backwards guard: `if (source.getEntity() instanceof Player) { fail }`. In singleplayer the integrated server's command source IS the local `ServerPlayer`, and on dedicated servers any op invoking the command also runs as a `ServerPlayer`, so the guard rejected every legitimate path; only rcon/console worked. Brigadier commands registered via `RegisterCommandsEvent` already only run on the logical server, and `requires(s -> s.hasPermission(2))` already gates op-only access. Guard removed.
-- **`disabledPerks` and `disabledPassives` were invisible in the YACL config UI** (CurseForge report — "how do you disable certain perks?"). Both fields had `@SerialEntry` and `@ListGroup` annotations but no `@AutoGen`, so they persisted to disk but never appeared in the in-game config screen. Added `@AutoGen(category="common", group="general")` to both.
-- **Scholar perk → enchantment-hiding side effect** (CurseForge report — "is there a way to disable hiding the enchantments?"). The `MixItemStack.appendEnchantmentNames` mixin keyed off `RegistryPerks.SCHOLAR.isEnabled()` to decide whether to globally hide every enchantment name on every item. When a user added `"scholar"` to `disabledPerks` (the natural way to "turn off" the perk), `isEnabled()` returned `false`, so the mixin took the hide branch — globally erasing enchantment text from every tooltip in the world. Decoupled: a new `enableScholarEnchantmentHiding` config (default `false`) is the only thing that controls hiding. The Scholar perk is now solely about its XP/enchanting bonus.
-- **Per-integration "Generated N lock items" log lines spammed at INFO** (CurseForge report — "ice and fire disabled repeating forever"). The closest match in source was the INFO log at `IceAndFireIntegration.java:75` firing once per `HandlerSkill.ForceRefresh()`. Demoted all six per-integration "Generated N lock items" log lines (Spartan, Blood Magic, Ice and Fire, Locks Reforged, Samurai Dynasty, More Vanilla, Jewelcraft) from INFO to DEBUG.
-- **Item-lock requirement tooltips ignored the `enableItemLocks` master toggle** (originally noted in 1.0.1). `RegistryClientEvents.onTooltipDisplay` appended the "Requirements:" block whenever `HandlerSkill.getValue(...)` returned a non-null list, without consulting the config that gates server-side enforcement. Players who disabled item locks could freely use tools like the trident but still saw "Requires Level X" text. Fixed by checking `enableItemLocks` before rendering — when locks are off, the requirement block is hidden so the UI matches enforcement. The synced value from `CommonConfigSyncCP` is authoritative on joined clients; pre-join/main-menu tooltips fall back to the local config value.
-
-### Changed
-- **Bumped network channel `PROTOCOL_VERSION` from `3` to `5`.** Single coherent jump that absorbs every wire-format growth since the last public release: (a) five 1.0.0-era kill-switch fields on `CommonConfigSyncCP` (`maxActivePerks`, `disabledPerks`, `disabledPassives`, `perkSwapCooldownTicks`, `skillLevelUpCostMultiplier`) plus the new `PerkGroupsSyncCP` packet for datapack-driven perk groups; (b) one new boolean `enableScholarEnchantmentHiding` on `CommonConfigSyncCP` for the Scholar/enchantment-hiding decoupling; (c) three new Powers packets (`PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP`) plus the new equipped-Powers / `powerCooldowns` / `powerWindows` fields propagated via `SyncSkillCapabilityCP`. Old 1.0.0 clients connected to 1.1.0 servers (and vice versa) get a clean connection refusal instead of a silent state-corruption bug. Clients and servers must update together.
-- **`mods.toml` YACL dependency** flipped from `mandatory=true` to `mandatory=false`, ordering set to `AFTER`. YACL is now genuinely optional everywhere; the server side doesn't need it (config persists via plain Gson) and the client side falls back to the parent screen with a log warning when the user clicks Configure without YACL installed.
-- **Sided-import lint extended** to forbid `dev.isxander.yacl3.*` executable-class imports (`ConfigClassHandler`, `serializer.*`, `gui.*`, `api.*`) outside `client/config/`. Annotation-only imports (`@SerialEntry`, `@AutoGen`, `@IntField`, `@FloatField`, `@Boolean`, `@ListGroup`) remain allowed because their RUNTIME retention doesn't trigger class loading on the server. Single best guardrail against re-introducing the dedicated-server crash.
-- **ISS compile dep bumped** from curse-maven file id `5539243` → `7402504` (pre-3.15 → 3.15.x). The older artifact predates `SpellCooldownAddedEvent` which Phase-1a Quickcast needs.
-- **Phase 1a texture-path audit.** Corrected ten `HandlerResources` entries to match the real ISS item sheet: `upgrade_orb_cast_time`→`cast_time_ring`, `upgrade_orb_mana_regen`→`mana_ring`, `antique_amulet`→`concentration_amulet`, `mana_potion`→`enchanted_ward_amulet`, `greater_mana_potion`→`greater_healing_potion`, `apprentice_spellbook`→`chronicle`, `affinity_ring`→`arcane_rune`, `scroll_of_haste`→`scroll`, `ancient_codex`→`chronicle_old`, `arcane_debris`→`arcane_essence`. Perks were functional before but rendered as missing-texture pink/black boxes.
-- **`apothItem()` helper path fix.** Apotheosis uses `textures/items/` (plural) not the vanilla `textures/item/`. Every Apotheosis perk icon now resolves correctly.
-- **Two design-doc rename clashes resolved:** doc's "Mana Shield" → `MANA_BULWARK` (doc's "Arcane Barrier" was already in use as an Endurance-tree perk), doc's "Second Wind" → `ARCANE_REPRIEVE` (Constitution tree already has `SECOND_WIND`).
-- **`PlayerLifecycleHandler` extensions** — `onPlayerLoggedInEvent` now also sends `PowerOverridesSyncCP` alongside the existing config / perk-group / skill-capability syncs; `onAddReloadListeners` now also registers `PowerOverridesReloadListener` alongside `PerkGroupsReloadListener`. `RunicSkillsClient.ClientProxy.registerKeys` now also registers `OPEN_POWERS_SCREEN` (default `U`).
-- **`VERSION` file synced** to `1.1.0` — through 1.0.1 it was left at `1.0.0`, partially corrected to `1.0.2` in the 1.0.2 source-only release, and now matches the published version.
-
-### Removed
-- `attribItem()` helper from `HandlerResources`. `attributeslib` has no `textures/item/*.png` assets — the helper was dead code.
-
-### Skipped (design-doc flagged risky, deferred to 1.2.0+)
-- **Perks** — Pack Caller (requires `SummonManager` internals), Eldritch Apprentice (Eldritch-research XP has no public API), Gemsmith (deep affix-gem iteration on `GetAffixModifiersEvent`), Lucky Loot (global loot modifier with no player-context routing), Spawner Mage, Enchanter's Insight, Library Dedication, Ritualist, Ars Scholar, Glyphsmith, Mythical Scribe, Bookwyrm's Apprentice, Enchanter-Arms, Apparatus Synergy, Split-Caster; plus eleven Phase-3 capstones — Resonant Affixes, Gem-Fueled Casting, Spellsocket, Adaptive Caster, Apothic Apprentice, Glyph-Imbued Gem, Sourcelink Affix, Dead King's Debt, Spawner Sanctuary, Ritualized Reforge, Gem-Threaded Armor, Arcane Syncretism. Reasons documented in the original phase commit messages.
-- **Powers — 4 cross-cutting Crowns remaining:** Arcanist's Barrage (Projectile), The Long Note (Channel), The Conductor (Summon — needs `SummonManager` wrap, same blocker as Pack Caller), The Still Mind (Utility).
-- **Powers — design-deferred halves of shipped Crowns:** Glacial Sovereign's "Chilled accumulation rate doubled" half (application rate not mutable from the dispatcher) and Ice Tomb death-deny half (needs `LivingDeathEvent` cancel + scheduled re-kill timer scaffold); The Grove Remembers's heal-reduction half (vanilla `LivingHealEvent` lacks an attacker pointer for target-tagging); Folded Space's CD-bypass half (no per-spell cooldown override on `SpellOnCastEvent`); Thunder Lord's CD-reduction half (no per-spell-id cooldown mutator on cast events); Apocrypha Awakens's smooth damage curve between thresholds (shipped as discrete bands).
-- **Powers — broader design items:** Power Points budget (the doc's 1-PP-per-50-total-skill formula isn't enforced; current MVP allows 5/3/1 for any qualified player; follow-up: add `maxActivePowers` config to `PowerEquipSP`); full ally-detection beyond same-team players + owned-summon chains; codec-driven `MapCodec`-polymorphic Trigger/Effect dispatch (shipped the simpler numeric-override JSON which covers the admin-tuning use case without the polymorphic registration burden).
-
-### Notes
-- **Save-compatible with 1.0.0.** No NBT schema breakage. Existing `runicskills.common.json5` files (whether written by YACL pre-1.1.0 or by pack admins) load cleanly through `ConfigHolder`'s comment-stripper. Field names are unchanged; values are preserved. The new Powers fields on `SkillCapability` default to empty (`equippedMarks` / `equippedSeals` empty lists, `equippedCrown` empty string, `powerCooldowns` / `powerWindows` empty maps) so 1.0.x saves migrate trivially. Players who unlocked any of the 24 default-disabled Botania perks before will simply see them disappear from the tree — their NBT rank entries are preserved and will reactivate if a pack admin sets the `*RequiredLevel` back to a positive value.
-- **Tested:** `./gradlew clean build` passes (compile + sided-imports + new YACL forbid + jar assembly + reobf). Runtime smoke testing per `docs/SMOKE_TESTS.md` is required before CurseForge upload — primary regression rows: dedicated server boot without YACL installed (the flagship fix this release exists for), client boot without L2Tabs, `/globallimit` from singleplayer with cheats, `disabledPerks=["scholar"]` no longer hiding enchantments. Powers behavior tests recommended per Power; the most useful spot-checks are the doc-flagged risky ones (Unraveled rewind, Trickster's Aria invisibility-suppress + first-shot bonus, The Heart's Toll HP cost + damage curve, Glacial Sovereign chilled-extension on a stack of mobs).
-- **Localization:** 9 of 17 locale files fall back to en_us for the new Powers strings and the `enableScholarEnchantmentHiding` / `chargeMasteryPercent` config labels; native translations are a follow-up.
-- **Supersession note:** This entry replaces the source-only 1.0.1, 1.0.2, and 1.1.0-alpha1..alpha8 tags. Only 1.1.0 ships to CurseForge. The earlier tags remain in git history for reference.
-
-## [1.0.0] - 2026-04-24
-
-First stable release. Consolidates all 0.9.x work (item-lock master toggle, perk/passive kill switches, perk-swap cooldown, perk-group datapacks, Legendary Tabs hardening, tooltip/config fixes) under a 1.0 milestone. No further pre-1.0 versions will be cut.
-
-
-### Added
-- **`maxActivePerks` config** (`HandlerCommonConfig`, group `general`, default `0` = unlimited, range `0–256`). Caps the number of perks a player can have enabled at once. Enforced server-side in `TogglePerkSP` on the `rank 0 → ≥1` transition (rank-ups on already-active perks bypass the cap, matching existing school-attunement semantics). Iron's Spells school attunements count against this cap in addition to `ironsMaxSchoolSelections`. Mirrored through `CommonConfigSyncCP`.
-- **`disabledPerks` / `disabledPassives` kill-switch lists** (`HandlerCommonConfig`, `@ListGroup` of `String`). Disabled entries cannot be enabled / leveled-up and their effects are suppressed; rank and level data are preserved in NBT so re-enabling restores state. Perks: `Perk.isEnabled()` returns `false` for disabled perks, so every event handler short-circuits automatically. Passives: `RegistryAttributes.modifierAttributes` passes `enabled=false` to `amplifyAttribute`, which removes the modifier — single choke point means all attribute effects drop to zero. `/skillsreload` now re-runs `modifierAttributes` for every connected player so passive-disable changes take effect without relog. Registry path (`"berserker"`) and full-id (`"runicskills:berserker"`) forms are both accepted. Mirrored through `CommonConfigSyncCP`.
-- **`perkSwapCooldownTicks` config** (`HandlerCommonConfig`, default `0` = no cooldown, range `0–72000`). Per-player cooldown between perk enables. Piggybacks on the existing `perkCooldowns` map via new `SkillCapability.COOLDOWN_PERK_SWAP` constant, which already ticks down every server tick via `TickEventHandler`. Applies only on rank-0 → rank-≥1 transitions; rank-ups and disables bypass. Persists in save NBT so logging out during cooldown preserves remaining time.
-- **`skillLevelUpCostMultiplier` config** (`HandlerCommonConfig`, default `1.0`, range `0.1–10.0`). Scales the vanilla XP cost of leveling a skill. Applied in both `SkillLevelUpSP.requiredPoints` (XP-points cost) and `requiredExperienceLevels` (level-gate) so high-level players can't bypass an increased cost. Mirrored through `CommonConfigSyncCP` so the GUI cost display stays synced with the server.
-- **Data-driven perk groups** — new datapack loader at `data/<namespace>/perk_groups/*.json`. Schema: `{ "max_active": int, "perks": [string], "message": string? }`. New classes: `PerkGroup` (record), `PerkGroupManager` (static volatile map, `firstBlockingGroup(capability, perkName)` helper), `PerkGroupsReloadListener` (extends Forge `SimpleJsonResourceReloadListener`, subscribed via `AddReloadListenerEvent`), `PerkGroupsSyncCP` (new PLAY_TO_CLIENT packet, sent on login and `/skillsreload`). Enforced in `TogglePerkSP` alongside the existing hardcoded school-attunement check — both systems run independently. No default groups are shipped; opt-in for pack makers. Lenient JSON parsing tolerates trailing commas / comments. Per-file parse errors are logged and skipped without blocking the rest of the load.
-
-### Changed
-- **Bumped network channel `PROTOCOL_VERSION` from `3` to `4`.** Wire format of `CommonConfigSyncCP` has grown (six new fields: `maxActivePerks`, `disabledPerks`, `disabledPassives`, `perkSwapCooldownTicks`, `skillLevelUpCostMultiplier`; plus the new `PerkGroupsSyncCP` packet). Old clients connected to 0.9.9 servers (and vice versa) will get a clean connection refusal instead of a silent state-corruption bug. Please ensure clients and servers update together.
-- `/skillsreload` now also broadcasts `PerkGroupsSyncCP` to every connected player so datapack perk-group changes propagate without relog.
-- `Perk.isEnabled(Player)` and `Perk.isEnabled()` now consult `RegistryPerks.isDisabled(perk)` before returning true, covering every perk-effect event handler in a single choke point.
-- `RegistryAttributes.modifierAttributes` now checks `RegistryPassives.isDisabled(passive)` per-passive and removes rather than adds the attribute modifier for disabled entries.
-
-### Fixed
-- **Item-lock requirement tooltips ignored the `enableItemLocks` master toggle.** `RegistryClientEvents.onTooltipDisplay` appended the "Requirements:" block whenever `HandlerSkill.getValue(...)` returned a non-null list, without consulting the config that gates server-side enforcement in `SkillCapability.canUse(...)`. Players who disabled item locks could freely use tools like the trident but still saw "Requires Level X" text, leading to widespread confusion that the lock was still active. Fixed by checking `HandlerCommonConfig.HANDLER.instance().enableItemLocks` before rendering — when locks are off, the requirement block is hidden so the UI matches enforcement. The synced value from `CommonConfigSyncCP` is authoritative on joined clients; pre-join/main-menu tooltips fall back to the local config value, matching the existing behavior of `ClientCapabilityAccess.canUseItemClient`.
-- **Mod failed to load when Legendary Tabs was not installed.** `RunicSkillsClient$ClientProxy` is a `@Mod.EventBusSubscriber` class, so Forge's `AutomaticEventSubscriber.inject` loads it at mod construction via `Class.forName(..., true, loader)`. The `clientSetup` method contained an inline lambda `() -> TabsMenu.register(new LegendaryTabRunicSkills())`, which the Java compiler desugared into a synthetic `lambda$clientSetup$3` method on ClientProxy itself. The JVM verifier walks that method body at class-load time, finds the `INVOKESTATIC sfiomn/.../TabsMenu.register(TabBase)` + `NEW com/otectus/.../LegendaryTabRunicSkills` pair, and has to check that `LegendaryTabRunicSkills` is assignable to `TabBase`. That assignability check eager-resolves `TabBase`, which fails with `NoClassDefFoundError` when Legendary Tabs is absent — even though the `if (LegendaryTabsIntegration.isModLoaded())` guard means the lambda would never actually run. Fixed by replacing the inline lambda with a method reference `LegendaryTabsClientIntegration::registerTab` that delegates to a new `registerTab()` static method on the existing client-integration class. ClientProxy's bytecode now only references `LegendaryTabsClientIntegration` (a plain class not in the optional-mod namespace); the `sfiomn.*` types stay confined to `LegendaryTabsClientIntegration` and `LegendaryTabRunicSkills`, which are only class-loaded when the `isModLoaded()` guard passes. The inline `sfiomn.legendarytabs.api.tabs_menu.TabsMenu.register(...)` call and the now-unused `import com.otectus.runicskills.client.gui.LegendaryTabRunicSkills` were removed from `RunicSkillsClient.java`.
-- **Skill-selection hover border misaligned.** `skill_card_hover.png` is 74×26 (a symmetric green halo with 4px of glow on each horizontal side of the underlying 66×26 button), but `RunicSkillsScreen.drawOverview` was passing `OVERVIEW_SLOT_WIDTH` (66) as both the blit size *and* the `textureWidth` argument to `GuiGraphics.blit`. With a mis-declared texture width, OpenGL normalised UV against 66 while the image is really 74 pixels wide — so the entire halo got squashed horizontally into the 66-wide button rect, pulling the visible border inside the button outline instead of glowing around it. Fixed by introducing `OVERVIEW_HOVER_TEX_WIDTH`/`HEIGHT` constants (74×26), passing them as the real texture dimensions, and shifting the blit position by `(74-66)/2 = 4px` left so the halo sits centered around the button with the expected 4px outer glow on each side.
-- **Skill-selection tooltip could be overpainted by adjacent cells.** `drawOverview` was calling `Utils.drawToolTip` *inside* the skill-iteration loop, so any cell drawn after the hovered one (specifically the right-column neighbour) rendered on top of the tooltip. Fixed by capturing the hovered skill in a local, completing the loop, and rendering the tooltip once after every cell has painted. Defensive against future art changes even though the 74×26 halo fits entirely within the 11px inter-column gap.
-
-### Notes
-- Vanilla `/reload` updates perk-group state server-side but does not auto-push to clients (matches existing lock-items behavior). Use `/skillsreload` for full propagation.
-- All five new config options default to behavior-preserving values (`0`, empty list, `1.0`); upgrading an existing world changes nothing until the admin opts in.
-- No NBT schema changes; save-compatible with 0.9.7.
-
-## [0.9.7] - 2026-04-22
-
-### Added
-- **`enableItemLocks` master toggle** in `HandlerCommonConfig` (default `true`). When off, every entry in `runicskills.lockItems.json5` *and* every integration-generated lock is ignored — `SkillCapability.canUse(...)` short-circuits to `true`. This is the single switch users were looking for when they "disabled itemlock" expecting items like the trident to become usable; previously, the only "lock" toggles in the YACL UI were `dropLockedItems` (only controls auto-dropping, not the lock check) and the per-integration `*EnableLockItems` flags (only gate integration-generated entries, not the vanilla list that contains the trident). The new flag is mirrored into `ClientCapabilityAccess.canUseItemClient` so client-side checks (used by `MixGunItem` and gun-mod integrations) honour it too.
-- `ConfigSyncCP.sendToAllPlayers()` — broadcasts the lock-items list to every connected client. Wired into `/skillsreload` and `/registeritem` so cache changes propagate without requiring every player to relog.
-
-### Changed
-- `dropLockedItems` config comment now notes that it has no effect when `enableItemLocks` is off.
-- Bumped network channel `PROTOCOL_VERSION` from `2` to `3`. `CommonConfigSyncCP` now carries the `enableItemLocks` boolean ahead of `dropLockedItems`; the wire format is incompatible with the previous version.
-- `/skillsreload` now also re-sends `CommonConfigSyncCP` and `DynamicConfigSyncCP` to every connected player so config edits made between joins are picked up without requiring relogs.
-
-### Fixed
-- **Trident (and every other vanilla locked item) appeared "stuck" locked even after the user toggled lock-related options off.** Root cause: there was no master toggle. `dropLockedItems` and the `*EnableLockItems` per-integration flags do not gate the vanilla `lockItemList` entries (which include `minecraft:trident#strength:20;dexterity:18`), so anyone trying to "disable itemlock" had no effect on vanilla items. The new `enableItemLocks` toggle gives a single switch.
-- **`/registeritem <skill> <level>` did not refresh the cache when adding a skill to an existing locked-item entry.** The "remove" and "add new item" branches called `HandlerSkill.ForceRefresh()`; the "add skill to existing item" branch only saved the file to disk, so the new requirement was silently ignored until the next reload. Now refreshes on all three branches.
-- **Lock-items cache was server-only after `/skillsreload` and `/registeritem`.** Connected clients kept their stale `Skills` map, and since `InteractionEventHandler` (which calls `canUseItem`) runs on both sides, a client with the stale cache would cancel right-clicks before the server even saw them. Both commands now broadcast `ConfigSyncCP` to every player.
-
-## [0.9.6] - 2026-04-22
-
-### Added
-- `LegendaryTabsClientIntegration.synchronizeTabStripAcrossScreens` — runs once at `FMLLoadCompleteEvent` (i.e. after every mod's `TabsMenu.register` call has drained) and reflectively does a two-way sync against Legendary Tabs' private `tabsScreens` map:
-  - **Forward:** every tab registered on `InventoryScreen` is re-registered on `RunicSkillsScreen` with its original priority preserved, so the Skills page shows the same full tab strip a player sees on the vanilla inventory (same tabs, same order, same X anchor).
-  - **Reverse:** the Skills tab is also registered on every *other* screen that already hosts Legendary Tabs' built-in `InventoryTab` (FirstAid Medkit, Curios, Travelers Backpack, Reskillable/Pufferfish skill pages, etc.), so it stays visible when the player switches between inventory-companion screens.
-  - The whole pass is wrapped in try/catch against `NoSuchFieldException` / `IllegalAccessException` / `ClassCastException`; any failure logs a single warning and the mod falls back to the prior "Skills tab only on the Skills screen" behaviour.
-- `libs/l2tabs-0.3.3.jar` — compile-time API stub (3.4 KB). Contains only the four type signatures (`BaseTab`, `TabToken`, `TabManager`, `TabRegistry` with its `TabFactory` functional interface) that `TabRunicSkills` and `RunicSkillsClient` reference. `compileOnly` keeps it out of the shipped jar; when the real L2Tabs 0.3.3 mod is installed, its classes shadow the stub at runtime. Lets the project build when the upstream L2Tabs jar isn't locally available, without any build-script changes. Ships with a `L2TABS_STUB_README.txt` documenting the arrangement.
-
-### Changed
-- **Skills tab now renders from Legendary Tabs' own `tab_menu_buttons.png` atlas** at `(u=27, v=92)` — the plain silver sword tile that no built-in tab class claims. Hover state uses the `+54 U` shift that every built-in tab uses. This removes the `renderItem(leveling_book, …)` overlay, the custom `legendary_tab.png` texture, and makes the Skills tab byte-for-byte identical in frame shape, shading, palette, and hover transition to every neighbouring tab — including the *exact* highlight bevel rows that hand-drawn reproductions were missing (which previously read as "1 pixel too tall" because the flat top edge lacked the real tab's 2-row white highlight strip).
-- `LegendaryTabsClientIntegration` (new) — split out of `LegendaryTabsIntegration` so the shared class stays dedicated-server-safe (no `net.minecraft.client.*` imports — silences the `:checkSidedImports` lint task). The client file lives under `client/integration/`, fully inside the allowlist.
-- Default `legendaryTabsPriority` lowered from `80` to **`15`**. Bytecode audit of Legendary Tabs 1.1.3.1 confirms `ScreenInfo.tabs` is a `TreeMap<Integer, List<TabBase>>` (ascending order = render order) and the built-in tab priorities are `InventoryTab=10`, `Backpacked/TravelersBackpack=20`, `Reskillable*=30`, `PassiveSkillTree/PufferfishsSkills=40`, `BodyDamage=50`, `Diet=60`, `FtbQuests=70`, `Maps (JourneyMap/MapAtlases/Xaeros)=75`, `FtbTeams=80`. Priority 15 sits strictly between Inventory and everything else, so Skills renders as the second tab in the strip regardless of which integrations are loaded. Config comment updated with the full priority table.
-
-### Fixed
-- **Skills tab rendered as a floating book icon instead of a proper tab inside Legendary Tabs.** Root cause: `LegendaryTabRunicSkills.render` drew only the item via `gfx.renderItem(…)` with no background. Legendary Tabs' `TabButton.renderWidget` does not invoke `super`, so tabs are fully responsible for drawing their own 26×22 frame; every built-in tab does so by blitting from the shared atlas. Fixed by switching to an atlas blit (see Changed).
-- **Opening the Skills screen collapsed Legendary Tabs' strip to just the Skills icon.** `TabsMenu.initScreenButtons` keys off `screen.getClass()` (exact match, not `instanceof`) and iterates only tabs explicitly registered for that class. Fixed by the forward half of `synchronizeTabStripAcrossScreens`.
-- **Skills tab disappeared when any other inventory-companion screen (Medkit, Curios, Backpack, …) was open.** Same root cause as above but in the other direction — our tab wasn't registered on those screens' classes. Fixed by the reverse half of `synchronizeTabStripAcrossScreens`.
-- **Build failed with "Could not find dev.xkmc.l2tabs:l2tabs:0.3.3" cascading into 20+ follow-on resolution errors.** Single root cause: `libs/l2tabs-0.3.3.jar` was missing and no public Maven repository hosts the coordinate. When `:__obfuscated` configuration failed on that one dep, ForgeGradle's deobf pipeline aborted without populating `bundled_deobf_repo` for any of the other `fg.deobf(...)` entries. Fixed by shipping the compile-time stub (see Added).
-
-### Removed
-- `assets/runicskills/textures/gui/legendary_tab.png` — custom hand-drawn frame texture. No longer referenced now that the Skills tab blits directly from Legendary Tabs' shared atlas.
-
-## [0.9.5] - 2026-04-22
-
-### Added
-- Legendary Tabs (Sfiomn) integration. When `legendarytabs` is present, Runic Skills registers a native `TabsMenu` tab (`LegendaryTabRunicSkills`) during `FMLClientSetupEvent` so the Skills tab participates in Legendary Tabs' own UI instead of being drawn twice.
-- `LegendaryTabsIntegration` compat layer (detects the mod via `ModList` and gates the native-tab registration).
-- `build.gradle` now pulls `sfiomn.legendarytabs:legendarytabs:1.20.1-1.1.3.1` as a `compileOnly` dependency, resolved from the local `libs/` directory (jar is not redistributed — drop it in yourself to build).
-- `legendaryTabsPriority` config in `HandlerConfigClient` — defaults to `500`; controls ordering within Legendary Tabs' strip (lower = earlier).
-- Three new lang keys (`tooltip.perk.rank`, `tooltip.perk.next_rank`, `tooltip.edit_title`) translated across all 17 supplied languages; they replace hard-coded English strings in the perk tooltip and the title-edit button.
-- `HandlerConditions` now registers `EntityKilledBy` as the canonical title-condition name; the typoed `EntiyKilledBy` remains registered as a deprecated alias so existing title configs continue to work.
-
-### Changed
-- `MixInventoryScreen` now bails out of its render and mouse-click injects when Legendary Tabs is loaded, deferring to the native tab registration. Prevents double-rendering of the Runic Skills tab inside Legendary Tabs' wrapped screens. The two guard branches are consolidated into a `runicskills$externalTabsActive()` helper and `getRecipeBookComponent().isVisible()` is now called once per frame (also null-guarded) instead of twice.
-- `KubeJSIntegration.postLevelUpEvent` caches its reflective `Class`/`Method`/field lookups on first successful resolve instead of redoing six reflective calls every level-up.
-- `Utils.FONT_COLOR` is now `final`; added `SKILL_ABBR_COLOR`, `SKILL_LEVEL_COLOR`, `TITLE_SELECTED_COLOR`, `TITLE_UNSELECTED_COLOR` constants and switched the corresponding hard-coded values in `RunicSkillsScreen`.
-- `MixVillager` haggler-delta map now drops entries that no longer correspond to offers on the villager, preventing a minor memory leak when a trade is completed between UI opens.
-
-### Fixed
-- **Legendary Tabs integration — three distinct integration defects discovered via jar-disassembly audit:**
-  - **(A) Duplicate tab strip rendered on the Skills screen.** `RunicSkillsScreen.render()` called `DrawTabs.render/mouseClicked/onClose` unconditionally, and the `MixInventoryScreen` bail-out only covered the vanilla `InventoryScreen`. Now gated behind `!L2TabsIntegration.isModLoaded() && !LegendaryTabsIntegration.isModLoaded()` at all three call sites.
-  - **(B) Skills tab invisible on the vanilla inventory strip.** Default `legendaryTabsPriority` was `500`; disassembly of `sfiomn.legendarytabs.client.tabs_menu.InventoryTab` (priority `10`) and `FtbQuestsTab` (priority `70`) revealed that Legendary Tabs uses small priority integers and paginates overflow. At 500 our tab always landed on a later page. Default dropped to `80` so the Skills tab sits right after built-in tabs on page 1. Config comment updated to explain the priority convention for pack authors.
-  - **(C) Legendary Tabs strip hidden on the Skills screen.** `LegendaryTabRunicSkills` registered `RunicSkillsScreen.class` with the vanilla-inventory `VANILLA_GUI_HEIGHT = 166`, but the Skills panel is actually **194** pixels tall (`PANEL_HEIGHT`). `TabsMenu.initScreenButtons` computed `topScreenPos = (screenHeight - 166) / 2` and drew the strip 14 pixels too low — underneath our panel background. Now registers `RunicSkillsScreen` with `RUNIC_SKILLS_GUI_HEIGHT = 194`.
-- **Singleplayer world won't load — kicks player back to the multiplayer screen:** `MixPlayer.runicskills$modifyMaxAir` fires during `Entity.<init>` (specifically the `setAirSupply(getMaxAirSupply())` call in the constructor), which runs *before* `LivingEntity.defineSynchedData` registers `DATA_HEALTH_ID`. The perk check inside (`Perk.isEnabled(player) → player.isDeadOrDying() → player.getHealth() → SynchedEntityData.get(DATA_HEALTH_ID)`) NPE'd because the accessor hadn't been registered yet. Server thread threw "Couldn't place player in world / Invalid player data", disconnected the integrated-server client, and the UI flow bounced to the last-seen join screen. Fixed in two places: (1) `Perk.isEnabled(Player)` now uses `player.isRemoved()` (a simple field read) instead of `player.isDeadOrDying()` to gate dead players; (2) `MixPlayer.getMaxAirSupply` bails early when `SkillCapability.get(player)` returns `null`, which is always the case during `Entity.<init>` (capabilities are attached by Forge after the constructor returns), guaranteeing we never invoke `Perk.isEnabled` inside the constructor path.
-- **Crash on attack-range modifier (Better Combat / AttackRangeExtensions):** `MixTargetFinder.apply$AttackRangeModifiers` had a switch statement with no `break;` between `case ADD` and `case MULTIPLY`, causing every additive modifier to also be applied multiplicatively (and vice versa). Rewritten as an arrow-form switch expression.
-- **Crash when a skill-gated gun is fired (PointBlank):** `MixGunItem.tryFire` called `ci.cancel()` on a `CallbackInfoReturnable<Boolean>` with no return value set, which is illegal under Mixin and threw `IllegalStateException`. Now calls `ci.setReturnValue(false)`.
-- **Crash on empty title queue:** `TitleQueue.peek()` and `dequeue()` no longer throw `NoSuchElementException` when the queue is empty; `peek()` returns `null` and `dequeue()` is a no-op.
-- **NPE in `OverlaySkillGui`:** when `HandlerSkill.getValue(skill)` returned `null` (unknown skill key), `showWarning` still armed `showTicks > 0`, causing the render loop to NPE on `skills.size()`. Now bails early without setting the ticker.
-- **Multiple NPE paths when the local skill capability is not yet synced:** `RunicSkillsScreen.drawTitleButton`, `handleOverviewClick`, the title list renderer, `buildDetailPageState`, and `RegistryClientEvents.onTooltipDisplay` now all null-guard `SkillCapability.getLocal()` and fall back to sensible empty-state rendering (requirement colour defaults to red, detail page returns null, title button shows blank).
-- **`DrawTabs.renderTabVisual` matrix-stack leak:** nested `pushPose`/`popPose` pairs are now wrapped in `try/finally`, so a throwing `renderItem` (e.g. a buggy third-party item renderer) no longer leaks two pose frames into subsequent GUI rendering.
-- **`TitleCommand` NPE on unset:** `setTitle(..., false)` now null-guards `SkillCapability.get(player)` before calling `setUnlockTitle`.
-- **`SkillCondition.ProcessVariable` NPE:** returns a processed value of `0` and bails cleanly when the player's skill capability isn't attached yet.
-
-### Removed
-- `ScreenTabEvents` dead-placeholder class. The `LegendaryTabsIntegration` javadoc previously pointed to it as the active renderer for Legendary Tabs — in reality the native `TabBase` is used. Javadoc rewritten to describe the real mechanism.
-
-## [0.9.2] - 2026-04-09
-
-### Security
-- **Critical:** removed `CounterAttackSP` exploit where the client could supply an arbitrary attack-damage modifier. Counter-attack damage is now computed entirely server-side in `CombatEventHandler` and the serverbound packet is no longer registered. The feature was previously broken (direction mismatch with the only sender) and now actually works.
-- `SetPlayerTitleSP` now rejects unknown titles, missing capabilities, and titles the player has not unlocked. A malicious client can no longer force admin/locked titles. Added `titlesUseCustomName` config flag (default `true`) to gate the `setCustomName` write for compatibility with chat/nick mods.
-- Replaced `ObjectInputStream`/`ObjectOutputStream` in `ConfigSyncCP` and `CommonConfigSyncCP` with `FriendlyByteBuf` field-by-field encoding plus bounded `readVarInt`/`readCollection` and a `MAX_SYNCED_LIST` cap. Closes a Java-serialization gadget surface and prevents unbounded allocations from oversized payloads.
-- Bumped network channel `PROTOCOL_VERSION` from `1` to `2`. Old clients will fail fast on join instead of mis-decoding the new wire format.
-
-### Fixed
-- Joining a server no longer overwrites the user's local `runicskills-common.json5` config file. Removed `HandlerCommonConfig.HANDLER.save()` from `CommonConfigSyncCP` and `DynamicConfigSyncCP`.
-- Eliminated dedicated-server crash risks: `SkillCapability`, `Passive`, and `Perk` no longer import `net.minecraft.client.*` or `Screen`. The no-arg `SkillCapability.get()` was replaced with a `getLocal()` indirection routed through a client-registered supplier; tooltip building moved to new `client/tooltip/PassiveTooltip` and `PerkTooltip` helpers.
-- Fixed `MixVillager` runaway haggler discount: each call to `updateSpecialPrices` now undoes the previously-applied per-offer delta before applying a fresh one, instead of compounding indefinitely across trade-UI reopens.
-- Fixed `Utils.intToRoman` (was duplicating the thousands array and missing the units array — `1994` now correctly produces `MCMXCIV`).
-- Converted `MixPlayer.getMaxAirSupply` from a fragile bare implicit override to an explicit `@Inject(method = "getMaxAirSupply", at = @At("RETURN"), cancellable = true)` targeting `Entity` (where the method actually lives). Now resilient to vanilla signature drift.
-- Documented `MixLivingEntity` `activeEffects` invariants so future patches understand which vanilla guarantees the mixin preserves.
-
-### Changed
-- Optional integrations (Curios, TacZ, CrayfishGuns, ScorchedGuns2, IronsSpellbooks, ArsNouveau, Apotheosis) are now loaded via `Class.forName(string)` so the integration class is never in `RunicSkills`' constant pool. The mod no longer crashes at load time when a dependency mod is absent. Each integration's `isModLoaded()` check still gates instantiation.
-- `RegistryClientEvents` moved from `registry/` to `client/event/` (matches its actual sidedness).
-- `LockItem` lost its legacy `formatString` / `getLockItemFromString` parser and the YACL string-encoded round-trip. `ConfigSyncCP` now serializes lock items field-by-field via `FriendlyByteBuf` (item id, skill enum ordinal, level) with bounds caps.
-- Added `./gradlew checkSidedImports` lint task that fails the build on any `import net.minecraft.client.*` or `com.mojang.blaze3d.*` outside the client/integration allowlist. Wired into `check`, so `./gradlew build` runs it automatically.
-
-### Removed
-- Deleted `TetraIntegration` and all references in `CombatEventHandler`, `InteractionEventHandler`, `RegistryClientEvents`, plus the `tetra_*` Gradle dependencies. The integration was imported but never wired into the mod constructor — dead code.
-
-## [0.9.1] - 2026-04-08
-
-### Changed
-- Renamed project from JustLevelingFork to Runic Skills
-- Rebranded mod ID, package, and all internal references
-- Changed GUI text color from dark grey to white for improved readability
-
-## [0.9.0] - Initial Runic Skills release
-
-### Added
-- Forked from JustLevelingFork
-- Redesigned perk and skill GUI with paginated layout
-- Title selection panel with scrollable list
-- New skill categories: Endurance, Fortune, Wisdom (replacing Defense, Luck, Building)
-- Perk rank system with multi-rank support
-- Passive attribute system per skill
-- KubeJS integration for scripting
-- Ars Nouveau, Tetra, and Apothic Attributes optional integrations
-- YACL-based configuration UI

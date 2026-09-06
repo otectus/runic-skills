@@ -86,7 +86,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-2.0.6.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the `runicskills-2.1.0.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
 3. Optionally install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.5.0+ — it powers the in-game configuration screen. Without it the mod runs normally and the Configure button explains that the screen needs YACL; every setting remains editable in `config/RunicSkills/`.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -94,7 +94,7 @@ No client-side-only nor server-side-only variants; one jar on both sides.
 
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=11`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=12`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
@@ -247,6 +247,7 @@ Example task SNBT / JSON:
 
 | Runic Skills | Minecraft | Forge | Java | Network protocol | FTB Quests Forge (optional) |
 |---|---|---|---|---|---|
+| 2.1.0 | 1.20.1 | 47.3.0+ | 17 | 12 | `[2001.4,2002.0)` |
 | 2.0.6 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
 | 2.0.5 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
 | 2.0.4 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
@@ -277,8 +278,8 @@ without a 2.0.0 peer agreeing on the version and then misreading the wire.
 ./gradlew build
 ```
 Artifacts land in `build/libs/`:
-- `runicskills-<version>.jar` — mod jar for distribution.
-- `runicskills-<version>-all.jar` — jar-in-jar bundle (includes bundled deps).
+- `runicskills-<version>.jar` — the mod jar for distribution. Bundles MixinExtras 0.4.0 under `META-INF/jarjar/`, which Forge does not supply and this mod's injectors require.
+- `runicskills-<version>-slim.jar` — the same jar without bundled dependencies. Not for distribution; useful only where MixinExtras is provided by the platform.
 
 **No manual setup.** A fresh clone builds as-is — nothing to download or drop into `libs/` first, and CI's `fresh-clone-build` job proves it on every push by building with an empty Gradle cache and refusing to start if the checkout contains any untracked file.
 
@@ -336,7 +337,7 @@ datapack-driven, and every number is configurable.
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=11`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=12`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills.common.json5` on the client is read for display defaults only.
 - **Title display** — titles are composed as a name prefix in `PlayerEvent.NameFormat`. **Nothing writes to a player's vanilla custom name**, so a nickname, chat, team or tab-list mod keeps ownership of the name and its styling; a name written by a pre-2.0.0 version is cleared once on login. `titlesUseCustomName` is deprecated and ignored — the conflict it existed to work around can no longer occur. Turn the prefix off entirely with `displayTitlesAsPrefix=false`.
 
@@ -348,11 +349,9 @@ The mod keeps a machine-checked record of anything it does not fully deliver, an
 you spend a scarce slot on it unknowingly. The full list is in
 [`docs/CONTENT_STATUS.md`](docs/CONTENT_STATUS.md); the shape of it:
 
-- **19 Iron's Spells Powers are `INERT`.** They are written against Iron's Spells' own events, which
-  this build compiles against but has never executed, so none of them has a dispatcher case. They are
-  **not equippable, not shown, and cost no Power Points** if one is sitting in a slot from an older
-  save — the id is retained so nothing is lost. `powerEnableExperimentalContent` brings them back
-  for development.
+- **0 Powers are `INERT`.** All nineteen Iron's Spells school Powers now have dispatchers and are FULL
+  status; eighteen ship as designed, only `reforge_the_shadow` substitutes a simpler lever. See
+  [`docs/CONTENT_STATUS.md`](docs/CONTENT_STATUS.md) for the complete status table.
 - **9 Powers are `APPROXIMATE`.** Each ships a documented substitution for part of its design, is
   badged in the Powers panel, and **has had its tooltip rewritten to describe the lever that
   actually ships**. An approximation you are told about is a design decision; one you are not told

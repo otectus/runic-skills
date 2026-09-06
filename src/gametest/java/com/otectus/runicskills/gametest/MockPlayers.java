@@ -56,4 +56,38 @@ public final class MockPlayers {
         new ServerGamePacketListenerImpl(level.getServer(), connection, player);
         return player;
     }
+
+    /**
+     * A server player that is genuinely logged in: in the player list, in the level, and ticked.
+     *
+     * <p>{@link #connectedServerPlayer} is enough for anything that only needs packets to have
+     * somewhere to go, and it deliberately stops short of the login path. Some product code cannot
+     * be tested without going further -- anything that resolves a player <em>from</em> the player
+     * list, or that depends on the player having been ticked (a raised shield takes five ticks to
+     * become a block). Those need a real login, and the reason the harness could not do one is
+     * fixed here rather than worked around: {@code placeNewPlayer} faults on a connection with no
+     * netty channel, and this one has an {@link EmbeddedChannel}, so the login runs and every
+     * packet it sends lands in an in-memory queue.
+     *
+     * <p>Callers must {@link #logOut} at the end of the test. A player left in the list is ticked
+     * for the rest of the run and would leak into every test after it.
+     */
+    public static ServerPlayer onlineServerPlayer(GameTestHelper helper, String name) {
+        ServerLevel level = helper.getLevel();
+        GameProfile profile = new GameProfile(
+                UUID.nameUUIDFromBytes(("runicskills-gametest:" + name).getBytes()), name);
+        ServerPlayer player = new ServerPlayer(level.getServer(), level, profile);
+
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        level.getServer().getPlayerList().placeNewPlayer(connection, player);
+        return player;
+    }
+
+    /** Logs one out again, so the next test in the batch starts without it. */
+    public static void logOut(ServerPlayer player) {
+        if (player != null && player.getServer() != null) {
+            player.getServer().getPlayerList().remove(player);
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.otectus.runicskills.common.util.DisabledContentMatcher;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.integration.IronsSpellbooksIntegration;
+import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import com.otectus.runicskills.registry.powers.Power;
 import com.otectus.runicskills.registry.powers.PowerEligibility;
 import com.otectus.runicskills.registry.powers.PowerSchool;
@@ -251,6 +252,37 @@ public class RegistryPowers {
     public static final RegistryObject<Power> SHIELD_BREAK_COUNTER = crossPower("shield_break_counter", PowerTier.SEAL, PowerSchool.UTILITY, RegistrySkills.WISDOM, 0);
     public static final RegistryObject<Power> EMPOWERED_DISPEL    = crossPower("empowered_dispel",    PowerTier.SEAL,  PowerSchool.UTILITY, RegistrySkills.WISDOM, 0);
     public static final RegistryObject<Power> THE_STILL_MIND      = crossPower("the_still_mind",      PowerTier.CROWN, PowerSchool.UTILITY, RegistrySkills.WISDOM, 0);
+
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Artifice — the twelve Tinker's Construct Powers (spec §11)
+    // ────────────────────────────────────────────────────────────────────────────────
+    //
+    // Registered through the generic factory, unconditionally, and NOT through issPower: they owe
+    // nothing to Iron's Spells (C12) and nothing to Tinker's Construct being installed. A Power
+    // that vanished with its mod would take a player's saved selection with it, which §15.1
+    // forbids; instead PowerEligibility refuses to equip one whose capability is unavailable and
+    // says why. Tier, cooldown and every magnitude come from TConstructPowers, so the registration
+    // and the effect cannot disagree about what a Power is.
+
+    // The id and the tier are written out rather than read from the catalogue because
+    // tools/icongen/powers.py parses these very lines for (id, tier, school) — an icon generated
+    // from the registration cannot drift from the registration. TcArtificePowersGameTest asserts
+    // the tier here matches TConstructPowers, which is the other half of that guarantee.
+    // Marks (§11.2)
+    public static final RegistryObject<Power> TC_FIRST_HEAT         = crossPower("tc_first_heat", PowerTier.MARK, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_first_heat"));
+    public static final RegistryObject<Power> TC_PLUMB_LINE         = crossPower("tc_plumb_line", PowerTier.MARK, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_plumb_line"));
+    public static final RegistryObject<Power> TC_QUENCH             = crossPower("tc_quench", PowerTier.MARK, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_quench"));
+    public static final RegistryObject<Power> TC_WORKING_MEMORY     = crossPower("tc_working_memory", PowerTier.MARK, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_working_memory"));
+    // Seals (§11.3)
+    public static final RegistryObject<Power> TC_HAMMER_AND_TONGS   = crossPower("tc_hammer_and_tongs", PowerTier.SEAL, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_hammer_and_tongs"));
+    public static final RegistryObject<Power> TC_TEMPER_RESERVE     = crossPower("tc_temper_reserve", PowerTier.SEAL, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_temper_reserve"));
+    public static final RegistryObject<Power> TC_RESONANT_RETURN    = crossPower("tc_resonant_return", PowerTier.SEAL, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_resonant_return"));
+    public static final RegistryObject<Power> TC_WORKSHOP_AEGIS     = crossPower("tc_workshop_aegis", PowerTier.SEAL, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_workshop_aegis"));
+    // Crowns (§11.4)
+    public static final RegistryObject<Power> TC_GREAT_WORK         = crossPower("tc_great_work", PowerTier.CROWN, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_great_work"));
+    public static final RegistryObject<Power> TC_LAST_TEMPER        = crossPower("tc_last_temper", PowerTier.CROWN, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_last_temper"));
+    public static final RegistryObject<Power> TC_FOUNDRY_HEART      = crossPower("tc_foundry_heart", PowerTier.CROWN, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_foundry_heart"));
+    public static final RegistryObject<Power> TC_MANY_HANDS         = crossPower("tc_many_hands", PowerTier.CROWN, PowerSchool.TINKERING, RegistrySkills.TINKERING, TConstructPowers.defaultIcdTicks("tc_many_hands"));
 
     // ── Public API ──────────────────────────────────────────────────────────────────
 

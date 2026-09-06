@@ -131,6 +131,10 @@ public final class PowerVfxStyle {
                     SoundEvents.ANVIL_LAND, 1.7F);
             case "utility" -> new SchoolStyle(0xF2F0E4, 0x8FE0C0, Motion.RISING,
                     SoundEvents.NOTE_BLOCK_CHIME.value(), 1.3F);
+            // Artifice: the same hot bronze the icon ring is drawn in, struck rather than sung, so
+            // a Power that fired at a forge sounds like one.
+            case "tinkering" -> new SchoolStyle(0xB86E2E, 0xF0DFA8, Motion.RISING,
+                    SoundEvents.ANVIL_USE, 1.1F);
             default -> neutral();
         };
     }

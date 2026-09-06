@@ -1,5 +1,7 @@
 package com.otectus.runicskills.mixin;
 
+import com.otectus.runicskills.common.effects.IncomingEffectPolicy;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryAttributes;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistryTags;
@@ -143,9 +145,10 @@ public abstract class MixLivingEntity {
     // ── Effect perks ────────────────────────────────────────────────────────────────────────
 
     /**
-     * Adjusts an incoming effect for the three perks that change one, and nothing else.
+     * Adjusts an incoming effect for the four perks that change one, and nothing else.
      *
-     * <p>Lion Heart shortens harmful effects; Alchemy Manipulation strengthens a drunk potion, and
+     * <p>Lion Heart and Lucky Charm shorten harmful effects; Alchemy Manipulation strengthens a
+     * drunk potion, and
      * the beneficial-effect attribute lengthens it. Each reads the instance vanilla is about to
      * process and hands back a replacement, so vanilla's own merge — including the Forge event, its
      * source entity, and every other listener — happens exactly as it would have.
@@ -162,14 +165,8 @@ public abstract class MixLivingEntity {
         int amplifier = incoming.getAmplifier();
         MobEffectCategory category = incoming.getEffect().getCategory();
 
-        // Lion Heart — harmful effects run their course sooner. Infinite effects are left alone:
-        // a share of "forever" is meaningless, and shortening one would be a different perk.
-        if (category == MobEffectCategory.HARMFUL
-                && !incoming.isInfiniteDuration()
-                && RegistryPerks.LION_HEART != null
-                && RegistryPerks.LION_HEART.get().isEnabled(player)) {
-            double cut = RegistryPerks.LION_HEART.get().getActiveValue(player)[0] / 100.0;
-            if (cut > 0) duration -= (int) (duration * Math.min(1.0, cut));
+        if (category == MobEffectCategory.HARMFUL) {
+            return runicskills$shortenHarmful(player, incoming);
         }
 
         if (category == MobEffectCategory.BENEFICIAL && runicskills$isDrinkingAPotion()) {
@@ -191,6 +188,45 @@ public abstract class MixLivingEntity {
             return incoming;
         }
         return runicskills$respan(incoming, Math.max(0, duration), Math.max(0, amplifier));
+    }
+
+    /**
+     * Lion Heart and Lucky Charm — harmful effects run their course sooner.
+     *
+     * <p><b>Summed, then applied once.</b> Two perks that each take a quarter off take half between
+     * them, not 43.75%: applying one reduction to the output of the other is how a stack of
+     * duration perks stops being legible, and it is why {@link IncomingEffectPolicy#shorten} is
+     * called with one total rather than called twice.
+     *
+     * <p><b>Why Lucky Charm is here and not in an event handler (RS207-04).</b> It used to listen to
+     * {@code MobEffectEvent.Added} and call {@code addEffect} again with a rebuilt instance. That
+     * fires <em>after</em> vanilla has already run {@code canBeAffected}, posted the event to every
+     * other listener and merged the instance into the active map, so every observer saw the full
+     * duration and then a second, shorter application of the same effect arriving from this mod —
+     * and the rebuild used the three-argument constructor, which drops the ambient flag, the icon
+     * and particle flags, the curative items and the factor data. HEAD of the two-argument
+     * {@code addEffect} is the one point that precedes all of it, so there is exactly one
+     * application and everybody sees the same one.
+     *
+     * <p>Lucky Charm is capped at 90% on its own; Lion Heart is not, because its configured value
+     * is a perk rank rather than a raw percentage and 100% is a legitimate top rank for it.
+     */
+    @Unique
+    private static MobEffectInstance runicskills$shortenHarmful(Player player, MobEffectInstance incoming) {
+        // Infinite effects are left alone: a share of "forever" is meaningless, and shortening one
+        // would be a different perk.
+        if (incoming.isInfiniteDuration()) return incoming;
+
+        double cut = 0.0;
+        if (RegistryPerks.LION_HEART != null && RegistryPerks.LION_HEART.get().isEnabled(player)) {
+            cut += RegistryPerks.LION_HEART.get().getActiveValue(player)[0] / 100.0;
+        }
+        if (RegistryPerks.LUCKY_CHARM != null && RegistryPerks.LUCKY_CHARM.get().isEnabled(player)) {
+            cut += Math.min(0.90,
+                    HandlerCommonConfig.HANDLER.instance().luckyCharmPercent / 100.0);
+        }
+        if (cut <= 0) return incoming;
+        return IncomingEffectPolicy.shorten(incoming, cut);
     }
 
     /**

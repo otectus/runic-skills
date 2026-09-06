@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.Mod;
  *   <li>{@link InteractionEventHandler} - item/block/entity interaction locking</li>
  *   <li>{@link CombatEventHandler} - attack, crit, hurt, archery, teleport</li>
  *   <li>{@link CraftingEventHandler} - crafting, block break, entity drops, XP, containers</li>
+ *   <li>{@link CraftRewardDispatcher} - the one bounded budget of bonus crafted copies</li>
  *   <li>{@link TickEventHandler} - per-tick perk effects, cooldowns, title sync</li>
  * </ul>
  */
@@ -24,6 +25,7 @@ public class RegistryCommonEvents {
     private final InteractionEventHandler interactionHandler = new InteractionEventHandler();
     private final CombatEventHandler combatHandler = new CombatEventHandler();
     private final CraftingEventHandler craftingHandler = new CraftingEventHandler();
+    private final CraftRewardDispatcher craftRewardDispatcher = new CraftRewardDispatcher();
     private final TickEventHandler tickHandler = new TickEventHandler();
     private final PerkEffectsHandler perkEffectsHandler = new PerkEffectsHandler();
     private final StealthPerkHandler stealthHandler = new StealthPerkHandler();
@@ -49,6 +51,7 @@ public class RegistryCommonEvents {
         MinecraftForge.EVENT_BUS.register(interactionHandler);
         MinecraftForge.EVENT_BUS.register(combatHandler);
         MinecraftForge.EVENT_BUS.register(craftingHandler);
+        MinecraftForge.EVENT_BUS.register(craftRewardDispatcher);
         MinecraftForge.EVENT_BUS.register(tickHandler);
         MinecraftForge.EVENT_BUS.register(perkEffectsHandler);
         MinecraftForge.EVENT_BUS.register(stealthHandler);

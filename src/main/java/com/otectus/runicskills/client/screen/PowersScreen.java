@@ -7,6 +7,7 @@ import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
 import com.otectus.runicskills.registry.powers.PowerEligibility;
 import com.otectus.runicskills.client.vfx.ProcPulse;
+import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import com.otectus.runicskills.registry.powers.PowerSchool;
 import com.otectus.runicskills.registry.powers.PowerTier;
 import net.minecraft.ChatFormatting;
@@ -300,8 +301,11 @@ public class PowersScreen extends Screen {
                     ChatFormatting.AQUA));
         }
         lines.add(Component.literal(""));
-        lines.add(Component.translatable(p.getDescriptionKey())
-                .copy().withStyle(ChatFormatting.GRAY));
+        // Through TConstructPowers rather than translatable(key) directly: an Artifice description
+        // is formatted from the very numbers its dispatcher executes, override included, so a pack
+        // that halves a magnitude in JSON cannot leave the tooltip advertising the old one (13.1).
+        // Every other Power takes the same plain translation it always did.
+        lines.add(TConstructPowers.description(p).copy().withStyle(ChatFormatting.GRAY));
         if (p.requiredSkillLevel > 0 && p.getGoverningSkill() != null) {
             lines.add(Component.literal(""));
             // Was `"Requires " + skill.getName() + " " + level` -- English, and built from the
@@ -359,6 +363,7 @@ public class PowersScreen extends Screen {
         if (PowerSchool.EVOCATION.equals(school)) return 0x66FF66;
         if (PowerSchool.NATURE.equals(school))    return 0x99DD66;
         if (PowerSchool.ELDRITCH.equals(school))  return 0x99FFCC;
+        if (PowerSchool.TINKERING.equals(school)) return 0xD98A3F;
         return 0xCCCCCC;
     }
 

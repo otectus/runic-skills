@@ -37,6 +37,14 @@ public final class PowerSchool {
     public static final ResourceLocation MOBILITY       = new ResourceLocation(RunicSkills.MOD_ID, "mobility");
     public static final ResourceLocation WEAPON_CASTER  = new ResourceLocation(RunicSkills.MOD_ID, "weapon_caster");
     public static final ResourceLocation UTILITY        = new ResourceLocation(RunicSkills.MOD_ID, "utility");
+    /**
+     * Artifice — the twelve Tinker's Construct Powers (spec §11.1).
+     *
+     * <p>A seventh cross-cutting category rather than a new field on {@link Power}: the
+     * prerequisite chain, the screen's grouping and the addon-school tolerance all key on the
+     * school id already, and a parallel axis would fork every one of them.
+     */
+    public static final ResourceLocation TINKERING     = new ResourceLocation(RunicSkills.MOD_ID, "tinkering");
 
     private PowerSchool() {}
 

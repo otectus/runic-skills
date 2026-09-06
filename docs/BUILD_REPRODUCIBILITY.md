@@ -57,6 +57,25 @@ The `reproducible-build` job builds the same commit in two independent container
 distributable hashes differ. It runs on `v*` tags and on manual dispatch, not on every push — it is
 two full cold builds.
 
+## MixinExtras is a bundled dependency, not a Forge-supplied one
+
+Forge 1.20.1 47.x does not provide MixinExtras — confirmed absent from the launcher libraries and
+from the forge/fmlcore/fmlearlydisplay jars of the 47.4.22 runtime in a live pack — yet seven
+mixins depend on its injector annotations
+(`MixItemStack`, `MixGrindstoneMenu`, `MixExperienceOrb`, `MixModifiableBowItem`,
+`MixModifiableCrossbowItem`, `MixThrowingModule`, `MixToolHarvestLogic`). `mixinextras-forge` is
+declared as a `jarJar` dependency for exactly this reason: the `jar` task produces a slim, un-bundled
+artifact (`runicskills-<version>-slim.jar`), and the `jarJar` task produces the distributable
+(`runicskills-<version>.jar`), which carries `mixinextras-forge` under `META-INF/jarjar/`. The two
+tasks' `archiveClassifier`s are set so the unclassified name is the bundle a player is meant to
+install.
+
+`verifyShippedRefmap` (wired into `build`) enforces the artifact's contents directly: it opens the
+`jarJar` output and fails if `META-INF/jarjar/mixinextras-forge-*.jar` is missing, if the shipped
+`runicskills.refmap.json` disagrees with the one the annotation processor produced, if any Tinkers'
+mixin's refmap entry lacks an SRG name (`m_*`/`f_*`), or if README does not name the exact jar file
+it just inspected.
+
 ## Mappings
 
 `gradle.properties` declares `mapping_channel` / `mapping_version` and `build.gradle` reads them.

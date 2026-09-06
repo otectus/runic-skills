@@ -4156,5 +4156,275 @@
   "gate": "config:masterSmithRequiredLevel",
   "name": "Master Smith",
   "desc": "Forged results have a %s chance to come out one quality tier higher, up to Perfectly Forged."
+ },
+ {
+  "id": "tc_cast_keeper",
+  "skill": "tinkering",
+  "texture_const": "TC_CAST_KEEPER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_cast_keeper.png",
+  "gate": "config:tcCastKeeperRequiredLevel",
+  "name": "Cast Keeper",
+  "desc": "Completing a cast at your focused workshop has a %s chance to return the sand cast it used up."
+ },
+ {
+  "id": "tc_thermal_rhythm",
+  "skill": "tinkering",
+  "texture_const": "TC_THERMAL_RHYTHM_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_thermal_rhythm.png",
+  "gate": "config:tcThermalRhythmRequiredLevel",
+  "name": "Thermal Rhythm",
+  "desc": "Melting at your focused workshop progresses %s faster. It never produces extra metal, fuel or byproducts."
+ },
+ {
+  "id": "tc_repair_memory",
+  "skill": "tinkering",
+  "texture_const": "TC_REPAIR_MEMORY_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_repair_memory.png",
+  "gate": "config:tcRepairMemoryRequiredLevel",
+  "name": "Repair Memory",
+  "desc": "After you pay to repair a tool, its durability loss has an extra %s chance to be ignored for the next %s uses, for up to %s."
+ },
+ {
+  "id": "tc_material_harmony",
+  "skill": "tinkering",
+  "texture_const": "TC_MATERIAL_HARMONY_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_material_harmony.png",
+  "gate": "config:tcMaterialHarmonyRequiredLevel",
+  "name": "Material Harmony",
+  "desc": "A paid repair restores %s more durability on a tool built from at least three different materials."
+ },
+ {
+  "id": "tc_field_service",
+  "skill": "tinkering",
+  "texture_const": "TC_FIELD_SERVICE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_field_service.png",
+  "gate": "config:tcFieldServiceRequiredLevel",
+  "name": "Field Service",
+  "desc": "A repair kit used at a crafting table restores %s more durability. Repairs at a tinker station are Repair Expert's."
+ },
+ {
+  "id": "tc_workshop_cadence",
+  "skill": "tinkering",
+  "texture_const": "TC_WORKSHOP_CADENCE_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_workshop_cadence.png",
+  "gate": "config:tcWorkshopCadenceRequiredLevel",
+  "name": "Workshop Cadence",
+  "desc": "Completing %3$s casts of the same recipe under focus speeds up cooling by %1$s for %2$s."
+ },
+ {
+  "id": "tc_adaptive_grip",
+  "skill": "tinkering",
+  "texture_const": "TC_ADAPTIVE_GRIP_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_adaptive_grip.png",
+  "gate": "config:tcAdaptiveGripRequiredLevel",
+  "name": "Adaptive Grip",
+  "desc": "Switching between mining and fighting with the same Tinkers' tool makes your next action %s stronger, for %s."
+ },
+ {
+  "id": "tc_keystone_tinker",
+  "skill": "tinkering",
+  "texture_const": "TC_KEYSTONE_TINKER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_keystone_tinker.png",
+  "gate": "config:tcKeystoneTinkerRequiredLevel",
+  "name": "Keystone Tinker",
+  "desc": "At a Tinker Station, fit a keystone to an eligible Tinkers' tool for one netherite ingot and one amethyst shard. The tool permanently gains one extra upgrade slot. One keystone per tool."
+ },
+ {
+  "id": "tc_tempered_edge",
+  "skill": "strength",
+  "texture_const": "TC_TEMPERED_EDGE_PERK",
+  "texture": "runicskills:textures/skill/strength/tc_tempered_edge.png",
+  "gate": "config:tcTemperedEdgeRequiredLevel",
+  "name": "Tempered Edge",
+  "desc": "A fully wound-up strike with a Tinkers' melee tool deals %s more damage, at most once every %s ticks."
+ },
+ {
+  "id": "tc_counterweight",
+  "skill": "dexterity",
+  "texture_const": "TC_COUNTERWEIGHT_PERK",
+  "texture": "runicskills:textures/skill/dexterity/tc_counterweight.png",
+  "gate": "config:tcCounterweightRequiredLevel",
+  "name": "Counterweight",
+  "desc": "A broad Tinkers' weapon in your main hand swings %s faster."
+ },
+ {
+  "id": "tc_measured_draw",
+  "skill": "dexterity",
+  "texture_const": "TC_MEASURED_DRAW_PERK",
+  "texture": "runicskills:textures/skill/dexterity/tc_measured_draw.png",
+  "gate": "config:tcMeasuredDrawRequiredLevel",
+  "name": "Measured Draw",
+  "desc": "A fully drawn Tinkers' bow or a fired crossbow loses %s of its inaccuracy."
+ },
+ {
+  "id": "tc_returning_hand",
+  "skill": "dexterity",
+  "texture_const": "TC_RETURNING_HAND_PERK",
+  "texture": "runicskills:textures/skill/dexterity/tc_returning_hand.png",
+  "gate": "config:tcReturningHandRequiredLevel",
+  "name": "Returning Hand",
+  "desc": "After a thrown tool returns to you on its own, your next throw within %2$s draws %1$s faster."
+ },
+ {
+  "id": "tc_precision_footing",
+  "skill": "endurance",
+  "texture_const": "TC_PRECISION_FOOTING_PERK",
+  "texture": "runicskills:textures/skill/endurance/tc_precision_footing.png",
+  "gate": "config:tcPrecisionFootingRequiredLevel",
+  "name": "Precision Footing",
+  "desc": "Mining with the right Tinkers' tool is %s faster while you are on the ground and not sprinting."
+ },
+ {
+  "id": "tc_slime_steward",
+  "skill": "endurance",
+  "texture_const": "TC_SLIME_STEWARD_PERK",
+  "texture": "runicskills:textures/skill/endurance/tc_slime_steward.png",
+  "gate": "config:tcSlimeStewardRequiredLevel",
+  "name": "Slime Steward",
+  "desc": "A tool that has run out of overslime has an extra %s chance to ignore durability loss. It never refills the overslime."
+ },
+ {
+  "id": "tc_plate_discipline",
+  "skill": "constitution",
+  "texture_const": "TC_PLATE_DISCIPLINE_PERK",
+  "texture": "runicskills:textures/skill/constitution/tc_plate_discipline.png",
+  "gate": "config:tcPlateDisciplineRequiredLevel",
+  "name": "Plate Discipline",
+  "desc": "Wearing at least three pieces of Tinkers' armour grants %s knockback resistance."
+ },
+ {
+  "id": "tc_ember_guard",
+  "skill": "constitution",
+  "texture_const": "TC_EMBER_GUARD_PERK",
+  "texture": "runicskills:textures/skill/constitution/tc_ember_guard.png",
+  "gate": "config:tcEmberGuardRequiredLevel",
+  "name": "Ember Guard",
+  "desc": "Fire damage is reduced by %s while you hold focus on a workshop that is actually burning."
+ },
+ {
+  "id": "tc_mana_polisher",
+  "skill": "tinkering",
+  "texture_const": "TC_MANA_POLISHER_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_mana_polisher.png",
+  "gate": "config:tcManaPolisherRequiredLevel",
+  "name": "Mana Polisher",
+  "desc": "A tool that repairs itself with Botania mana asks for %s less of it, never less than one mana."
+ },
+ {
+  "id": "tc_source_tempering",
+  "skill": "magic",
+  "texture_const": "TC_SOURCE_TEMPERING_PERK",
+  "texture": "runicskills:textures/skill/magic/tc_source_tempering.png",
+  "gate": "config:tcSourceTemperingRequiredLevel",
+  "name": "Source Tempering",
+  "desc": "After your armour actually spends source to repair itself, your next spell deals %s more damage, if you cast it within %s."
+ },
+ {
+  "id": "tc_clockwork_alternation",
+  "skill": "tinkering",
+  "texture_const": "TC_CLOCKWORK_ALTERNATION_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_clockwork_alternation.png",
+  "gate": "config:tcClockworkAlternationRequiredLevel",
+  "name": "Clockwork Alternation",
+  "desc": "Landing hits with both hands in turn gives your next tool use a %s better chance to ignore durability loss, for %s."
+ },
+ {
+  "id": "tc_seasoned_hands",
+  "skill": "tinkering",
+  "texture_const": "TC_SEASONED_HANDS_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_seasoned_hands.png",
+  "gate": "config:tcSeasonedHandsRequiredLevel",
+  "name": "Seasoned Hands",
+  "desc": "Your tools earn %s more of their own experience. Nothing is granted past the addon's level cap."
+ },
+ {
+  "id": "tc_banquet_of_cinders",
+  "skill": "wisdom",
+  "texture_const": "TC_BANQUET_OF_CINDERS_PERK",
+  "texture": "runicskills:textures/skill/wisdom/tc_banquet_of_cinders.png",
+  "gate": "config:tcBanquetOfCindersRequiredLevel",
+  "name": "Banquet of Cinders",
+  "desc": "While a smith's meal is still nourishing you, your melee hits deal %s more damage."
+ },
+ {
+  "id": "tc_soulsteel_resolve",
+  "skill": "constitution",
+  "texture_const": "TC_SOULSTEEL_RESOLVE_PERK",
+  "texture": "runicskills:textures/skill/constitution/tc_soulsteel_resolve.png",
+  "gate": "config:tcSoulsteelResolveRequiredLevel",
+  "name": "Soulsteel Resolve",
+  "desc": "A hit from soul-stained gear steadies you: %s knockback resistance for %s."
+ },
+ {
+  "id": "tc_charged_craft",
+  "skill": "tinkering",
+  "texture_const": "TC_CHARGED_CRAFT_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_charged_craft.png",
+  "gate": "config:tcChargedCraftRequiredLevel",
+  "name": "Charged Craft",
+  "desc": "A powered tool operation you perform yourself costs %s less energy, never less than one FE."
+ },
+ {
+  "id": "tc_thinking_last_thought",
+  "skill": "wisdom",
+  "texture_const": "TC_THINKING_LAST_THOUGHT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/tc_thinking_last_thought.png",
+  "gate": "config:tcThinkingLastThoughtRequiredLevel",
+  "name": "Last Thought",
+  "desc": "For %s after Tinkers' Thinking drags you back from a death, your gear has a %s better chance to ignore durability loss."
+ },
+ {
+  "id": "tc_thinking_studied_recall",
+  "skill": "wisdom",
+  "texture_const": "TC_THINKING_STUDIED_RECALL_PERK",
+  "texture": "runicskills:textures/skill/wisdom/tc_thinking_studied_recall.png",
+  "gate": "config:tcThinkingStudiedRecallRequiredLevel",
+  "name": "Studied Recall",
+  "desc": "When sculk power consumes an experience orb, %s of what it was worth still reaches you."
+ },
+ {
+  "id": "tc_thinking_embellished_focus",
+  "skill": "tinkering",
+  "texture_const": "TC_THINKING_EMBELLISHED_FOCUS_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_thinking_embellished_focus.png",
+  "gate": "config:tcThinkingEmbellishedFocusRequiredLevel",
+  "name": "Embellished Focus",
+  "desc": "A weapon carrying a Tinkers' Thinking melee modifier deals %s more damage in your hands."
+ },
+ {
+  "id": "tc_jeweler_setting",
+  "skill": "tinkering",
+  "texture_const": "TC_JEWELER_SETTING_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_jeweler_setting.png",
+  "gate": "config:tcJewelerSettingRequiredLevel",
+  "name": "Jeweler's Setting",
+  "desc": "A jewelry piece you just took from the station has a %s better chance to ignore durability loss, for %s."
+ },
+ {
+  "id": "tc_gem_attunement",
+  "skill": "wisdom",
+  "texture_const": "TC_GEM_ATTUNEMENT_PERK",
+  "texture": "runicskills:textures/skill/wisdom/tc_gem_attunement.png",
+  "gate": "config:tcGemAttunementRequiredLevel",
+  "name": "Gem Attunement",
+  "desc": "While you are wearing a piece of Tinkers' Jewelry, your melee hits deal %s more damage."
+ },
+ {
+  "id": "tc_undying_lustre",
+  "skill": "constitution",
+  "texture_const": "TC_UNDYING_LUSTRE_PERK",
+  "texture": "runicskills:textures/skill/constitution/tc_undying_lustre.png",
+  "gate": "config:tcUndyingLustreRequiredLevel",
+  "name": "Undying Lustre",
+  "desc": "The ring that refuses your death has a %s better chance to survive the durability that refusal costs."
+ },
+ {
+  "id": "tc_polished_facet",
+  "skill": "tinkering",
+  "texture_const": "TC_POLISHED_FACET_PERK",
+  "texture": "runicskills:textures/skill/tinkering/tc_polished_facet.png",
+  "gate": "config:tcPolishedFacetRequiredLevel",
+  "name": "Polished Facet",
+  "desc": "A paid station repair of a jewelry piece restores %s more durability."
  }
 ]

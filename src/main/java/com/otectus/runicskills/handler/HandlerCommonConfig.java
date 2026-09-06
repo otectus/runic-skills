@@ -293,6 +293,452 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int mcaReputationTierSkillLevels = 1;
 
+    @SerialEntry(comment = "Master toggle for the Tinker's Construct integration. When false, no Tinkers' equipment is classified, no native repair or wear hook is installed, and the runicskills:workmanship modifier is not registered. RESTART REQUIRED: the wear hook is a mixin, applied during class transformation long before a world exists, so switching this at runtime cannot install or remove it.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    @Scope(ConfigScope.RESTART_REQUIRED)
+    public boolean enableTConstructIntegration = true;
+
+    @SerialEntry(comment = "Should the Tinker's Construct perks be active? Off leaves classification, repair and locks working and makes only the tc_ perks inert.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTConstructPerks = true;
+
+    @SerialEntry(comment = "Should the Artifice Powers be available? Off hides them without disturbing anything else in the integration.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTConstructPowers = true;
+
+    @SerialEntry(comment = "Should Tinker's Construct tools carry automatic skill requirements derived from their material tier? OFF by default and deliberately: turning it on in an existing world can lock players out of equipment they already own and rely on. Explicit item locks are enforced either way.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTConstructLockItems = false;
+
+    @SerialEntry(comment = "Master toggle for the TCIntegrations add-on layer. When false, Mana Polisher, Source Tempering, Clockwork Alternation and Soulsteel Resolve are inert and the adapter is not loaded. Each of its four effects also needs the companion mod (Botania, Ars Nouveau, Create, Malum) that TCIntegrations integrates with; the compatibility diagnostic names which are missing.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTcIntegrationsIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Tinkers' Levelling Addon layer. When false, Seasoned Hands is inert. Tool levels, slots, stats and the addon's cap remain entirely the addon's own either way.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTinkersLevellingIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Tinkers' Delight layer. When false, Banquet of Cinders is inert. The addon's own food effects are never applied, duplicated or amplified either way.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTinkersDelightIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Tinkers' Advanced layer. When false, Charged Craft is inert. Only a tool's own stored FE is ever discounted; energy generation, transfer and machine use are never touched.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTinkersAdvancedIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Tinkers' Thinking layer. When false, Last Thought, Studied Recall and Embellished Focus are inert. The addon's own death save, experience conversion and modifiers are never cancelled, duplicated or amplified either way.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTinkersThinkingIntegration = true;
+
+    @SerialEntry(comment = "Master toggle for the Tinkers' Jewelry layer. When false, Jeweler's Setting, Gem Attunement, Undying Lustre and Polished Facet are inert. The addon's own gem attributes, undying save and subspace storage are never altered either way.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableTinkersJewelryIntegration = true;
+
+    @SerialEntry(comment = "Should the Tinker's Construct compatibility summary be logged at startup and reported by the diagnostics command? It names each capability and why it is or is not available.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean tconstructCompatibilityDiagnostics = true;
+
+    @SerialEntry(comment = "Ceiling on the extra durability a Runic repair bonus may add to a Tinker's Construct repair, as a share of the native amount. 0.5 means a repair can restore at most half again what the materials paid for.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 1.0f)
+    @Clamp(min = 0.0, max = 1.0)
+    public float tconstructRepairBonusCap = 0.5f;
+
+    @SerialEntry(comment = "Reserved: a pack-requested mode that discounts the MATERIALS a repair consumes rather than adding durability to the result. It has no code path in 2.0.7 and changing it does nothing; it exists so a pack that sets it does not have its config key deleted on the next save.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean tconstructMaterialCostDiscountMode = false;
+
+    @SerialEntry(comment = "How long a workshop focus lasts, in seconds, before it expires on its own. A focus is also dropped the moment the player logs out, changes dimension, or walks past tconstructWorkshopFocusRadius.")
+    @AutoGen(category = "common", group = "integrations")
+    @IntField(min = 10, max = 300)
+    @Clamp(min = 10, max = 300)
+    public int tconstructWorkshopFocusSeconds = 60;
+
+    @SerialEntry(comment = "How far a player may be from the controller they focused before the focus is released. Also the maximum distance at which a focus may be claimed in the first place, which is what stops a coordinate in a packet from claiming a workshop across the world.")
+    @AutoGen(category = "common", group = "integrations")
+    @IntField(min = 4, max = 32)
+    @Clamp(min = 4, max = 32)
+    public int tconstructWorkshopFocusRadius = 16;
+
+    @SerialEntry(comment = "How many focus records the server keeps at once. One per player; the ceiling exists so a busy server cannot be made to hold an unbounded number of them.")
+    @AutoGen(category = "common", group = "integrations")
+    @IntField(min = 1, max = 128)
+    @Clamp(min = 1, max = 128)
+    public int tconstructMaxFocusedWorkshops = 32;
+
+    @SerialEntry(comment = "How many casting tables or basins one focus may explicitly associate with its controller. Zero disables casting associations entirely, leaving melting the only process a focus accelerates.")
+    @AutoGen(category = "common", group = "integrations")
+    @IntField(min = 0, max = 16)
+    @Clamp(min = 0, max = 16)
+    public int tconstructMaxCastingAssociations = 8;
+
+    @SerialEntry(comment = "Ceiling on the combined Runic melting and cooling speed bonus at a focused workshop. Never multiplies molten material, byproducts, fuel or ore rates: it only changes how fast native progress accrues.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructWorkshopBonusCap = 0.25f;
+
+    @SerialEntry(comment = "Should output a workshop produced without a player operating it count as that player's work? OFF by default: focus buys process speed, not ownership of an automated throughput farm. Reported in the station panel so a player can see which answer is in force.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean tconstructAllowAutomationRewards = false;
+
+    // -- Tinker's Construct: shared caps for the new content (spec 13.2) --------------------------
+    //
+    // These bound the SUM of the new tc_ perk contributions in each channel, once, at the stage the
+    // channel is composed. They deliberately concern new content only: they are not a silent
+    // rebalance of the 470 older perks, of native modifiers, or of any other mod.
+
+    @SerialEntry(comment = "Ceiling on the combined outgoing damage bonus from the new Tinker's Construct perks, as a share of the accepted native hit. Applies to the sum of those perks only, not to older Runic damage perks.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructNewDamageBonusCap = 0.30f;
+
+    @SerialEntry(comment = "Ceiling on the combined mining speed bonus from the new Tinker's Construct perks. Multiplies the effective speed once; native penalties and block effectiveness are preserved.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructNewMiningBonusCap = 0.25f;
+
+    @SerialEntry(comment = "Ceiling on the combined attack and draw speed bonus from the new Tinker's Construct perks. One channel, so a perk never both edits an attribute and shortens the same timer.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.4f)
+    @Clamp(min = 0.0, max = 0.4)
+    public float tconstructNewActionSpeedBonusCap = 0.20f;
+
+    @SerialEntry(comment = "Ceiling on the combined durability-loss avoidance contributed by the Tinkers' ADD-ON perks, as a probability. Applies to the sum of those perks only; it is added to the one avoidance sum every other wear perk already shares, which keeps its own 90% ceiling.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructNewWearAvoidanceCap = 0.25f;
+
+    @SerialEntry(comment = "Ceiling on the combined share of a consumed experience orb the Tinkers' ADD-ON perks may return, as a share of the orb another mod destroyed. It can never return more than was taken, so it is never a net experience gain.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructNewExperienceBonusCap = 0.20f;
+
+    @SerialEntry(comment = "Ceiling on the combined incoming damage reduction from the new Tinker's Construct perks. Applied at the accepted-damage stage; bypassing damage stays bypassing.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructNewDamageReductionCap = 0.25f;
+
+    @SerialEntry(comment = "Ceiling on the combined resource discount from the new Tinker's Construct perks. A native zero cost stays zero and a positive cost never rounds to free.")
+    @AutoGen(category = "common", group = "integrations")
+    @FloatField(min = 0.0f, max = 0.5f)
+    @Clamp(min = 0.0, max = 0.5)
+    public float tconstructResourceDiscountCap = 0.25f;
+
+    // -- Tinker's Construct perks: tunables ------------------------------------------------------
+
+    @SerialEntry(comment = "Cast Keeper: chance that one consumed disposable cast is returned after an attributed casting completes.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcCastKeeperPercent = 15;
+
+    @SerialEntry(comment = "Thermal Rhythm: extra melting progress at a focused workshop. Shares the tconstructWorkshopBonusCap ceiling with Smelter and Overclock.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcThermalRhythmPercent = 10;
+
+    @SerialEntry(comment = "Repair Memory: percentage points of Runic wear avoidance added while charges remain. Joins the single 90% avoidance sum rather than forming a second cap.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcRepairMemoryPercent = 10;
+
+    @SerialEntry(comment = "Repair Memory: how many ordinary use actions the charge lasts for. A new qualifying repair refreshes to this number rather than adding to it.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 128)
+    @Clamp(min = 1, max = 128)
+    public int tcRepairMemoryCharges = 16;
+
+    @SerialEntry(comment = "Repair Memory: how long the charges last, in seconds, if they are not spent first.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 600)
+    @Clamp(min = 1, max = 600)
+    public int tcRepairMemorySeconds = 120;
+
+    @SerialEntry(comment = "Material Harmony: extra paid repair restoration on a tool built from at least three distinct native materials. Bounded by tconstructRepairBonusCap.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcMaterialHarmonyPercent = 5;
+
+    @SerialEntry(comment = "Tempered Edge: extra damage on an accepted primary native melee hit made at full attack readiness.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcTemperedEdgePercent = 6;
+
+    @SerialEntry(comment = "Tempered Edge: internal cooldown in ticks between two paid hits.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 1200)
+    @Clamp(min = 0, max = 1200)
+    public int tcTemperedEdgeCooldownTicks = 60;
+
+    @SerialEntry(comment = "Counterweight: extra effective attack speed while a broad native melee tool is the active weapon.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcCounterweightPercent = 5;
+
+    @SerialEntry(comment = "Precision Footing: extra mining speed while grounded, not sprinting, and using an effective native mining tool.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcPrecisionFootingPercent = 8;
+
+    @SerialEntry(comment = "Slime Steward: percentage points of Runic wear avoidance while a tool that supports overslime has none left. Never creates or refills overslime.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcSlimeStewardPercent = 5;
+
+    @SerialEntry(comment = "Plate Discipline: knockback resistance granted while at least three valid native armour pieces are worn in their own slots. One modifier per player, not per piece.")
+    @AutoGen(category = "common", group = "perks")
+    @FloatField(min = 0.0f, max = 1.0f)
+    @Clamp(min = 0.0, max = 1.0)
+    public float tcPlateDisciplineAmount = 0.05f;
+
+    @SerialEntry(comment = "Measured Draw: how much of a fully charged native launch's inaccuracy is removed. A shot that is already perfectly accurate is not improved.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcMeasuredDrawPercent = 10;
+
+    @SerialEntry(comment = "Returning Hand: extra draw speed on the next thrown-tool launch after a genuine native return.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcReturningHandPercent = 10;
+
+    @SerialEntry(comment = "Returning Hand: how long, in seconds, the prepared launch stays available after the return.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcReturningHandSeconds = 8;
+
+    @SerialEntry(comment = "Returning Hand: internal cooldown in ticks between two prepared launches.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 1200)
+    @Clamp(min = 0, max = 1200)
+    public int tcReturningHandCooldownTicks = 100;
+
+    @SerialEntry(comment = "Ember Guard: reduction to accepted incoming fire damage while focused on a heated native workshop. Not fire immunity and not active outside focus range.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcEmberGuardPercent = 5;
+
+    @SerialEntry(comment = "Field Service: extra restoration from a native repair kit consumed outside a tinker station. Station repairs are Repair Expert's, so one kit never pays twice.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcFieldServicePercent = 10;
+
+    @SerialEntry(comment = "Workshop Cadence: extra casting cooling progress once the cast streak completes. Shares the tconstructWorkshopBonusCap ceiling.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcWorkshopCadencePercent = 10;
+
+    @SerialEntry(comment = "Workshop Cadence: how long the cooling bonus lasts, in seconds.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 300)
+    @Clamp(min = 1, max = 300)
+    public int tcWorkshopCadenceSeconds = 30;
+
+    @SerialEntry(comment = "Workshop Cadence: how many casts of the same recipe must complete to trigger it.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 16)
+    @Clamp(min = 1, max = 16)
+    public int tcWorkshopCadenceCasts = 3;
+
+    @SerialEntry(comment = "Workshop Cadence: how long, in seconds, the cast streak may take before it resets.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 600)
+    @Clamp(min = 1, max = 600)
+    public int tcWorkshopCadenceWindowSeconds = 60;
+
+    @SerialEntry(comment = "Workshop Cadence: internal cooldown in ticks between two triggers.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 2400)
+    @Clamp(min = 0, max = 2400)
+    public int tcWorkshopCadenceCooldownTicks = 200;
+
+    @SerialEntry(comment = "Adaptive Grip: bonus to the next eligible melee hit or mining action after switching roles with the same hybrid native tool.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcAdaptiveGripPercent = 8;
+
+    @SerialEntry(comment = "Adaptive Grip: how long, in seconds, after the previous action a role switch still counts.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcAdaptiveGripSwitchSeconds = 8;
+
+    @SerialEntry(comment = "Adaptive Grip: how long, in seconds, the armed bonus lasts before it expires unused.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcAdaptiveGripWindowSeconds = 4;
+
+    @SerialEntry(comment = "Adaptive Grip: internal cooldown in ticks between two armed bonuses.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 1200)
+    @Clamp(min = 0, max = 1200)
+    public int tcAdaptiveGripCooldownTicks = 100;
+
+    @SerialEntry(comment = "Mana Polisher: how much of the native Botania mana charge for a verified durability repair is waived. A positive charge is never reduced below one mana.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcManaPolisherPercent = 10;
+
+    @SerialEntry(comment = "Source Tempering: extra damage on the next Ars Nouveau spell after native armour repair actually spends source.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcSourceTemperingPercent = 5;
+
+    @SerialEntry(comment = "Source Tempering: how long, in seconds, the armed spell charge lasts before it expires unused.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcSourceTemperingWindowSeconds = 8;
+
+    @SerialEntry(comment = "Source Tempering: internal cooldown in ticks between two armed charges.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 2400)
+    @Clamp(min = 0, max = 2400)
+    public int tcSourceTemperingCooldownTicks = 200;
+
+    @SerialEntry(comment = "Clockwork Alternation: percentage points of Runic wear avoidance granted to the next tool use after alternating main-hand and offhand native melee hits.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcClockworkAlternationPercent = 10;
+
+    @SerialEntry(comment = "Clockwork Alternation: how long, in seconds, a hand switch still counts as an alternation, and how long the armed bonus then lasts.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcClockworkAlternationWindowSeconds = 5;
+
+    @SerialEntry(comment = "Clockwork Alternation: internal cooldown in ticks between two armed bonuses.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 2400)
+    @Clamp(min = 0, max = 2400)
+    public int tcClockworkAlternationCooldownTicks = 100;
+
+    @SerialEntry(comment = "Seasoned Hands: extra TOOL experience on an eligible native award from Tinkers' Levelling Addon. Never player experience, and never granted past the addon's own level cap.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcSeasonedHandsPercent = 10;
+
+    @SerialEntry(comment = "Banquet of Cinders: extra accepted primary native melee damage while the Tinkers' Delight food effect is active.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcBanquetOfCindersPercent = 3;
+
+    @SerialEntry(comment = "Soulsteel Resolve: knockback resistance granted after a primary native melee hit from Soul Stained equipment. One transient modifier, never stacked.")
+    @AutoGen(category = "common", group = "perks")
+    @FloatField(min = 0.0f, max = 1.0f)
+    @Clamp(min = 0.0, max = 1.0)
+    public float tcSoulsteelResolveAmount = 0.06f;
+
+    @SerialEntry(comment = "Soulsteel Resolve: how long, in seconds, that knockback resistance lasts.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcSoulsteelResolveSeconds = 4;
+
+    @SerialEntry(comment = "Soulsteel Resolve: internal cooldown in ticks between two grants.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 2400)
+    @Clamp(min = 0, max = 2400)
+    public int tcSoulsteelResolveCooldownTicks = 100;
+
+    @SerialEntry(comment = "Charged Craft: how much of the FE cost of an identified Tinkers' Advanced tool operation is waived. A positive cost is never reduced below one FE, and energy generation, transfer and charging are never discounted.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcChargedCraftPercent = 10;
+
+    @SerialEntry(comment = "Last Thought: percentage points of durability-loss avoidance while the Tinkers' Thinking reprieve that saved you is still running. The save itself is never granted, extended or repeated by this mod.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcThinkingLastThoughtPercent = 12;
+
+    @SerialEntry(comment = "Last Thought: how long, in seconds, that avoidance lasts after the save.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 120)
+    @Clamp(min = 1, max = 120)
+    public int tcThinkingLastThoughtSeconds = 15;
+
+    @SerialEntry(comment = "Studied Recall: what share of an experience orb Tinkers' Thinking consumed is returned to you as ordinary experience. Never more than the orb was worth, so it cannot exceed what you would have collected without the addon.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcThinkingStudiedRecallPercent = 15;
+
+    @SerialEntry(comment = "Embellished Focus: extra accepted primary native melee damage while your weapon carries a Tinkers' Thinking melee modifier.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcThinkingEmbellishedFocusPercent = 4;
+
+    @SerialEntry(comment = "Jeweler's Setting: percentage points of durability-loss avoidance on a Tinkers' Jewelry piece you just took from the station.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcJewelerSettingPercent = 10;
+
+    @SerialEntry(comment = "Jeweler's Setting: how long, in seconds, that avoidance lasts after the take.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 1, max = 300)
+    @Clamp(min = 1, max = 300)
+    public int tcJewelerSettingSeconds = 30;
+
+    @SerialEntry(comment = "Gem Attunement: extra accepted primary native melee damage while you are wearing a Tinkers' Jewelry piece.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcGemAttunementPercent = 3;
+
+    @SerialEntry(comment = "Undying Lustre: percentage points of durability-loss avoidance on the ring a Tinkers' Jewelry undying save is charging. The save itself is never granted, extended or repeated by this mod.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcUndyingLustrePercent = 25;
+
+    @SerialEntry(comment = "Polished Facet: extra durability restored by a paid station repair of a Tinkers' Jewelry piece, as a share of what the materials paid for. Bounded by tconstructRepairBonusCap with every other repair bonus.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 100)
+    @Clamp(min = 0, max = 100)
+    public int tcPolishedFacetPercent = 8;
+
     @SerialEntry(comment = "Master toggle for the Jewelcraft integration. When false, item lock generation is skipped.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
@@ -2526,6 +2972,23 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 100)
     public int autoRepairPercent = 5;
 
+    @SerialEntry(comment = "Durability points per second Auto Repair grants at a rate of 100%. The perk's configured percentage is a share of this: at the default 4.0, a 5% rate mends one point every five seconds rather than one every second.")
+    @AutoGen(category = "common", group = "perks")
+    @FloatField(min = 0.0f, max = 20.0f)
+    @Clamp(min = 0.0, max = 20.0)
+    public float autoRepairPointsPerSecondAt100 = 4.0f;
+
+    @SerialEntry(comment = "How many bonus copies a single craft may ever produce, across every crafting perk together. 0 disables bonus copies entirely.")
+    @AutoGen(category = "common", group = "perks")
+    @IntField(min = 0, max = 4)
+    @Clamp(min = 0, max = 4)
+    public int craftRewardMaxExtraOutputs = 1;
+
+    @SerialEntry(comment = "Should the salvage perks recover materials at the grindstone? When off, Resource Efficiency and Salvage Expert do nothing and no recycling rules are consulted.")
+    @AutoGen(category = "common", group = "perks")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean recyclingEnabled = true;
+
     @SerialEntry(comment = "Gadgeteer perk gadget efficiency percent")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
@@ -4045,6 +4508,135 @@ public class HandlerCommonConfig {
     @IntField(min = 1)
     @Clamp(min = 1)
     public int masterArtificerRequiredLevel = 32;
+
+    // Tinker's Construct perk levels. Stated against the stock cap of 32 and converted to the
+    // configured cap by ScaledRequirement, so a lowered cap moves them all together instead of
+    // putting the highest one out of reach.
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcCastKeeperRequiredLevel = 4;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcThermalRhythmRequiredLevel = 8;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcRepairMemoryRequiredLevel = 8;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcMaterialHarmonyRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcTemperedEdgeRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcCounterweightRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcPrecisionFootingRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcSlimeStewardRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcPlateDisciplineRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcMeasuredDrawRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcReturningHandRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcEmberGuardRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcFieldServiceRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcWorkshopCadenceRequiredLevel = 24;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcAdaptiveGripRequiredLevel = 24;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcKeystoneTinkerRequiredLevel = 32;
+
+    // Tinker's Construct add-on perks (spec section 10.3). Same scaling as the sixteen above: the
+    // numbers are written against the stock cap of 32 and are converted by ScaledRequirement.
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcManaPolisherRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcSourceTemperingRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcClockworkAlternationRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcSeasonedHandsRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcBanquetOfCindersRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcSoulsteelResolveRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcChargedCraftRequiredLevel = 24;
+
+    // Tinkers' Thinking and Tinkers' Jewelry perks (2.1.0). Same scaling again.
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcThinkingLastThoughtRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcThinkingStudiedRecallRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcThinkingEmbellishedFocusRequiredLevel = 24;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcJewelerSettingRequiredLevel = 12;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcGemAttunementRequiredLevel = 16;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcUndyingLustreRequiredLevel = 20;
+    @SerialEntry(comment = "Required level to unlock perk, at the stock skill cap of 32")
+    @IntField(min = 1)
+    @Clamp(min = 1)
+    public int tcPolishedFacetRequiredLevel = 20;
 
     // Wisdom base perks
     @SerialEntry(comment = "Enchanter's Insight perk enchanting XP cost reduction percent")

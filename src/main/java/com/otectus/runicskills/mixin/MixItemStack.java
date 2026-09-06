@@ -2,9 +2,8 @@ package com.otectus.runicskills.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.otectus.runicskills.common.durability.DurabilityMath;
-import com.otectus.runicskills.common.durability.DurabilityPerkRules;
+import com.otectus.runicskills.common.durability.WearAvoidance;
 import com.otectus.runicskills.common.util.ItemBonusTags;
-import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -15,8 +14,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.enchantment.Enchantments;
 import com.otectus.runicskills.registry.RegistryPerks;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -78,85 +75,16 @@ public abstract class MixItemStack {
      * <p>{@code @ModifyVariable} on the amount rather than cancelling the call: the surrounding
      * method still rolls Unbreaking, still fires the break callback, and still behaves exactly as
      * vanilla for everyone who has neither perk.
+     *
+     * <p>The sum itself lives in {@link WearAvoidance}, because vanilla is no longer the only place
+     * durability is spent: a Tinkers' tool never reaches this method at all, and its own seam has
+     * to reach the same numbers or the two would be different perks with one tooltip.
      */
     @ModifyVariable(method = "hurt(ILnet/minecraft/util/RandomSource;Lnet/minecraft/server/level/ServerPlayer;)Z",
             at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private int runicskills$reduceDurabilityLoss(int amount, int unusedAmount, RandomSource random, ServerPlayer user) {
         if (user == null || amount <= 0) return amount;
-        ItemStack self = (ItemStack) (Object) this;
-        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
-        double avoided = 0.0;
-
-        // "Armor durability loss reduced by X%" — armour only, as the tooltip says.
-        if (self.getItem() instanceof ArmorItem
-                && RegistryPerks.UNBREAKABLE != null
-                && RegistryPerks.UNBREAKABLE.get().isEnabled(user)) {
-            avoided += config.unbreakablePercent / 100.0;
-        }
-
-        // "Unbreaking enchantment chance increased by X%" — only meaningful on an item that HAS
-        // Unbreaking, which is what makes this different from the blanket reduction above.
-        if (RegistryPerks.UNBREAKING_MASTERY != null
-                && RegistryPerks.UNBREAKING_MASTERY.get().isEnabled(user)
-                && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, self) > 0) {
-            avoided += config.unbreakingMasteryPercent / 100.0;
-        }
-
-        // Gadgeteer — "Mechanical items are more effective". A gadget's only stat is how long it
-        // keeps working, so that is what "more effective" buys; the perk named a class of item, and
-        // {@link #runicskills$isMechanical} is where that class is decided.
-        if (RegistryPerks.GADGETEER != null
-                && RegistryPerks.GADGETEER.get().isEnabled(user)
-                && runicskills$isMechanical(self)) {
-            avoided += config.gadgeteerPercent / 100.0;
-        }
-
-        // Lock Expert — "All locks take less time to pick". Locks Reforged spends a lock pick's
-        // durability on every attempt, so the time a lock costs you is measured in picks; a pick
-        // that survives more attempts is a lock that costs less to open. The mod's picking timer is
-        // internal to it and reachable from nothing here, and the tooltip now says what this does.
-        if (RegistryPerks.LOCK_EXPERT != null
-                && RegistryPerks.LOCK_EXPERT.get().isEnabled(user)
-                && runicskills$isLockPick(self)) {
-            avoided += config.lockExpertPercent / 100.0;
-        }
-
-        // Lucky Break — "Tool durability loss has a %s chance to be ignored". Eligibility is a
-        // real rule rather than whatever was equipped: see DurabilityPerkRules, which keeps armour
-        // out (Unbreakable already owns armour) and lets a pack name its own tools by tag.
-        if (RegistryPerks.LUCKY_BREAK != null
-                && RegistryPerks.LUCKY_BREAK.get().isEnabled(user)
-                && DurabilityPerkRules.isLuckyBreakEligible(self)) {
-            avoided += ProcRoll.chance01(config.luckyBreakPercent);
-        }
-
-        // Precision Tools — "Tool durability increased by X%". A larger durability pool is a
-        // property of an item, but this perk belongs to a PLAYER, and getMaxDamage has no player
-        // to ask; so the same promise is kept from the other side, by not spending points. See
-        // DurabilityMath.bonusDurabilityToAvoidance: ignoring each point with probability
-        // X/(100+X) gives an expected lifetime of exactly 1 + X/100, which is what the tooltip
-        // says. (Avoiding X% of points would give more than X% extra durability, not exactly X%.)
-        // The 0.90 cap below only bites past a configured 900%, so the +X% promise is exact for
-        // every value a pack would plausibly set.
-        if (RegistryPerks.PRECISION_TOOLS != null
-                && RegistryPerks.PRECISION_TOOLS.get().isEnabled(user)
-                && DurabilityPerkRules.isTool(self)) {
-            avoided += DurabilityMath.bonusDurabilityToAvoidance(config.precisionToolsPercent);
-        }
-
-        if (avoided <= 0.0) return amount;
-        // Never free: an item that could take no durability damage at all would be unbreakable in
-        // the literal sense, which no configuration should be able to grant by accident.
-        avoided = Math.min(0.90, avoided);
-
-        int reduced = amount;
-        for (int i = 0; i < amount; i++) {
-            if (random.nextDouble() < avoided) reduced--;
-        }
-        // Rolling per point rather than scaling and rounding keeps a 50% perk meaningful on the
-        // single-point hits that make up almost all durability loss, where rounding would either
-        // negate every hit or none of them.
-        return Math.max(0, reduced);
+        return WearAvoidance.reduce(user, (ItemStack) (Object) this, amount, random);
     }
 
     /**
@@ -179,42 +107,12 @@ public abstract class MixItemStack {
     @ModifyReturnValue(method = "getMaxDamage", at = @At("RETURN"))
     private int runicskills$applyBonusDurability(int original) {
         ItemStack self = (ItemStack) (Object) this;
+        // A native item's durability stamp is applied by its own mod's stat system (spec §5.4:
+        // "one native consumer"), so applying it here as well would pay the bonus twice.
+        if (ItemBonusTags.isNativeItem(self)) return original;
         int bonus = ItemBonusTags.read(self, ItemBonusTags.BONUS_DURABILITY);
         if (bonus <= 0) return original;
         return DurabilityMath.scaledMaxDamage(original, bonus);
     }
 
-    /** A Locks Reforged lock pick, the tool Lock Expert makes go further. */
-    @org.spongepowered.asm.mixin.Unique
-    private static boolean runicskills$isLockPick(ItemStack stack) {
-        net.minecraft.resources.ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        return id != null && "locks".equals(id.getNamespace()) && id.getPath().endsWith("_lock_pick");
-    }
-
-    /**
-     * Whether an item is mechanical — something with moving parts, as opposed to a blade or a
-     * pickaxe that is simply a shaped piece of metal.
-     *
-     * <p>The vanilla set is listed by class where one exists and by item where it does not, and a
-     * modded item is matched on its own registry id, so a pack's gadgets qualify without this
-     * needing to know about them. Bows are deliberately absent: a bow is drawn, not wound.
-     */
-    @org.spongepowered.asm.mixin.Unique
-    private static boolean runicskills$isMechanical(ItemStack stack) {
-        net.minecraft.world.item.Item item = stack.getItem();
-        if (item instanceof net.minecraft.world.item.CrossbowItem
-                || item instanceof net.minecraft.world.item.ShearsItem
-                || item instanceof net.minecraft.world.item.FishingRodItem
-                || item instanceof net.minecraft.world.item.FlintAndSteelItem
-                || item instanceof net.minecraft.world.item.BrushItem) {
-            return true;
-        }
-        net.minecraft.resources.ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
-        if (id == null) return false;
-        String path = id.getPath();
-        return path.contains("gadget") || path.contains("mechanical") || path.contains("clockwork")
-                || path.contains("on_a_stick");
-    }
 }
-
-

@@ -9,7 +9,7 @@ Machine-generated map of this mod. Read this first when picking the project up.
 | | |
 |---|---|
 | Minecraft | 1.20.1 |
-| Forge | 47.3.0 |
+| Forge | 47.4.23 |
 | Java | 17 |
 | Gradle | 8.10 |
 | ForgeGradle | 6.0.24 |
@@ -22,43 +22,60 @@ Machine-generated map of this mod. Read this first when picking the project up.
 
 ```
 com.otectus.runicskills                              2 files
+com.otectus.runicskills.api.client                   1 file
 com.otectus.runicskills.client.capability            1 file
 com.otectus.runicskills.client.config                3 files
 com.otectus.runicskills.client.core                  7 files
 com.otectus.runicskills.client.event                 3 files
-com.otectus.runicskills.client.gui                   7 files
-com.otectus.runicskills.client.integration           2 files
+com.otectus.runicskills.client.gui                   9 files
+com.otectus.runicskills.client.integration           3 files
+com.otectus.runicskills.client.integration.tconstruct 1 file
 com.otectus.runicskills.client.screen                2 files
 com.otectus.runicskills.client.tooltip               3 files
 com.otectus.runicskills.client.vfx                   6 files
+com.otectus.runicskills.common.actions               4 files
+com.otectus.runicskills.common.advancements          2 files
 com.otectus.runicskills.common.capability            3 files
-com.otectus.runicskills.common.command               9 files
+com.otectus.runicskills.common.combat                3 files
+com.otectus.runicskills.common.command               10 files
 com.otectus.runicskills.common.command.arguments     2 files
+com.otectus.runicskills.common.crafting              11 files
+com.otectus.runicskills.common.durability            7 files
+com.otectus.runicskills.common.effects               1 file
+com.otectus.runicskills.common.equipment             6 files
 com.otectus.runicskills.common.model                 1 file
-com.otectus.runicskills.common.powers                2 files
-com.otectus.runicskills.common.progression           1 file
-com.otectus.runicskills.common.util                  14 files
-com.otectus.runicskills.config                       5 files
-com.otectus.runicskills.config.conditions            15 files
+com.otectus.runicskills.common.perk                  1 file
+com.otectus.runicskills.common.powers                6 files
+com.otectus.runicskills.common.progression           2 files
+com.otectus.runicskills.common.rules                 3 files
+com.otectus.runicskills.common.scripting             1 file
+com.otectus.runicskills.common.util                  23 files
+com.otectus.runicskills.common.workshop              2 files
+com.otectus.runicskills.config                       4 files
+com.otectus.runicskills.config.conditions            16 files
 com.otectus.runicskills.config.controller            4 files
 com.otectus.runicskills.config.models                3 files
 com.otectus.runicskills.config.snapshot              4 files
 com.otectus.runicskills.config.storage               3 files
 com.otectus.runicskills.event                        5 files
-com.otectus.runicskills.handler                      10 files
-com.otectus.runicskills.integration                  34 files
-com.otectus.runicskills.integration.lock             9 files
+com.otectus.runicskills.handler                      9 files
+com.otectus.runicskills.integration                  39 files
+com.otectus.runicskills.integration.lock             11 files
 com.otectus.runicskills.integration.quests           3 files
 com.otectus.runicskills.integration.quests.tasks     7 files
-com.otectus.runicskills.kubejs                       1 file
-com.otectus.runicskills.kubejs.events                2 files
-com.otectus.runicskills.mixin                        29 files
+com.otectus.runicskills.integration.tconstruct       22 files
+com.otectus.runicskills.integration.tconstruct.addons 9 files
+com.otectus.runicskills.kubejs                       2 files
+com.otectus.runicskills.kubejs.events                6 files
+com.otectus.runicskills.mixin                        38 files
+com.otectus.runicskills.mixin.tconstruct             10 files
+com.otectus.runicskills.mixin.tconstruct.addons      5 files
 com.otectus.runicskills.network                      2 files
-com.otectus.runicskills.network.packet.client        10 files
-com.otectus.runicskills.network.packet.common        6 files
+com.otectus.runicskills.network.packet.client        12 files
+com.otectus.runicskills.network.packet.common        7 files
 com.otectus.runicskills.registry                     15 files
 com.otectus.runicskills.registry.content             2 files
-com.otectus.runicskills.registry.events              22 files
+com.otectus.runicskills.registry.events              25 files
 com.otectus.runicskills.registry.loot                1 file
 com.otectus.runicskills.registry.passive             1 file
 com.otectus.runicskills.registry.perks               6 files
@@ -67,7 +84,7 @@ com.otectus.runicskills.registry.skill               3 files
 com.otectus.runicskills.registry.title               1 file
 ```
 
-## Registered content (27 entries)
+## Registered content (28 entries)
 
 ### Items (1)
 
@@ -81,6 +98,12 @@ com.otectus.runicskills.registry.title               1 file
 |---|---|---|---|
 | `gain_title` | `GAIN_TITLE` | `SoundEvent` | src\main\java\com\otectus\runicskills\registry\RegistrySounds.java |
 | `mortal_strike` | `LIMIT_BREAKER` | `SoundEvent` | src\main\java\com\otectus\runicskills\registry\RegistrySounds.java |
+
+### Recipe serializers (1)
+
+| id | field | type | declared in |
+|---|---|---|---|
+| `keystone` | `KEYSTONE_RECIPE` | `RecipeSerializer<?>` | src\main\java\com\otectus\runicskills\integration\tconstruct\TConstructBootstrap.java |
 
 ### Global loot modifiers (1)
 
@@ -144,10 +167,10 @@ _No datagen providers detected — assets and data JSON are hand-written._
 | item models | 1 |
 | block textures | 0 |
 | item textures | 1 |
-| recipes | 0 |
+| recipes | 1 |
 | block loot tables | 0 |
 | block tags | 3 |
-| item tags | 0 |
+| item tags | 3 |
 | biome modifiers | 0 |
 | lang files | ar_sa.json, de_de.json, en_us.json, es_ar.json, es_cl.json, es_ec.json, es_es.json, es_mx.json, es_uy.json, es_ve.json, fr_fr.json, hi_in.json, ja_jp.json, ko_kr.json, pt_br.json, ru_ru.json, zh_cn.json |
 
@@ -156,6 +179,7 @@ Also: `sounds.json` present.
 Run `check_mod.py` for a full consistency check (missing models, lang keys, textures).
 
 <!-- MODMAP:AUTO:END — everything below is hand-maintained and preserved -->
+
 
 ## Current focus
 

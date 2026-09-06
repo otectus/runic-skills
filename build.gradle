@@ -12,6 +12,12 @@ buildscript {
         // and a broken upstream publish became a broken build for everyone, including CI on old
         // tags (RS-036). Update these deliberately, not implicitly.
         classpath 'org.spongepowered:mixingradle:0.7.38'
+        // ASM for `checkMixinRemapping`, which resolves every mixin member reference against the
+        // real class hierarchy in the deobf artifacts. ForgeGradle happens to put ASM on this
+        // classpath today, but that is an implementation detail of a plugin we do not control, so
+        // the check declares what it needs rather than borrowing it.
+        classpath 'org.ow2.asm:asm:9.6'
+        classpath 'org.ow2.asm:asm-tree:9.6'
     }
 }
 
@@ -237,6 +243,17 @@ repositories {
         }
     }
 
+    // Tinker's Construct + Mantle (SlimeKnights' own maven). Scoped to their two groups so
+    // nothing else is ever resolved from it. Mantle is a hard runtime requirement of Tinkers'
+    // and is not declared in the TConstruct pom, so both coordinates are named explicitly.
+    maven {
+        url = "https://dvs1.progwml6.com/files/maven/"
+        content {
+            includeGroup "slimeknights.tconstruct"
+            includeGroup "slimeknights.mantle"
+        }
+    }
+
     // L2 Tabs
     flatDir{
         dirs 'libs'
@@ -315,6 +332,36 @@ dependencies {
     // to 7402504 (3.15.x) so Phase-1a perks can subscribe to SpellCooldownAddedEvent.
     compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:7402504")
 
+    // Tinker's Construct compatibility. Compile-only, and always against the STABLE pin: shared
+    // code has to build against the lowest supported API, so a 3.12-only signature cannot be
+    // reached by accident. Runtime jars come from the -PtinkersProfile switch below, never here,
+    // which is what keeps the default dev client and gameTestServer Tinkers-free.
+    compileOnly fg.deobf("slimeknights.mantle:Mantle:${mantle_stable_version}")
+    compileOnly fg.deobf("slimeknights.tconstruct:TConstruct:${tconstruct_stable_version}")
+
+    // Tinkers' add-ons (S5). Compile-only, one coordinate per add-on whose API an adapter under
+    // integration/tconstruct/addons/ actually names; runtime jars come from -PtinkersAddons below.
+    // Modrinth's maven is already declared (BetterCombat/JEI use it), so no new repository.
+    //
+    // Only the five add-ons that gate a spec section 10.3 perk are on the compile classpath.
+    // Tinkers' Things, Tinkers' Innovation, Tinkers' Advanced-Materials and L2 Complements gate no
+    // perk (they are section 12.4/12.8 coverage targets), so they are runtime-profile entries only
+    // and no Runic class names them. L2 Complements in particular would force l2library 2.5.3 onto
+    // a compile classpath already pinned to 2.4.28 above.
+    //
+    // Tinkers' Advanced is GPL-3.0 and its required library EtSTLib travels with it: same treatment
+    // as MineColonies above — we link against the published jars, ship none of their bytecode, and
+    // the only classes naming them are reached through the reflective add-on probe.
+    compileOnly fg.deobf("maven.modrinth:tcintegrations:1.20.1-2.0.25.19")
+    compileOnly fg.deobf("maven.modrinth:tinkers-levelling-addon:1.4.3")
+    compileOnly fg.deobf("maven.modrinth:tinkers-delight:2.0.3")
+    compileOnly fg.deobf("maven.modrinth:farmers-delight:1.20.1-1.3.4")
+    // EtSTLib and not Tinkers' Advanced itself: the audited FE seam Charged Craft uses
+    // (ToolEnergyUtil.extractEnergy) lives in the library, and the add-on's own classes are named
+    // by nothing in this mod, so putting them on the compile classpath would only claim a
+    // dependency we do not have.
+    compileOnly fg.deobf("maven.modrinth:etstlib:3.0.0-beta.20")
+
     // Ars Nouveau compatibility
     compileOnly fg.deobf("curse.maven:ars-nouveau-401955:6688854")
     runtimeOnly fg.deobf("curse.maven:caelus-308989:5281700")
@@ -358,6 +405,117 @@ dependencies {
     } else {
         logger.warn("MCA: Reputation classes not found at ${mcaReputationClasses}; build it first " +
                 "(../MCAReputation: ./gradlew classes) or the optional Reputation integration will not compile.")
+    }
+
+    // Tinker's Construct runtime profile, selected by a Gradle property:
+    //
+    //   ./gradlew runGameTestServer                        -> M0: no Tinkers' on the classpath
+    //   ./gradlew runGameTestServer -PtinkersProfile=stable -> M1: Tinkers' 3.11 + its Mantle/JEI
+    //   ./gradlew runGameTestServer -PtinkersProfile=beta   -> M2: Tinkers' 3.12 + its Mantle/JEI
+    //
+    // Absent the property nothing is added, so the base gametests and the dev client keep proving
+    // that the mod runs with Tinkers' absent — the case that a second, always-on run config would
+    // quietly stop testing. Only the runtime classpath changes; compilation is pinned to stable
+    // above in every profile. JEI travels with the profile because Tinkers' ships JEI plugins,
+    // and Modrinth is the only 1.20.1 JEI maven still serving these builds.
+    def tinkersProfile = project.findProperty('tinkersProfile')
+    if (tinkersProfile != null) {
+        def profiles = [
+                stable: [tconstruct_stable_version, mantle_stable_version, jei_stable_version],
+                beta  : [tconstruct_beta_version, mantle_beta_version, jei_beta_version],
+        ]
+        def pins = profiles[tinkersProfile.toString()]
+        if (pins == null) {
+            throw new GradleException("Unknown -PtinkersProfile='${tinkersProfile}'; expected one of ${profiles.keySet()}")
+        }
+        logger.lifecycle("Tinkers' runtime profile '${tinkersProfile}': TConstruct ${pins[0]}, Mantle ${pins[1]}, JEI ${pins[2]}")
+        runtimeOnly fg.deobf("slimeknights.mantle:Mantle:${pins[1]}")
+        runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:${pins[0]}")
+        runtimeOnly fg.deobf("maven.modrinth:jei:${pins[2]}")
+    }
+
+    // Tinkers' add-on runtime profiles (M4-M8), selected by a second Gradle property:
+    //
+    //   ./gradlew runGameTestServer -PtinkersProfile=stable -PtinkersAddons=levelling,delight
+    //
+    // Comma-separated slugs, each adding its add-on and that add-on's own required dependencies to
+    // the runtime classpath only. -PtinkersProfile alone is unchanged and still boots M1 with no
+    // add-on at all, which is what keeps the negative tests (perk dormant, adapter reports why)
+    // honest. An add-on whose own hard dependency has no published 1.20.1 artifact has no slug:
+    // Tinkers' Things needs Json Things, which is not on any maven this build can reach, so it
+    // cannot be booted here and its section 12.4 coverage is descoped rather than faked.
+    def tinkersAddons = project.findProperty('tinkersAddons')
+    if (tinkersAddons != null) {
+        if (tinkersProfile == null) {
+            throw new GradleException("-PtinkersAddons needs -PtinkersProfile as well; an add-on " +
+                    "without Tinkers' Construct cannot load")
+        }
+        def catalogue = [
+                // Section 12.2 first-class adapter. Its own Botania/Ars/Create/Malum links are
+                // optional dependencies, so it boots against Tinkers' alone.
+                tcintegrations: ["maven.modrinth:tcintegrations:1.20.1-2.0.25.19"],
+                // Section 12.3 tool levelling.
+                levelling     : ["maven.modrinth:tinkers-levelling-addon:1.4.3"],
+                // Section 12.6 culinary. Farmer's Delight is a mandatory dependency of it.
+                delight       : ["maven.modrinth:farmers-delight:1.20.1-1.3.4",
+                                 "maven.modrinth:tinkers-delight:2.0.3"],
+                // Section 12.7 energy family: Core, from the split family, and not the legacy
+                // monolith — which is also the only one that boots. Tinkers' Advanced
+                // 3.0.0-beta.13 declares its client TiAcForgeEventHandler as an unqualified
+                // @Mod.EventBusSubscriber, so a dedicated server auto-subscribes a class touching
+                // net.minecraft.client.player.Input and mod loading fails before Runic is reached.
+                // Core 3.0.0-beta.5 publishes the same mod id with Dist.CLIENT declared, and boots.
+                advanced      : ["maven.modrinth:etstlib:3.0.0-beta.20",
+                                 "maven.modrinth:tinkers-advanced-core:3.0.0-beta.5"],
+                // Section 12.8 overlap target. No perk depends on it.
+                innovation    : ["maven.modrinth:tinkersinnovation:1.20.1-3.0.0"],
+                // Tinkers' Thinking (2.1.0). Modrinth publishes exactly the build the reference
+                // pack runs, so this profile exercises the real jar rather than an approximation.
+                // Its only optional dependency, Tinkers' Ingenuity, still has no 1.20.1 artifact
+                // and is not needed: the two triggers the perks read are Thinking's own.
+                thinking      : ["maven.modrinth:tinkers-thinking:0.1.6.6.3"],
+                // The two TCIntegrations COMPANIONS, not add-ons: they add nothing to Tinkers' by
+                // themselves. Combine them with the tcintegrations slug, which is what finally
+                // makes ADDON_BOTANIA_REPAIR_CHARGE and ADDON_ARS_ARMOR_REPAIR reachable in a
+                // gametest run instead of dormancy-only:
+                //
+                //   -PtinkersProfile=stable -PtinkersAddons=tcintegrations,botania,ars
+                //
+                // Both versions are the ones the reference pack ships, and each brings its own
+                // hard dependencies because a runtime classpath is not resolved transitively for
+                // mod loading.
+                botania       : ["maven.modrinth:patchouli:1.20.1-85-forge",
+                                 "maven.modrinth:botania:1.20.1-455-forge"],
+                ars           : ["maven.modrinth:curios:5.14.1+1.20.1",
+                                 "maven.modrinth:patchouli:1.20.1-85-forge",
+                                 // GeckoLib by Modrinth VERSION ID, not by version number, and
+                                 // that is not a style choice. 4.8.4 is published for Fabric,
+                                 // Forge and NeoForge alike, and Modrinth's maven resolves a bare
+                                 // version number to whichever it finds first -- which here is
+                                 // geckolib-fabric-1.21.4-4.8.4.jar. The id below is the Forge
+                                 // 1.20.1 build, the one the reference pack ships.
+                                 "maven.modrinth:geckolib:aC5KMoNg",
+                                 "maven.modrinth:ars-nouveau:4.12.7"],
+                // Tinkers' Jewelry has no slug, and that is a deliberate refusal rather than an
+                // omission. Modrinth's newest 1.20.1 Forge build is 1.1.0; the pack this release
+                // was read against runs 1.2.0, which is published on CurseForge only. Booting a
+                // gametest against 1.1.0 would produce a green run about a build nobody is
+                // running, which is worse than no run at all. The jewelry perks are covered by the
+                // dormancy batch, which is honest about what it proves.
+                // L2 Complements has no slug: it requires l2library 2.5.0+, and this build already
+                // pins l2library 2.4.28 on the compile classpath for the existing L2 integration.
+                // Putting 2.5.3 on the runtime classpath makes ForgeGradle re-resolve the compile
+                // one and fail to find the 2.4.28 deobf artifact, so the section 12.8 L2 overlap
+                // coverage is descoped rather than bought by moving an unrelated pin.
+        ]
+        tinkersAddons.toString().split(',').collect { it.trim() }.findAll { !it.isEmpty() }.each { slug ->
+            def coordinates = catalogue[slug]
+            if (coordinates == null) {
+                throw new GradleException("Unknown -PtinkersAddons entry '${slug}'; expected one of ${catalogue.keySet()}")
+            }
+            logger.lifecycle("Tinkers' add-on '${slug}': ${coordinates.join(', ')}")
+            coordinates.each { runtimeOnly fg.deobf(it) }
+        }
     }
 
     // QuiltMC Parsers
@@ -405,6 +563,16 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
+    // The plain jar is the SLIM artifact: it carries this mod's classes and nothing else.
+    // MixinExtras is a hard runtime requirement (@ModifyReturnValue in MixItemStack,
+    // MixGrindstoneMenu and MixExperienceOrb, plus the four Tinkers' mixins) and Forge does NOT
+    // ship it — Forge 1.20.1 47.x does not, verified against the 47.4.22 runtime in a real pack
+    // (its launcher libraries and its own forge/fmlcore jars). A player downloading the
+    // obvious filename was therefore getting a mod whose injectors had no implementation, working
+    // only on packs where some unrelated mod happened to bundle MixinExtras (RS10-042). So the
+    // jarJar bundle below takes the unclassified name and the un-bundled one is marked as slim.
+    archiveClassifier = 'slim'
+
     manifest {
         attributes([
                 "Specification-Title": mod_id,
@@ -425,8 +593,16 @@ tasks.named('jar', Jar).configure {
     finalizedBy 'reobfJar'
 }
 
+// The distributable. jarJar packages the reobfuscated `jar` output plus META-INF/jarjar/, and
+// reobfJarJar reobfuscates it in its own right, so it is a superset of the slim jar and not a
+// second build of it. Taking the unclassified archive name is what makes the file named in the
+// README the one that actually contains MixinExtras.
+tasks.named('jarJar', Jar).configure {
+    archiveClassifier = ''
+}
+
 // Same goal as the manifest timestamp: identical inputs, identical archive bytes. Applied to
-// EVERY archive rather than to `jar` alone — jarJar produces the -all bundle, and normalising only
+// EVERY archive rather than to `jar` alone — jarJar produces the shipped bundle, and normalising only
 // the plain jar left the artifact a release actually ships carrying wall-clock entry timestamps,
 // so the reproducible-build job would have compared one normalised jar against one that could
 // never match (RS10-023).
@@ -509,26 +685,93 @@ tasks.register('checkSidedImports') {
             'src/main/java/com/otectus/runicskills/config/LockItemListGroup.java',
     ].collect { file(it).canonicalPath }
 
+    // Tinker's Construct is an optional mod, so every one of its classes is absent from a stock
+    // (M0) install. A `slimeknights.` import anywhere the JVM can reach without Tinkers' present
+    // is a NoClassDefFoundError waiting for the first player who does not run it — the same
+    // failure mode YACL had on dedicated servers. Confine those imports to the packages that are
+    // reached only through the reflective integration probe and the gated mixins.
+    def tconstructForbidden = [
+            ~/^\s*import\s+slimeknights\..*/,
+    ]
+    def tconstructAllowlist = [
+            'src/main/java/com/otectus/runicskills/integration/tconstruct',
+            'src/main/java/com/otectus/runicskills/mixin/tconstruct',
+            'src/main/java/com/otectus/runicskills/client/integration/tconstruct',
+    ].collect { file(it).canonicalPath }
+
+    // The Tinkers' add-ons (S5) are optional on top of an optional mod, so their classes are absent
+    // from strictly more installs than Tinkers' own. Each add-on root package is confined to the
+    // adapter and mixin packages reached only through the add-on probe, which is deliberately
+    // narrower than the Tinkers' allowlist above: integration/tconstruct/ at large must stay
+    // loadable with every add-on absent, and one add-on's adapter has no business naming another's
+    // types. com.c2h6s covers EtSTLib and Tinkers' Advanced, which ship as one family.
+    def addonForbidden = [
+            ~/^\s*import\s+tcintegrations\..*/,
+            ~/^\s*import\s+pyre\.tinkerslevellingaddon\..*/,
+            ~/^\s*import\s+com\.cxxxxxlt\.tinkers_delight\..*/,
+            ~/^\s*import\s+vectorwing\.farmersdelight\..*/,
+            ~/^\s*import\s+com\.c2h6s\..*/,
+    ]
+    def addonAllowlist = [
+            'src/main/java/com/otectus/runicskills/integration/tconstruct/addons',
+            'src/main/java/com/otectus/runicskills/mixin/tconstruct/addons',
+    ].collect { file(it).canonicalPath }
+    def gametestAddonAllowlist = [
+            'src/gametest/java/com/otectus/runicskills/gametest/tconstruct/addons',
+    ].collect { file(it).canonicalPath }
+    // Gametests get the same treatment: Tinkers'-dependent tests live under gametest/tconstruct/
+    // and are registered conditionally (TConstructGameTests), so nothing else there may name the
+    // mod — an import elsewhere would load the class in the M0 run and fail the whole batch.
+    def gametestRoot = file('src/gametest/java/com/otectus/runicskills/gametest')
+    def gametestTconstructAllowlist = [
+            'src/gametest/java/com/otectus/runicskills/gametest/tconstruct',
+    ].collect { file(it).canonicalPath }
+
     // Configuration-time inputs so the task is up-to-date aware.
     def javaRoot = file('src/main/java/com/otectus/runicskills')
     inputs.dir javaRoot
+    inputs.dir gametestRoot
     inputs.file mixinJson
 
     doLast {
         def violations = []
         def yaclViolations = []
+        def tconstructViolations = []
+        def addonViolations = []
         javaRoot.eachFileRecurse { f ->
             if (!f.isFile() || !f.name.endsWith('.java')) return
             def path = f.canonicalPath
             def isClient = clientFiles.contains(path) ||
                     clientAllowlist.any { path == it || path.startsWith(it + File.separator) }
             def isYaclClient = yaclAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isTconstruct = tconstructAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isAddon = addonAllowlist.any { path == it || path.startsWith(it + File.separator) }
             f.eachLine { line, n ->
                 if (!isClient && forbidden.any { line ==~ it }) {
                     violations << "${f.path}:${n}: ${line.trim()}"
                 }
                 if (!isYaclClient && yaclForbidden.any { line ==~ it }) {
                     yaclViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isTconstruct && tconstructForbidden.any { line ==~ it }) {
+                    tconstructViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isAddon && addonForbidden.any { line ==~ it }) {
+                    addonViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+            }
+        }
+        gametestRoot.eachFileRecurse { f ->
+            if (!f.isFile() || !f.name.endsWith('.java')) return
+            def path = f.canonicalPath
+            def isGametestTconstruct = gametestTconstructAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isGametestAddon = gametestAddonAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            f.eachLine { line, n ->
+                if (!isGametestTconstruct && tconstructForbidden.any { line ==~ it }) {
+                    tconstructViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isGametestAddon && addonForbidden.any { line ==~ it }) {
+                    addonViolations << "${f.path}:${n}: ${line.trim()}"
                 }
             }
         }
@@ -541,6 +784,20 @@ tasks.register('checkSidedImports') {
             throw new GradleException(
                     "YACL client-only-class imports outside client/config/ (would crash dedicated servers without YACL):\n  " +
                             yaclViolations.join('\n  '))
+        }
+        if (!tconstructViolations.isEmpty()) {
+            throw new GradleException(
+                    "Tinker's Construct imports outside integration/tconstruct/, mixin/tconstruct/,\n" +
+                            "client/integration/tconstruct/ or gametest/tconstruct/ (they would break\n" +
+                            "every install that does not have Tinkers' Construct):\n  " +
+                            tconstructViolations.join('\n  '))
+        }
+        if (!addonViolations.isEmpty()) {
+            throw new GradleException(
+                    "Tinkers' add-on imports outside integration/tconstruct/addons/,\n" +
+                            "mixin/tconstruct/addons/ or gametest/tconstruct/addons/ (they would break\n" +
+                            "every install that does not have that add-on):\n  " +
+                            addonViolations.join('\n  '))
         }
     }
 }
@@ -989,3 +1246,651 @@ tasks.register('checkYaclAutogen') {
     }
 }
 tasks.named('check').configure { dependsOn 'checkYaclAutogen' }
+
+// Mixin remapping enforcement: the check that would have caught RS10-041 before it shipped.
+//
+// `@Mixin(targets = "…", remap = false)` makes EVERY member reference in that class literal — but a
+// third-party class that OVERRIDES a vanilla method still ships that method SRG-renamed
+// (`releaseUsing` is `m_5551_` inside TConstruct's own jar). Dev and gametests run Mojang-mapped, so a
+// literal name resolves there and only there; production throws InvalidInjectionException at class
+// load, which for Mixin is fatal for the entire config. Nothing in the toolchain noticed: it compiles
+// clean, `runGameTestServer` passes, and the mod is broken for every player.
+//
+// So this task resolves every member a mixin references against the REAL class hierarchy in the deobf
+// artifacts, decides whether that member is vanilla-declared by looking at where it is declared rather
+// than at what it is called, and then demands the naming discipline that follows from the answer:
+//   * declared under net/minecraft/ (directly or by any ancestor) -> obfuscated at runtime -> the
+//     reference must be remapped and the annotation processor must have emitted an SRG refmap entry
+//     for it, OR the selector must carry the SRG name literally alongside the MCP one;
+//   * declared anywhere else -> NOT obfuscated -> the reference must NOT be remapped. This mirror rule
+//     is the silent half: remapping a Tinkers'-declared `@At` target does not crash, it just quietly
+//     stops matching, and the hook disappears with no log line at all.
+//
+// What it CANNOT catch, and what therefore still needs a real launch:
+//   * LVT drift — `@Local` / `@ModifyVariable` ordinals shifting under another mod's transform.
+//   * Reflection-based hooks; nothing here reads a `Class.forName` string.
+//   * Mixins whose target jar is off the compile classpath (reported UNRESOLVED, downgraded to a
+//     warning for `@Pseudo` mixins, where absence is the declared intent).
+//   * Renames in Tinkers' 3.12 — the beta profile is conservative by design and is not compiled here.
+tasks.register('checkMixinRemapping') {
+    group = 'verification'
+    description = 'Fails the build if a mixin member reference is remapped wrongly for production'
+
+    dependsOn 'createSrgToMcp', 'compileJava'
+
+    def mixinRoot = file('src/main/java/com/otectus/runicskills/mixin')
+    def srgFile = file('build/createSrgToMcp/output.srg')
+    def refmapPrimary = file('build/tmp/compileJava/compileJava-refmap.json')
+    def refmapFallback = file('build/tmp/compileJava/runicskills.refmap.json')
+    // The deobf Tinkers'/Mantle artifacts: MCP-named, so right for resolving the hierarchy and
+    // useless for SRG names, which output.srg supplies. Declared lazily so the configuration is not
+    // resolved at configuration time.
+    def targetArtifacts = { configurations.compileClasspath.files.findAll { it.name ==~ /(?i)^(TConstruct|Mantle)-.*\.jar$/ } }
+
+    // Configuration-time inputs so the task is up-to-date aware.
+    inputs.dir mixinRoot
+    inputs.file srgFile
+    inputs.files targetArtifacts
+
+    doLast {
+        // ---- the injector annotations this check understands -------------------------------------
+        // Plain Mixin plus the MixinExtras set actually reachable from the annotationProcessor path.
+        def injectorNames = ['Inject', 'Redirect', 'ModifyArgs', 'ModifyArg', 'ModifyVariable',
+                             'ModifyConstant', 'WrapMethod', 'WrapOperation', 'ModifyExpressionValue',
+                             'ModifyReturnValue', 'WrapWithCondition']
+        def injectorPattern = ~('@(' + injectorNames.join('|') + ')\\b')
+
+        // ---- source utilities --------------------------------------------------------------------
+        // Blank comments in place (spaces for everything but newlines) so annotation text can be read
+        // as whole-file text — these annotations span lines — without moving a single line number.
+        def blankComments = { String src ->
+            def out = new StringBuilder(src)
+            int i = 0, n = src.length()
+            while (i < n) {
+                char c = src.charAt(i)
+                if (c == ('"' as char) || c == ("'" as char)) {
+                    char q = c; i++
+                    while (i < n) {
+                        char d = src.charAt(i)
+                        if (d == ('\\' as char)) { i += 2; continue }
+                        i++
+                        if (d == q) break
+                    }
+                } else if (c == ('/' as char) && i + 1 < n && src.charAt(i + 1) == ('/' as char)) {
+                    while (i < n && src.charAt(i) != ('\n' as char)) { out.setCharAt(i, ' ' as char); i++ }
+                } else if (c == ('/' as char) && i + 1 < n && src.charAt(i + 1) == ('*' as char)) {
+                    int end = src.indexOf('*/', i + 2)
+                    if (end < 0) end = n - 2
+                    for (int k = i; k < Math.min(end + 2, n); k++) {
+                        if (src.charAt(k) != ('\n' as char)) out.setCharAt(k, ' ' as char)
+                    }
+                    i = end + 2
+                } else {
+                    i++
+                }
+            }
+            out.toString()
+        }
+        // Index of the ')' matching the '(' at `open`, ignoring parens inside literals.
+        def matchParen = { String src, int open ->
+            int depth = 0, i = open, n = src.length()
+            while (i < n) {
+                char c = src.charAt(i)
+                if (c == ('"' as char) || c == ("'" as char)) {
+                    char q = c; i++
+                    while (i < n) {
+                        char d = src.charAt(i)
+                        if (d == ('\\' as char)) { i += 2; continue }
+                        i++
+                        if (d == q) break
+                    }
+                    continue
+                }
+                if (c == ('(' as char)) depth++
+                if (c == (')' as char)) { depth--; if (depth == 0) return i }
+                i++
+            }
+            return -1
+        }
+        def lineOf = { String src, int idx -> src.substring(0, idx).count('\n') + 1 }
+        // Concatenate every string literal in an expression: annotation values are literals and '+'
+        // only, so this is exactly Java's constant folding for the forms that can appear here.
+        def literalsOf = { String expr ->
+            def sb = new StringBuilder()
+            def m = (expr =~ /"((?:[^"\\]|\\.)*)"/)
+            while (m.find()) sb.append(m.group(1))
+            return sb.toString()
+        }
+        // Split an annotation array body at top-level commas.
+        def splitTop
+        splitTop = { String body ->
+            def parts = []; def cur = new StringBuilder()
+            int depth = 0, i = 0, n = body.length()
+            while (i < n) {
+                char c = body.charAt(i)
+                if (c == ('"' as char) || c == ("'" as char)) {
+                    char q = c; cur.append(c); i++
+                    while (i < n) {
+                        char d = body.charAt(i); cur.append(d)
+                        if (d == ('\\' as char)) { if (i + 1 < n) cur.append(body.charAt(i + 1)); i += 2; continue }
+                        i++
+                        if (d == q) break
+                    }
+                    continue
+                }
+                if (c == ('(' as char) || c == ('{' as char)) depth++
+                if (c == (')' as char) || c == ('}' as char)) depth--
+                if (c == (',' as char) && depth == 0) { parts << cur.toString(); cur = new StringBuilder(); i++; continue }
+                cur.append(c); i++
+            }
+            if (cur.toString().trim()) parts << cur.toString()
+            return parts
+        }
+        // Read `name = <expr>` out of an annotation body, top level only.
+        def attrOf = { String body, String name ->
+            def m = (body =~ ('(?s)(?:^|[,(\\s])' + name + '\\s*=\\s*'))
+            if (!m.find()) return null
+            int start = m.end()
+            def rest = body.substring(start)
+            if (rest.trim().startsWith('{')) {
+                int open = rest.indexOf('{')
+                int depth = 0, i = open
+                while (i < rest.length()) {
+                    char c = rest.charAt(i)
+                    if (c == ('{' as char)) depth++
+                    if (c == ('}' as char)) { depth--; if (depth == 0) break }
+                    i++
+                }
+                return rest.substring(open, Math.min(i + 1, rest.length()))
+            }
+            return splitTop(rest)[0]
+        }
+        // A `method =` / `target =` value as a list of selector strings, resolving the
+        // `private static final String X = "…"` constants this package uses for repeated selectors.
+        def selectorsOf = { String expr, Map consts ->
+            if (expr == null) return null
+            def body = expr.trim()
+            if (body.startsWith('{')) body = body.substring(1, body.length() - 1)
+            def out = []
+            splitTop(body).each { part ->
+                def lit = literalsOf(part)
+                if (lit) { out << lit; return }
+                def ident = part.trim()
+                if (consts.containsKey(ident)) { out << consts[ident]; return }
+                out << null  // unparseable — reported, never silently dropped
+            }
+            return out
+        }
+
+        // ---- SRG table ----------------------------------------------------------------------------
+        // output.srg is SRG->MCP; invert the obfuscated half of it so a resolved (owner, name, desc)
+        // answers "does this member have an SRG name at runtime, and which one".
+        def srgMethods = [:]
+        def srgFields = [:]
+        srgFile.eachLine { line ->
+            if (line.startsWith('MD: ')) {
+                def p = line.split(' ')
+                if (p.length != 5) return
+                def srgName = p[1].substring(p[1].lastIndexOf('/') + 1)
+                if (srgName ==~ /m_\d+_/) srgMethods[p[3] + ' ' + p[4]] = srgName
+            } else if (line.startsWith('FD: ')) {
+                def p = line.split(' ')
+                if (p.length != 3) return
+                def srgName = p[1].substring(p[1].lastIndexOf('/') + 1)
+                if (srgName ==~ /f_\d+_/) srgFields[p[2]] = srgName
+            }
+        }
+
+        // ---- refmap -------------------------------------------------------------------------------
+        def refmapFile = refmapPrimary.exists() ? refmapPrimary : refmapFallback
+        if (!refmapFile.exists()) {
+            throw new GradleException(
+                    "No annotation-processor refmap at ${refmapPrimary} or ${refmapFallback}.\n" +
+                            "Run compileJava first; without a refmap nothing can be verified.")
+        }
+        def refMappings = new groovy.json.JsonSlurper().parseText(refmapFile.text).mappings ?: [:]
+
+        // ---- class pool ---------------------------------------------------------------------------
+        def jars = []
+        configurations.compileClasspath.files.each { f ->
+            if (f.isFile() && f.name.endsWith('.jar')) {
+                try { jars << new java.util.jar.JarFile(f) } catch (ignored) { }
+            }
+        }
+        def classCache = [:]
+        def readClass = { String internal ->
+            if (classCache.containsKey(internal)) return classCache[internal]
+            def node = null
+            for (jar in jars) {
+                def entry = jar.getEntry(internal + '.class')
+                if (entry == null) continue
+                def bytes = jar.getInputStream(entry).bytes
+                node = new org.objectweb.asm.tree.ClassNode()
+                new org.objectweb.asm.ClassReader(bytes).accept(node,
+                        org.objectweb.asm.ClassReader.SKIP_CODE |
+                                org.objectweb.asm.ClassReader.SKIP_DEBUG |
+                                org.objectweb.asm.ClassReader.SKIP_FRAMES)
+                break
+            }
+            classCache[internal] = node
+            return node
+        }
+        // Every class in the hierarchy that DECLARES this member. A Tinkers' class overriding a
+        // vanilla method declares it too, and is still SRG-renamed because vanilla declared it first —
+        // so the vanilla ancestor, when one exists, is the answer that decides obfuscation.
+        def declarersOf = { String owner, String name, String desc, boolean isField ->
+            def found = []
+            def seen = new HashSet()
+            def queue = [owner]
+            boolean missingRoot = false
+            while (!queue.isEmpty()) {
+                def cur = queue.remove(0)
+                if (cur == null || !seen.add(cur)) continue
+                def node = readClass(cur)
+                if (node == null) { if (cur == owner) missingRoot = true; continue }
+                def members = isField ? node.fields : node.methods
+                if (members.any { it.name == name && (desc == null || it.desc == desc) }) found << cur
+                if (node.superName) queue << node.superName
+                if (node.interfaces) queue.addAll(node.interfaces)
+            }
+            return [declarers: found, missingRoot: missingRoot]
+        }
+
+        // ---- parse the mixin sources ---------------------------------------------------------------
+        def refs = []                 // every member reference, ready for a verdict
+        def parseViolations = []
+        def requireViolations = []
+        int parsedCount = 0
+
+        mixinRoot.eachFileRecurse { f ->
+            if (!f.isFile() || !f.name.endsWith('.java')) return
+            def src = blankComments(f.text)
+            def rel = f.path
+            def isTconstruct = f.canonicalPath.contains(File.separator + 'mixin' + File.separator + 'tconstruct' + File.separator)
+            def pseudo = src.contains('@Pseudo')
+
+            // Imports, so `X.class` in @Mixin can be turned into an internal name.
+            def imports = [:]
+            (src =~ /(?m)^\s*import\s+(?:static\s+)?([\w.]+)\s*;/).each { m ->
+                def fq = m[1]
+                imports[fq.substring(fq.lastIndexOf('.') + 1)] = fq.replace('.', '/')
+            }
+            // Second half of the completeness assertion, and the half that survives a new annotation
+            // type appearing: counting occurrences of a known name cannot notice a name nobody added
+            // to the list. An injector import whose simple name this check does not model is
+            // therefore itself a violation.
+            def knownNonInjectors = ['At', 'Slice', 'Constant', 'Desc', 'Coerce', 'Operation', 'Group']
+            (src =~ /(?m)^\s*import\s+(?:org\.spongepowered\.asm\.mixin\.injection|com\.llamalad7\.mixinextras\.injector[\w.]*)\.(\w+)\s*;/).each { m ->
+                if (!injectorNames.contains(m[1]) && !knownNonInjectors.contains(m[1])) {
+                    parseViolations << "${f.path}: imports injector annotation @${m[1]}, which checkMixinRemapping does not model — add it to injectorNames"
+                }
+            }
+
+            // `String X = "…"` selector constants.
+            def consts = [:]
+            (src =~ /(?s)String\s+(\w+)\s*=\s*((?:"(?:[^"\\]|\\.)*"\s*\+?\s*)+);/).each { m ->
+                consts[m[1]] = literalsOf(m[2])
+            }
+
+            // @Mixin: targets and class-level remap.
+            int mixinIdx = src.indexOf('@Mixin(')
+            if (mixinIdx < 0) return   // the mixin plugin itself, and any helper with no @Mixin
+            int mixinOpen = src.indexOf('(', mixinIdx)
+            int mixinEnd = matchParen(src, mixinOpen)
+            def mixinBody = src.substring(mixinOpen + 1, mixinEnd)
+            boolean classRemap = true
+            def cr = attrOf(mixinBody, 'remap')
+            if (cr != null) classRemap = cr.trim() == 'true'
+
+            def targets = []
+            def targetExpr = attrOf(mixinBody, 'targets')
+            if (targetExpr != null) {
+                selectorsOf(targetExpr, consts).each { if (it) targets << it.replace('.', '/') }
+            }
+            def valueExpr = attrOf(mixinBody, 'value')
+            if (valueExpr == null && targetExpr == null) valueExpr = mixinBody
+            if (valueExpr != null) {
+                def body = valueExpr.trim()
+                if (body.startsWith('{')) body = body.substring(1, body.length() - 1)
+                splitTop(body).each { part ->
+                    def t = part.trim()
+                    if (!t.endsWith('.class')) return
+                    def segs = t.substring(0, t.length() - 6).tokenize('.')
+                    def root = imports[segs[0]]
+                    if (root == null) return
+                    targets << ([root] + segs.drop(1)).join('$')
+                }
+            }
+            def mixinClass = 'com/otectus/runicskills/mixin/' +
+                    (f.canonicalPath - mixinRoot.canonicalPath - File.separator - '.java').replace(File.separator, '/')
+
+            // Completeness assertion: count the annotations, then require the parser to have produced
+            // an entry for each. A regex that misses one would otherwise be a silent pass forever.
+            int counted = 0
+            def cm = (src =~ injectorPattern)
+            while (cm.find()) counted++
+
+            int seenHere = 0
+            def am = (src =~ injectorPattern)
+            while (am.find()) {
+                int at = am.start()
+                int open = src.indexOf('(', am.end())
+                def line = lineOf(src, at)
+                def annName = am.group()
+                if (open < 0 || src.substring(am.end(), open).trim()) {
+                    parseViolations << "${rel}:${line}: ${annName} has no parseable argument list"
+                    continue
+                }
+                int close = matchParen(src, open)
+                if (close < 0) {
+                    parseViolations << "${rel}:${line}: ${annName} has an unbalanced argument list"
+                    continue
+                }
+                seenHere++
+                def body = src.substring(open + 1, close)
+
+                // Pull nested @At blocks out before reading the injector's own remap, so an @At's
+                // remap is never mistaken for the injector's.
+                def ats = []
+                def strippedBody = new StringBuilder(body)
+                def atm = (body =~ /@At\s*\(/)
+                while (atm.find()) {
+                    int aopen = body.indexOf('(', atm.start())
+                    int aclose = matchParen(body, aopen)
+                    if (aclose < 0) continue
+                    ats << body.substring(aopen + 1, aclose)
+                    for (int k = atm.start(); k <= aclose; k++) strippedBody.setCharAt(k, ' ' as char)
+                }
+                body = strippedBody.toString()
+
+                boolean injRemap = classRemap
+                def ir = attrOf(body, 'remap')
+                if (ir != null) injRemap = ir.trim() == 'true'
+
+                if (isTconstruct) {
+                    def req = attrOf(body, 'require')
+                    def exp = attrOf(body, 'expect')
+                    if (req == null || req.trim() != '0' || exp == null || exp.trim() != '1') {
+                        requireViolations << "${rel}:${line}: ${annName} — require=${req?.trim()} expect=${exp?.trim()}"
+                    }
+                }
+
+                def sels = selectorsOf(attrOf(body, 'method'), consts)
+                if (sels == null) {
+                    parseViolations << "${rel}:${line}: ${annName} has no method= selector the parser could read"
+                } else if (sels.any { it == null }) {
+                    parseViolations << "${rel}:${line}: ${annName} method= contains a non-literal the parser could not resolve"
+                } else {
+                    refs << [file: rel, line: line, mixin: mixinClass, ann: annName, targets: targets,
+                             selectors: sels, remap: injRemap, pseudo: pseudo]
+                }
+
+                ats.each { atBody ->
+                    boolean atRemap = injRemap
+                    def ar = attrOf(atBody, 'remap')
+                    if (ar != null) atRemap = ar.trim() == 'true'
+                    def tsel = selectorsOf(attrOf(atBody, 'target'), consts)
+                    if (tsel == null) return   // @At("HEAD"/"RETURN"/…) carries no target
+                    if (tsel.any { it == null }) {
+                        parseViolations << "${rel}:${line}: ${annName} @At target= contains a non-literal the parser could not resolve"
+                        return
+                    }
+                    refs << [file: rel, line: line, mixin: mixinClass, ann: annName + ' @At', targets: targets,
+                             selectors: tsel, remap: atRemap, pseudo: pseudo]
+                }
+            }
+            if (seenHere < counted) {
+                parseViolations << "${rel}: parser extracted ${seenHere} of ${counted} injector annotations"
+            }
+            parsedCount += seenHere
+        }
+
+        // ---- verdicts ---------------------------------------------------------------------------
+        def violations = []
+        def warnings = []
+        refs.each { ref ->
+            def entries = refMappings[ref.mixin] ?: [:]
+            ref.selectors.each { sel ->
+                if (sel.contains('*')) return   // wildcard selector: nothing to resolve
+                // The production half of a dual-name selector (Step 7's escape hatch): an SRG name
+                // never resolves against the MCP-named deobf artifacts, and does not need to — its
+                // MCP sibling is checked on its own, and that verdict is what asserts the two agree.
+                // Alone, though, an SRG name would break runClient and runGameTestServer outright.
+                if (sel.replaceAll(/^L[^;]+;/, '').replaceAll(/[(:].*$/, '') ==~ /(m_|f_)\d+_/) {
+                    if (ref.selectors.size() < 2) {
+                        violations << ("${ref.file}:${ref.line}: ${ref.ann} '${sel}' — a bare SRG name resolves in "
+                                + "production and nowhere else. Pair it with the MCP name in the same selector array.")
+                    }
+                    return
+                }
+                // `Lowner;name(desc)ret` | `Lowner;name:Ltype;` | `name(desc)ret` | `name`
+                def owners = ref.targets
+                def rest = sel
+                if (sel.startsWith('L') && sel.contains(';')) {
+                    owners = [sel.substring(1, sel.indexOf(';'))]
+                    rest = sel.substring(sel.indexOf(';') + 1)
+                }
+                if (!rest) return               // `Lowner;` alone (NEW / instanceof)
+                def name, desc
+                boolean isField = false
+                if (rest.contains('(')) {
+                    name = rest.substring(0, rest.indexOf('('))
+                    desc = rest.substring(rest.indexOf('('))
+                } else if (rest.contains(':')) {
+                    isField = true
+                    name = rest.substring(0, rest.indexOf(':'))
+                    desc = rest.substring(rest.indexOf(':') + 1)
+                } else {
+                    name = rest; desc = null
+                }
+                if (owners.isEmpty()) {
+                    violations << "${ref.file}:${ref.line}: ${ref.ann} '${sel}' — the @Mixin target could not be read"
+                    return
+                }
+
+                def declarers = []
+                boolean missingRoot = false
+                boolean anyFound = false
+                owners.each { o ->
+                    def r = declarersOf(o, name, desc, isField)
+                    if (r.missingRoot) missingRoot = true
+                    if (!r.declarers.isEmpty()) anyFound = true
+                    declarers.addAll(r.declarers)
+                }
+                if (missingRoot && !anyFound) {
+                    // UNRESOLVED. For a @Mixin target this is a defect: the mixin cannot be verified
+                    // and, @Pseudo aside, cannot apply either. For an @At owner it is the blind spot
+                    // named in the header — an optional third-party class (Botania's ManaItemHandler)
+                    // that this build deliberately does not put on the compile classpath, whose
+                    // obfuscation status therefore cannot be decided here.
+                    def msg = "${ref.file}:${ref.line}: ${ref.ann} '${sel}' — ${owners.join(', ')} is not on the compile classpath (UNRESOLVED)"
+                    if (ref.pseudo || ref.ann.endsWith('@At')) warnings << msg else violations << msg
+                    return
+                }
+                if (declarers.isEmpty()) {
+                    violations << "${ref.file}:${ref.line}: ${ref.ann} '${sel}' — no such member on ${owners.join(', ')} or any ancestor"
+                    return
+                }
+                def vanilla = declarers.find { it.startsWith('net/minecraft/') }
+                def declaring = vanilla ?: declarers[0]
+
+                if (vanilla != null) {
+                    def srg = isField ? srgFields[vanilla + '/' + name]
+                            : srgMethods[vanilla + '/' + name + ' ' + (desc ?: '')]
+                    if (srg == null && desc == null && !isField) {
+                        // No descriptor in the selector: find the SRG name by owner and name alone.
+                        srg = srgMethods.find { k, v -> k.startsWith(vanilla + '/' + name + ' ') }?.value
+                    }
+                    if (srg == null) return     // vanilla but not obfuscated (<init>, Forge additions)
+                    if (ref.remap) {
+                        def mapped = entries[sel]
+                        def nm = mapped == null ? null : (mapped =~ /;([^;(:]+)/)
+                        def mappedName = (nm != null && nm.find()) ? nm.group(1) : null
+                        if (mappedName == null || !(mappedName ==~ /(m_|f_)\d+_/)) {
+                            violations << "${ref.file}:${ref.line}: ${ref.mixin} ${ref.ann} '${sel}'\n" +
+                                    "      declared by ${declaring}, obfuscated at runtime as ${srg}, but the refmap holds\n" +
+                                    "      no SRG entry for it — production will look for '${name}' and not find it.\n" +
+                                    "      Fix: qualify the selector with its full descriptor so the AP can resolve it, or use\n" +
+                                    "      the dual-name form method = {\"${name}${desc ?: ''}\", \"${srg}${desc ?: ''}\"} with remap = false."
+                        }
+                    } else if (!ref.selectors.any { it?.contains(srg) }) {
+                        violations << "${ref.file}:${ref.line}: ${ref.mixin} ${ref.ann} '${sel}'\n" +
+                                "      declared by ${declaring}, obfuscated at runtime as ${srg}, but remap = false and the\n" +
+                                "      selector carries no SRG name — this resolves in dev and throws in production.\n" +
+                                "      Fix: set remap = true on this annotation, or add \"${srg}${desc ?: ''}\" to the selector."
+                    }
+                } else if (ref.remap) {
+                    violations << "${ref.file}:${ref.line}: ${ref.mixin} ${ref.ann} '${sel}'\n" +
+                            "      declared by ${declaring}, which is not obfuscated, yet remap = true. Mixin rewrites this\n" +
+                            "      name in production and then silently stops matching — no crash, the hook just vanishes.\n" +
+                            "      Fix: remap = false here (an @At inherits its injector's remap, so state it explicitly)."
+                }
+            }
+        }
+
+        jars.each { try { it.close() } catch (ignored) { } }
+
+        warnings.each { logger.lifecycle("checkMixinRemapping WARNING: ${it}") }
+        if (!parseViolations.isEmpty()) {
+            throw new GradleException(
+                    "checkMixinRemapping could not parse every injector annotation. A reference it cannot read is\n" +
+                            "a reference it cannot check, which is exactly the silent pass this task exists to prevent:\n  " +
+                            parseViolations.join('\n  '))
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Mixin remapping violations (these compile clean, pass gametests, and fail in production):\n  " +
+                            violations.join('\n  '))
+        }
+        if (!requireViolations.isEmpty()) {
+            throw new GradleException(
+                    "Tinkers' mixins must declare require = 0, expect = 1: no hook under mixin/tconstruct/ is\n" +
+                            "load-bearing, and a failed apply there must warn loudly rather than kill the whole mixin\n" +
+                            "config in a 300-mod pack:\n  " +
+                            requireViolations.join('\n  '))
+        }
+        logger.lifecycle("checkMixinRemapping: ${parsedCount} injectors, ${refs.size()} member references verified")
+    }
+}
+tasks.named('check').configure { dependsOn 'checkMixinRemapping' }
+
+// Shipped-artifact verification. `checkMixinRemapping` proves the build directory is right; this
+// proves the same of the file players actually install, which is not the same claim. The refmap is
+// generated by an annotation processor into build/tmp, copied by processResources, and packaged by
+// jar — three steps that have each been wrong at least once, and none of which fail loudly. A refmap
+// that is correct in build/tmp and missing from the jar produces exactly the RS10-041 crash.
+//
+// It also asserts the jar's entry set, and it inspects the jarJar bundle rather than the slim jar
+// because that is what a player installs. This assertion used to run the other way round — it
+// treated any META-INF/jarjar/ as unexpected, on the assumption that Forge supplies MixinExtras.
+// Forge 1.20.1 47.x does not (checked against the 47.4.22 runtime's libraries and jars), so the shipped artifact carrying
+// mixinextras-forge is now the requirement, not the anomaly (RS10-042). It also checks that the
+// file it just vetted is the one README tells players to download, because a build that ships a
+// good jar under a name nobody is pointed at fixes nothing.
+tasks.register('verifyShippedRefmap') {
+    group = 'verification'
+    description = 'Fails the build if the shipped jar lacks the SRG refmap entries or the bundled MixinExtras production needs'
+
+    dependsOn 'jarJar'
+
+    def jarProvider = tasks.named('jarJar').flatMap { it.archiveFile }
+    def slimProvider = tasks.named('jar').flatMap { it.archiveFile }
+    def apRefmap = file('build/tmp/compileJava/compileJava-refmap.json')
+    def mixinRoot = file('src/main/java/com/otectus/runicskills/mixin')
+    def readmeFile = file('README.md')
+
+    inputs.file jarProvider
+    inputs.dir mixinRoot
+    inputs.file readmeFile
+
+    doLast {
+        def jarFile = jarProvider.get().asFile
+        def problems = []
+        def zip = new java.util.zip.ZipFile(jarFile)
+        try {
+            def names = zip.entries().collect { it.name } as Set
+
+            // The entries the mod cannot load without.
+            ['runicskills.refmap.json', 'runicskills.mixins.json', 'META-INF/mods.toml'].each {
+                if (!names.contains(it)) problems << "missing entry ${it}"
+            }
+            // MixinExtras must travel with the mod: Forge does not provide it, and without it every
+            // @ModifyReturnValue injector in this jar has no implementation on a minimal install.
+            if (!names.any { it ==~ /META-INF\/jarjar\/mixinextras-forge-.*\.jar/ }) {
+                problems << "no META-INF/jarjar/mixinextras-forge-*.jar — Forge does not supply MixinExtras, " +
+                        "so the @ModifyReturnValue injectors would only work on packs where another mod bundles it"
+            }
+
+            // The name a player is told to download must be the name of the file just vetted.
+            def readmeText = readmeFile.getText('UTF-8')
+            if (!readmeText.contains(jarFile.name)) {
+                problems << "README.md does not name ${jarFile.name}, the artifact this task verified — " +
+                        "point the download instruction at it or players get an unverified file"
+            }
+            def slimName = slimProvider.get().asFile.name
+            if (readmeText.contains(slimName)) {
+                problems << "README.md names ${slimName}, which is the slim artifact and carries no MixinExtras"
+            }
+
+            if (names.contains('runicskills.refmap.json')) {
+                def shipped = new groovy.json.JsonSlurper().parseText(
+                        zip.getInputStream(zip.getEntry('runicskills.refmap.json')).text)
+                def shippedMappings = shipped.mappings ?: [:]
+
+                // 1. Everything the annotation processor produced must have survived to the jar.
+                if (apRefmap.exists()) {
+                    def built = new groovy.json.JsonSlurper().parseText(apRefmap.text).mappings ?: [:]
+                    built.each { cls, entries ->
+                        def got = shippedMappings[cls]
+                        if (got == null) {
+                            problems << "refmap class ${cls} was generated but is not in the jar"
+                            return
+                        }
+                        entries.each { k, v ->
+                            if (got[k] != v) {
+                                problems << "refmap ${cls} '${k}': jar has ${got[k]}, build produced ${v}"
+                            }
+                        }
+                    }
+                }
+
+                // 2. Every Tinkers' mixin with refmap entries must have SRG ones. A mixin in that
+                // package only earns an entry by referencing a vanilla-declared member, and a
+                // vanilla-declared member is SRG-renamed inside TConstruct's own production jar —
+                // so an MCP name surviving here is the exact defect that broke the pack.
+                def tconstructMixins = []
+                new File(mixinRoot, 'tconstruct').eachFileRecurse { f ->
+                    if (f.isFile() && f.name.endsWith('.java')) {
+                        tconstructMixins << (f.canonicalPath - mixinRoot.canonicalPath - File.separator - '.java')
+                                .replace(File.separator, '/')
+                    }
+                }
+                def checked = 0
+                shippedMappings.each { cls, entries ->
+                    def simple = cls - 'com/otectus/runicskills/mixin/'
+                    if (!tconstructMixins.contains(simple)) return
+                    entries.each { k, v ->
+                        def member = (v =~ /;([^;(:]+)/)
+                        def name = member.find() ? member.group(1) : null
+                        if (name == null || !(name ==~ /(m_|f_)\d+_/)) {
+                            problems << "refmap ${cls} '${k}' maps to ${v}, which carries no SRG name — " +
+                                    "production will look for the MCP name and Mixin will fail the whole config"
+                        } else {
+                            checked++
+                        }
+                    }
+                }
+                logger.lifecycle("verifyShippedRefmap: ${jarFile.name}, ${shippedMappings.size()} refmap classes, " +
+                        "${checked} Tinkers' SRG entries")
+            }
+        } finally {
+            zip.close()
+        }
+
+        if (!problems.isEmpty()) {
+            throw new GradleException(
+                    "Shipped artifact is not production-safe (${jarFile}):\n  " + problems.join('\n  '))
+        }
+    }
+}
+tasks.named('build').configure { dependsOn 'verifyShippedRefmap' }

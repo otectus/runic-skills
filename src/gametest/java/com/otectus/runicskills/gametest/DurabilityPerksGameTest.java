@@ -3,6 +3,8 @@ package com.otectus.runicskills.gametest;
 import com.mojang.authlib.GameProfile;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.equipment.EquipmentProfileService;
+import com.otectus.runicskills.common.equipment.EquipmentRole;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryCapabilities;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -153,6 +155,46 @@ public class DurabilityPerksGameTest {
                     + " points of armour durability; armour is not eligible");
         }
         helper.succeed();
+    }
+
+    /**
+     * The role service answers "is this a tool?" exactly as the old inline class rule did.
+     *
+     * <p>{@code DurabilityPerkRules.isTool} was {@code TieredItem || ShearsItem} plus two tags, read
+     * directly by every durability perk. It is now one role on {@code EquipmentProfileService}, so
+     * an adapter can answer for items whose class says nothing. That is only safe if vanilla items
+     * classify identically, which is what this asserts — item by item, including the negatives,
+     * because a service that called everything a tool would pass a positives-only test.
+     */
+    @GameTest(template = EMPTY)
+    public static void theRoleServiceAgreesWithTheOldToolRule(GameTestHelper helper) {
+        assertRole(Items.DIAMOND_PICKAXE, EquipmentRole.TOOL, true);
+        assertRole(Items.WOODEN_HOE, EquipmentRole.TOOL, true);
+        assertRole(Items.SHEARS, EquipmentRole.TOOL, true);
+        assertRole(Items.DIAMOND_SWORD, EquipmentRole.TOOL, true);
+        assertRole(Items.DIAMOND_CHESTPLATE, EquipmentRole.TOOL, false);
+        assertRole(Items.BOW, EquipmentRole.TOOL, false);
+        assertRole(Items.STICK, EquipmentRole.TOOL, false);
+
+        // The anvil perks' two rules, which used to be instanceof checks a few lines apart.
+        assertRole(Items.DIAMOND_PICKAXE, EquipmentRole.DIGGER, true);
+        assertRole(Items.DIAMOND_SWORD, EquipmentRole.DIGGER, false);
+        assertRole(Items.DIAMOND_SWORD, EquipmentRole.MELEE_WEAPON, true);
+        assertRole(Items.TRIDENT, EquipmentRole.MELEE_WEAPON, true);
+        // An axe is both, which is two perks paying out on one item rather than one paying twice.
+        assertRole(Items.DIAMOND_AXE, EquipmentRole.DIGGER, true);
+        assertRole(Items.DIAMOND_AXE, EquipmentRole.MELEE_WEAPON, true);
+        assertRole(Items.DIAMOND_PICKAXE, EquipmentRole.MELEE_WEAPON, false);
+        helper.succeed();
+    }
+
+    private static void assertRole(net.minecraft.world.item.Item item, EquipmentRole role, boolean expected) {
+        boolean actual = EquipmentProfileService.hasRole(new ItemStack(item), role);
+        if (actual != expected) {
+            throw new GameTestAssertException("EquipmentProfileService says " + item
+                    + (actual ? " holds " : " does not hold ") + role
+                    + "; the vanilla rules say the opposite, so moving the rule changed behaviour");
+        }
     }
 
     // -- Mending Boost -------------------------------------------------------------------------

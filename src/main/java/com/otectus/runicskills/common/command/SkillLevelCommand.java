@@ -21,9 +21,16 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class SkillLevelCommand {
     public static LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // The permission gate moved from the root literal onto the player argument in 2.0.7. It has
+        // to: Brigadier applies a node's requirement to everything beneath it, so an operator-only
+        // root would have made /skills tinkers inspect — a question about the caller's own held item
+        // — operator-only too (§14.4 lists it as a player command). Everything that was gated before
+        // is still gated, because everything that was gated is under this argument.
         return dispatcher.register(
-                (Commands.literal("skills").requires(source -> source.hasPermission(2)))
+                Commands.literal("skills")
+                .then(TinkersCommand.node())
                 .then(Commands.argument("player", EntityArgument.player())
+                        .requires(source -> source.hasPermission(2))
                         .then(
                                 Commands.argument("skill", SkillArgument.getArgument())
                                 .then(Commands.literal("get")

@@ -1,6 +1,6 @@
 # Runic Skills — Public Event API
 
-Five `PlayerEvent` subclasses live on the **Forge bus** (`MinecraftForge.EVENT_BUS`). Subscribers can observe and (where applicable) cancel skill-level-ups, passive-level changes, perk toggles, title unlocks, and Power procs.
+Seven events live on the **Forge bus** (`MinecraftForge.EVENT_BUS`): six `PlayerEvent` subclasses plus `BlockBreakCommittedEvent`, which extends `net.minecraftforge.eventbus.api.Event` directly rather than `PlayerEvent`. Subscribers can observe and (where applicable) cancel skill-level-ups, passive-level changes, perk toggles, title unlocks, Power procs, and committed block breaks.
 
 | Event | Cancelable | Fires from | Fields |
 |---|---|---|---|
@@ -10,6 +10,7 @@ Five `PlayerEvent` subclasses live on the **Forge bus** (`MinecraftForge.EVENT_B
 | [`PerkToggleEvent.Post`](../src/main/java/com/otectus/runicskills/event/PerkToggleEvent.java) | ❌ | after rank/cooldown write, before client sync | (same as Pre) |
 | [`TitleEarnedEvent`](../src/main/java/com/otectus/runicskills/event/TitleEarnedEvent.java) | ❌ | `Title.setRequirement` when `unlockTitle` flips false→true | `Title title` |
 | [`PowerProcEvent`](../src/main/java/com/otectus/runicskills/event/PowerProcEvent.java) | ❌ | `PowerDispatch.fireProc`, **after** the Power's behaviour has committed | `Power power`, `Entity target` (nullable), `Vec3 origin`, `int variant`, `int intensity`, `boolean critical`, `boolean ownerOnly` |
+| [`BlockBreakCommittedEvent`](../src/main/java/com/otectus/runicskills/common/actions/BlockBreakCommittedEvent.java) | ❌ | `ServerPlayerGameMode.destroyBlock` after the block is removed and `Block.playerDestroy` has run (loot is dropped); also from native area-harvest children in `ToolHarvestLogic.breakBlock` via the Tinkers' Construct integration | `ServerLevel level`, `BlockPos pos` (immutable), `BlockState state` (pre-removal), `ServerPlayer player`, `ItemStack tool` (copy, pre-damage) |
 
 ## Cancellation semantics
 
@@ -66,6 +67,37 @@ RunicSkillsEvents.skillLevelUp(event => {
 
 This is the supported KubeJS route. The old `ForgeEvents` bridge is not available in server_scripts.
 
+## Advancement criteria (quest-pack integration)
+
+Three vanilla-style advancement criteria, registered on every install whether or not Tinker's
+Construct is present (`common/advancements/RunicCriteriaTriggers.java`, registered from
+`FMLCommonSetupEvent` via `enqueueWork` — `RunicSkills.java:220-222`). They are fired from the
+committed, once-per-take points inside the Tinkers' station bridge, never from a preview, a quote,
+or a hopper transfer, so a server without Tinkers' Construct registers all three and simply never
+fires them.
+
+| Criterion id | Fires when |
+|---|---|
+| `runicskills:tinker_assembly` | A native Tinkers' tool is assembled at a station (`TConstructStationBridge.onStationCraft`, on `CraftOperationKind.ASSEMBLY`) |
+| `runicskills:tinker_paid_repair` | A native station repair actually restores durability, paid for with materials (same call site, on `CraftOperationKind.REPAIR` with `nativeRestored > 0`) |
+| `runicskills:great_work` | The Great Work Power's three distinct station operations (assembly, repair, cast) all complete inside its window (`TConstructPowerDispatcher.greatWorkStep`, on the Power proccing) |
+
+Each takes the same optional `item` condition as any vanilla `ItemPredicate` criterion:
+
+```json
+"criteria": {
+  "first_tool": {
+    "trigger": "runicskills:tinker_assembly",
+    "conditions": { "item": { "items": ["tconstruct:pickaxe"] } }
+  }
+}
+```
+
+This mod ships no advancement of its own against these criteria — they exist for a quest pack to
+build on. See [`KUBEJS.md`](KUBEJS.md#tinkers-construct-tinkering-events) for the KubeJS-side
+`tinkerOperationCheck` / `tinkerOperationCompleted` / `tinkerToolLevelChanged` events, which observe
+the same station operations from scripts rather than from advancement files.
+
 ## Stability commitment
 
 The first four events are public API since 1.2.0; `PowerProcEvent` since 2.0.1. The class signatures
@@ -78,3 +110,40 @@ would require a major version bump.
 before upgrading a subscriber.
 
 If you need a new event surface that doesn't exist yet, open an issue at [github.com/otectus/runicskills/issues](https://github.com/otectus/runicskills/issues).
+
+---
+
+## Network protocol and packets
+
+The mod syncs gameplay state to clients via a versioned custom Forge network channel. Clients on a
+mismatched protocol version are refused at join with a clear error. The current protocol version is
+**12** (since 2.0.7); the version matrix in [`../README.md`](../README.md#version-matrix) lists
+which releases use which protocol.
+
+### Protocol 12 (2.0.7+): Workshop networking
+
+Three packets for Tinkers' Construct workshop focus, added in 2.0.7:
+
+| Packet | Direction | Purpose |
+|---|---|---|
+| `WorkshopFocusSP` | Client → Server | Player requests to focus a controller, associate a casting block, or release their focus |
+| `WorkshopStatusCP` | Server → Client | Server sends the player's current focus status (controller position, remaining time, bonus %, etc.), at most twice per second |
+| `StationQuoteCP` | Server → Client | Server sends a preview of what the player would receive from the station they are looking at, only when inputs or result change |
+
+**Validation rules for `WorkshopFocusSP` (server-side):**
+- Sender must be a real player and rate-limited (one per ~250ms).
+- The container ID must match the player's currently open menu.
+- The revision token must match the player's current focus token.
+- Only after token validation does the server check world state: distance (before chunk loads), chunk-loaded state (before Tinkers' type checks).
+- A packet that names a coordinate outside chunk-loaded space is refused without the server ever asking whether that chunk should exist.
+
+The two client-bound packets carry presentation data only — quotes and focus status — never authorization. Taking a crafted item or modifying a focus goes through the native menus and the server-authoritative control flow.
+
+### Protocol evolution
+
+| Version | Added | Removed | Changed |
+|---|---|---|---|
+| 12 | `WorkshopFocusSP`, `WorkshopStatusCP`, `StationQuoteCP` | — | — |
+| 11 | `PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP` | — | `GameplayConfigCP` payload (1,133 fields generated instead of 128 hand-listed); `PassiveLevelUpSP`/`PassiveLevelDownSP` replaced by `AdjustPassiveSP` (batched, handles bulk clicks) |
+| 10 | (see 2.0.0 release) | `CommonConfigSyncCP`, `DynamicConfigSyncCP` | `SyncSkillCapabilityCP` (resource locations are now length-bounded instead of 32,767-character strings) |
+| 9 | — | — | `PassiveLevelUpSP`/`PassiveLevelDownSP` payloads (passive-level arrays moved from packed strings to length-prefixed varints) |

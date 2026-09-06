@@ -1,0 +1,7 @@
+{
+  "input": "minecraft:damaged_anvil",
+  "consumed": 1,
+  "outputs": [ { "item": "minecraft:iron_ingot", "count": 4 } ],
+  "max_recovery": 4,
+  "requires_empty_nbt": true
+}

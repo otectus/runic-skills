@@ -186,6 +186,30 @@ public final class RunicAttributeModifiers {
     public static final UUID APOTH_HEAL_RECV    = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0d");
     public static final UUID APOTH_OVERHEAL     = UUID.fromString("a5d3f7c2-2c4e-4a8f-9c2d-100b4f9a3c0e");
 
+    // -- Tinker's Construct ---------------------------------------------------------------------
+
+    /**
+     * Counterweight's effective attack speed, and Plate Discipline's knockback resistance.
+     *
+     * <p>Both are continuous conditions rather than events — a broad tool in the hand, three native
+     * armour pieces worn — so both are reconciled on a timer and applied transiently. One id per
+     * effect per player is the whole point of Plate Discipline's "one modifier per player, not per
+     * piece": four pieces of armour produce one modifier, not four.
+     */
+    public static final UUID TC_COUNTERWEIGHT     = UUID.fromString("7f2c1d40-3b6a-4e58-9d21-0c4e6a1b5701");
+    public static final UUID TC_PLATE_DISCIPLINE  = UUID.fromString("7f2c1d40-3b6a-4e58-9d21-0c4e6a1b5702");
+
+    /**
+     * Soulsteel Resolve's knockback resistance, granted by the TCIntegrations add-on perk.
+     *
+     * <p>Here rather than in the add-on adapter for the reason this whole table exists: the
+     * migration purge and the code that applies a modifier have to read one list, and a modifier
+     * declared inside an optional integration is exactly the one a purge would miss. Fixed rather
+     * than random so a second hit replaces the modifier instead of stacking a new one — §10.3's
+     * "one transient modifier".
+     */
+    public static final UUID TC_SOULSTEEL_RESOLVE = UUID.fromString("7f2c1d40-3b6a-4e58-9d21-0c4e6a1b5703");
+
     // -- Item-borne (written to a stack, applied by vanilla when it is held) --------------------
 
     /**
@@ -266,6 +290,10 @@ public final class RunicAttributeModifiers {
             new Owned(APOTH_GHOST_HP,     "apothic:ghostbound",          "attributeslib:ghost_health",      "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_HEAL_RECV,    "apothic:heart_of_the_healer", "attributeslib:healing_received",  "ADDITION",      Scope.PLAYER),
             new Owned(APOTH_OVERHEAL,     "apothic:heart_of_the_healer", "attributeslib:overheal",          "ADDITION",      Scope.PLAYER),
+
+            new Owned(TC_COUNTERWEIGHT,    "perk:tc_counterweight",    "minecraft:attack_speed",         "MULTIPLY_BASE", Scope.PLAYER),
+            new Owned(TC_PLATE_DISCIPLINE, "perk:tc_plate_discipline", "minecraft:knockback_resistance", "ADDITION",      Scope.PLAYER),
+            new Owned(TC_SOULSTEEL_RESOLVE, "perk:tc_soulsteel_resolve", "minecraft:knockback_resistance", "ADDITION",     Scope.PLAYER),
 
             new Owned(WEAPON_SMITH_DAMAGE, "perk:weapon_smith", "minecraft:attack_damage", "MULTIPLY_TOTAL", Scope.ITEM)
     );

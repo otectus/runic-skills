@@ -1,0 +1,7 @@
+{
+  "input": "minecraft:chipped_anvil",
+  "consumed": 1,
+  "outputs": [ { "item": "minecraft:iron_ingot", "count": 8 } ],
+  "max_recovery": 8,
+  "requires_empty_nbt": true
+}

@@ -583,6 +583,46 @@ public class HandlerResources {
     public static final ResourceLocation WAYSTONE_TINKER_PERK = create("textures/skill/tinkering/waystone_tinker.png");
     public static final ResourceLocation MASTER_ARTIFICER_PERK = create("textures/skill/tinkering/master_artificer.png");
 
+    // Tinker's Construct perks. Filed under the skill that governs each one, like every other perk,
+    // rather than under a folder of their own: the icon path follows the perk's skill because the
+    // perk screen builds it from the skill, and a separate folder would be a second convention.
+    public static final ResourceLocation TC_CAST_KEEPER_PERK = create("textures/skill/tinkering/tc_cast_keeper.png");
+    public static final ResourceLocation TC_THERMAL_RHYTHM_PERK = create("textures/skill/tinkering/tc_thermal_rhythm.png");
+    public static final ResourceLocation TC_REPAIR_MEMORY_PERK = create("textures/skill/tinkering/tc_repair_memory.png");
+    public static final ResourceLocation TC_MATERIAL_HARMONY_PERK = create("textures/skill/tinkering/tc_material_harmony.png");
+    public static final ResourceLocation TC_FIELD_SERVICE_PERK = create("textures/skill/tinkering/tc_field_service.png");
+    public static final ResourceLocation TC_WORKSHOP_CADENCE_PERK = create("textures/skill/tinkering/tc_workshop_cadence.png");
+    public static final ResourceLocation TC_ADAPTIVE_GRIP_PERK = create("textures/skill/tinkering/tc_adaptive_grip.png");
+    public static final ResourceLocation TC_KEYSTONE_TINKER_PERK = create("textures/skill/tinkering/tc_keystone_tinker.png");
+    public static final ResourceLocation TC_TEMPERED_EDGE_PERK = create("textures/skill/strength/tc_tempered_edge.png");
+    public static final ResourceLocation TC_COUNTERWEIGHT_PERK = create("textures/skill/dexterity/tc_counterweight.png");
+    public static final ResourceLocation TC_MEASURED_DRAW_PERK = create("textures/skill/dexterity/tc_measured_draw.png");
+    public static final ResourceLocation TC_RETURNING_HAND_PERK = create("textures/skill/dexterity/tc_returning_hand.png");
+    public static final ResourceLocation TC_PRECISION_FOOTING_PERK = create("textures/skill/endurance/tc_precision_footing.png");
+    public static final ResourceLocation TC_SLIME_STEWARD_PERK = create("textures/skill/endurance/tc_slime_steward.png");
+    public static final ResourceLocation TC_PLATE_DISCIPLINE_PERK = create("textures/skill/constitution/tc_plate_discipline.png");
+    public static final ResourceLocation TC_EMBER_GUARD_PERK = create("textures/skill/constitution/tc_ember_guard.png");
+
+    // Tinker's Construct add-on perks (spec section 10.3). Same rule: the folder is the governing
+    // skill, not the add-on, because the perk screen builds the path from the skill.
+    public static final ResourceLocation TC_MANA_POLISHER_PERK = create("textures/skill/tinkering/tc_mana_polisher.png");
+    public static final ResourceLocation TC_CLOCKWORK_ALTERNATION_PERK = create("textures/skill/tinkering/tc_clockwork_alternation.png");
+    public static final ResourceLocation TC_SEASONED_HANDS_PERK = create("textures/skill/tinkering/tc_seasoned_hands.png");
+    public static final ResourceLocation TC_CHARGED_CRAFT_PERK = create("textures/skill/tinkering/tc_charged_craft.png");
+    public static final ResourceLocation TC_SOURCE_TEMPERING_PERK = create("textures/skill/magic/tc_source_tempering.png");
+    public static final ResourceLocation TC_BANQUET_OF_CINDERS_PERK = create("textures/skill/wisdom/tc_banquet_of_cinders.png");
+    public static final ResourceLocation TC_SOULSTEEL_RESOLVE_PERK = create("textures/skill/constitution/tc_soulsteel_resolve.png");
+
+    // Tinkers' Thinking and Tinkers' Jewelry perks (2.1.0). Same rule again: the folder is the
+    // governing skill, not the add-on.
+    public static final ResourceLocation TC_THINKING_EMBELLISHED_FOCUS_PERK = create("textures/skill/tinkering/tc_thinking_embellished_focus.png");
+    public static final ResourceLocation TC_JEWELER_SETTING_PERK = create("textures/skill/tinkering/tc_jeweler_setting.png");
+    public static final ResourceLocation TC_POLISHED_FACET_PERK = create("textures/skill/tinkering/tc_polished_facet.png");
+    public static final ResourceLocation TC_THINKING_LAST_THOUGHT_PERK = create("textures/skill/wisdom/tc_thinking_last_thought.png");
+    public static final ResourceLocation TC_THINKING_STUDIED_RECALL_PERK = create("textures/skill/wisdom/tc_thinking_studied_recall.png");
+    public static final ResourceLocation TC_GEM_ATTUNEMENT_PERK = create("textures/skill/wisdom/tc_gem_attunement.png");
+    public static final ResourceLocation TC_UNDYING_LUSTRE_PERK = create("textures/skill/constitution/tc_undying_lustre.png");
+
     public static ResourceLocation create(String path) {
         return new ResourceLocation(RunicSkills.MOD_ID, path);
     }

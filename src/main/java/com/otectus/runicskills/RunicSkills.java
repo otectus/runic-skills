@@ -66,6 +66,7 @@ public class RunicSkills {
     public RunicSkills() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         eventBus.addListener(this::attributeSetup);
+        eventBus.addListener(this::commonSetup);
 
         Configuration.Init();
 
@@ -140,6 +141,10 @@ public class RunicSkills {
         // PathingStuckHandler mixin calls, and subscribes the explosion handler. Reflective load
         // keeps every MineColonies type out of the main constant pool.
         tryLoadIntegration("minecolonies",     "com.otectus.runicskills.integration.MineColoniesIntegration");
+        // Tinker's Construct. Loaded by name for the usual reason, and for one more: the bootstrap
+        // has to subscribe ITSELF to the MOD bus, because tryLoadIntegration registers on the FORGE
+        // bus and modifier registration is a MOD-bus event. See TConstructBootstrap.
+        tryLoadIntegration("tconstruct",       "com.otectus.runicskills.integration.tconstruct.TConstructBootstrap");
         // Installs the ProgressionHooks vetoes that post RunicSkillsEvents.skillLevelUp. Reflective
         // for the usual reason, and because a KubeJS whose event API moved must degrade to "scripts
         // do not gate progression" rather than to "the mod does not load".
@@ -202,6 +207,19 @@ public class RunicSkills {
             // This path only runs after ModList.isLoaded(modId) passed, so a failure here is a real problem.
             LOGGER.warn("Failed to load integration {} for mod {}", className, modId, e);
         }
+    }
+
+    /**
+     * Work that has to happen once, on the main thread, before a world loads.
+     *
+     * <p>The advancement criteria (§14.5) are registered here rather than from a deferred register
+     * because {@code CriteriaTriggers} is not a Forge registry: it is a plain map vanilla fills from
+     * its own static initialiser, so the write is enqueued onto the main thread and is complete
+     * before the first advancement file is parsed.
+     */
+    private void commonSetup(net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
+        event.enqueueWork(
+                com.otectus.runicskills.common.advancements.RunicCriteriaTriggers::register);
     }
 
     private void attributeSetup(EntityAttributeModificationEvent event) {

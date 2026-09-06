@@ -184,6 +184,85 @@ Apply script changes with `/kubejs reload server_scripts` in-game. Expect the ou
 
 Run `/probejs dump` to generate type stubs for your IDE. The `RunicSkillsEvents.skillLevelUp` event appears in both SERVER and CLIENT context. ProbeJS is not a dependency; it is an optional dev tool.
 
+## Tinkers' Construct tinkering events
+
+Three more events, posted only on the server, observing native Tinker Station operations (assembly,
+repair, part swap, modify, and the Keystone service). They register whether or not Tinkers'
+Construct is installed — a server without it simply never posts them.
+
+**`tinkerOperationCheck`** fires after a valid native operation is known and **before** this mod
+consumes, pays, or services anything for it. `event.deny('reason')` refuses the Runic half only — a
+bonus copy, a repair top-up, the Keystone fitting — and refuses it before anything is spent. It does
+not and cannot cancel the native Tinkers' craft: the station has already accepted the take.
+
+```js
+RunicSkillsEvents.tinkerOperationCheck(event => {
+  if (event.kind !== 'keystone_service') return
+  if (!event.hasAdvancement('minecraft:story/enter_the_nether')) {
+    event.deny('Visit the Nether before performing Keystone work.')
+  }
+})
+```
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `event.player` | Player | who is performing the operation |
+| `event.kind` | string | `'assembly'`, `'repair'`, `'part_swap'`, `'modify'`, `'keystone_service'`, or `'unknown'` |
+| `event.recipeId` | string | the native recipe id, or `''` when the operation has none |
+| `event.item` | string | the item id the operation produces |
+| `event.count` | int | how many of `item` |
+| `event.inputs` | map | item id → total count consumed, e.g. `event.inputs['tconstruct:pickaxe']` |
+| `event.operationId` | long | the root action this belongs to; the completion event carries the same number |
+| `event.serverSide` | boolean | always `true` — these events exist only on the authoritative server |
+| `event.hasAdvancement(id)` | boolean | same server-side advancement helper `skillLevelUp` documents |
+| `event.getAdvancementProgress(id)` | double | completion fraction 0.0–1.0 |
+| `event.setCancelled(true)` / `event.setCanceled(true)` | void | cancel (either spelling) |
+| `event.cancel()` / `event.cancel('reason')` | void | KubeJS-native cancellation, optionally with a reason |
+| `event.deny('reason')` | void | cancel and set the denial message shown to the player (preferred spelling) |
+
+**A script that throws while checking an operation denies it.** `TinkerScriptHooks` treats an
+exception from the gate as "the script did not decide", and the safe reading of that is "no": the
+Runic service is refused, nothing is consumed, and the native Tinkers' operation is unaffected
+either way.
+
+**`tinkerOperationCompleted`** is read-only, posted once per committed root operation, after the
+take has committed. There is no cancellation on this event — nothing a listener does can un-commit
+an operation, and a script that throws here is logged and dropped rather than retried, so the
+completed take always stands.
+
+```js
+RunicSkillsEvents.tinkerOperationCompleted(event => {
+  console.info(`${event.player.username} ${event.kind} ${event.item}, `
+    + `${event.nativeRestored} restored, ${event.bonusCopies} bonus`)
+})
+```
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `event.player`, `event.kind`, `event.recipeId`, `event.item`, `event.count`, `event.inputs`, `event.operationId` | — | same meanings as the check event |
+| `event.nativeRestored` | int | durability the **native** operation itself restored, before anything Runic added |
+| `event.bonusCopies` | int | extra outputs this mod paid for the operation, across every perk together |
+
+**`tinkerToolLevelChanged`** is read-only, posted after a real levelling add-on transition (Tinkers'
+Levelling Addon). It fires only on an actual level crossing, not on every experience award.
+
+```js
+RunicSkillsEvents.tinkerToolLevelChanged(event => {
+  if (event.newLevel >= 10) event.player.tell(`${event.item} reached level ${event.newLevel}`)
+})
+```
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `event.player` | Player | who earned the transition |
+| `event.item` | string | the tool that levelled, as an item id |
+| `event.oldLevel` / `event.newLevel` | int | the transition |
+| `event.source` | string | what earned it; `'experience'` for an ordinary add-on award |
+| `event.award` | int | the experience the add-on applied for this award, including anything a Runic perk (Seasoned Hands) added to it |
+
+Observing this event grants nothing on its own — it is downstream of the add-on's own award, never
+a second source of experience.
+
 ## Troubleshooting
 
 **"ForgeEvents is not defined"**
