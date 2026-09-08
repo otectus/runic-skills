@@ -5,6 +5,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Collections;
 import java.util.Map;
 import javax.annotation.Nullable;
+import com.otectus.runicskills.common.powers.PowerOverrideLimits;
+import com.otectus.runicskills.common.util.CapabilityBounds;
 
 /**
  * Per-Power admin tunables loaded from {@code data/<ns>/powers/*.json}. The Power class
@@ -29,7 +31,19 @@ public record PowerOverrides(ResourceLocation id,
     public static final int UNSET = Integer.MIN_VALUE;
 
     public PowerOverrides {
-        values = values == null ? Collections.emptyMap() : Map.copyOf(values);
+        if (requiredSkillLevel != UNSET) requiredSkillLevel = Math.max(0,
+                Math.min(CapabilityBounds.MAX_SKILL_LEVEL, requiredSkillLevel));
+        if (icdTicks != UNSET) icdTicks = CapabilityBounds.clampCooldownTicks(icdTicks);
+        Map<String, Double> sanitized = new java.util.LinkedHashMap<>();
+        if (values != null) {
+            for (Map.Entry<String, Double> entry : values.entrySet()) {
+                if (sanitized.size() >= PowerOverrideLimits.MAX_VALUES_PER_OVERRIDE) break;
+                if (PowerOverrideLimits.isValidValue(entry.getKey(), entry.getValue())) {
+                    sanitized.put(entry.getKey(), PowerOverrideLimits.boundValue(entry.getKey(), entry.getValue()));
+                }
+            }
+        }
+        values = Map.copyOf(sanitized);
     }
 
     public boolean hasRequiredSkillLevel() {

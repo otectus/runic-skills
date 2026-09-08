@@ -118,6 +118,7 @@ public final class PowerVfxStyle {
                 default -> neutral();
             };
         }
+        if (!PowerSchool.isCrossCutting(schoolId)) return neutral();
         return switch (path) {
             case "projectile" -> new SchoolStyle(0x5B8CC8, 0xFFFFFF, Motion.FORWARD,
                     SoundEvents.ARROW_HIT, 1.5F);
@@ -135,6 +136,8 @@ public final class PowerVfxStyle {
             // a Power that fired at a forge sounds like one.
             case "tinkering" -> new SchoolStyle(0xB86E2E, 0xF0DFA8, Motion.RISING,
                     SoundEvents.ANVIL_USE, 1.1F);
+            case "angling" -> new SchoolStyle(0x48C9C5, 0xFFF0B5, Motion.ORBIT,
+                    SoundEvents.FISHING_BOBBER_THROW, 1.3F);
             default -> neutral();
         };
     }

@@ -5,6 +5,8 @@ import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilitySta
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Capability;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Status;
 import com.otectus.runicskills.integration.tconstruct.TConstructProfile;
+import com.otectus.runicskills.integration.tconstruct.TConstructHookLedger;
+import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -31,12 +33,25 @@ public class CompatibilityStatusGameTest {
 
     /** On the version this release is built against, everything the profile gates is available. */
     @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
-    public static void theStableProfileIsFullySupported(GameTestHelper helper) {
+    public static void loadedProfileReportsOnlyItsAvailableCapabilities(GameTestHelper helper) {
         TConstructCompatibilityStatus status = TConstructCompatibilityStatus.current();
         if (status.profile() != TConstructProfile.STABLE_311) {
-            throw new GameTestAssertException("the M1 gametest run detected profile "
-                    + status.profile() + " (version " + status.version()
-                    + "); these tests are written against 3.11");
+            expect(status, Capability.CLASSIFICATION, Status.VERSION_UNVERIFIED);
+            expect(status, Capability.REPAIR, Status.VERSION_UNVERIFIED);
+            for (Capability capability : new Capability[]{Capability.WEAR_AVOIDANCE,
+                    Capability.STATION_TRANSACTIONS, Capability.HARVEST_AOE,
+                    Capability.PROJECTILES, Capability.WORKSHOP}) {
+                if (status.supports(capability) || TConstructHookLedger.hookProblem(capability) == null) {
+                    throw new GameTestAssertException("conservative profile exposed " + capability);
+                }
+            }
+            for (String id : TConstructPowers.ids()) {
+                if (TConstructPowers.unavailable(com.otectus.runicskills.registry.RegistryPowers.getPower(id)) == null) {
+                    throw new GameTestAssertException("conservative profile allows Artifice Power " + id);
+                }
+            }
+            helper.succeed();
+            return;
         }
         expect(status, Capability.CLASSIFICATION, Status.SUPPORTED);
         expect(status, Capability.REPAIR, Status.SUPPORTED);

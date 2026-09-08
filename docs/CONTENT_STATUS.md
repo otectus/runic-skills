@@ -63,10 +63,14 @@ There used to be nineteen, all of them Iron's Spells school Powers with no dispa
 `conduit_mark`, `static_cling`, `blight_spread`, `venomous_harvest`.
 
 All nineteen now have one, in `IronsSpellbooksSchoolPowerDispatcher`. Eighteen are Full; only
-`reforge_the_shadow` needed a substitution, and it is listed below. Iron's Spells is still a
-`compileOnly` dependency, so none of this can be exercised by the GameTest server — no spell,
-spell entity or spell event exists there. That is why `power_no_effect_allowlist.txt` and the
-runtime table are the record, and why both are machine-checked against each other.
+`reforge_the_shadow` needed a substitution, and it is listed below. The default GameTest server
+omits Iron's Spells to verify optional-dependency safety. The `-PironsProfile=true` runtime profile
+loads the real mod and conditionally registers `SpellPowerGameTest` and
+`SchoolPowerStabilizationGameTest`. They cover all 45 spell-school Power eligibility paths,
+Harvest's pre-hit health threshold, both Grove halves, Shatter's committed primary-hit gate, and
+Scorched Earth's native fire-field lifetime across reload. These bounded regressions do not certify
+every spell or upstream combination. The release verification report records executed profiles;
+`power_no_effect_allowlist.txt` and the runtime status table remain machine-checked against each other.
 
 ### Approximate (10)
 
@@ -145,8 +149,8 @@ remain selectable and do not count against the budget. All effects are gated on 
 | `tc_thinking_studied_recall` | Studied Recall | Tinkers' Thinking | Wisdom | 20 | The add-on cancels an experience pickup and converts it to `sculk_power` | Returns `tcThinkingStudiedRecallPercent`% (default 15) of the consumed orb as experience; add-on experience-recovery channel | `TinkersThinkingPerksGameTest.studiedRecallAddsXpShare()` |
 | `tc_thinking_embellished_focus` | Embellished Focus | Tinkers' Thinking | Tinkering | 24 | Main-hand weapon carries a Tinkers' Thinking melee modifier (`TraitFeatureRegistry.Feature.THINKING_EMBELLISHMENT`) | `tcThinkingEmbellishedFocusPercent`% (default 4) added to melee-damage sum | `TinkersThinkingPerksGameTest.embellishedFocusAddsMeleeShare()` |
 | `tc_jeweler_setting` | Jeweler's Setting | Tinkers' Jewelry | Tinkering | 12 | A Tinker Station take delivers a jewelry-material piece | `tcJewelerSettingPercent`% (default 10) wear avoidance on that piece for `tcJewelerSettingSeconds`s (default 30); add-on wear-avoidance channel | `TinkersJewelryPerksGameTest.jewelerSettingAffectsStationTake()` |
-| `tc_gem_attunement` | Gem Attunement | Tinkers' Jewelry | Wisdom | 16 | A jewelry piece is worn in a vanilla equipment slot (not Curios-only) | `tcGemAttunementPercent`% (default 3) added to melee-damage sum | `TinkersJewelryPerksGameTest.gemAttunementClassifiesJewelryMaterial()` |
-| `tc_undying_lustre` | Undying Lustre | Tinkers' Jewelry | Constitution | 20 | Inside a death-resolution bracket, on the ring the add-on's own undying save is charging | `tcUndyingLustrePercent`% (default 25) wear avoidance on that save's cost; add-on wear-avoidance channel | `TinkersJewelryPerksGameTest.undyingLustreReducesSaveWear()` |
+| `tc_gem_attunement` | Gem Attunement | Tinkers' Jewelry | Wisdom | 16 | Jewelry worn in an armor or Curios slot; held/inventory pieces do not qualify | `tcGemAttunementPercent`% (default 3) added to melee-damage sum | `TinkersJewelryPerksGameTest.gemAttunementClassifiesJewelryMaterial()` |
+| `tc_undying_lustre` | Undying Lustre | Tinkers' Jewelry | Constitution | 20 | Inside a death-resolution bracket, on the ring the add-on's own undying save is charging | `tcUndyingLustrePercent`% (default 25) wear avoidance on that save's cost; add-on wear-avoidance channel | `TinkersJewelryPerksGameTest.undyingLustreReducesSaveWear()`, `undyingLustreReachesNativeSaveCostWithoutOrdinaryAction()` |
 | `tc_polished_facet` | Polished Facet | Tinkers' Jewelry | Tinkering | 20 | A paid station repair of a jewelry-material piece | `tcPolishedFacetPercent`% (default 8) added to the paid-repair share, bounded by `tconstructRepairBonusCap` | `TinkersJewelryPerksGameTest.polishedFacetAffectsRepair()` |
 | `tc_subspace_reserve` | Subspace Reserve (reserved) | Tinkers' Jewelry | Endurance | 24 | — | Unregistered: `tinkersjewelry:subspace` is inventory storage with no durability, damage, repair or progression quantity for a Runic channel; capability reports `UPSTREAM_UNAVAILABLE` | `TcAddonAbsenceGameTest.subspaceIsReservedAndUnregistered()` |
 
@@ -192,11 +196,34 @@ as `runicskills:tc_state` (schema 1, bounds per `PowerCooldownDebt`).
 
 **Eligibility & presentation:**
 
-- Unequippable when Tinkers' Construct is absent, the required capability is unavailable, or `enableTConstructPowers` is off; the reason is the `MISSING_CAPABILITY` denial from `PowerEligibility`.
+- Unequippable when Tinkers' Construct is absent or the required capability is unavailable (`MISSING_CAPABILITY`), or when the integration/Power config disables it (`DISABLED_BY_CONFIG`). `PowerEligibility` supplies the corresponding localized denial.
 - Cooldown debt written at the moment a cooldown starts (not at save time). Serialized as remaining ticks, read back at login into the runtime map via `PowerCooldownDebt.restore(ServerPlayer)`, and never shortened by a session-local cooldown that has already started (no exploit by logout).
-- VFX school: `runicskills:tinkering` (Artifice), colour 0xB86E2E (tan-brown) primary + 0xF0DFA8 (sand) glow, motion RISING, icon rune slots regenerated with collision-probe walk order (three Powers share re-generated icons, still distinct).
+- VFX school: `runicskills:tinkering` (Artifice), colour 0xB86E2E (tan-brown) primary + 0xF0DFA8 (sand) glow, motion RISING. The 2.1.0 icons use explicit mechanic silhouettes, school colours and tier tally cuts; decoded pixels are unique across the entire [authored icon catalogue](../tools/icongen/README.md).
 
 See [`PERK_AUDIT.md`](PERK_AUDIT.md) for the original audit of older content.
+
+## 2.1.0 behavioral coverage
+
+The [complete source trace](CONTENT_TRACE_2.1.0.md) includes all 10 Skills, 475 Perks, 38 Passives
+and 87 Powers in the optional catalogue. `GameplayStabilizationGameTest` protects Counter Attack
+timing, forced critical damage, general mining passives, Last Stand's post-mitigation protection,
+saved survival and Chaos Roll cooldowns, Phoenix Rising fatal-hit recovery, one-time piercing-arrow
+bonuses, manufactured-gem refunds without compression loops, Blood Fury healing from committed
+critical damage, and Bloodlust/Chaos Roll rewarding completed kills while rejecting rescued victims.
+The optional `SpellPowerGameTest` registers bounded Mana Shield absorption coverage when its
+Iron's Spells perk is available. `ChannelAndSummonGameTest` covers persistent projectile channel
+provenance, one-impact bonuses, Siphon healing capped at the victim's remaining health, and the
+capped saved Lingering Binding damage bank. Unit tests also cover short and uneven skill caps.
+
+The exact Jewelry 1.2.0 runtime profile also loads Apothic Attributes. Its optional
+`ApothicDelegationGameTest` moves earned passive bonuses between native and Runic attribute
+providers on repeated configuration reloads, asserting that both providers remain available and
+the inactive provider carries no duplicate modifier.
+
+The implemented descriptions state the current mechanic, including sustained item use for channel
+Powers and owned companions for summon Powers. The ten design substitutions above remain explicit.
+Corrected descriptions use documented English fallback where translations still describe an older
+mechanic; no placeholder translation is presented as current.
 
 ## How this is kept honest
 

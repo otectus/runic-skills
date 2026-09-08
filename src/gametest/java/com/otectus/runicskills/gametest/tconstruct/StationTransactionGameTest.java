@@ -392,6 +392,31 @@ public class StationTransactionGameTest {
         return counter.count;
     }
 
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void aThrowingStationObserverCannotLeakActionOrClickScopes(GameTestHelper helper) {
+        Setup setup = setup(helper, "tc_station_throw");
+        var previous = com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationObserver;
+        AssertionError marker = new AssertionError("station scope fixture");
+        boolean caught = false;
+        try {
+            com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationObserver = (actor, operation) -> {
+                if (actor == setup.player) throw marker;
+                previous.observe(actor, operation);
+            };
+            setup.menu.clicked(setup.resultSlot, 0, ClickType.PICKUP, setup.player);
+        } catch (AssertionError failure) {
+            if (failure != marker) throw failure;
+            caught = true;
+        } finally {
+            com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationObserver = previous;
+        }
+        if (!caught || com.otectus.runicskills.common.actions.RunicActionContext.depth() != 0
+                || com.otectus.runicskills.common.util.ContainerInteraction.currentPlayer() != null) {
+            throw new GameTestAssertException("station failure leaked an action or container interactor");
+        }
+        helper.succeed();
+    }
+
     private static int bonusOf(ItemStack stack) {
         return stack.isEmpty() ? 0 : ItemBonusTags.read(stack, ItemBonusTags.BONUS_DURABILITY);
     }

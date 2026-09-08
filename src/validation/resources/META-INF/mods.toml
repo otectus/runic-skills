@@ -1,0 +1,14 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="Apache-2.0"
+[[mods]]
+modId="runicskills_validation"
+version="1"
+displayName="Runic Skills Production Validation"
+description="Test-only harness. Never distribute as part of Runic Skills."
+[[dependencies.runicskills_validation]]
+modId="runicskills"
+mandatory=true
+versionRange="[2.1.1]"
+ordering="AFTER"
+side="BOTH"

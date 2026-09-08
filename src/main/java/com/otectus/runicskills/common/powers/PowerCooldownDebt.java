@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
+import java.util.Collection;
 
 /**
  * The half of a Power cooldown that survives a logout.
@@ -17,10 +18,9 @@ import java.util.Map;
  * references, and restore cleanly — so the two live side by side, the runtime map answering every
  * gameplay question and the capability carrying the debt across the gap.
  *
- * <p><b>Only the twelve Artifice ids are persisted.</b> Cooldowns are keyed by name, and a name
- * comes from whatever code started it; persisting all of them would let an addon's key set grow
- * player NBT without a bound. {@link TConstructPowers} names exactly twelve, which is the bound
- * {@code SkillCapability} enforces on the way in and out.
+ * <p>Registered Power cooldowns are persisted; per-target throttles stay transient. Artifice
+ * keeps its existing server-tick clock and save compound. Other Powers use world game time
+ * and the capability's bounded Power cooldown map. Both serialize remaining play time.
  *
  * <p><b>Written at the moment a cooldown starts</b>, not at save time. Serialization has no player
  * to ask and the logout event fires <em>before</em> the player is saved, so a capture at either
@@ -37,17 +37,21 @@ public final class PowerCooldownDebt {
      * @return whether the cooldown was started, i.e. whether the caller may apply the effect
      */
     public static boolean checkAndStart(Player player, Power power, long now, int durationTicks) {
-        if (player == null || power == null) return false;
+        if (player == null || player.level().isClientSide() || power == null) return false;
+        SkillCapability capability = SkillCapability.get(player);
+        if (capability == null) return false;
+        Map<String, Long> debt = TConstructPowers.isArtifice(power)
+                ? capability.tcPowerCooldowns : capability.powerCooldowns;
+        Long saved = debt.get(power.getName());
+        if (saved != null && saved > now) {
+            PowerRuntime.InternalCooldowns.restore(player.getUUID(), power.getName(), saved);
+        }
         if (!PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), power.getName(), now,
                 durationTicks)) {
             return false;
         }
-        if (durationTicks > 0 && TConstructPowers.isArtifice(power)) {
-            SkillCapability capability = SkillCapability.get(player);
-            if (capability != null) {
-                capability.tcPowerCooldowns.put(power.getName(), now + durationTicks);
-            }
-        }
+        if (durationTicks > 0) debt.put(power.getName(), now + durationTicks);
+        else debt.remove(power.getName());
         return true;
     }
 
@@ -63,18 +67,30 @@ public final class PowerCooldownDebt {
     public static int restore(ServerPlayer player) {
         if (player == null || player.getServer() == null) return 0;
         SkillCapability capability = SkillCapability.get(player);
-        if (capability == null || capability.tcPowerCooldowns.isEmpty()) return 0;
-        long now = player.getServer().getTickCount();
-        int restored = 0;
-        for (Map.Entry<String, Long> entry : capability.tcPowerCooldowns.entrySet()) {
-            long remaining = entry.getValue() - now;
-            if (remaining <= 0L) continue;
-            if (PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), entry.getKey(), now,
-                    remaining)) {
-                restored++;
-            }
+        if (capability == null) return 0;
+        return restore(player, capability.tcPowerCooldowns, player.getServer().getTickCount())
+                + restore(player, capability.powerCooldowns, player.level().getGameTime());
+    }
+
+    private static int restore(Player player, Map<String, Long> debts, long now) {
+        debts.values().removeIf(deadline -> deadline <= now);
+        debts.forEach((name, deadline) ->
+                PowerRuntime.InternalCooldowns.restore(player.getUUID(), name, deadline));
+        return debts.size();
+    }
+
+    /** A cooldown refund updates the saved debt too, so reconnecting cannot undo it. */
+    public static int reduceRemaining(Player player, Collection<String> names, double fraction, long now) {
+        if (player == null || player.level().isClientSide()) return 0;
+        SkillCapability capability = SkillCapability.get(player);
+        if (capability == null) return 0;
+        int changed = PowerRuntime.InternalCooldowns.reduceRemaining(player.getUUID(), names, fraction, now);
+        for (String name : names) {
+            long remaining = PowerRuntime.InternalCooldowns.remaining(player.getUUID(), name, now);
+            if (remaining > 0) capability.powerCooldowns.put(name, now + remaining);
+            else capability.powerCooldowns.remove(name);
         }
-        return restored;
+        return changed;
     }
 
     /** How many ticks of debt {@code power} carries for this player, or {@code 0}. */
@@ -82,7 +98,8 @@ public final class PowerCooldownDebt {
         if (player == null || power == null) return 0L;
         SkillCapability capability = SkillCapability.get(player);
         if (capability == null) return 0L;
-        Long expiry = capability.tcPowerCooldowns.get(power.getName());
+        Long expiry = (TConstructPowers.isArtifice(power) ? capability.tcPowerCooldowns
+                : capability.powerCooldowns).get(power.getName());
         return expiry == null ? 0L : Math.max(0L, expiry - now);
     }
 }

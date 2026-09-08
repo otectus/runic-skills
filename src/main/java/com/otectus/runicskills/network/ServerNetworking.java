@@ -48,7 +48,9 @@ public class ServerNetworking {
     // 11 peer would decode a stream whose ids it has no handler for, so the pair is refused at
     // negotiation instead (spec §15.3: "update the channel predicate, documentation and consistency
     // checks together"). The mod version and this number are separate values and always have been.
-    private static final String PROTOCOL_VERSION = "12";
+    // 2.1.0: temporary Tinkers' mining state adds a clientbound prediction packet.
+    // 2.1.1: four-mod configuration fields, capability evidence and owned Guard presentation.
+    private static final String PROTOCOL_VERSION = "14";
     public static SimpleChannel instance;
 
     /**
@@ -119,6 +121,11 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, StationQuoteCP.class, StationQuoteCP::toBytes, StationQuoteCP::new, StationQuoteCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, WorkshopStatusCP.class, WorkshopStatusCP::toBytes, WorkshopStatusCP::new, WorkshopStatusCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, WorkshopFocusSP.class, WorkshopFocusSP::toBytes, WorkshopFocusSP::new, WorkshopFocusSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        instance.registerMessage(packetId++, TConstructMiningCP.class, TConstructMiningCP::toBytes, TConstructMiningCP::new, TConstructMiningCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, IntegrationStatusCP.class, IntegrationStatusCP::toBytes, IntegrationStatusCP::new, IntegrationStatusCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, GuardStateCP.class, GuardStateCP::toBytes, GuardStateCP::new, GuardStateCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, TideJournalSP.class, TideJournalSP::toBytes, TideJournalSP::new, TideJournalSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        instance.registerMessage(packetId++, TideJournalCP.class, TideJournalCP::toBytes, TideJournalCP::new, TideJournalCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void sendToServer(Object message) {
@@ -146,5 +153,3 @@ public class ServerNetworking {
                 origin.x, origin.y, origin.z, radius, dimension)), message);
     }
 }
-
-

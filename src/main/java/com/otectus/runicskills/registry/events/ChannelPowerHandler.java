@@ -16,6 +16,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p><b>What a "channel" is here.</b> The spec describes these against Iron's Spells' sustained
  * beam casts. Vanilla's equivalent of holding a cast is holding an item in use — drawing a bow,
- * loading a crossbow, charging a trident — so a channel is a continuous item-use that has not been
- * interrupted. Every rule the spec states then transfers intact: duration builds a reward, taking
- * damage resets it, and the payoff lands on whatever the channel produces.
+ * charging a trident — so a channel is a continuous item-use that has not been interrupted.
+ * Duration builds a reward, taking damage resets it, and a projectile emitted during that use
+ * carries the payoff. A loaded crossbow fired later does not retain an earlier use window.
  *
  * <p>The payoff is carried on the projectile the channel releases. A channel's damage cannot be
  * modified while it is being held, because in vanilla nothing has happened yet; the accumulated
@@ -49,18 +51,30 @@ public class ChannelPowerHandler {
 
     private static final Map<UUID, Channel> CHANNELS = new ConcurrentHashMap<>();
 
-    /** Accumulated channel bonus for a launched projectile, applied on impact and then dropped. */
-    private static final Map<Integer, Float> PROJECTILE_BONUS = new ConcurrentHashMap<>();
-
-    /** Radius bonus Harmonic Resonance earned for a launched projectile. */
-    private static final Map<Integer, Double> PROJECTILE_SPLASH = new ConcurrentHashMap<>();
-
-    /** Bound so a pathological session cannot accumulate projectile entries without limit. */
-    private static final int MAX_TRACKED_PROJECTILES = 4096;
+    // Stored on the actual projectile: integer entity IDs are reused after a world restart, and
+    // process-wide maps both leaked state to the next world and lost it on chunk reload.
+    private static final String CHANNELLED = "runicskills:channelled";
+    private static final String PROJECTILE_BONUS = "runicskills:channel_bonus";
+    private static final String PROJECTILE_SPLASH = "runicskills:channel_splash";
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         CHANNELS.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        CHANNELS.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        CHANNELS.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        CHANNELS.clear();
     }
 
     // ── Sustaining ──────────────────────────────────────────────────────────────────────────
@@ -117,9 +131,10 @@ public class ChannelPowerHandler {
     }
 
     /** Taking damage breaks a channel: Unbroken Focus is explicitly conditional on not being hit. */
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onChannelInterrupted(LivingHurtEvent event) {
-        if (event.getEntity() instanceof Player player) {
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onChannelInterrupted(LivingDamageEvent event) {
+        if (event.getAmount() > 0 && event.getEntity() instanceof Player player
+                && !player.level().isClientSide()) {
             Channel channel = CHANNELS.get(player.getUUID());
             if (channel != null) channel.startedAt = player.level().getGameTime();
         }
@@ -133,24 +148,23 @@ public class ChannelPowerHandler {
         if (event.getLevel().isClientSide()) return;
         if (!(event.getEntity() instanceof Projectile projectile)) return;
         if (!(projectile.getOwner() instanceof Player player)) return;
+        if (projectile.getPersistentData().getBoolean(CHANNELLED)) return;
 
         Channel channel = CHANNELS.get(player.getUUID());
-        if (channel == null || channel.startedAt < 0) return;
+        if (channel == null || channel.startedAt < 0
+                || player.level().getGameTime() - channel.lastSeen > 1) return;
         long heldTicks = Math.max(0, player.level().getGameTime() - channel.startedAt);
         if (heldTicks <= 0) return;
 
-        if (PROJECTILE_BONUS.size() > MAX_TRACKED_PROJECTILES) {
-            PROJECTILE_BONUS.clear();
-            PROJECTILE_SPLASH.clear();
-        }
+        projectile.getPersistentData().putBoolean(CHANNELLED, true);
 
         if (PowerDispatch.isEquipped(player, RegistryPowers.UNBROKEN_FOCUS)) {
             Power power = RegistryPowers.UNBROKEN_FOCUS.get();
             double perSecond = PowerOverridesManager.valueOr(power, "damage_bonus_per_second", 0.04);
             double cap = PowerOverridesManager.valueOr(power, "damage_bonus_cap", 0.20);
-            double bonus = Math.min(cap, (heldTicks / 20.0) * perSecond);
+            double bonus = Math.min(cap, Math.floor(heldTicks / 20.0) * perSecond);
             if (bonus > 0) {
-                PROJECTILE_BONUS.merge(projectile.getId(), (float) bonus, Float::sum);
+                projectile.getPersistentData().putFloat(PROJECTILE_BONUS, (float) bonus);
                 PowerDispatch.fireProc(player, power);
             }
         }
@@ -161,7 +175,7 @@ public class ChannelPowerHandler {
             double maxBlocks = PowerOverridesManager.valueOr(power, "max_extra_blocks", 3.0);
             double blocks = Math.min(maxBlocks, Math.floor(heldTicks / 20.0 / Math.max(1, perStep)));
             if (blocks > 0) {
-                PROJECTILE_SPLASH.put(projectile.getId(), blocks);
+                projectile.getPersistentData().putDouble(PROJECTILE_SPLASH, blocks);
                 PowerDispatch.fireProc(player, power);
             }
         }
@@ -183,25 +197,39 @@ public class ChannelPowerHandler {
         LivingEntity victim = event.getEntity();
         if (victim == null || victim.level().isClientSide()) return;
 
-        Float bonus = PROJECTILE_BONUS.remove(projectile.getId());
-        if (bonus != null && bonus > 0) {
+        float bonus = projectile.getPersistentData().getFloat(PROJECTILE_BONUS);
+        projectile.getPersistentData().remove(PROJECTILE_BONUS);
+        if (Float.isFinite(bonus) && bonus > 0
+                && PowerDispatch.isEquipped(player, RegistryPowers.UNBROKEN_FOCUS)) {
+            bonus = Math.min(bonus, (float) PowerOverridesManager.valueOr(
+                    RegistryPowers.UNBROKEN_FOCUS.get(), "damage_bonus_cap", 0.20));
             event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + bonus)));
         }
 
-        // Siphon Bond — a sustained channel returns part of what it deals.
-        if (PowerDispatch.isEquipped(player, RegistryPowers.SIPHON_BOND)) {
-            Power power = RegistryPowers.SIPHON_BOND.get();
-            double share = PowerOverridesManager.valueOr(power, "heal_share", 0.25);
-            float healed = (float) (event.getAmount() * share);
-            if (healed > 0) {
-                player.heal(healed);
-                PowerDispatch.fireProc(player, power);
-            }
-        }
-
-        Double splash = PROJECTILE_SPLASH.remove(projectile.getId());
-        if (splash != null && splash > 0) {
+        double splash = projectile.getPersistentData().getDouble(PROJECTILE_SPLASH);
+        projectile.getPersistentData().remove(PROJECTILE_SPLASH);
+        if (Double.isFinite(splash) && splash > 0
+                && PowerDispatch.isEquipped(player, RegistryPowers.HARMONIC_RESONANCE)) {
+            splash = Math.min(splash, PowerOverridesManager.valueOr(
+                    RegistryPowers.HARMONIC_RESONANCE.get(), "max_extra_blocks", 3.0));
             applyResonanceSplash(player, victim, event.getAmount(), splash);
+        }
+    }
+
+    /** Heal only from health damage dealt by a projectile that actually came from a channel. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onSiphonDamage(LivingDamageEvent event) {
+        if (event.getAmount() <= 0 || !DamageContext.allowsStandardOutgoingModifiers()) return;
+        if (!(event.getSource().getDirectEntity() instanceof Projectile projectile)
+                || !projectile.getPersistentData().getBoolean(CHANNELLED)
+                || !(projectile.getOwner() instanceof Player player) || player.level().isClientSide()
+                || !PowerDispatch.isEquipped(player, RegistryPowers.SIPHON_BOND)) return;
+        Power power = RegistryPowers.SIPHON_BOND.get();
+        float actual = Math.min(event.getAmount(), Math.max(0, event.getEntity().getHealth()));
+        float healed = (float) (actual * PowerOverridesManager.valueOr(power, "heal_share", 0.25));
+        if (Float.isFinite(healed) && healed > 0) {
+            player.heal(healed);
+            PowerDispatch.fireProc(player, power);
         }
     }
 

@@ -5,6 +5,38 @@ import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;
 
 public class HandlerResources {
+    public static final ResourceLocation TOM_ARTIFICERS_POISE_PERK = create("textures/skill/tinkering/tom_artificers_poise.png");
+    public static final ResourceLocation TOM_PRESSURE_READER_PERK = create("textures/skill/wisdom/tom_pressure_reader.png");
+    public static final ResourceLocation SM_MANY_FORMS_ONE_HAND_PERK = create("textures/skill/wisdom/sm_many_forms_one_hand.png");
+    public static final ResourceLocation SM_BREACH_READER_PERK = create("textures/skill/wisdom/sm_breach_reader.png");
+    public static final ResourceLocation SM_LONG_MEASURE_PERK = create("textures/skill/dexterity/sm_long_measure.png");
+    public static final ResourceLocation SS_RETURNING_GRIP_PERK = create("textures/skill/dexterity/ss_returning_grip.png");
+    public static final ResourceLocation TOM_RELIC_DISCIPLINE_PERK = create("textures/skill/strength/tom_relic_discipline.png");
+    public static final ResourceLocation SS_GEMGUARD_PERK = create("textures/skill/constitution/ss_gemguard.png");
+    public static final ResourceLocation SS_AWAKE_AND_READY_PERK = create("textures/skill/endurance/ss_awake_and_ready.png");
+    public static final ResourceLocation SS_SPELLSTEEL_DISCIPLINE_PERK = create("textures/skill/magic/ss_spellsteel_discipline.png");
+    public static final ResourceLocation TOM_AQUA_ATTUNEMENT_PERK = create("textures/skill/magic/tom_aqua_attunement.png");
+    public static final ResourceLocation TIDE_MANY_WATERS_PERK = create("textures/skill/endurance/tide_many_waters.png");
+    public static final ResourceLocation SS_MEASURED_STEEL_PERK = create("textures/skill/strength/ss_measured_steel.png");
+    public static final ResourceLocation SM_COUNTERGRIP_PERK = create("textures/skill/dexterity/sm_countergrip.png");
+    public static final ResourceLocation SM_MEASURED_BLOWS_PERK = create("textures/skill/tinkering/sm_measured_blows.png");
+    public static final ResourceLocation SS_RELIC_CARE_PERK = create("textures/skill/tinkering/ss_relic_care.png");
+    public static final ResourceLocation SM_RELIC_CARE_PERK = create("textures/skill/tinkering/sm_relic_care.png");
+    public static final ResourceLocation SM_COUCHED_DISCIPLINE_PERK = create("textures/skill/strength/sm_couched_discipline.png");
+    public static final ResourceLocation SM_SADDLEWARD_PERK = create("textures/skill/constitution/sm_saddleward.png");
+    public static final ResourceLocation TOM_MEASURED_CURRENT_PERK = create("textures/skill/endurance/tom_measured_current.png");
+    public static final ResourceLocation TOM_CHANGING_TIDES_PERK = create("textures/skill/wisdom/tom_changing_tides.png");
+    public static final ResourceLocation TOM_BOUND_COMPANION_PERK = create("textures/skill/constitution/tom_bound_companion.png");
+    public static final ResourceLocation TIDE_SURE_LINE_PERK = create("textures/skill/dexterity/tide_sure_line.png");
+    public static final ResourceLocation TOM_TALENT_COMPOSURE_PERK = create("textures/skill/intelligence/tom_talent_composure.png");
+    public static final ResourceLocation TIDE_READ_THE_WATER_PERK = create("textures/skill/wisdom/tide_read_the_water.png");
+    public static final ResourceLocation TIDE_FIELD_NATURALIST_PERK = create("textures/skill/wisdom/tide_field_naturalist.png");
+    public static final ResourceLocation SS_PATIENT_TEMPER_PERK = create("textures/skill/tinkering/ss_patient_temper.png");
+    public static final ResourceLocation SS_RESONANT_READING_PERK = create("textures/skill/wisdom/ss_resonant_reading.png");
+    public static final ResourceLocation TIDE_MEASURED_CAST_PERK = create("textures/skill/dexterity/tide_measured_cast.png");
+    public static final ResourceLocation TIDE_PATIENT_HANDS_PERK = create("textures/skill/tinkering/tide_patient_hands.png");
+    public static final ResourceLocation TIDE_CAREFUL_LANDING_PERK = create("textures/skill/endurance/tide_careful_landing.png");
+    public static final ResourceLocation TIDE_BAITKEEPER_PERK = create("textures/skill/fortune/tide_baitkeeper.png");
     public static final ResourceLocation[] PERK_PAGE = new ResourceLocation[]{
             create("textures/gui/container/skill_page_1.png"),
             create("textures/gui/container/skill_page_2.png"),

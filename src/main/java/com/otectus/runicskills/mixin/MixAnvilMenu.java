@@ -1,6 +1,11 @@
 package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.registry.events.AnvilPerkHandler;
+import com.otectus.runicskills.integration.common.RelicCare;
+import com.llamalad7.mixinextras.injector.wrapoperation.*;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -56,11 +61,19 @@ public abstract class MixAnvilMenu extends ItemCombinerMenu {
     private String itemName;
 
     @Inject(method = "createResult", at = @At("RETURN"))
-    private void runicskills$applyAnvilPerks(CallbackInfo ci) {
-        boolean changed = AnvilPerkHandler.onAnvilResult(this.player, this.inputSlots.getItem(0),
+    private void runicskills$applyAnvilPerks(CallbackInfo ci, @Share("nativeRepair") LocalBooleanRef nativeRepair) {
+        boolean changed = RelicCare.refine(this.player, this.inputSlots.getItem(0), this.resultSlots.getItem(0), nativeRepair.get());
+        changed |= AnvilPerkHandler.onAnvilResult(this.player, this.inputSlots.getItem(0),
                 this.inputSlots.getItem(1), this.itemName, this.resultSlots);
         if (changed) {
             this.broadcastChanges();
         }
+    }
+    @WrapOperation(method = "createResult", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/item/ItemStack;setDamageValue(I)V"), require = 1)
+    private void runicskills$nativeRepair(ItemStack stack, int damage, Operation<Void> original,
+            @Share("nativeRepair") LocalBooleanRef nativeRepair) {
+        if (damage < stack.getDamageValue()) nativeRepair.set(true);
+        original.call(stack, damage);
     }
 }

@@ -1,6 +1,7 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.combat.CombatDiagnostics;
+import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.combat.DamageContext;
 import com.otectus.runicskills.common.combat.DamageMath;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
@@ -48,6 +49,7 @@ import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -98,8 +100,9 @@ public class PerkEffectsHandler {
     private static final java.util.Map<java.util.UUID, Long> LAST_KILL_TICK = new java.util.concurrent.ConcurrentHashMap<>();
     /** Game time MYTHICAL_BERSERKER's bonus-damage window opened; it runs {@link #BERSERK_WINDOW} ticks. */
     private static final java.util.Map<java.util.UUID, Long> BERSERK_SINCE = new java.util.concurrent.ConcurrentHashMap<>();
-    /** Game time a survive-lethal perk (UNDYING_WILL / MYTHICAL_BERSERKER) last triggered. */
-    private static final java.util.Map<java.util.UUID, Long> SURVIVE_COOLDOWN = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Both survival perks spend the same saved lockout, so swapping perks or reconnecting cannot
+     * turn their once-per-minute rescue into unlimited totems. */
+    private static final String SURVIVE_COOLDOWN = "runicskills.survive_lethal";
 
     /** MYTHICAL_BERSERKER's post-survival damage window, in ticks. */
     private static final long BERSERK_WINDOW = 100L;
@@ -122,7 +125,6 @@ public class PerkEffectsHandler {
         LAST_DODGE_TICK.remove(id);
         LAST_KILL_TICK.remove(id);
         BERSERK_SINCE.remove(id);
-        SURVIVE_COOLDOWN.remove(id);
         ADAPT_SOURCE.remove(id);
         ADAPT_COUNT.remove(id);
         LAST_CRIT_TICK.remove(id);
@@ -133,8 +135,7 @@ public class PerkEffectsHandler {
      * Clears the in-combat windows a death should end, and nothing else. Called from
      * PlayerLifecycleHandler when a clone was a death.
      *
-     * <p>{@link #SURVIVE_COOLDOWN} is deliberately kept: a cooldown that reset on death would make
-     * dying the way to ready the survive-lethal perk again. {@link #XP_CARRY} is kept because it is
+     * <p>The survival lockout lives on the saved capability. {@link #XP_CARRY} is kept because it is
      * banked progression, not a combat state.
      */
     public static void clearCombatWindows(java.util.UUID id) {
@@ -154,7 +155,6 @@ public class PerkEffectsHandler {
         LAST_DODGE_TICK.clear();
         LAST_KILL_TICK.clear();
         BERSERK_SINCE.clear();
-        SURVIVE_COOLDOWN.clear();
         ADAPT_SOURCE.clear();
         ADAPT_COUNT.clear();
         LAST_CRIT_TICK.clear();
@@ -267,14 +267,9 @@ public class PerkEffectsHandler {
         }
         // OBSIDIAN_SKIN — flat bonus damage reduction (all sources).
         if (on(RegistryPerks.OBSIDIAN_SKIN, player)) reduction += (float) (c.obsidianSkinPercent / 100.0);
-        // MANA_SHIELD — "absorbed by mana instead of health", so something has to actually be
-        // spent. It was a flat damage reduction with no cost at all, which is a strictly better
-        // and completely different perk (RS10-004).
-        //
-        // Where a magic mod supplies a mana pool the Powers layer already reads it; where none is
-        // installed the resource this mod itself runs on is vanilla XP — skill levels are bought
-        // with XP points — so that is what the shield drains. Either way the defining property
-        // holds: the damage is paid for, and when the player is empty the shield stops working.
+        // MANA_SHIELD spends vanilla XP at the configured per-health-point rate. This perk's
+        // resource is independent of other magic mods' mana pools; an empty XP reserve grants
+        // no protection. Preserve that configured currency and state it explicitly in the UI.
         if (on(RegistryPerks.MANA_SHIELD, player)) {
             float share = (float) Math.min(0.95, c.manaShieldPercent / 100.0);
             float wanted = event.getAmount() * share;
@@ -286,7 +281,9 @@ public class PerkEffectsHandler {
                     // Partial absorption when the player cannot cover the whole hit: the shield
                     // should thin out as the pool empties, not switch off at a cliff.
                     int spent = Math.min(cost, available);
-                    float absorbed = spent / (float) perHalfHeart;
+                    // Paying whole XP points must not round the shield's damage share upward:
+                    // a 5% shield on a one-point hit used to absorb the entire hit for one XP.
+                    float absorbed = Math.min(wanted, spent / (float) perHalfHeart);
                     com.otectus.runicskills.network.packet.common.SkillLevelUpSP.addPlayerXP(player, -spent);
                     event.setAmount(DamageMath.safeAmount(event.getAmount(), Math.max(0.0f, event.getAmount() - absorbed)));
                 }
@@ -1295,13 +1292,6 @@ public class PerkEffectsHandler {
                     "outgoing perk bonuses");
         }
 
-        // BLOOD_FURY — "Critical hits steal a share of the damage dealt as health", so it requires
-        // a critical hit. It used to fire on every melee blow, which is a strictly stronger and
-        // quite different perk (RS10-004).
-        if (melee && isCriticalSwing(player) && on(RegistryPerks.BLOOD_FURY, player)) {
-            float steal = event.getAmount() * (float) (c.bloodFuryPercent / 100.0);
-            if (steal > 0) player.heal(steal);
-        }
         // TRACKING — damaged enemies glow briefly (vanilla outline renders through walls; no client code).
         if (on(RegistryPerks.TRACKING, player))
             target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false));
@@ -1327,6 +1317,19 @@ public class PerkEffectsHandler {
     }
 
     // ── food ──────────────────────────────────────────────────────────────────────
+    /** Blood Fury pays from actual critical health damage after armor/absorption, not from an
+     * attempted hit that another listener may still absorb or cancel. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onBloodFuryDamage(LivingDamageEvent event) {
+        if (event.getAmount() <= 0 || !DamageContext.allowsStandardOutgoingModifiers()) return;
+        if (!(event.getSource().getDirectEntity() instanceof ServerPlayer player)
+                || event.getSource().getEntity() != player || player instanceof FakePlayer
+                || !isCriticalSwing(player) || !on(RegistryPerks.BLOOD_FURY, player)) return;
+        float actual = Math.min(event.getAmount(), Math.max(0, event.getEntity().getHealth()));
+        float steal = actual * (float) (cfg().bloodFuryPercent / 100.0);
+        if (Float.isFinite(steal) && steal > 0) player.heal(steal);
+    }
+
     private static final MobEffect[] BUFFS = {
             MobEffects.MOVEMENT_SPEED, MobEffects.DIG_SPEED, MobEffects.DAMAGE_BOOST,
             MobEffects.REGENERATION, MobEffects.DAMAGE_RESISTANCE, MobEffects.LUCK };
@@ -1456,16 +1459,16 @@ public class PerkEffectsHandler {
     public void onCriticalHit(CriticalHitEvent event) {
         Player player = event.getEntity();
         if (player instanceof FakePlayer) return;
-        // CRITICAL_MASTERY — chance to force a critical hit that wasn't already a vanilla crit.
-        if (!event.isVanillaCritical() && on(RegistryPerks.CRITICAL_MASTERY, player)
-                && player.getRandom().nextDouble() < cfg().criticalMasteryPercent / 100.0)
-            event.setResult(Event.Result.ALLOW);
-
         // Remember that this swing crit, so BLOOD_FURY can require one. The damage event that
         // follows carries no crit flag, and this handler runs immediately before it for the same
         // attack — so the tick number is an exact marker, not a heuristic.
-        if (event.isVanillaCritical() || event.getResult() == Event.Result.ALLOW) {
+        if (event.getResult() != Event.Result.DENY
+                && (event.isVanillaCritical() || event.getResult() == Event.Result.ALLOW)) {
             LAST_CRIT_TICK.put(player.getUUID(), player.level().getGameTime());
+        } else {
+            // Several attacks can occur during one tick; an earlier critical swing must not
+            // grant Blood Fury to every subsequent ordinary swing in that tick.
+            LAST_CRIT_TICK.remove(player.getUUID());
         }
     }
 
@@ -1559,9 +1562,10 @@ public class PerkEffectsHandler {
         level.addFreshEntity(second);
     }
 
-    // ── death: survive-lethal (victim) and on-kill rewards (killer) ─────────────────────
-    @SubscribeEvent
-    public void onDeath(LivingDeathEvent event) {
+    // Rewards run after resurrection listeners so a rescued victim never counts as a kill.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
+    public void onKillRewards(LivingDeathEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
         if (event.getSource().getEntity() instanceof Player killer && !(killer instanceof FakePlayer)) {
             if (on(RegistryPerks.BLOODLUST, killer)) LAST_KILL_TICK.put(killer.getUUID(), killer.level().getGameTime());
             // STALWART_STRIKER — "Killing dungeon mobs restores health", so the kill has to happen
@@ -1572,25 +1576,39 @@ public class PerkEffectsHandler {
                     && insideADungeon(killer))
                 killer.heal((float) val(RegistryPerks.STALWART_STRIKER, killer, 0));
         }
+    }
+
+    // ── death: survive-lethal (victim) ──────────────────────────────────────────────
+    @SubscribeEvent
+    public void onDeath(LivingDeathEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
         if (event.getEntity() instanceof Player player && !(player instanceof FakePlayer)) {
             java.util.UUID uid = player.getUUID();
             long now = player.level().getGameTime();
-            if (!GameTimeWindow.ready(now, SURVIVE_COOLDOWN.get(uid), SURVIVE_LOCKOUT)) return; // not a permanent totem
+            SkillCapability cap = SkillCapability.get(player);
+            if (cap == null || cap.getCooldown(SURVIVE_COOLDOWN) > 0
+                    || event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
             HandlerCommonConfig c = cfg();
             boolean survived = false;
-            if (on(RegistryPerks.MYTHICAL_BERSERKER, player)) {
+            if (on(RegistryPerks.PHOENIX_RISING, player)) {
                 survived = true;
-                BERSERK_SINCE.put(uid, now);
+            } else if (on(RegistryPerks.MYTHICAL_BERSERKER, player)) {
+                survived = true;
             } else if (on(RegistryPerks.UNDYING_WILL, player)
                     && player.getRandom().nextDouble() < c.undyingWillPercent / 100.0) {
                 survived = true;
             }
             if (survived) {
                 event.setCanceled(true);
-                player.setHealth(1.0f);
+                float recovery = on(RegistryPerks.PHOENIX_RISING, player)
+                        ? player.getMaxHealth() * c.phoenixRisingPercent / 100.0f : 1.0f;
+                player.setHealth(Math.max(1.0f, Math.min(player.getMaxHealth(), recovery)));
+                if (on(RegistryPerks.MYTHICAL_BERSERKER, player)) BERSERK_SINCE.put(uid, now);
                 player.removeAllEffects();
                 player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1));
-                SURVIVE_COOLDOWN.put(uid, now);
+                cap.setCooldown(SURVIVE_COOLDOWN, (int) SURVIVE_LOCKOUT);
+                if (player instanceof ServerPlayer serverPlayer)
+                    com.otectus.runicskills.network.packet.client.SyncSkillCapabilityCP.send(serverPlayer);
             }
         }
     }
@@ -1602,18 +1620,6 @@ public class PerkEffectsHandler {
         // POISON_IMMUNITY — never receive the Poison effect (boolean perk).
         if (on(RegistryPerks.POISON_IMMUNITY, player) && event.getEffectInstance().getEffect() == MobEffects.POISON)
             event.setResult(Event.Result.DENY);
-    }
-
-    // ── respawn ──────────────────────────────────────────────────────────────────────
-    @SubscribeEvent
-    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        Player player = event.getEntity();
-        if (player instanceof FakePlayer) return;
-        // PHOENIX_RISING — respawn with a fraction of max health instead of full.
-        if (on(RegistryPerks.PHOENIX_RISING, player)) {
-            float hp = player.getMaxHealth() * (cfg().phoenixRisingPercent / 100.0f);
-            player.setHealth(Math.max(1.0f, Math.min(player.getMaxHealth(), hp)));
-        }
     }
 
     private static boolean isBoss(net.minecraft.world.entity.Entity e) {

@@ -28,6 +28,16 @@ public final class ConfigClamps {
     public static int apply(Class<?> type, Object target, Consumer<String> warn) {
         int corrected = 0;
         for (Field field : type.getFields()) {
+            StringChoices choices = field.getAnnotation(StringChoices.class);
+            if (choices != null && field.getType() == String.class) {
+                try {
+                    if (!java.util.Arrays.asList(choices.value()).contains(field.get(target))) {
+                        field.set(target, choices.fallback());
+                        corrected++;
+                        warn.accept(field.getName() + " is not an allowed choice; using " + choices.fallback() + ".");
+                    }
+                } catch (ReflectiveOperationException e) { warn.accept("could not validate " + field.getName()); }
+            }
             Clamp clamp = field.getAnnotation(Clamp.class);
             if (clamp == null) continue;
             try {

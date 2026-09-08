@@ -30,8 +30,8 @@ public class PerkGroupsSyncCP {
         this.groups = new ArrayList<>(PerkGroupManager.all());
     }
 
-    private static final int MAX_GROUPS = 4096;
-    private static final int MAX_PERKS_PER_GROUP = 8192;
+    private static final int MAX_GROUPS = PerkGroup.MAX_GROUPS;
+    private static final int MAX_PERKS_PER_GROUP = PerkGroup.MAX_PERKS_PER_GROUP;
 
     public PerkGroupsSyncCP(FriendlyByteBuf buffer) {
         int count = buffer.readVarInt();

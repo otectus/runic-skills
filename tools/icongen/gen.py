@@ -8,12 +8,12 @@ Char scheme in glyph grids:
   '.' transparent   '#' outline   '1','2','3' primary dark/mid/light
   'a','b','c' secondary dark/mid/light   'w' white highlight
 """
-import os, sys, json
-from PIL import Image, ImageDraw
+import os
+from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUTLINE = (24, 18, 28, 255)
-WHITE = (255, 255, 255, 255)
+OUTLINE = (27, 23, 39, 255)
+WHITE = (255, 246, 220, 255)
 
 # name -> (dark, mid, light)
 PALETTES = {
@@ -45,21 +45,21 @@ PALETTES = {
     'redstone': ((112, 12, 12), (202, 32, 22), (255, 92, 72)),
     'amethyst': ((104, 46, 140), (170, 100, 214), (224, 170, 252)),
     'pink':     ((150, 50, 90), (220, 100, 150), (250, 170, 205)),
-    'night':    ((22, 27, 62), (48, 58, 115), (95, 110, 185)),
-    'shadow':   ((32, 32, 40), (62, 62, 75), (100, 100, 115)),
+    'night':    ((44, 53, 94), (81, 99, 158), (148, 166, 223)),
+    'shadow':   ((59, 64, 79), (105, 113, 132), (179, 187, 205)),
     'leather':  ((86, 55, 30), (135, 90, 52), (185, 135, 88)),
     'slate':    ((44, 48, 58), (78, 85, 100), (120, 130, 148)),
-    'obsidian': ((26, 18, 40), (54, 40, 78), (92, 72, 125)),
+    'obsidian': ((65, 48, 86), (109, 78, 141), (168, 131, 198)),
     'prismarine':((22, 92, 88), (52, 158, 148), (118, 218, 205)),
     'diamond':  ((28, 120, 130), (70, 200, 210), (160, 248, 250)),
-    'void':     ((20, 10, 34), (48, 26, 76), (96, 60, 136)),
+    'void':     ((48, 33, 70), (89, 60, 122), (152, 112, 187)),
     'sand':     ((150, 128, 72), (208, 184, 118), (240, 224, 168)),
     'orange':   ((160, 82, 14), (226, 132, 34), (252, 186, 92)),
 }
 
 def load_glyphs():
     glyphs = {}
-    for fn in ('glyphs1.txt', 'glyphs2.txt', 'glyphs3.txt'):
+    for fn in ('glyphs1.txt', 'glyphs2.txt', 'glyphs3.txt', 'glyphs4.txt'):
         cur = None
         rows = []
         for line in open(os.path.join(HERE, fn)):
@@ -75,11 +75,14 @@ def load_glyphs():
                 rows.append(line)
         if cur:
             glyphs[cur] = rows
-    # normalize: pad rows to 16 chars, pad/trim to 16 rows
+    # Short rows are transparent padding, never a resize. Reject overflow rather than silently
+    # cutting off authored pixels, which hid malformed glyphs in the previous generator.
     errs = []
     valid = set('.#123abcw')
     for name in list(glyphs):
-        rows = [r[:16].ljust(16, '.') for r in glyphs[name][:16]]
+        if len(glyphs[name]) != 16 or any(len(r) > 16 for r in glyphs[name]):
+            errs.append(f'{name}: glyph must contain 16 rows of at most 16 pixels')
+        rows = [r.ljust(16, '.') for r in glyphs[name]]
         while len(rows) < 16:
             rows.append('.' * 16)
         for i, r in enumerate(rows):
@@ -91,6 +94,11 @@ def load_glyphs():
 
 # Badges: 7x7 grids, '.'=transparent, '#'=outline, '1','2','3'=badge ramp, 'w'=white
 BADGES = {
+    'anchorb': ['..###..', '..#3#..', '..#3#..', '#.#3#.#', '#3#3#3#', '.#333#.', '..###..'],
+    'arrowb': ['...#...', '..#3#..', '.#333#.', '#33333#', '..#3#..', '..#3#..', '..###..'],
+    'arrowsb': ['..#.#..', '.#3#3#.', '#33#33#', '.#3#3#.', '..#.#..', '.......', '.......'],
+    'burstb': ['#..#..#', '.##3##.', '.#333#.', '#33w33#', '.#333#.', '.##3##.', '#..#..#'],
+    'pawb': ['.#...#.', '#3#.#3#', '.#.#.#.', '..#3#..', '.#333#.', '.#333#.', '..###..'],
     'plus': [
         '..###..',
         '..#3#..',
@@ -121,7 +129,7 @@ BADGES = {
     'clockb': [
         '.#####.',
         '#33333#',
-        '#3#3#3#',  # placeholder replaced below
+        '#3#333#',
         '#3#333#',
         '#33333#',
         '.#####.',
@@ -272,17 +280,13 @@ BADGES = {
         '..#3#..',
     ],
 }
-BADGES['clockb'] = [
-    '.#####.',
-    '#33333#',
-    '#3#3333',
-    '#3##333',
-    '#33333#',
-    '.#####.',
-    '.......',
-]
-
 def render_icon(glyph_rows, prim, sec, badge=None, badge_pal=None, glyphs=None):
+    """Carved silhouettes with consistent upper-left light and an ink contour.
+
+    The authored masks remain at native resolution. Surface bevels replace flat fills with a
+    three-tone ramp; no blur, resampling, random marks or identifier hashes enter the artwork.
+    The action badge has its own material ramp and is separated by a one-pixel ink keyline.
+    """
     img = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     px = img.load()
     p = PALETTES[prim]
@@ -296,117 +300,41 @@ def render_icon(glyph_rows, prim, sec, badge=None, badge_pal=None, glyphs=None):
     for y, row in enumerate(glyph_rows):
         for x, ch in enumerate(row):
             if ch != '.':
-                px[x, y] = cmap[ch]
+                color = cmap[ch]
+                if ch in '123abc':
+                    family = '123' if ch in '123' else 'abc'
+                    ramp = p if ch in '123' else s
+                    def same(nx, ny):
+                        return 0 <= nx < 16 and 0 <= ny < 16 and glyph_rows[ny][nx] in family
+                    # A lit north/west lip and dark south/east bevel give even a small tool head
+                    # or leaf a readable carved shape. Explicit dark marks remain authored cuts.
+                    tone = 0 if ch in '1a' else 2 if not same(x, y - 1) or not same(x - 1, y) \
+                        else 0 if not same(x, y + 1) or not same(x + 1, y) else 1
+                    color = ramp[tone] + (255,)
+                px[x, y] = color
     if badge:
         b = BADGES[badge]
         bp = PALETTES[badge_pal or 'gold']
-        bmap = {'#': OUTLINE, '1': bp[0] + (255,), '2': bp[1] + (255,), '3': bp[1] + (255,), 'w': WHITE}
+        bmap = {'#': OUTLINE, '1': bp[0] + (255,), '2': bp[1] + (255,), '3': bp[2] + (255,), 'w': WHITE}
         bh, bw = len(b), len(b[0])
         ox, oy = 16 - bw, 16 - bh
         for y, row in enumerate(b):
             for x, ch in enumerate(row):
                 if ch != '.':
-                    px[ox + x, oy + y] = bmap.get(ch, OUTLINE)
+                    if ch not in bmap:
+                        raise ValueError(f'unknown badge pixel {ch!r} in {badge}')
+                    color = bmap[ch]
+                    if ch == '3' and y > 0 and b[y - 1][x] in '123w':
+                        color = bp[1 if y < bh - 2 else 0] + (255,)
+                    px[ox + x, oy + y] = color
     return img
 
 def main():
-    glyphs, errs = load_glyphs()
-    if errs:
-        print('GLYPH ERRORS:')
-        for e in errs:
-            print(' ', e)
-        sys.exit(1)
-    print(f'{len(glyphs)} glyphs OK')
-    if len(sys.argv) > 1 and sys.argv[1] == 'sheet-glyphs':
-        # contact sheet of raw glyphs in steel/gold
-        names = sorted(glyphs)
-        cols = 10
-        rows = (len(names) + cols - 1) // cols
-        cell = 16 * 6 + 24
-        sheet = Image.new('RGBA', (cols * cell, rows * cell + 10), (40, 40, 46, 255))
-        d = ImageDraw.Draw(sheet)
-        for i, n in enumerate(names):
-            icon = render_icon(glyphs[n], 'steel', 'gold')
-            big = icon.resize((96, 96), Image.NEAREST)
-            cx, cy = (i % cols) * cell + 12, (i // cols) * cell + 4
-            sheet.paste(big, (cx, cy), big)
-            d.text((cx, cy + 98), n, fill=(230, 230, 230, 255))
-        sheet.save(os.path.join(HERE, 'sheet_glyphs.png'))
-        print('wrote sheet_glyphs.png')
-        return
-    # full spec generation: perk specs + passive specs share one uniqueness space
-    def read_specs(fn):
-        out = []
-        for line in open(os.path.join(HERE, fn)):
-            line = line.rstrip('\n')
-            if not line or line.startswith('#'):
-                continue
-            parts = line.split('\t')
-            pid, glyph, prim, sec, badge, bpal = (parts + [''] * 6)[:6]
-            out.append((pid, glyph, prim, sec or None, badge or None, bpal or None))
-        return out
+    # The historical entrypoint now regenerates shipped icons directly; there is no manual-copy
+    # step capable of leaving source artwork newer than the textures in the jar.
+    import build
+    build.main()
 
-    perk_specs = read_specs('specs.tsv')
-    passive_specs = read_specs('specs_passives.tsv') if os.path.exists(os.path.join(HERE, 'specs_passives.tsv')) else []
-    manifest = {p['id']: p for p in json.load(open(os.path.join(HERE, 'perks_manifest.json')))}
-    passives = {p['id']: p for p in json.load(open(os.path.join(HERE, 'passives_manifest.json')))} \
-        if passive_specs else {}
-    # validation
-    bad = False
-    seen = {}
-    for kind, specs, ids in (('perk', perk_specs, manifest), ('passive', passive_specs, passives)):
-        for pid, glyph, prim, sec, badge, bpal in specs:
-            if pid not in ids:
-                print(f'unknown {kind}', pid); bad = True
-            if glyph not in glyphs:
-                print('unknown glyph', glyph, 'for', pid); bad = True
-            for pal in (prim, sec, bpal):
-                if pal and pal not in PALETTES:
-                    print('unknown palette', pal, 'for', pid); bad = True
-            if badge and badge not in BADGES:
-                print('unknown badge', badge, 'for', pid); bad = True
-            key = (glyph, prim, sec, badge, bpal)
-            if key in seen:
-                print('DUPLICATE combo', key, ':', seen[key], 'vs', f'{kind}:{pid}'); bad = True
-            seen[key] = f'{kind}:{pid}'
-        missing = set(ids) - {s[0] for s in specs}
-        if missing:
-            print(f'{kind}s missing specs:', len(missing), sorted(missing)[:30]); bad = True
-    if bad:
-        sys.exit(1)
-    outdir = os.path.join(HERE, 'out')
-    os.makedirs(outdir, exist_ok=True)
-    per_skill = {}
-    for pid, glyph, prim, sec, badge, bpal in perk_specs:
-        skill = manifest[pid]['skill']
-        img = render_icon(glyphs[glyph], prim, sec, badge, bpal)
-        os.makedirs(os.path.join(outdir, skill), exist_ok=True)
-        img.save(os.path.join(outdir, skill, pid + '.png'))
-        per_skill.setdefault(skill, []).append((pid, img))
-    passive_items = []
-    for pid, glyph, prim, sec, badge, bpal in passive_specs:
-        skill, fname = passives[pid]['skill'], passives[pid]['file']
-        img = render_icon(glyphs[glyph], prim, sec, badge, bpal)
-        os.makedirs(os.path.join(outdir, skill), exist_ok=True)
-        img.save(os.path.join(outdir, skill, fname))
-        passive_items.append((pid, img))
-    if passive_items:
-        per_skill['passives'] = sorted(passive_items)
-    # contact sheets per skill
-    for skill, items in per_skill.items():
-        items.sort()
-        cols = 8
-        rows = (len(items) + cols - 1) // cols
-        cell_w, cell_h = 170, 122
-        sheet = Image.new('RGBA', (cols * cell_w, rows * cell_h + 8), (40, 40, 46, 255))
-        d = ImageDraw.Draw(sheet)
-        for i, (pid, icon) in enumerate(items):
-            big = icon.resize((96, 96), Image.NEAREST)
-            cx, cy = (i % cols) * cell_w + 8, (i // cols) * cell_h + 6
-            sheet.paste(big, (cx, cy), big)
-            d.text((cx, cy + 100), pid[:26], fill=(235, 235, 235, 255))
-        sheet.save(os.path.join(HERE, f'sheet_{skill}.png'))
-    print(f'generated {len(perk_specs)} perk + {len(passive_specs)} passive icons + {len(per_skill)} sheets')
 
 if __name__ == '__main__':
     main()

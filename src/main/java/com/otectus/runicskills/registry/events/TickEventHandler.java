@@ -44,6 +44,11 @@ public class TickEventHandler {
         }
 
         serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(provider -> {
+            provider.tickCooldowns();
+            if (RegistryPerks.COUNTER_ATTACK == null
+                    || !RegistryPerks.COUNTER_ATTACK.get().isEnabled(serverPlayer)) {
+                provider.clearCounterAttack();
+            }
             // The Counter Attack window is now the cooldown itself, so tickCooldowns() expires
             // it. All that is left here is retiring the retaliation bonus when it closes.
             // amplifyAttribute reports whether it actually changed anything, so the resync
@@ -53,7 +58,6 @@ public class TickEventHandler {
                             0.0F, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(false)) {
                 SyncSkillCapabilityCP.send(serverPlayer);
             }
-            provider.tickCooldowns();
         });
 
         // These two rebuild an attribute modifier every tick. They are cheap now only because

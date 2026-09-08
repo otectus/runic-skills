@@ -138,6 +138,11 @@ about their own build is worse than one they cannot see.
 | 8.13 | Powers panel | | Every Power has its own icon, not the placeholder square. A row pulses when **your** Power fires and not when someone else's does. Denial reasons read as sentences. Tab and arrow keys reach the equip buttons; the narrator reads them. |
 | 8.14 | Set the language to `de_de`, hover a skill on the Skills screen | | The level-up tooltip reads as German text. A literal `%s` here is the placeholder-arity bug returning. |
 | 8.15 | Scroll a Powers column past its last row, then back | | The list starts moving again on the first scroll back, with no dead zone. |
+| 8.16 | Main Skills overview at GUI scales 1–4 | | Powers is a 20×20 icon-only button inset 6 GUI pixels from the upper-right corner; the 16×16 emblem and every Perk/Passive pixel scale evenly. Long player/XP text clears the control and is available in the header tooltip. |
+| 8.17 | Hover, keyboard focus, narration and temporary unavailable capability | | Powers shows a pale-green hover edge, gold focus edge, localized tooltip/name, Enter/Space activation and a dim disabled state. Detail/title headers keep their existing controls. Escape returns from Powers to the originating Skills overview. |
+| 8.18 | Equip/unequip on a server with visible latency | | After each acknowledgement the button changes between Equip/Unequip without scrolling or reopening. Keyboard focus remains usable. A rejected request leaves the authoritative selection unchanged. |
+| 8.19 | Disable an equipped Power with hiding enabled; remove an addon's equipped Power | | A disabled equipped row remains available to unequip. The missing-addon recovery control identifies the next unavailable id in its tooltip and reclaims one slot per accepted click. |
+| 8.20 | Hover late-row Perks/Passives and a tuned Power | | Later icons never overpaint the tooltip. Server tuning is labeled, uses readable units and bounded/wrapped lines, and the displayed governing-skill requirement follows its override. |
 
 ---
 

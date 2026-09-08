@@ -57,12 +57,27 @@ The `reproducible-build` job builds the same commit in two independent container
 distributable hashes differ. It runs on `v*` tags and on manual dispatch, not on every push — it is
 two full cold builds.
 
+## Stable compilation and optional runtime profiles
+
+Tinkers and Mantle compile against the stable API through immutable official Modrinth versions
+`tinkers-construct:kJ9LD194` (3.11.2.166) and `mantle:E5Nuh0oh` (1.11.97). Their SHA-512 hashes
+match the original SlimeKnights stable jars exactly. Runtime profiles retain the SlimeKnights
+coordinates in `gradle.properties`. Distinct module identities prevent ForgeGradle's shared
+`__obfuscated` configuration from evicting the stable compiler input when beta runtime is selected.
+Update and verify both identities together when deliberately raising the minimum supported API.
+
+Main Java compilation disables javac's incremental mode and declares the annotation processor's
+aggregate refmap as a required task output. An ABI-identical classpath change must not clean the
+temporary refmap and then skip all annotation processing. Gradle still skips the whole compile
+task when its inputs and required outputs are unchanged; changed inputs regenerate the complete
+refmap before the strict remapping and shipped-jar checks run.
+
 ## MixinExtras is a bundled dependency, not a Forge-supplied one
 
 Forge 1.20.1 47.x does not provide MixinExtras — confirmed absent from the launcher libraries and
-from the forge/fmlcore/fmlearlydisplay jars of the 47.4.22 runtime in a live pack — yet seven
+from the forge/fmlcore/fmlearlydisplay jars of the 47.4.22 runtime in a live pack — yet ten
 mixins depend on its injector annotations
-(`MixItemStack`, `MixGrindstoneMenu`, `MixExperienceOrb`, `MixModifiableBowItem`,
+(`MixItemStack`, `MixGrindstoneMenu`, `MixPlayerAction`, `MixAbstractContainerMenu`, `MixTinkerStationBlockEntity`, `MixExperienceOrb`, `MixModifiableBowItem`,
 `MixModifiableCrossbowItem`, `MixThrowingModule`, `MixToolHarvestLogic`). `mixinextras-forge` is
 declared as a `jarJar` dependency for exactly this reason: the `jar` task produces a slim, un-bundled
 artifact (`runicskills-<version>-slim.jar`), and the `jarJar` task produces the distributable

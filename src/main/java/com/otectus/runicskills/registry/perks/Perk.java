@@ -269,7 +269,7 @@ public class Perk {
     }
 
     public boolean isEnabled() {
-        if (this.requiredLevel < 1) return true;
+        if (this.requiredLevel < 1) return false;
         if (com.otectus.runicskills.registry.RegistryPerks.isDisabled(this)) return false;
         SkillCapability cap = SkillCapability.getLocal();
         if (cap == null) return false;

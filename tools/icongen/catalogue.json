@@ -1,0 +1,4888 @@
+[
+  {
+    "path": "textures/skill/building/architect.png",
+    "kind": "perk",
+    "id": "architect",
+    "concept": "Reinforced house — placed blocks gain hardness",
+    "pixels_sha256": "81151fa9012576370bfe94a1d22d363844aadb1dce077ad15531954c6ff35ca5"
+  },
+  {
+    "path": "textures/skill/building/blast_mining.png",
+    "kind": "perk",
+    "id": "blast_mining",
+    "concept": "TNT with loot badge — TNT mining yields more drops",
+    "pixels_sha256": "89e5acbfe3898e4defed6f9fa57618b719cc3718f733f64d51408c280803bef0"
+  },
+  {
+    "path": "textures/skill/building/bridge_builder.png",
+    "kind": "perk",
+    "id": "bridge_builder",
+    "concept": "Bridge with reach-up arrow — placement reach",
+    "pixels_sha256": "2db99bd37e4c2da6ba3293d22948da4d94e0cf41d53fa84319b21db6fd0a5576"
+  },
+  {
+    "path": "textures/skill/building/convergence.png",
+    "kind": "perk",
+    "id": "convergence",
+    "concept": "Crafting gear refunding materials",
+    "pixels_sha256": "14aab9eeb83a5e6ff2d0e635557ca1c67a9dad57c194049114e2ca3d266e5d25"
+  },
+  {
+    "path": "textures/skill/building/deep_core_mining.png",
+    "kind": "perk",
+    "id": "deep_core_mining",
+    "concept": "Dark deepslate pick with bonus drops",
+    "pixels_sha256": "3bd59ded44ef96ca74e8f553b5f59169706649e5b41e26ff335332f93619d6a3"
+  },
+  {
+    "path": "textures/skill/building/earthbreaker.png",
+    "kind": "perk",
+    "id": "earthbreaker",
+    "concept": "Stone-parting pick — bonus mining speed",
+    "pixels_sha256": "8046832fa16c25b957a5d1957a0202f65eb51bf86a885348108e7036c156cdba"
+  },
+  {
+    "path": "textures/skill/building/efficient_miner.png",
+    "kind": "perk",
+    "id": "efficient_miner",
+    "concept": "Classic pick with speed-up arrow",
+    "pixels_sha256": "d36d6e94b35144f99e692cd79b4e090c7a83a41cdb8a30e791cfd329366b89e4"
+  },
+  {
+    "path": "textures/skill/building/explosive_expert.png",
+    "kind": "perk",
+    "id": "explosive_expert",
+    "concept": "Bomb with no-terrain-damage mark",
+    "pixels_sha256": "7190ef6e8ee0f19ecc875326620c4fdedf1e2159f10728304040c249ad989553"
+  },
+  {
+    "path": "textures/skill/building/farmers_hand.png",
+    "kind": "perk",
+    "id": "farmers_hand",
+    "concept": "Golden wheat growing faster",
+    "pixels_sha256": "461706fa24d084e1a6425f3e44b35d77c61d9db60399de59f7818f4fd925d320"
+  },
+  {
+    "path": "textures/skill/building/fortune_miner.png",
+    "kind": "perk",
+    "id": "fortune_miner",
+    "concept": "Gold-flecked ore with lucky sparkle",
+    "pixels_sha256": "4245bf8d1570d92eaca87ccd1bd28f55a5bb349ebfa847b54652fc24d4524e42"
+  },
+  {
+    "path": "textures/skill/building/foundation_layer.png",
+    "kind": "perk",
+    "id": "foundation_layer",
+    "concept": "Bedrock-dark wall hardened",
+    "pixels_sha256": "44f53799231cd7475a839a5c5d7a3b086b253da4b8becb7fb2c4de93f04a6bda"
+  },
+  {
+    "path": "textures/skill/building/glowstone_sight.png",
+    "kind": "perk",
+    "id": "glowstone_sight",
+    "concept": "Radiant torch — mining light aura",
+    "pixels_sha256": "c90aed0d2579993248f975f4ed67a1b2b2c100d3f6846bcfa5a605dd29a8d2c5"
+  },
+  {
+    "path": "textures/skill/building/heritage_builder.png",
+    "kind": "perk",
+    "id": "heritage_builder",
+    "concept": "Sandstone tower with durability shield",
+    "pixels_sha256": "060ad6482761dab1e63239d6c5e61ad247781133d60cd52f84ad2c12e4671560"
+  },
+  {
+    "path": "textures/skill/building/irrigation_expert.png",
+    "kind": "perk",
+    "id": "irrigation_expert",
+    "concept": "Watered crops with droplet",
+    "pixels_sha256": "1ad1044d612dc6fd5d4ded7b400166d2191c0a505b8e4f203e80500f8c873b47"
+  },
+  {
+    "path": "textures/skill/building/lumberjack.png",
+    "kind": "perk",
+    "id": "lumberjack",
+    "concept": "Felling axe with speed arrow",
+    "pixels_sha256": "45de7d94e5d7380d62a6beb178464e628412d8193eb810c46c5cb829577a5bc6"
+  },
+  {
+    "path": "textures/skill/building/mass_production.png",
+    "kind": "perk",
+    "id": "mass_production",
+    "concept": "Industrial gear with bonus",
+    "pixels_sha256": "282880088c555da763e794a6891c88a1a20285bb524949d0729293f4b4d8d614"
+  },
+  {
+    "path": "textures/skill/building/master_breaker.png",
+    "kind": "perk",
+    "id": "master_breaker",
+    "concept": "Heavy maul breaking all blocks faster",
+    "pixels_sha256": "c6bcd4e21f0e4bf77e9dce5ec6c578714292f1d24ec2be6fba664c1b1bc93516"
+  },
+  {
+    "path": "textures/skill/building/master_woodworker.png",
+    "kind": "perk",
+    "id": "master_woodworker",
+    "concept": "Planks with bonus yield",
+    "pixels_sha256": "81d25bc853c6cd4ec8d4083887bf30745257edfeade23a14dfef22016e9899e4"
+  },
+  {
+    "path": "textures/skill/building/medieval_architecture.png",
+    "kind": "perk",
+    "id": "medieval_architecture",
+    "concept": "Castle tower with bonus yield",
+    "pixels_sha256": "cea82b7e36b5c39d16c9ac5f6938777af4dbf86ead5f9026aa93308f686c9b9f"
+  },
+  {
+    "path": "textures/skill/building/obsidian_smasher.png",
+    "kind": "perk",
+    "id": "obsidian_smasher",
+    "concept": "Obsidian-crushing maul",
+    "pixels_sha256": "892d15ae9de6b963d20b6f89d2812cdf01d70b2c2831d818cc9b31f65c2f8521"
+  },
+  {
+    "path": "textures/skill/building/ore_detector.png",
+    "kind": "perk",
+    "id": "ore_detector",
+    "concept": "Ore with watchful eye — ores glow through walls",
+    "pixels_sha256": "ff10822b818f3f0b953f360c3ccb53fe890aa0f191ab9dc7b38af046798898a0"
+  },
+  {
+    "path": "textures/skill/building/prospector.png",
+    "kind": "perk",
+    "id": "prospector",
+    "concept": "Copper pick finding bonus minerals",
+    "pixels_sha256": "e570ddb1e26daf66854718737f03fc9132d0cf3268bb492ce8c6b89caa6b2807"
+  },
+  {
+    "path": "textures/skill/building/quarry_master.png",
+    "kind": "perk",
+    "id": "quarry_master",
+    "concept": "Quarry pick with deep-layer drops",
+    "pixels_sha256": "e4e01e849c7f687f416fca776bae4b216264249984a9e35546362938b3a20389"
+  },
+  {
+    "path": "textures/skill/building/reinforced_construction.png",
+    "kind": "perk",
+    "id": "reinforced_construction",
+    "concept": "Steel-braced wall vs explosions",
+    "pixels_sha256": "ec5dd88f45fde814b44f8e066f69fcabde29eb77a63c75981e3703c7e0157f9c"
+  },
+  {
+    "path": "textures/skill/building/resource_efficiency.png",
+    "kind": "perk",
+    "id": "resource_efficiency",
+    "concept": "Planks returning materials",
+    "pixels_sha256": "bafa930a41e58e1f945d0306f79340626df31afef52259969c40d21c4bd53563"
+  },
+  {
+    "path": "textures/skill/building/runic_mining.png",
+    "kind": "perk",
+    "id": "runic_mining",
+    "concept": "Runic ore with bonus drops",
+    "pixels_sha256": "145ab13b8548911029e7a0eb0535969640920ad99d1048ee7b7ce7f47a066810"
+  },
+  {
+    "path": "textures/skill/building/runic_salvager.png",
+    "kind": "perk",
+    "id": "runic_salvager",
+    "concept": "Arcane salvaging anvil with bonus chance",
+    "pixels_sha256": "4ebe0f2887e775ff7ef7433cc0eaef82384ae0dae2558ab3af0a39ca2e1bd4ac"
+  },
+  {
+    "path": "textures/skill/building/salvage_expert.png",
+    "kind": "perk",
+    "id": "salvage_expert",
+    "concept": "Grindstone returning materials",
+    "pixels_sha256": "03ef43abe2e54710842e8d9870b70e2352c94fc8b78a065dee0733ef312c204c"
+  },
+  {
+    "path": "textures/skill/building/silk_touch_mastery.png",
+    "kind": "perk",
+    "id": "silk_touch_mastery",
+    "concept": "Gentle hand — silk-touch chance",
+    "pixels_sha256": "306cfb5bd5a118b12a33225b1b462c6db619836cd1adfbfcfc2e3be0bcd71579"
+  },
+  {
+    "path": "textures/skill/building/smelter.png",
+    "kind": "perk",
+    "id": "smelter",
+    "concept": "Furnace smelting faster",
+    "pixels_sha256": "2305ff8c1bf205a9c304fdc16cdddede01a0f520f812c0ea17e7411d96d5f0e9"
+  },
+  {
+    "path": "textures/skill/building/stone_cutter_efficiency.png",
+    "kind": "perk",
+    "id": "stone_cutter_efficiency",
+    "concept": "Stonecutter wheel with bonus output",
+    "pixels_sha256": "416304b69477261245d25f42dfe3e49dd1b7361751434f3b109ed82860357299"
+  },
+  {
+    "path": "textures/skill/building/terraformer.png",
+    "kind": "perk",
+    "id": "terraformer",
+    "concept": "Shovel/hoe working faster",
+    "pixels_sha256": "58d157c43372fb58d87b9f7204d48d35e40d43256779b4276c349317469bd4dd"
+  },
+  {
+    "path": "textures/skill/building/treasure_hunter.png",
+    "kind": "perk",
+    "id": "treasure_hunter",
+    "concept": "Buried chest with lucky sparkle",
+    "pixels_sha256": "57a4aa80229f03405b88ce02ca21370966bd2aefa842d7c8d7391bd94aefbd04"
+  },
+  {
+    "path": "textures/skill/building/underground_explorer.png",
+    "kind": "perk",
+    "id": "underground_explorer",
+    "concept": "Cave boot under a dark moon — faster below Y=30",
+    "pixels_sha256": "47dcd9148bf7bb0aa057de2c7f97e5df398a826d983f78d2e5d8605c3e38d603"
+  },
+  {
+    "path": "textures/skill/building/vein_miner.png",
+    "kind": "perk",
+    "id": "vein_miner",
+    "concept": "Connected ore vein mined at once",
+    "pixels_sha256": "73e4a4d21d589cded844d0deba994475bd3b9838635a1a08d40b5a365e4c0af2"
+  },
+  {
+    "path": "textures/skill/constitution/anglers_bounty.png",
+    "kind": "perk",
+    "id": "anglers_bounty",
+    "concept": "Hearty fish — more nourishment",
+    "pixels_sha256": "7e788dc1b8ac00b0e3437687a8b7dc5379d837a34bb526ca314682c0b693332b"
+  },
+  {
+    "path": "textures/skill/constitution/armor_of_faith.png",
+    "kind": "perk",
+    "id": "armor_of_faith",
+    "concept": "Blessed armor — low-health resistance",
+    "pixels_sha256": "04d99ce4035abb088225330a66e1c5aa34ecb09bc0af87ed9e9637142b6733da"
+  },
+  {
+    "path": "textures/skill/constitution/athletics.png",
+    "kind": "perk",
+    "id": "athletics",
+    "concept": "Air bubbles — longer breath underwater",
+    "pixels_sha256": "791e6d76e441871cb1bcb8d071a741b049a4565ab150d60a027301de062ad85b"
+  },
+  {
+    "path": "textures/skill/constitution/battle_recovery.png",
+    "kind": "perk",
+    "id": "battle_recovery",
+    "concept": "Heart regenerating after combat lull",
+    "pixels_sha256": "7561af9105a0bdc7375faffb42e39a7fc800b61cd27ef47e4d84d24134686d38"
+  },
+  {
+    "path": "textures/skill/constitution/colonial_nourishment.png",
+    "kind": "perk",
+    "id": "colonial_nourishment",
+    "concept": "Colony meal with bonus effects",
+    "pixels_sha256": "9553652d0f40a7a5f38556ea3fd5f09d5619c0b3142b9310c20bf79adadd93b6"
+  },
+  {
+    "path": "textures/skill/constitution/culinary_expert.png",
+    "kind": "perk",
+    "id": "culinary_expert",
+    "concept": "Roast with bonus saturation",
+    "pixels_sha256": "5fa1c3fdcd3ed262951772b31f3e3c0d2288e98110d2b42041e714e0c1890f19"
+  },
+  {
+    "path": "textures/skill/constitution/draconic_constitution.png",
+    "kind": "perk",
+    "id": "draconic_constitution",
+    "concept": "Dragon-blood ward vs elements",
+    "pixels_sha256": "9f099de162ec044cd120c0d91caa18a2bb4786de6b3960f7cc9c2ddc26605561"
+  },
+  {
+    "path": "textures/skill/constitution/dragon_heart.png",
+    "kind": "perk",
+    "id": "dragon_heart",
+    "concept": "Fiery dragon heart restoring HP",
+    "pixels_sha256": "f27d70c4cae38cc5141b5fcca9e023ea222f81e578bed2bd4d4de59bcc37d629"
+  },
+  {
+    "path": "textures/skill/constitution/enderium_resilience.png",
+    "kind": "perk",
+    "id": "enderium_resilience",
+    "concept": "Enderium plate with magic ward",
+    "pixels_sha256": "3e24b21bd6c68d3f1a3e519f05dfc1d3608177dfeeb9ff45ea1d9fbe017aa0c8"
+  },
+  {
+    "path": "textures/skill/constitution/explorers_vigor.png",
+    "kind": "perk",
+    "id": "explorers_vigor",
+    "concept": "Dungeon map with damage ward",
+    "pixels_sha256": "49dec895120daec182e909f353570b7c741c7e208d43a6e8f08d82d71d509abe"
+  },
+  {
+    "path": "textures/skill/constitution/fire_resistance.png",
+    "kind": "perk",
+    "id": "fire_resistance",
+    "concept": "Flame with damage-down mark",
+    "pixels_sha256": "ae51fc6c5704beeee3aafd8b3886ba28804af40b6fae7eaaa4e38ab9f50890c5"
+  },
+  {
+    "path": "textures/skill/constitution/frost_walker_constitution.png",
+    "kind": "perk",
+    "id": "frost_walker_constitution",
+    "concept": "Snowflake with cold-damage-down",
+    "pixels_sha256": "0bcc5afbfdfeb521f50fda896fafe744090e4d98548ca7f22c48147fecd24271"
+  },
+  {
+    "path": "textures/skill/constitution/ghostbound.png",
+    "kind": "perk",
+    "id": "ghostbound",
+    "concept": "Spirit layer granting ghost health",
+    "pixels_sha256": "392f3042b26f9a0fe82ac91ce3f096aaa8edf2311b9e7f8ca8d58ce40b64abb1"
+  },
+  {
+    "path": "textures/skill/constitution/gourmet.png",
+    "kind": "perk",
+    "id": "gourmet",
+    "concept": "Gourmet roast restoring more hunger",
+    "pixels_sha256": "63be1a6f3c4cf08d693303e98a20241eada64720ad7159ef8c5f4f80cc3b4778"
+  },
+  {
+    "path": "textures/skill/constitution/heart_of_the_healer.png",
+    "kind": "perk",
+    "id": "heart_of_the_healer",
+    "concept": "Radiant heart — healing received and overheal",
+    "pixels_sha256": "8520b2a84ef2c64dd005f49177d65d66ffbd8d531094e206e64052ef727c8695"
+  },
+  {
+    "path": "textures/skill/constitution/hearty_feast.png",
+    "kind": "perk",
+    "id": "hearty_feast",
+    "concept": "Feast pot — food effects last longer",
+    "pixels_sha256": "c9573cc37a3fd8911153b1d2e8d9337643fc01417dd868f182b1802e6cbf79d6"
+  },
+  {
+    "path": "textures/skill/constitution/iron_stomach.png",
+    "kind": "perk",
+    "id": "iron_stomach",
+    "concept": "Iron apple — immune to food poisoning",
+    "pixels_sha256": "0bd1de199632a5fd9d57178d7b75060511c0959929d215e615c8a064eb73efb1"
+  },
+  {
+    "path": "textures/skill/constitution/lion_heart.png",
+    "kind": "perk",
+    "id": "lion_heart",
+    "concept": "Lion-gold heart shrugging off debuffs",
+    "pixels_sha256": "333d2551997fc7f4ff2cbbf8f5d58ca3b8fdf8f3d782a6e7fce7ba1b231f5ce5"
+  },
+  {
+    "path": "textures/skill/constitution/master_chef.png",
+    "kind": "perk",
+    "id": "master_chef",
+    "concept": "Chef's pot extending effect durations",
+    "pixels_sha256": "0c0692ba49c7c0fed659b8c1c08450f3d58fc304682e1527d1a746b82fe4d862"
+  },
+  {
+    "path": "textures/skill/constitution/myrmex_carapace.png",
+    "kind": "perk",
+    "id": "myrmex_carapace",
+    "concept": "Chitin carapace vs poison",
+    "pixels_sha256": "fc221267ddc8259fe0f309c3d29658352b98c0616466956e99c149bce4fa07cc"
+  },
+  {
+    "path": "textures/skill/constitution/natural_recovery.png",
+    "kind": "perk",
+    "id": "natural_recovery",
+    "concept": "Verdant heart with natural regen",
+    "pixels_sha256": "ed3fc3fac020d9699c32daadbaded7c9d44a9a0e360282e19fe789d4cb755997"
+  },
+  {
+    "path": "textures/skill/constitution/natures_blessing.png",
+    "kind": "perk",
+    "id": "natures_blessing",
+    "concept": "Blessed leaf healing on natural ground",
+    "pixels_sha256": "52dec3426695a21a74e39be7fd0508dd8efdcd6fbf30dbf0d9401d6bf41a0073"
+  },
+  {
+    "path": "textures/skill/constitution/obsidian_heart.png",
+    "kind": "perk",
+    "id": "obsidian_heart",
+    "concept": "Obsidian heart vs explosions",
+    "pixels_sha256": "5a5762088f56c1df53f8243e448ff9df1bfccbcc912dc36415923a26df10022f"
+  },
+  {
+    "path": "textures/skill/constitution/phoenix_rising.png",
+    "kind": "perk",
+    "id": "phoenix_rising",
+    "concept": "Phoenix rising with respawn health",
+    "pixels_sha256": "b9d1b0cd0c455f41b766277481c1ba8cd69824f60a5cb38de50767621b86819c"
+  },
+  {
+    "path": "textures/skill/constitution/poison_immunity.png",
+    "kind": "perk",
+    "id": "poison_immunity",
+    "concept": "Venom drop crossed out — poison immune",
+    "pixels_sha256": "21d108ed938f25d73c4bcb508bd7972e4b3fc661e933c0dcc83dba666e0c94e7"
+  },
+  {
+    "path": "textures/skill/constitution/potion_mastery.png",
+    "kind": "perk",
+    "id": "potion_mastery",
+    "concept": "Potion with extended duration",
+    "pixels_sha256": "af7c9fe38f95125614b494f621c315dc25e9f3101c9c21dd8f225d17e8abb3b0"
+  },
+  {
+    "path": "textures/skill/constitution/runic_fortification.png",
+    "kind": "perk",
+    "id": "runic_fortification",
+    "concept": "Runic armor granting max health",
+    "pixels_sha256": "bae7a1a14abe4006cb0b0922d4b42b5737ddcdd878d67a498568cddc21cbfb47"
+  },
+  {
+    "path": "textures/skill/constitution/searing_resistance.png",
+    "kind": "perk",
+    "id": "searing_resistance",
+    "concept": "Lava drop with damage-down",
+    "pixels_sha256": "eff5e59ab321556b145e54e8ffe7c30484e0655e7268f3aeee4bd266619da4bc"
+  },
+  {
+    "path": "textures/skill/constitution/second_wind.png",
+    "kind": "perk",
+    "id": "second_wind",
+    "concept": "Wing of second wind — regen when low",
+    "pixels_sha256": "7103da3cbdd8b0c86fc8fa67ab35d7374178dd3ff5c80001250ca202b2eb6de5"
+  },
+  {
+    "path": "textures/skill/constitution/soul_sustenance.png",
+    "kind": "perk",
+    "id": "soul_sustenance",
+    "concept": "XP orb restoring health",
+    "pixels_sha256": "a2fa2e2b640b8b3db9786dd68076b2f14ba1c182c21a9dfac71660ac4c1355a9"
+  },
+  {
+    "path": "textures/skill/constitution/survival_instinct.png",
+    "kind": "perk",
+    "id": "survival_instinct",
+    "concept": "Adrenaline boot — speed when hurt",
+    "pixels_sha256": "bc6988c50117be29a88c2a1126673ebe728845817cda526c1683ac61cd426f4a"
+  },
+  {
+    "path": "textures/skill/constitution/swimmers_endurance.png",
+    "kind": "perk",
+    "id": "swimmers_endurance",
+    "concept": "Swift fish — swim speed",
+    "pixels_sha256": "717f390fa57ef25c66438e71987269e0e0f175d6161e75a50b909a8fdda7ab2f"
+  },
+  {
+    "path": "textures/skill/constitution/thick_skin.png",
+    "kind": "perk",
+    "id": "thick_skin",
+    "concept": "Leathered hide — flat damage reduction",
+    "pixels_sha256": "3e01f19e63f4d565e9614f5c8976bb76d5a527aea2f2c9983fab270f7223f4b2"
+  },
+  {
+    "path": "textures/skill/constitution/turtle_shield.png",
+    "kind": "perk",
+    "id": "turtle_shield",
+    "concept": "Shell negating levitation bolts",
+    "pixels_sha256": "db1f291c9b9425428dd0fc53c29667054c9ea4873aedf90fe160e22421501a5f"
+  },
+  {
+    "path": "textures/skill/constitution/undying_will.png",
+    "kind": "perk",
+    "id": "undying_will",
+    "concept": "Defiant skull — chance to survive death",
+    "pixels_sha256": "0e1b9d611a1f6875641d5a9da0ca57aae4a456c7ff07fe606c0127258cb2c345"
+  },
+  {
+    "path": "textures/skill/constitution/vitality.png",
+    "kind": "perk",
+    "id": "vitality",
+    "concept": "Big heart with extra hearts",
+    "pixels_sha256": "8f1b1fad6b282d8d9b51cee1442640b0bc9e3cbcaa127c456c3356a2c4c7eecc"
+  },
+  {
+    "path": "textures/skill/constitution/wither_resistance.png",
+    "kind": "perk",
+    "id": "wither_resistance",
+    "concept": "Wither skull with damage-down",
+    "pixels_sha256": "09fdc5579a9ebb0b30cc4230dde7f846bf8bfc337eff39b95a1292e277aa7a22"
+  },
+  {
+    "path": "textures/skill/dexterity/acrobat.png",
+    "kind": "perk",
+    "id": "acrobat",
+    "concept": "Feather-fall — less fall damage",
+    "pixels_sha256": "f8da797b3f6a8928267b2b16fd8de622d41beba416b2420efd4f8ea24ca41b47"
+  },
+  {
+    "path": "textures/skill/dexterity/agile_climber.png",
+    "kind": "perk",
+    "id": "agile_climber",
+    "concept": "Ladder climbed faster",
+    "pixels_sha256": "ea662840a8a3c440fed8ef5b481029291f80ea83412c58cda3df8e76ebaa52f4"
+  },
+  {
+    "path": "textures/skill/dexterity/ambush.png",
+    "kind": "perk",
+    "id": "ambush",
+    "concept": "Shadow dagger — stealth opener crit",
+    "pixels_sha256": "6713cf6a7c7e74382df7b8e9710fa8c4d808e1c73efe7b101a9de3f5d9d2e188"
+  },
+  {
+    "path": "textures/skill/dexterity/apothic_critical_mastery.png",
+    "kind": "perk",
+    "id": "apothic_critical_mastery",
+    "concept": "Bullseye — crit chance and damage",
+    "pixels_sha256": "014130e98a814bdf17ea9dc081e1ee44fb95fbefb926dc715f1907468dcaa64d"
+  },
+  {
+    "path": "textures/skill/dexterity/archery_expansion.png",
+    "kind": "perk",
+    "id": "archery_expansion",
+    "concept": "Advanced bow with bonus damage",
+    "pixels_sha256": "7baa599429bde043efcbaf100916aa938a136fcab0d66ae25ff713cee370bf70"
+  },
+  {
+    "path": "textures/skill/dexterity/arrow_mastery.png",
+    "kind": "perk",
+    "id": "arrow_mastery",
+    "concept": "Gilded arrow — damage and velocity",
+    "pixels_sha256": "45e28bf26cb259f9b60c648b61ce903e8b99ae90fbaaf63093dd3d2e9d2a6530"
+  },
+  {
+    "path": "textures/skill/dexterity/arrow_recovery.png",
+    "kind": "perk",
+    "id": "arrow_recovery",
+    "concept": "Recovered arrow — retrieval chance",
+    "pixels_sha256": "ede09d4091d2d43288bc04aee50b85bba740eee2688bc1bc91fcb27a0bae8166"
+  },
+  {
+    "path": "textures/skill/dexterity/blade_dancer.png",
+    "kind": "perk",
+    "id": "blade_dancer",
+    "concept": "Dancing blades — sword attack speed",
+    "pixels_sha256": "a7c64901684b8c7e7f73d9aa2d3139c9a702b286707d53d649348fafe0f4d813"
+  },
+  {
+    "path": "textures/skill/dexterity/cat_eyes.png",
+    "kind": "perk",
+    "id": "cat_eyes",
+    "concept": "Cat eye under the moon — night vision",
+    "pixels_sha256": "95e6edddf09e11f0c5f719366aa058d48902b7481cfe49467321c2286b364107"
+  },
+  {
+    "path": "textures/skill/dexterity/crossbow_expert.png",
+    "kind": "perk",
+    "id": "crossbow_expert",
+    "concept": "Crossbow reloaded faster",
+    "pixels_sha256": "4eea33ded8313f1044eeff4668be245d89eb1678f089bc04526dce153dd75c3c"
+  },
+  {
+    "path": "textures/skill/dexterity/dodge_roll.png",
+    "kind": "perk",
+    "id": "dodge_roll",
+    "concept": "Rolling boot — melee dodge chance",
+    "pixels_sha256": "14982e18e0960ef362e342b3e47d68cb1e5d743168e6ea4c2b49146b614b3944"
+  },
+  {
+    "path": "textures/skill/dexterity/dragon_rider.png",
+    "kind": "perk",
+    "id": "dragon_rider",
+    "concept": "Crimson mount — ride speed",
+    "pixels_sha256": "ea6060ded29b5de7b250a4ca965f6ffb3c9442a66c64f63bc72892d1f7af43e3"
+  },
+  {
+    "path": "textures/skill/dexterity/eagle_eye.png",
+    "kind": "perk",
+    "id": "eagle_eye",
+    "concept": "Eagle eye — long-range arrow damage",
+    "pixels_sha256": "d6273f12d0b6ce85bc52620e83e90349ac1b8579fe59e1f5da92d35f9fd1cc18"
+  },
+  {
+    "path": "textures/skill/dexterity/evasion.png",
+    "kind": "perk",
+    "id": "evasion",
+    "concept": "Light wing — dodge unarmored",
+    "pixels_sha256": "16b62cdaef986c46cf33dbf1145d712b6b63f9d0e683cf67bc9888ae62ccfcfd"
+  },
+  {
+    "path": "textures/skill/dexterity/evasive.png",
+    "kind": "perk",
+    "id": "evasive",
+    "concept": "Spectral wing — apothic dodge",
+    "pixels_sha256": "c40e0a6396c9c6b91eec38d57d680c4aa3196954c3146ec3a81f9f4be31ae387"
+  },
+  {
+    "path": "textures/skill/dexterity/fleet_footed.png",
+    "kind": "perk",
+    "id": "fleet_footed",
+    "concept": "Water-striding boot",
+    "pixels_sha256": "cd268ae324742215577b3601e41af74fa2edf203f63faa16f1bff658bdc0ca5a"
+  },
+  {
+    "path": "textures/skill/dexterity/ice_arrows.png",
+    "kind": "perk",
+    "id": "ice_arrows",
+    "concept": "Frost arrow slowing targets",
+    "pixels_sha256": "78a1814fa9e936f48e15094b77cb5aabda2af9d2a9f34da8feaf43f7ca4f8593"
+  },
+  {
+    "path": "textures/skill/dexterity/mounted_combat.png",
+    "kind": "perk",
+    "id": "mounted_combat",
+    "concept": "Warhorse — mounted damage",
+    "pixels_sha256": "9da5f1a83f4735c614483fa9d47500c0dd88c7dc7ebbd4c8b3829019ddb1992e"
+  },
+  {
+    "path": "textures/skill/dexterity/multishot_mastery.png",
+    "kind": "perk",
+    "id": "multishot_mastery",
+    "concept": "Arrow fan — extra arrow chance",
+    "pixels_sha256": "1cf429c4456b60ae08703a6519c245216a899394867e6a8c050ebb98a1770502"
+  },
+  {
+    "path": "textures/skill/dexterity/ninja_training.png",
+    "kind": "perk",
+    "id": "ninja_training",
+    "concept": "Ninja mask — stealth gear stronger",
+    "pixels_sha256": "84228dbf271c1bfe8bac45426aab27efab03fd22f9723909f8c66d1b2b744d25"
+  },
+  {
+    "path": "textures/skill/dexterity/parkour_master.png",
+    "kind": "perk",
+    "id": "parkour_master",
+    "concept": "Free-runner boot — less stamina",
+    "pixels_sha256": "83a8411562ab18fcafe114ff60408acd762b8ff183a0afc739ae529cb3fa8610"
+  },
+  {
+    "path": "textures/skill/dexterity/phantom_strike.png",
+    "kind": "perk",
+    "id": "phantom_strike",
+    "concept": "Phantom blade — post-dodge strike",
+    "pixels_sha256": "2c613612aee1c1d44e30ee8bb0b3874baadb052c70aa90b25b691056f63d5949"
+  },
+  {
+    "path": "textures/skill/dexterity/poison_arrow.png",
+    "kind": "perk",
+    "id": "poison_arrow",
+    "concept": "Venom-tipped arrow",
+    "pixels_sha256": "c942711986f761f46eb436bb315527a3fe42b211f5f2c6b67236305e1efb7ed0"
+  },
+  {
+    "path": "textures/skill/dexterity/precision_shot.png",
+    "kind": "perk",
+    "id": "precision_shot",
+    "concept": "Steady aim — crit bow damage",
+    "pixels_sha256": "e496fa51034db61ec1275ffc202ca2caaaf9932aeee2b4f24c8192606d35c95a"
+  },
+  {
+    "path": "textures/skill/dexterity/quick_draw.png",
+    "kind": "perk",
+    "id": "quick_draw",
+    "concept": "Fast-swap blade",
+    "pixels_sha256": "46263456af2b1bdda5ab93aa3ade8cbef7a7c5c934a89b68e6dee524bbbcbfb5"
+  },
+  {
+    "path": "textures/skill/dexterity/quick_reposition.png",
+    "kind": "perk",
+    "id": "quick_reposition",
+    "concept": "Charged boot — speed on arrow hit",
+    "pixels_sha256": "dd1fdb369c49a5f585019bb8680be9a41f4abf6ad5cb670c94ced7ada60f6d59"
+  },
+  {
+    "path": "textures/skill/dexterity/rapid_fire.png",
+    "kind": "perk",
+    "id": "rapid_fire",
+    "concept": "Bow drawn faster",
+    "pixels_sha256": "645d0b0841d642eb13841f9e4191c07763c326a05b1ec8371db3cb8a4a1e3f30"
+  },
+  {
+    "path": "textures/skill/dexterity/ricochet.png",
+    "kind": "perk",
+    "id": "ricochet",
+    "concept": "Bouncing arrow",
+    "pixels_sha256": "f477e8c3a87b711fdb69ee718a88420cc46486f7a9d3731b9690f419ac7929b6"
+  },
+  {
+    "path": "textures/skill/dexterity/sharpshooter.png",
+    "kind": "perk",
+    "id": "sharpshooter",
+    "concept": "Headshot reticle",
+    "pixels_sha256": "0a445e8d8ac4407be50fc561bf9c397636aad71873a080626f0d7af51e9919a5"
+  },
+  {
+    "path": "textures/skill/dexterity/silent_kill.png",
+    "kind": "perk",
+    "id": "silent_kill",
+    "concept": "Silenced blade — no alert",
+    "pixels_sha256": "1a382edb01de38e62d1a4a8d167b9e5210a895b6e4f863377c63bb21297deca9"
+  },
+  {
+    "path": "textures/skill/dexterity/silent_step.png",
+    "kind": "perk",
+    "id": "silent_step",
+    "concept": "Muffled boot — detection reduced",
+    "pixels_sha256": "c941c799243f985f6a27c4a829dbb025752f958634935a028b0c973867d98466"
+  },
+  {
+    "path": "textures/skill/dexterity/smoke_bomb.png",
+    "kind": "perk",
+    "id": "smoke_bomb",
+    "concept": "Smoke puff — emergency invisibility",
+    "pixels_sha256": "7d8c6409bc324fdad93020ebc8ca41b5d8725cc380f264a8e3d907520642dd07"
+  },
+  {
+    "path": "textures/skill/dexterity/sniper.png",
+    "kind": "perk",
+    "id": "sniper",
+    "concept": "Long-range scope reticle",
+    "pixels_sha256": "9db4177552630a099c68dcc0e38e6516f6aa8dc9e845282aeb603f90098ea911"
+  },
+  {
+    "path": "textures/skill/dexterity/spartan_marksmanship.png",
+    "kind": "perk",
+    "id": "spartan_marksmanship",
+    "concept": "Thrown spear — spartan weapons",
+    "pixels_sha256": "b3d55e5d49d21d308896cd74c6a15b9ea7132ee13f145ba13355f87ed13f5c44"
+  },
+  {
+    "path": "textures/skill/dexterity/spell_dodge.png",
+    "kind": "perk",
+    "id": "spell_dodge",
+    "concept": "Arcane wing — dodge spells",
+    "pixels_sha256": "00b6458474b79ee8b4246318531bc64c070d5044774be39649b97094d37c867a"
+  },
+  {
+    "path": "textures/skill/dexterity/sprint_master.png",
+    "kind": "perk",
+    "id": "sprint_master",
+    "concept": "Golden sprinter boot",
+    "pixels_sha256": "fa77be2cfddd07cd4ece125e18d7603e5dd5bfe70ace2a4d21de24846c0e0e1d"
+  },
+  {
+    "path": "textures/skill/dexterity/stealth_mastery.png",
+    "kind": "perk",
+    "id": "stealth_mastery",
+    "concept": "Night mask — reduced visibility",
+    "pixels_sha256": "4753591941e5560cfd505224b80c60b6325e452475b9829c0289161b0ffe812e"
+  },
+  {
+    "path": "textures/skill/dexterity/tracking.png",
+    "kind": "perk",
+    "id": "tracking",
+    "concept": "Tracked pawprint — marked prey glows",
+    "pixels_sha256": "c80284fdf44872ca99e9eb6e9e40d404e622d40c2cc2ef1419498a5cc8df13fe"
+  },
+  {
+    "path": "textures/skill/dexterity/trick_shot.png",
+    "kind": "perk",
+    "id": "trick_shot",
+    "concept": "Arrow igniting through fire",
+    "pixels_sha256": "03c9ab243a6ebdb1e5df8378f30efe0086e62372cac7f6ba4a447a1fc78ff759"
+  },
+  {
+    "path": "textures/skill/dexterity/wind_runner.png",
+    "kind": "perk",
+    "id": "wind_runner",
+    "concept": "Wind boot — path speed",
+    "pixels_sha256": "af0280d38e4468d936976e3321181d5f87472180458bb7117394f78550b37c2e"
+  },
+  {
+    "path": "textures/skill/dexterity/wind_walker.png",
+    "kind": "perk",
+    "id": "wind_walker",
+    "concept": "Storm wing — air speed",
+    "pixels_sha256": "0555846afba78eace17449ea9d367a9eb8215f6b688ebb36ee2b7e5ff9c0a6f5"
+  },
+  {
+    "path": "textures/skill/dexterity/zipline_expert.png",
+    "kind": "perk",
+    "id": "zipline_expert",
+    "concept": "Zipline pulley speeding travel",
+    "pixels_sha256": "bf15ea10e789c421dcb4daec868ca82c00fa72a44f946fa50f302a4f1d95b68f"
+  },
+  {
+    "path": "textures/skill/endurance/adaptation.png",
+    "kind": "perk",
+    "id": "adaptation",
+    "concept": "Adaptive shield — repeat hits weaker",
+    "pixels_sha256": "65bddfc4301a09a727324a23336f5b4b6120b5f66c9fa9d979c77a2fbb55a494"
+  },
+  {
+    "path": "textures/skill/endurance/ancient_guardian.png",
+    "kind": "perk",
+    "id": "ancient_guardian",
+    "concept": "Ancient bastion vs bosses",
+    "pixels_sha256": "f6190b519a2e4c1f0f2cb234e7e6acdf970e07020f81b2016f7a0068db94867f"
+  },
+  {
+    "path": "textures/skill/endurance/arcane_shield.png",
+    "kind": "perk",
+    "id": "arcane_shield",
+    "concept": "Arcane shield — spell damage down",
+    "pixels_sha256": "1cb4d84bd0afe3a2d43c22a7256e224b46fcdb486c56dbf67079c54dde40f5c4"
+  },
+  {
+    "path": "textures/skill/endurance/blast_resistance.png",
+    "kind": "perk",
+    "id": "blast_resistance",
+    "concept": "Dud bomb — explosion damage down",
+    "pixels_sha256": "ff10bb7b4e3b2f1e640b760b62d9fb02d0d293cd5725f1aa12f3d7d39de4376b"
+  },
+  {
+    "path": "textures/skill/endurance/blood_warded.png",
+    "kind": "perk",
+    "id": "blood_warded",
+    "concept": "Crimson ward vs blood magic",
+    "pixels_sha256": "5474deff47b9cf9df0bd7225c9eae0f1a2e6691982ee70454d7b3313e23f017e"
+  },
+  {
+    "path": "textures/skill/endurance/bulwark.png",
+    "kind": "perk",
+    "id": "bulwark",
+    "concept": "Bulwark reflecting damage",
+    "pixels_sha256": "8e398fbe2e29f20721c8dc13db228b963768b992b8b382d2266b2ecbb1064b02"
+  },
+  {
+    "path": "textures/skill/endurance/cataclysm_resistance.png",
+    "kind": "perk",
+    "id": "cataclysm_resistance",
+    "concept": "Obsidian shield vs cataclysm bosses",
+    "pixels_sha256": "aacb84a2e6d041bd607afe49d5f7bca13ead7ca33831c9fa64f3cf47e3551c4d"
+  },
+  {
+    "path": "textures/skill/endurance/colony_guardian.png",
+    "kind": "perk",
+    "id": "colony_guardian",
+    "concept": "Guarded homestead — safe in colonies",
+    "pixels_sha256": "a074d4cba25704ed2e121eb2a691156af12185ff29b776b4346fdb799713380b"
+  },
+  {
+    "path": "textures/skill/endurance/counter_attack.png",
+    "kind": "perk",
+    "id": "counter_attack",
+    "concept": "Damage received prepares one retaliatory melee strike",
+    "pixels_sha256": "085168d7ca9f2ebf599bac038af6ef41f11abfc235daf72515bc25a11fb74f72"
+  },
+  {
+    "path": "textures/skill/endurance/diamond_skin.png",
+    "kind": "perk",
+    "id": "diamond_skin",
+    "concept": "Diamond facet skin — permanent resistance",
+    "pixels_sha256": "8885dea96d83e524e0a7db5ec878ce9078e6a3375064d6b03352de4cf5ceb7c5"
+  },
+  {
+    "path": "textures/skill/endurance/dragon_breath_shield.png",
+    "kind": "perk",
+    "id": "dragon_breath_shield",
+    "concept": "Ward vs dragon breath",
+    "pixels_sha256": "df64168bba215fd217fa29dcddb8c25c0700bf23d7bc44267e9245c6778dc4d7"
+  },
+  {
+    "path": "textures/skill/endurance/dragon_scale_armor.png",
+    "kind": "perk",
+    "id": "dragon_scale_armor",
+    "concept": "Dragon-scale plate protection",
+    "pixels_sha256": "30150a0f68c690edb46ed489442408524652c71c23076f96b3904bb8258f4c15"
+  },
+  {
+    "path": "textures/skill/endurance/dragonhide.png",
+    "kind": "perk",
+    "id": "dragonhide",
+    "concept": "Dragonsteel hide vs fire and ice",
+    "pixels_sha256": "6a3ff4834d887269ae11fb6a8cd09b14d7f742e8fba9c6e803994c2fd90ce46a"
+  },
+  {
+    "path": "textures/skill/endurance/dungeon_resilience.png",
+    "kind": "perk",
+    "id": "dungeon_resilience",
+    "concept": "Dungeon wall — trap damage down",
+    "pixels_sha256": "4f12dfdae162fe125abdee7d9c530dcb130ad100866c4cba8c9a29ccc00b743f"
+  },
+  {
+    "path": "textures/skill/endurance/eldritch_warded.png",
+    "kind": "perk",
+    "id": "eldritch_warded",
+    "concept": "Unblinking ward vs eldritch magic",
+    "pixels_sha256": "e7d3aaf7ea8401820b64e14737ca39ffac693f794280b00413f76d829b92aa4f"
+  },
+  {
+    "path": "textures/skill/endurance/ender_warded.png",
+    "kind": "perk",
+    "id": "ender_warded",
+    "concept": "Void ward vs ender magic",
+    "pixels_sha256": "71dee2710de395370e75b08c14ce577f4f3950d0bd545295e5ea23aecc211e60"
+  },
+  {
+    "path": "textures/skill/endurance/evocation_warded.png",
+    "kind": "perk",
+    "id": "evocation_warded",
+    "concept": "Sigil ward vs evocation",
+    "pixels_sha256": "ac021cabaa0cd48cdfd77cfe882c5e71d043569b587912af4c65dccb444cec18"
+  },
+  {
+    "path": "textures/skill/endurance/fantasy_fortitude.png",
+    "kind": "perk",
+    "id": "fantasy_fortitude",
+    "concept": "Fantasy armor bonus protection",
+    "pixels_sha256": "2c644281f837507e5b2eb271b642be412e82cf6dc48949a8d6a14cedf862de8e"
+  },
+  {
+    "path": "textures/skill/endurance/fire_proof.png",
+    "kind": "perk",
+    "id": "fire_proof",
+    "concept": "Snuffed flame — burn time reduced",
+    "pixels_sha256": "bfc4c18a1945a17cd9a53760b0dc13f3762f93a1f16305f8958603b185ee3bb1"
+  },
+  {
+    "path": "textures/skill/endurance/fire_warded.png",
+    "kind": "perk",
+    "id": "fire_warded",
+    "concept": "Ember ward vs fire magic",
+    "pixels_sha256": "0e0f7186aee61dad50a1563f82782c5a59cda600e968dec4b3fadba205037470"
+  },
+  {
+    "path": "textures/skill/endurance/frost_endurance.png",
+    "kind": "perk",
+    "id": "frost_endurance",
+    "concept": "Hardened frost — cold protection",
+    "pixels_sha256": "aabe447c968c27157bc8358064fd54b6c1e338642f3d0e7125fa017190f03572"
+  },
+  {
+    "path": "textures/skill/endurance/gem_threaded_armor.png",
+    "kind": "perk",
+    "id": "gem_threaded_armor",
+    "concept": "Socketed plating — armor per gem",
+    "pixels_sha256": "df0daafef2b22754b5a799ecb6bbb5acf0ad48b63495482b717b58a1a4fab1c9"
+  },
+  {
+    "path": "textures/skill/endurance/heavy_armor_mastery.png",
+    "kind": "perk",
+    "id": "heavy_armor_mastery",
+    "concept": "Heavy plate with bonus armor",
+    "pixels_sha256": "02f8fb93531bc38cae8eb3ab0a72111f472735f451f7bff872169f4fde90a819"
+  },
+  {
+    "path": "textures/skill/endurance/holy_warded.png",
+    "kind": "perk",
+    "id": "holy_warded",
+    "concept": "Sacred ward vs holy magic",
+    "pixels_sha256": "e0ed445eefab6d33122f17f1d4bfdcc32f66fc0f3e079b9f550a53a65525e904"
+  },
+  {
+    "path": "textures/skill/endurance/ice_warded.png",
+    "kind": "perk",
+    "id": "ice_warded",
+    "concept": "Frost ward vs ice magic",
+    "pixels_sha256": "41feb30e87338c269d74cb9f6f2928a4c16dfde21b47551f4573188a8fbd483b"
+  },
+  {
+    "path": "textures/skill/endurance/immovable_object.png",
+    "kind": "perk",
+    "id": "immovable_object",
+    "concept": "Anchored — cannot be knocked back",
+    "pixels_sha256": "9e587cde3f078ec431f139c043c221d9326147200580c4becb9256154da807e2"
+  },
+  {
+    "path": "textures/skill/endurance/lightning_rod.png",
+    "kind": "perk",
+    "id": "lightning_rod",
+    "concept": "Grounded bolt — lightning damage down",
+    "pixels_sha256": "9dbdf17314a72139576e641f1ec604a9d1daeb097b25a663346ec39f508f25bc"
+  },
+  {
+    "path": "textures/skill/endurance/lightning_warded.png",
+    "kind": "perk",
+    "id": "lightning_warded",
+    "concept": "Storm ward vs lightning magic",
+    "pixels_sha256": "f79350641cef189a3c8b51b8d8b4a4d3df42d543d1fa7fa5e4f5ec2cf42bb48d"
+  },
+  {
+    "path": "textures/skill/endurance/mana_bulwark.png",
+    "kind": "perk",
+    "id": "mana_bulwark",
+    "concept": "Mana shield absorbing damage",
+    "pixels_sha256": "736400fc05a41a32a0da051d1ac4cae3864b914dd598d8e454fa068a296dc353"
+  },
+  {
+    "path": "textures/skill/endurance/mythic_fortitude.png",
+    "kind": "perk",
+    "id": "mythic_fortitude",
+    "concept": "Gilded scales vs dragon breath elements",
+    "pixels_sha256": "6727833c2bb831529c08e65a667b5107d06f916a7b0f6bc0b8ed2582e0be0fef"
+  },
+  {
+    "path": "textures/skill/endurance/nature_warded.png",
+    "kind": "perk",
+    "id": "nature_warded",
+    "concept": "Wild ward vs nature magic",
+    "pixels_sha256": "4056afb02645711a6965f566546136bd6a9be43404f5a3f33f3940667fbb1c01"
+  },
+  {
+    "path": "textures/skill/endurance/obsidian_skin.png",
+    "kind": "perk",
+    "id": "obsidian_skin",
+    "concept": "Obsidian armor damage reduction",
+    "pixels_sha256": "8866751b207febc6d521f6ab515dffcc4f772213fc06c95e602868940991f660"
+  },
+  {
+    "path": "textures/skill/endurance/pain_suppression.png",
+    "kind": "perk",
+    "id": "pain_suppression",
+    "concept": "Numbed heart — DoT reduced",
+    "pixels_sha256": "84cc6857d27ce90ccc8a65225f072e1ee413dd0bbde36447b1432c1d3b6a3d8f"
+  },
+  {
+    "path": "textures/skill/endurance/poison_resistance.png",
+    "kind": "perk",
+    "id": "poison_resistance",
+    "concept": "Venom drop weakened",
+    "pixels_sha256": "a55d80b551aac81b70bd403dae613e34d5ae4f019654cc2c25fd3c38c8640ea8"
+  },
+  {
+    "path": "textures/skill/endurance/prismarine_shield.png",
+    "kind": "perk",
+    "id": "prismarine_shield",
+    "concept": "Prismarine ward vs ranged",
+    "pixels_sha256": "8b02d219730363b07dccae96940076414f4f030604bc668b32df0987dca660eb"
+  },
+  {
+    "path": "textures/skill/endurance/runic_ward.png",
+    "kind": "perk",
+    "id": "runic_ward",
+    "concept": "Runic armor magic resistance",
+    "pixels_sha256": "8dc526be4407dc632c61c0eb098902687734fc33c14f3dc6695a97fbc0b3d0a0"
+  },
+  {
+    "path": "textures/skill/endurance/samurai_resolve.png",
+    "kind": "perk",
+    "id": "samurai_resolve",
+    "concept": "Tempered resolve after taking a hit",
+    "pixels_sha256": "b49ffc0dd35204c94d66b0d2ee091aa1da6bd9fe2db51a406c68b0a9a9ef3ee8"
+  },
+  {
+    "path": "textures/skill/endurance/sentinel.png",
+    "kind": "perk",
+    "id": "sentinel",
+    "concept": "Sentinel shield when bloodied",
+    "pixels_sha256": "a1da9538ccbf093e967faa3344c910f40840e1c1332eecf7077460f5c29ce87c"
+  },
+  {
+    "path": "textures/skill/endurance/shield_wall.png",
+    "kind": "perk",
+    "id": "shield_wall",
+    "concept": "Braced shield blocking more",
+    "pixels_sha256": "a8c896595a823b6ba7ac2c4b8843f9b0e3e1ab8aa11f12f532f541b185ffdc0c"
+  },
+  {
+    "path": "textures/skill/endurance/siege_defense.png",
+    "kind": "perk",
+    "id": "siege_defense",
+    "concept": "Fortified keep — safe in structures",
+    "pixels_sha256": "53ee4e03429eafd043d6dfc53ae6dbd8b94d86ce21c7f8a62359697d11b16273"
+  },
+  {
+    "path": "textures/skill/endurance/snow_walker.png",
+    "kind": "perk",
+    "id": "snow_walker",
+    "concept": "Snowshoe over powder snow",
+    "pixels_sha256": "da0dcd3a536eee53e23e4fdc17f7aadfece63e80fafcac49db081bd14ab71664"
+  },
+  {
+    "path": "textures/skill/endurance/spell_shield.png",
+    "kind": "perk",
+    "id": "spell_shield",
+    "concept": "Ward vs Ars spell damage",
+    "pixels_sha256": "a02342fc02605e392ef2c859bf10fcf2723f772bb367aca8dcee395b6e3c08ac"
+  },
+  {
+    "path": "textures/skill/endurance/steadfast.png",
+    "kind": "perk",
+    "id": "steadfast",
+    "concept": "Braced anchor — knockback reduced",
+    "pixels_sha256": "c1eb2622500f0c7228828965ee239f66a9719c7fae4d8bbc2b417e74076b6717"
+  },
+  {
+    "path": "textures/skill/endurance/stoneflesh.png",
+    "kind": "perk",
+    "id": "stoneflesh",
+    "concept": "Stone skin while standing still",
+    "pixels_sha256": "eb681fd152f9066c198eaf783fb494a50999c15d9e66e357a81a7a3282760695"
+  },
+  {
+    "path": "textures/skill/endurance/thorns_mastery.png",
+    "kind": "perk",
+    "id": "thorns_mastery",
+    "concept": "Sharpened thorns strike back harder",
+    "pixels_sha256": "09f91968aac5fc4e5aebb583b17c8ab0d4fd59e16e245f2e9b572aedcf42f21e"
+  },
+  {
+    "path": "textures/skill/endurance/toughened_hide.png",
+    "kind": "perk",
+    "id": "toughened_hide",
+    "concept": "Toughened hide — armor toughness",
+    "pixels_sha256": "a847f393c7f281874351e07a8b5ace96886bf7b9250766633e24225c23523fc6"
+  },
+  {
+    "path": "textures/skill/endurance/unbreakable.png",
+    "kind": "perk",
+    "id": "unbreakable",
+    "concept": "Unbreaking armor — durability protected",
+    "pixels_sha256": "891beddd0b27d437fd9ab96502c9df0749829844499709b152610d94a9f84f87"
+  },
+  {
+    "path": "textures/skill/endurance/warding_rune.png",
+    "kind": "perk",
+    "id": "warding_rune",
+    "concept": "Warding rune — magic damage down",
+    "pixels_sha256": "06d33e31c00690c70fb7aed7ba30a7ae3c55c5de9a4bda97a593ac22b0ef9863"
+  },
+  {
+    "path": "textures/skill/fortune/adventurers_luck.png",
+    "kind": "perk",
+    "id": "adventurers_luck",
+    "concept": "Treasure map — better dungeon loot",
+    "pixels_sha256": "54f32ba9119539272f66ea8fcd53fafb27626f95d4feb824503a54e75254771c"
+  },
+  {
+    "path": "textures/skill/fortune/affix_affinity.png",
+    "kind": "perk",
+    "id": "affix_affinity",
+    "concept": "Affix gear resonance — damage and DR",
+    "pixels_sha256": "25afa9841f6acb3d06ff813bfa7fd39db99b86e78d871a7d0c104fd9aee099b9"
+  },
+  {
+    "path": "textures/skill/fortune/apotheosis_gems.png",
+    "kind": "perk",
+    "id": "apotheosis_gems",
+    "concept": "Purer gems from Apotheosis",
+    "pixels_sha256": "2428661b7f070a654c0a2083508df1a0da5c641a89af640eb218b31b12461c7c"
+  },
+  {
+    "path": "textures/skill/fortune/apothic_apprentice.png",
+    "kind": "perk",
+    "id": "apothic_apprentice",
+    "concept": "Lapidary socket — extra effective socket",
+    "pixels_sha256": "55a0c6cd377c3248e02b1638c847f3e6ff06b92374fbb8aff0347f138c8c2e73"
+  },
+  {
+    "path": "textures/skill/fortune/blessing_of_luck.png",
+    "kind": "perk",
+    "id": "blessing_of_luck",
+    "concept": "Blessed clover — luck lasts longer",
+    "pixels_sha256": "3517262cb8eaaabe4d764781ce980f17549acd37704f43b31527d20305accf4b"
+  },
+  {
+    "path": "textures/skill/fortune/cataclysm_spoils.png",
+    "kind": "perk",
+    "id": "cataclysm_spoils",
+    "concept": "Boss skull yielding spoils",
+    "pixels_sha256": "94ccdb3399d2071149be968af8d775bd7496c13434eb90c46d92972e684d9b28"
+  },
+  {
+    "path": "textures/skill/fortune/chaos_roll.png",
+    "kind": "perk",
+    "id": "chaos_roll",
+    "concept": "Chaos die — random bonus effects",
+    "pixels_sha256": "11f2d589436ce35a129e3b39b6b3c5291392fc05d122d2ff975fea6b2486927c"
+  },
+  {
+    "path": "textures/skill/fortune/coin_flip.png",
+    "kind": "perk",
+    "id": "coin_flip",
+    "concept": "Flipped coin — bonus XP chance",
+    "pixels_sha256": "d7b1ad1909e4fe8e69d2b9963f4c640c858a8a22f3cca611d7f5f4126c0657b3"
+  },
+  {
+    "path": "textures/skill/fortune/critical_fortune.png",
+    "kind": "perk",
+    "id": "critical_fortune",
+    "concept": "Lucky crit — kills drop more",
+    "pixels_sha256": "d89021dafda692729eca12559524140ed89eacd78b2280c99f082cd0cf657a3e"
+  },
+  {
+    "path": "textures/skill/fortune/critical_mastery.png",
+    "kind": "perk",
+    "id": "critical_mastery",
+    "concept": "Honed aim — crit chance",
+    "pixels_sha256": "49cb6bf5cb00ba2d173d98a18c7b0cf80e36ab08b6b749c8231afaa90e8bc11a"
+  },
+  {
+    "path": "textures/skill/fortune/critical_roll.png",
+    "kind": "perk",
+    "id": "critical_roll",
+    "concept": "Crit dice gamble",
+    "pixels_sha256": "f1d56a62fcbc71e96fac628634ac1f87351b3ef87410c050b20ed4ea3a42831a"
+  },
+  {
+    "path": "textures/skill/fortune/double_down.png",
+    "kind": "perk",
+    "id": "double_down",
+    "concept": "Doubled die — double drops",
+    "pixels_sha256": "3650341a4ab745ae6ff0bd17aa79d0391d472180dc8b4368dd82af6bf3aaba07"
+  },
+  {
+    "path": "textures/skill/fortune/dragon_hoard.png",
+    "kind": "perk",
+    "id": "dragon_hoard",
+    "concept": "Dragon's hoard chest",
+    "pixels_sha256": "f8a71a0cb406e21fc330a3545d2f0fe3fb8392066cfb8d56634714e8b91fb183"
+  },
+  {
+    "path": "textures/skill/fortune/enchanted_fortune.png",
+    "kind": "perk",
+    "id": "enchanted_fortune",
+    "concept": "Enchanted drops increased",
+    "pixels_sha256": "4fbc2d58029a5136c605186f9bc30c94db8c6671578bf884dc00b06a2b8246b6"
+  },
+  {
+    "path": "textures/skill/fortune/ethereal_luck.png",
+    "kind": "perk",
+    "id": "ethereal_luck",
+    "concept": "Spirit luck — magical loot",
+    "pixels_sha256": "ba421e4fdb86c763fc07a959df31d73bd449864a4a12ff892ed74c415210d08a"
+  },
+  {
+    "path": "textures/skill/fortune/fishermans_luck.png",
+    "kind": "perk",
+    "id": "fishermans_luck",
+    "concept": "Prize catch — more fish drops",
+    "pixels_sha256": "6687296e14a2d71324e422c5ae57b39a90f6ba4b033ac4abaa314c3926ba165d"
+  },
+  {
+    "path": "textures/skill/fortune/fortune_cookie.png",
+    "kind": "perk",
+    "id": "fortune_cookie",
+    "concept": "Fortune cookie — random food buff",
+    "pixels_sha256": "49f9513b5c699e19d3c2ce14c5dfdab67794e72e7922509690801199147203ae"
+  },
+  {
+    "path": "textures/skill/fortune/fortunes_favor.png",
+    "kind": "perk",
+    "id": "fortunes_favor",
+    "concept": "Fortune enchant favored",
+    "pixels_sha256": "647debe891b5af9aaf00190a7ed66c7227d5bbc761c6cb68a968c654e18d255c"
+  },
+  {
+    "path": "textures/skill/fortune/gem_attunement.png",
+    "kind": "perk",
+    "id": "gem_attunement",
+    "concept": "Gem kept when socketing",
+    "pixels_sha256": "bf6bb4b42b32351f7d0f69f00a3b98714cc74c657e5434cb922429f260724560"
+  },
+  {
+    "path": "textures/skill/fortune/golden_touch.png",
+    "kind": "perk",
+    "id": "golden_touch",
+    "concept": "Gilded hand — gold from any kill",
+    "pixels_sha256": "a4d51f494dfe6698d737ef63f296de1e51dda2288f7d0149ff23522267862d10"
+  },
+  {
+    "path": "textures/skill/fortune/greed.png",
+    "kind": "perk",
+    "id": "greed",
+    "concept": "Coin stack — more gold everywhere",
+    "pixels_sha256": "f4100b7cb3727cff0960b6db1b2e35e05aeedbac174c1b08b5053106989be83e"
+  },
+  {
+    "path": "textures/skill/fortune/jackpot.png",
+    "kind": "perk",
+    "id": "jackpot",
+    "concept": "Jackpot chest — triple loot",
+    "pixels_sha256": "2ccf68a3dd238b89b322b2afc7cfd58a305343bdbd097beb30b96bd96ff207ff"
+  },
+  {
+    "path": "textures/skill/fortune/jewelers_eye.png",
+    "kind": "perk",
+    "id": "jewelers_eye",
+    "concept": "Jeweler's appraisal — bonus gems",
+    "pixels_sha256": "f933ee13f12b7073b034a00e1c3a8e482c05544c83da39d641ad9427b0f2e56b"
+  },
+  {
+    "path": "textures/skill/fortune/limit_breaker.png",
+    "kind": "perk",
+    "id": "limit_breaker",
+    "concept": "Limit break burst damage",
+    "pixels_sha256": "ef6c8bcaa980be97ba21f38e291b1ac84ac1ca9f5ba1d01098202ef8adf55b51"
+  },
+  {
+    "path": "textures/skill/fortune/looter.png",
+    "kind": "perk",
+    "id": "looter",
+    "concept": "Trophy skull — boss drops",
+    "pixels_sha256": "0280d1798d9d8717980e831dd82ca9fce5c2c4051ba07473fd0804e7c52393dd"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_break.png",
+    "kind": "perk",
+    "id": "lucky_break",
+    "concept": "Charmed tool — durability spared",
+    "pixels_sha256": "951bff7bdee104cfe2af105b46b372da7f9df624b9a4bc83c56ed4d60d367d40"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_charm.png",
+    "kind": "perk",
+    "id": "lucky_charm",
+    "concept": "Lucky horseshoe — debuffs shortened",
+    "pixels_sha256": "cd4fb31d5db55cbdf8e58791fa2c762a7046f418a12649c19132ee8a409a6806"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_drop.png",
+    "kind": "perk",
+    "id": "lucky_drop",
+    "concept": "Clover — bonus mob drops",
+    "pixels_sha256": "81888c81c215678cbb3a81a1644c7001581fa4baaedbaddf7193647bf987fc29"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_explorer.png",
+    "kind": "perk",
+    "id": "lucky_explorer",
+    "concept": "Explorer compass — richer chests",
+    "pixels_sha256": "61d5ba3d7183effe373fb5eeb5cdb1a2d77bed0ac52435296e5291818b6aacca"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_fishing.png",
+    "kind": "perk",
+    "id": "lucky_fishing",
+    "concept": "Golden fish — treasure bites",
+    "pixels_sha256": "584ac164674c1211439fcb6bb222866f42dd9f1fadff4b09e2cad9683bc3cad5"
+  },
+  {
+    "path": "textures/skill/fortune/lucky_star.png",
+    "kind": "perk",
+    "id": "lucky_star",
+    "concept": "Night star — luck after dark",
+    "pixels_sha256": "3c952b1f76d6ff1b62a16a5759c45fd423e1cdb6510d5f863a05cbc92d7c0efa"
+  },
+  {
+    "path": "textures/skill/fortune/master_looter.png",
+    "kind": "perk",
+    "id": "master_looter",
+    "concept": "Master's chest — loot quality up",
+    "pixels_sha256": "fbee7477c678b7e318e824a9b60ce47a62c36cf98184f535cfaf1e88eb098d36"
+  },
+  {
+    "path": "textures/skill/fortune/midas_touch.png",
+    "kind": "perk",
+    "id": "midas_touch",
+    "concept": "Midas hand — drops turn gold",
+    "pixels_sha256": "415203f4fa4ea8de012131fc6eeb6eb6f0cbd46734b924c35a4e857a4850c791"
+  },
+  {
+    "path": "textures/skill/fortune/prospectors_luck.png",
+    "kind": "perk",
+    "id": "prospectors_luck",
+    "concept": "Rich vein — more ore drops",
+    "pixels_sha256": "9bf2c22be376a27e75f8c26541f63840e5f6878e9c4f02190a069bebfc11de6c"
+  },
+  {
+    "path": "textures/skill/fortune/rainbow_loot.png",
+    "kind": "perk",
+    "id": "rainbow_loot",
+    "concept": "Prismatic star — enchanted drops",
+    "pixels_sha256": "12562b9fe28d901c815229faba59505db155979612cf3a40da61a88eca2d26e9"
+  },
+  {
+    "path": "textures/skill/fortune/rare_find.png",
+    "kind": "perk",
+    "id": "rare_find",
+    "concept": "Rare gem discovery",
+    "pixels_sha256": "bf96e781b822ba4dace605f653dfbe4aec8da82f5950bcf342fe937c1132ccdc"
+  },
+  {
+    "path": "textures/skill/fortune/runic_fortune.png",
+    "kind": "perk",
+    "id": "runic_fortune",
+    "concept": "Runic luck — runic ore drops",
+    "pixels_sha256": "629252a55c29cf3c419ae80e29d32f1de4a9cbd672dc3b09aba35f962f730f4d"
+  },
+  {
+    "path": "textures/skill/fortune/salvage_luck.png",
+    "kind": "perk",
+    "id": "salvage_luck",
+    "concept": "Lucky salvage — extra materials",
+    "pixels_sha256": "5fd67c608392d7bef4ef7537c67b1e23905e80d4af8a01d98f36b13f319a0fa5"
+  },
+  {
+    "path": "textures/skill/fortune/scavenger.png",
+    "kind": "perk",
+    "id": "scavenger",
+    "concept": "Scavenger pack — extra chest finds",
+    "pixels_sha256": "84e5fedec717de5f055aa4d5b5e3f349c2984ca1544614d2bd56507ad49027c7"
+  },
+  {
+    "path": "textures/skill/fortune/serendipity.png",
+    "kind": "perk",
+    "id": "serendipity",
+    "concept": "Serendipitous strike while mining",
+    "pixels_sha256": "90609a92b80fd4e97df968bb73dfc3d5646dbd90b68613eb8346876f445b524a"
+  },
+  {
+    "path": "textures/skill/fortune/socket_virtuoso.png",
+    "kind": "perk",
+    "id": "socket_virtuoso",
+    "concept": "Virtuoso socket — extra effective socket",
+    "pixels_sha256": "3934b700d39b7684a579977ccd91ead8742384adf6784107c6eef2865d5ad3cc"
+  },
+  {
+    "path": "textures/skill/fortune/treasure_sense.png",
+    "kind": "perk",
+    "id": "treasure_sense",
+    "concept": "Treasure sense — rare loot nearby",
+    "pixels_sha256": "e9eb24fa7a2089e6233f2753af465dcdd0b7022fa1b740ca199e7a43569e36ef"
+  },
+  {
+    "path": "textures/skill/intelligence/alchemic_transmutation.png",
+    "kind": "perk",
+    "id": "alchemic_transmutation",
+    "concept": "Transmuting flask — bonus ingredients",
+    "pixels_sha256": "f9e116fb6fdc2d383d4b8f5a6e123fc5c34e5d5f781f24e1e334985878d7b04e"
+  },
+  {
+    "path": "textures/skill/intelligence/alchemy_manipulation.png",
+    "kind": "perk",
+    "id": "alchemy_manipulation",
+    "concept": "Amplified potion effects",
+    "pixels_sha256": "2d1565abda91d597f6528d27169c2e05f46e3bdc572dd80c90ec75f30ef21d3c"
+  },
+  {
+    "path": "textures/skill/intelligence/ancient_languages.png",
+    "kind": "perk",
+    "id": "ancient_languages",
+    "concept": "Ancient script — bonus XP",
+    "pixels_sha256": "4690e78d3e84ad49bfdccf6a3f83d8e86b9545336ef2eafc792c3df382db6acc"
+  },
+  {
+    "path": "textures/skill/intelligence/apothecary.png",
+    "kind": "perk",
+    "id": "apothecary",
+    "concept": "Herbal potion amplification",
+    "pixels_sha256": "4cd2714670732d298b59d5332e7ac80dd67bd977c3f7580c0b0263f18f9ea525"
+  },
+  {
+    "path": "textures/skill/intelligence/apothic_scholar.png",
+    "kind": "perk",
+    "id": "apothic_scholar",
+    "concept": "Scholar's tome — XP gained",
+    "pixels_sha256": "2e0823139b47b5026aeb74558a2dfcc03aecb955ea0f52db4697948eff113502"
+  },
+  {
+    "path": "textures/skill/intelligence/aquatic_knowledge.png",
+    "kind": "perk",
+    "id": "aquatic_knowledge",
+    "concept": "Studied fish — nourishment and buffs",
+    "pixels_sha256": "02ea6f0a433041ff0ff4ed5bc9b38314f7370376f5186db36cac455be40b399d"
+  },
+  {
+    "path": "textures/skill/intelligence/arcane_scholar.png",
+    "kind": "perk",
+    "id": "arcane_scholar",
+    "concept": "Spell complexity expanded",
+    "pixels_sha256": "8b2309274aaf527098e5aac629ab3bcc4f18fba91c8e8c0e2389ea0ef57b064d"
+  },
+  {
+    "path": "textures/skill/intelligence/beast_tamer.png",
+    "kind": "perk",
+    "id": "beast_tamer",
+    "concept": "Tamed paw — easier taming",
+    "pixels_sha256": "934fa151e9025f83e435f9d6f3db737302c605dd05944d1ad10e6327d8f6ce86"
+  },
+  {
+    "path": "textures/skill/intelligence/bookworm.png",
+    "kind": "perk",
+    "id": "bookworm",
+    "concept": "Bookworm — XP gain up",
+    "pixels_sha256": "d9778dc8c0640874845b7e9b1690f814e92a8d1ef52f0701138090c15e2b0290"
+  },
+  {
+    "path": "textures/skill/intelligence/brewing_innovation.png",
+    "kind": "perk",
+    "id": "brewing_innovation",
+    "concept": "Innovative brew — extra effects",
+    "pixels_sha256": "2d502faf931e3b1a838d4f140358634670351c3b56d13154eca1da34a649639c"
+  },
+  {
+    "path": "textures/skill/intelligence/cartographer.png",
+    "kind": "perk",
+    "id": "cartographer",
+    "concept": "Wider map reveal",
+    "pixels_sha256": "9ba865007e709127d73ff5d172764a4ef6040847fada47c1b6f977c546ae62d8"
+  },
+  {
+    "path": "textures/skill/intelligence/continuous_flow.png",
+    "kind": "perk",
+    "id": "continuous_flow",
+    "concept": "Steady mana stream — less drain",
+    "pixels_sha256": "3025f5962ac990090337121a7c9fde009a6fce7a5bfe10a3b5a146fa1a82690a"
+  },
+  {
+    "path": "textures/skill/intelligence/dimensional_scholar.png",
+    "kind": "perk",
+    "id": "dimensional_scholar",
+    "concept": "Otherworld study — dimension XP",
+    "pixels_sha256": "98ad5ad44a0811d96874219e62936e62f6ca9b87bde61d941e3054ca71747790"
+  },
+  {
+    "path": "textures/skill/intelligence/dragon_lore.png",
+    "kind": "perk",
+    "id": "dragon_lore",
+    "concept": "Dragon lore — taming success",
+    "pixels_sha256": "472a5be01b028a1b49432e060415b90554379a728a8440483ceaa6d190a60387"
+  },
+  {
+    "path": "textures/skill/intelligence/efficient_crafting.png",
+    "kind": "perk",
+    "id": "efficient_crafting",
+    "concept": "Efficient craft — materials spared",
+    "pixels_sha256": "c1459f6368440575ce7f9ef08b25517af142facc77f21dfbeaf2693a80b69ec5"
+  },
+  {
+    "path": "textures/skill/intelligence/enchantment_insight.png",
+    "kind": "perk",
+    "id": "enchantment_insight",
+    "concept": "Insight lenses — extra enchant options",
+    "pixels_sha256": "65e954820cd6e39ea316b8f43a1e62160d8b3486a776d7d45dced9091cf8d4c2"
+  },
+  {
+    "path": "textures/skill/intelligence/familiar_bond.png",
+    "kind": "perk",
+    "id": "familiar_bond",
+    "concept": "Bonded familiar damage",
+    "pixels_sha256": "651ce43ac9eb74025656b425ee6e7786b34b41d3045d63cefea8fd70eb3e8d5b"
+  },
+  {
+    "path": "textures/skill/intelligence/glyph_mastery.png",
+    "kind": "perk",
+    "id": "glyph_mastery",
+    "concept": "Mastered glyph amplification",
+    "pixels_sha256": "eb598c98e2fbd43080ee9036f82170274d17a622131988022e3c46756f3f6523"
+  },
+  {
+    "path": "textures/skill/intelligence/golem_commander.png",
+    "kind": "perk",
+    "id": "golem_commander",
+    "concept": "Golem core — construct damage",
+    "pixels_sha256": "9f29229931a7b22a63198ef7e11b80fff93d650c1d184d7a0d5aa574e37932c2"
+  },
+  {
+    "path": "textures/skill/intelligence/haggler.png",
+    "kind": "perk",
+    "id": "haggler",
+    "concept": "Haggled emerald — trade discount",
+    "pixels_sha256": "bda3e6dd31e4bb81087066bab6c6872c2cb84fdcd10b59a49e4f3bcb38a56d8c"
+  },
+  {
+    "path": "textures/skill/intelligence/linguist.png",
+    "kind": "perk",
+    "id": "linguist",
+    "concept": "Polyglot scroll — more trades",
+    "pixels_sha256": "516183e90a774d60e71d71f4b00c524fe7767c58a595953287b4760eb33bec9c"
+  },
+  {
+    "path": "textures/skill/intelligence/lore_keeper.png",
+    "kind": "perk",
+    "id": "lore_keeper",
+    "concept": "Guidebook lore XP",
+    "pixels_sha256": "d6cff1a9aa34139033b04fec637073d94bf3957a12550d02646d81f18ffa6d4a"
+  },
+  {
+    "path": "textures/skill/intelligence/master_researcher.png",
+    "kind": "perk",
+    "id": "master_researcher",
+    "concept": "Research sheet — recipe discovery",
+    "pixels_sha256": "fd2f5ccbb1761d498a48bd9fd8c33eb7dd94671b480cd511a36e08930c80cce1"
+  },
+  {
+    "path": "textures/skill/intelligence/monster_compendium.png",
+    "kind": "perk",
+    "id": "monster_compendium",
+    "concept": "Studied monster weak points",
+    "pixels_sha256": "b6f95600ed11d254a322e2f0fd26844dfb640b4c560d306b295a09cf01328f25"
+  },
+  {
+    "path": "textures/skill/intelligence/mystic_analysis.png",
+    "kind": "perk",
+    "id": "mystic_analysis",
+    "concept": "Analytic eye — typed bonus damage",
+    "pixels_sha256": "8f20a46ef2ce17491c5251ecfe138745b2b84a3f8ba1dad174fa6e8a06addda1"
+  },
+  {
+    "path": "textures/skill/intelligence/potion_brewing_expert.png",
+    "kind": "perk",
+    "id": "potion_brewing_expert",
+    "concept": "Stronger brewed potions",
+    "pixels_sha256": "2d1153c7147678c493915b66e6335360e67a3ee6e19ded63062c1daef8984a8c"
+  },
+  {
+    "path": "textures/skill/intelligence/progressive_mastery.png",
+    "kind": "perk",
+    "id": "progressive_mastery",
+    "concept": "Difficulty star — scaling XP",
+    "pixels_sha256": "4fca19c9a757759469f8feea51993545713d1ad595f15d3ec391e4c2208e30d3"
+  },
+  {
+    "path": "textures/skill/intelligence/quick_learner.png",
+    "kind": "perk",
+    "id": "quick_learner",
+    "concept": "Fast-learning XP orb",
+    "pixels_sha256": "2b707fe0b6e68501309a16f55f34920ba59f2340189220ecdad5db89dcd2145c"
+  },
+  {
+    "path": "textures/skill/intelligence/runecrafter.png",
+    "kind": "perk",
+    "id": "runecrafter",
+    "concept": "Crafted rune — runic item stats",
+    "pixels_sha256": "6bfbe82c3b87c5f6c8d53ef5c40e5e3512f27a40dfd90e1a4f9c50e13807ea6b"
+  },
+  {
+    "path": "textures/skill/intelligence/sages_focus.png",
+    "kind": "perk",
+    "id": "sages_focus",
+    "concept": "Focused channel — faster abilities",
+    "pixels_sha256": "ae84ba85bcdc47e6606b0b4dc122cbcf8db36548e9104e0c8911825c377d4197"
+  },
+  {
+    "path": "textures/skill/intelligence/scholar.png",
+    "kind": "perk",
+    "id": "scholar",
+    "concept": "Scholar's lenses — read ancient enchants",
+    "pixels_sha256": "2f469aaa4174180926e65630fba86ca76febba614895d213b30577796d67d540"
+  },
+  {
+    "path": "textures/skill/intelligence/scroll_mastery.png",
+    "kind": "perk",
+    "id": "scroll_mastery",
+    "concept": "Scroll preserved on use",
+    "pixels_sha256": "305d43ca80cb260cf49371fa5e4a5b804e8127e712d89b2533f7767b825ffcac"
+  },
+  {
+    "path": "textures/skill/intelligence/siege_engineer.png",
+    "kind": "perk",
+    "id": "siege_engineer",
+    "concept": "Siege works — machine damage",
+    "pixels_sha256": "d74ad4bd811458a8cd484b0ff0883abb73de9ce46413dd7e669de3d2193d0980"
+  },
+  {
+    "path": "textures/skill/intelligence/spell_echo.png",
+    "kind": "perk",
+    "id": "spell_echo",
+    "concept": "Echoing cast — mana refund chance",
+    "pixels_sha256": "63c0752a4d5de54d97ebe50d322d58736f8ef82a4a2e0947bde6f591f934d338"
+  },
+  {
+    "path": "textures/skill/intelligence/spellcraft_knowledge.png",
+    "kind": "perk",
+    "id": "spellcraft_knowledge",
+    "concept": "Practiced wand — cast speed",
+    "pixels_sha256": "01d1be2561548c4ed49f19cd28a5e8f87fbedd1e217428e512f114b760c8fe64"
+  },
+  {
+    "path": "textures/skill/intelligence/spellweaver.png",
+    "kind": "perk",
+    "id": "spellweaver",
+    "concept": "Woven casts — combo free spell",
+    "pixels_sha256": "781f5c5d595da897ae2f231acc1910ad166f8e91b80dccf9b6c9633512767df1"
+  },
+  {
+    "path": "textures/skill/intelligence/strategic_mind.png",
+    "kind": "perk",
+    "id": "strategic_mind",
+    "concept": "Battle plan — exploit weaknesses",
+    "pixels_sha256": "cd21acdf75ebbf5cd7c7ae52edb08042c7161960ee60997d45653ffbbb76daf5"
+  },
+  {
+    "path": "textures/skill/intelligence/tactical_genius.png",
+    "kind": "perk",
+    "id": "tactical_genius",
+    "concept": "Rally banner — ally damage",
+    "pixels_sha256": "ac10e28f7437d6350085093785bd1321a1ba8edb06eee3b577523af26c0078c9"
+  },
+  {
+    "path": "textures/skill/intelligence/war_tactician.png",
+    "kind": "perk",
+    "id": "war_tactician",
+    "concept": "War banner — ally attack speed",
+    "pixels_sha256": "41234449a8669ed7d220637a461ba229d9fcba375d34d5449f4c82329897fe0c"
+  },
+  {
+    "path": "textures/skill/magic/fire_mancer.png",
+    "kind": "perk",
+    "id": "fire_mancer",
+    "concept": "Pyromancer flame — fire spell damage",
+    "pixels_sha256": "0d0bc23e0c4de4b10852c5f17f80706da6e117fb1f27aeba865e6af1dc919188"
+  },
+  {
+    "path": "textures/skill/magic/ice_mancer.png",
+    "kind": "perk",
+    "id": "ice_mancer",
+    "concept": "Cryomancer crystal — ice spell damage",
+    "pixels_sha256": "28fa89901a4cdc2cdaf1db5679e792e1bd8211e5e570318ea4e59bff4d271d3e"
+  },
+  {
+    "path": "textures/skill/magic/lightning_mancer.png",
+    "kind": "perk",
+    "id": "lightning_mancer",
+    "concept": "Stormwrought bolt — lightning damage",
+    "pixels_sha256": "9011adfa93475ac86d9745835cd9c9c04066cb9dab5cd021815c2f76930bc317"
+  },
+  {
+    "path": "textures/skill/magic/holy_mancer.png",
+    "kind": "perk",
+    "id": "holy_mancer",
+    "concept": "Divine radiance — holy power",
+    "pixels_sha256": "d9259f7cb4ea80af2b4d830c27c5cd070f2356e13abceeebd9031b6f68ff09fe"
+  },
+  {
+    "path": "textures/skill/magic/ender_mancer.png",
+    "kind": "perk",
+    "id": "ender_mancer",
+    "concept": "Void pearl — ender spell damage",
+    "pixels_sha256": "41d5deb3ad048d12cc0e15aadb840a6db34fc9faf937fba2a89ebdf6c717b0a8"
+  },
+  {
+    "path": "textures/skill/magic/blood_mancer.png",
+    "kind": "perk",
+    "id": "blood_mancer",
+    "concept": "Hemomancer drop — blood damage",
+    "pixels_sha256": "c56a81726f4fde34ac944273b556fe49cffb07b85732cfbc87bde214096c0463"
+  },
+  {
+    "path": "textures/skill/magic/evocation_mancer.png",
+    "kind": "perk",
+    "id": "evocation_mancer",
+    "concept": "Evoker star — evocation damage",
+    "pixels_sha256": "ab7c6938befc5eaf2d4801f16421c6fd5dcc60b3343ccd6098c590483ad58668"
+  },
+  {
+    "path": "textures/skill/magic/nature_mancer.png",
+    "kind": "perk",
+    "id": "nature_mancer",
+    "concept": "Druid leaf — nature damage",
+    "pixels_sha256": "ec02d5c844dbdc67e35ad37d2d594192aa2bf59ba0883102a32a531fc9e091cf"
+  },
+  {
+    "path": "textures/skill/magic/eldritch_mancer.png",
+    "kind": "perk",
+    "id": "eldritch_mancer",
+    "concept": "Unknowable eye — eldritch damage",
+    "pixels_sha256": "4d3f64c0c744a033d5b681efb996593f20ee54bf464a0562e1aaea9745075d63"
+  },
+  {
+    "path": "textures/skill/magic/fire_catalyst.png",
+    "kind": "perk",
+    "id": "fire_catalyst",
+    "concept": "Immolating proc flame",
+    "pixels_sha256": "30a6538d501809171ac497088b0b26bac530eb169143e923b0dc83fbf5d2c625"
+  },
+  {
+    "path": "textures/skill/magic/ice_catalyst.png",
+    "kind": "perk",
+    "id": "ice_catalyst",
+    "concept": "Chilling proc crystal",
+    "pixels_sha256": "e4687d312471bc9bcc9c93e804701b1d27368a4f4ded31aeb763ad3a538361e3"
+  },
+  {
+    "path": "textures/skill/magic/lightning_catalyst.png",
+    "kind": "perk",
+    "id": "lightning_catalyst",
+    "concept": "Charged proc bolt",
+    "pixels_sha256": "af739b29f39879cf2f00276f814b2ca3dcd72df3d132047a04dfa482b288f9ed"
+  },
+  {
+    "path": "textures/skill/magic/holy_catalyst.png",
+    "kind": "perk",
+    "id": "holy_catalyst",
+    "concept": "Fortifying proc light",
+    "pixels_sha256": "94aec37f091719873c686c06aee9e9b9ed29d3ccba5074c02a4dbd8440437891"
+  },
+  {
+    "path": "textures/skill/magic/ender_catalyst.png",
+    "kind": "perk",
+    "id": "ender_catalyst",
+    "concept": "Planar proc pearl",
+    "pixels_sha256": "0aebc0f0c864a34f29b5a2c142daac7e368e76b632f90493e4162bf721e05d39"
+  },
+  {
+    "path": "textures/skill/magic/blood_catalyst.png",
+    "kind": "perk",
+    "id": "blood_catalyst",
+    "concept": "Rending proc drop",
+    "pixels_sha256": "5547e9fedb71db2ecbbea133a178a9c3a9a2dad17345eead0a258fa350f14cff"
+  },
+  {
+    "path": "textures/skill/magic/evocation_catalyst.png",
+    "kind": "perk",
+    "id": "evocation_catalyst",
+    "concept": "Echoing proc star",
+    "pixels_sha256": "0923c8ce263e1d522a4831c93ce32d49775acc433f8daca7e66d38a6c793e7f9"
+  },
+  {
+    "path": "textures/skill/magic/nature_catalyst.png",
+    "kind": "perk",
+    "id": "nature_catalyst",
+    "concept": "Oakskin proc leaf",
+    "pixels_sha256": "0a3887abc9adb3108b6e7a34d8648310a77fddf0ae2b4cd3ed6379017ba29f84"
+  },
+  {
+    "path": "textures/skill/magic/eldritch_catalyst.png",
+    "kind": "perk",
+    "id": "eldritch_catalyst",
+    "concept": "Shrouding proc eye",
+    "pixels_sha256": "7dcb91edb2f5643c675206c05328033e09bb5409708781b9f84f6976498fa691"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_fire.png",
+    "kind": "perk",
+    "id": "schoolbridge_fire",
+    "concept": "Bridged flames — Ars fire scales with Iron's",
+    "pixels_sha256": "4aad5d8385ed6de49553777a61ec8297e39a718f72617c892712c874a1063c35"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_water.png",
+    "kind": "perk",
+    "id": "schoolbridge_water",
+    "concept": "Frost-tide bridge — water from ice power",
+    "pixels_sha256": "2c3897ff158ca52a22b22e6d3f870b73575bb092b6fb385238ee370634e1c919"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_air.png",
+    "kind": "perk",
+    "id": "schoolbridge_air",
+    "concept": "Storm bridge — air from lightning power",
+    "pixels_sha256": "3590f85cb441d4d0ff1337e6e6b191a92c2da4ce3f98900c5debd547032546d6"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_earth.png",
+    "kind": "perk",
+    "id": "schoolbridge_earth",
+    "concept": "Root bridge — earth from nature power",
+    "pixels_sha256": "4d8edfacafcd164b8660ffd636666de324b3e709853ed1b18df31cad6e9e2f93"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_abjuration.png",
+    "kind": "perk",
+    "id": "schoolbridge_abjuration",
+    "concept": "Sacred bridge — abjuration from holy",
+    "pixels_sha256": "8f5b9eb22bbf2e17624cd2de054993c4051e1619e3c3aad2e2357fab32364253"
+  },
+  {
+    "path": "textures/skill/magic/schoolbridge_manipulation.png",
+    "kind": "perk",
+    "id": "schoolbridge_manipulation",
+    "concept": "Void bridge — manipulation from ender",
+    "pixels_sha256": "b7814dafc19249708a48d92af800175441abbded55e24f2d2b94890d2b8eed76"
+  },
+  {
+    "path": "textures/skill/magic/ars_form_projectile.png",
+    "kind": "perk",
+    "id": "ars_form_projectile",
+    "concept": "Spell arrow — projectile cost down",
+    "pixels_sha256": "00c9dae065c1e4b13ade87136194a61d998b16c4d2b82575dd55ee9812ac7709"
+  },
+  {
+    "path": "textures/skill/magic/ars_form_touch.png",
+    "kind": "perk",
+    "id": "ars_form_touch",
+    "concept": "Touch focus — contact spells stronger",
+    "pixels_sha256": "6efdc11466f080b19486117a4ea4cf33a505e1b768c380d0818997ab140b31b3"
+  },
+  {
+    "path": "textures/skill/magic/ars_form_self.png",
+    "kind": "perk",
+    "id": "ars_form_self",
+    "concept": "Inward focus — self spells cheaper",
+    "pixels_sha256": "60fe62273477a4e68bc34219abaa3aaddb42f2aee00fc2c94ce4325d033ae6d5"
+  },
+  {
+    "path": "textures/skill/magic/ars_wild_manipulation.png",
+    "kind": "perk",
+    "id": "ars_wild_manipulation",
+    "concept": "Wild weave — manipulation cost down",
+    "pixels_sha256": "7845a438bba02d3d958527d66e6a4f229dbf8a536f645cbfec0ecbb384d5f1ec"
+  },
+  {
+    "path": "textures/skill/magic/ars_hedgewitch.png",
+    "kind": "perk",
+    "id": "ars_hedgewitch",
+    "concept": "Tidal drop — water glyphs stronger",
+    "pixels_sha256": "6eda82633a2c0fe55e8430c4df22b2be41ce10b42fe420f210f576b375a20b4c"
+  },
+  {
+    "path": "textures/skill/magic/ars_emberforged.png",
+    "kind": "perk",
+    "id": "ars_emberforged",
+    "concept": "Emberforged flame — fire glyphs",
+    "pixels_sha256": "6a95476c410ca9af98cd096318f55b1b3c54089458b716080c3392fdf0806e8d"
+  },
+  {
+    "path": "textures/skill/magic/ars_stormcaller.png",
+    "kind": "perk",
+    "id": "ars_stormcaller",
+    "concept": "Stormcaller bolt — air glyphs",
+    "pixels_sha256": "47c0dc183f3cc43c878b5c9c6dac87f897a4c3d1e6f97099b0f32e9c9674dbbb"
+  },
+  {
+    "path": "textures/skill/magic/ars_geomancer.png",
+    "kind": "perk",
+    "id": "ars_geomancer",
+    "concept": "Geomancer stone — earth glyphs",
+    "pixels_sha256": "b3f3cd8e0fce01a5a02f0e9ab9646b3bff8bca3a84fdab8b716a80e3359abcd9"
+  },
+  {
+    "path": "textures/skill/magic/ars_conjurer.png",
+    "kind": "perk",
+    "id": "ars_conjurer",
+    "concept": "Conjured spirit — summon cost down",
+    "pixels_sha256": "33be27964a28bde29471698a7cb1e2c29beb0505f15dd2eb8f6fd82cb830d8f4"
+  },
+  {
+    "path": "textures/skill/magic/ars_abjurer.png",
+    "kind": "perk",
+    "id": "ars_abjurer",
+    "concept": "Abjurer ward — protection stronger",
+    "pixels_sha256": "2b87e7b0f8a0ea26e9f7ade17e651316b7f4030befde3330c2428b613b32a9f2"
+  },
+  {
+    "path": "textures/skill/magic/ars_arcane_weaver.png",
+    "kind": "perk",
+    "id": "ars_arcane_weaver",
+    "concept": "Woven manipulation damage",
+    "pixels_sha256": "517ac1699b9d3dd88333861cfaa2d32787274af14379b8caf704f64878a222ab"
+  },
+  {
+    "path": "textures/skill/magic/affix_focus.png",
+    "kind": "perk",
+    "id": "affix_focus",
+    "concept": "Rare gear attunes casting",
+    "pixels_sha256": "efec1d83ecb8015d2745a7ee5c5f608fa5576218b48248308ce889671bd1f29b"
+  },
+  {
+    "path": "textures/skill/magic/arcane_barrier.png",
+    "kind": "perk",
+    "id": "arcane_barrier",
+    "concept": "Conjured barrier absorbing damage",
+    "pixels_sha256": "31fca22cd0578b10f9f7e84bcdc417ec5872929bf3d378c6d5bfeaf9288fcafb"
+  },
+  {
+    "path": "textures/skill/magic/arcane_efficiency.png",
+    "kind": "perk",
+    "id": "arcane_efficiency",
+    "concept": "Efficient sigil — Ars mana cost down",
+    "pixels_sha256": "c30666f433c52aec8a97d7464c2083e3f7d132b6fc1c3d2989da93592ec19a24"
+  },
+  {
+    "path": "textures/skill/magic/arcane_recovery.png",
+    "kind": "perk",
+    "id": "arcane_recovery",
+    "concept": "Mana drawn from the dying",
+    "pixels_sha256": "1bcf5fa71e875959f82e958826cf5654d28878ac867f6fa428b2e48edffed53d"
+  },
+  {
+    "path": "textures/skill/magic/arcane_reforging.png",
+    "kind": "perk",
+    "id": "arcane_reforging",
+    "concept": "Reforge rarity upgrade chance",
+    "pixels_sha256": "58b6f566be63ef6a839a02d29f28cf8ee150c9f77d4bc7eba66a811798d46dd9"
+  },
+  {
+    "path": "textures/skill/magic/arcane_reprieve.png",
+    "kind": "perk",
+    "id": "arcane_reprieve",
+    "concept": "Emergency mana surge",
+    "pixels_sha256": "c78ef78936b5115942f5e6c69c63041a6305733bd2380431cf4ef0690ccbab87"
+  },
+  {
+    "path": "textures/skill/magic/astral_projection.png",
+    "kind": "perk",
+    "id": "astral_projection",
+    "concept": "Astral eye — remote viewing",
+    "pixels_sha256": "213a66dd29572134121a06d2e30acc522c2abf26dd583c90118fc1671f01ac87"
+  },
+  {
+    "path": "textures/skill/magic/charge_mastery.png",
+    "kind": "perk",
+    "id": "charge_mastery",
+    "concept": "Full charge — held casts hit harder",
+    "pixels_sha256": "60692c10afa1a8a54fca5aecf821fc7ded1d7cca4b1f9c61c47ea1c4dda16f84"
+  },
+  {
+    "path": "textures/skill/magic/dragon_magic.png",
+    "kind": "perk",
+    "id": "dragon_magic",
+    "concept": "Dragon magic items stronger",
+    "pixels_sha256": "e40974683de8fa51eede1c52d456045dc1443594a2454388bee7f49087b6a93d"
+  },
+  {
+    "path": "textures/skill/magic/dual_casting.png",
+    "kind": "perk",
+    "id": "dual_casting",
+    "concept": "Twin cast chance",
+    "pixels_sha256": "ac0c324a898e1528ec839e2e488b260c8ffd6d8681f4c67ae303524579849786"
+  },
+  {
+    "path": "textures/skill/magic/eldritch_power.png",
+    "kind": "perk",
+    "id": "eldritch_power",
+    "concept": "Eldritch spells empowered",
+    "pixels_sha256": "d196b6fc4a8f021409ee8c8130cabf616067e72f2a896b9ffa3cf36a32f095d8"
+  },
+  {
+    "path": "textures/skill/magic/elemental_master.png",
+    "kind": "perk",
+    "id": "elemental_master",
+    "concept": "Tri-element burst damage",
+    "pixels_sha256": "9e620a1aae65c52471bd069968416462c24050934d10a66f8c794e18e80da2c1"
+  },
+  {
+    "path": "textures/skill/magic/enchanted_missiles.png",
+    "kind": "perk",
+    "id": "enchanted_missiles",
+    "concept": "Missile volley damage",
+    "pixels_sha256": "44f3625f604c52e8c362f27c14b03cd0d79341c7b76fb0bd94125d0121b64b46"
+  },
+  {
+    "path": "textures/skill/magic/life_eater.png",
+    "kind": "perk",
+    "id": "life_eater",
+    "concept": "Stolen life on kill",
+    "pixels_sha256": "725358afdf0056fb6fed17afb65c6e0b8a2127e675424c9b4b8b781f420a3251"
+  },
+  {
+    "path": "textures/skill/magic/life_leech_bound.png",
+    "kind": "perk",
+    "id": "life_leech_bound",
+    "concept": "Minions tithe mana",
+    "pixels_sha256": "984c8d29be130c24bb9dc200982c5686b7d4b96cb4ea3f7dad5b1a92105b5d6c"
+  },
+  {
+    "path": "textures/skill/magic/long_channel.png",
+    "kind": "perk",
+    "id": "long_channel",
+    "concept": "Extended ritual — long casts stronger",
+    "pixels_sha256": "4fdbbce4dd71a5f58d6f3edaecae59c128672a6999e0dad2ed1023076533cbb7"
+  },
+  {
+    "path": "textures/skill/magic/lord_of_the_dead.png",
+    "kind": "perk",
+    "id": "lord_of_the_dead",
+    "concept": "Undead lord — summons empowered",
+    "pixels_sha256": "83c2658ec3f3ec1ba4ac3d188efd9b2b94ab4992777cd43c8354f34f690afebe"
+  },
+  {
+    "path": "textures/skill/magic/mana_efficiency.png",
+    "kind": "perk",
+    "id": "mana_efficiency",
+    "concept": "Lean mana drop — spells cost less",
+    "pixels_sha256": "bb0ef0ac745a2c5a91a28f60e6fa4b8a55de6e8e5806e014cb0d6df268362dbf"
+  },
+  {
+    "path": "textures/skill/magic/mana_regeneration.png",
+    "kind": "perk",
+    "id": "mana_regeneration",
+    "concept": "Mana regen up",
+    "pixels_sha256": "11254e812c96203b85a481e4e26ac0fda3d963614f6cb09994ca7a6de597c5b0"
+  },
+  {
+    "path": "textures/skill/magic/mana_shield.png",
+    "kind": "perk",
+    "id": "mana_shield",
+    "concept": "Mana absorbing damage",
+    "pixels_sha256": "9aaee427428433bc995d75f62079ff8f67fc9885a25041d79411542c85809827"
+  },
+  {
+    "path": "textures/skill/magic/mana_surge.png",
+    "kind": "perk",
+    "id": "mana_surge",
+    "concept": "Blue surge — desperate power",
+    "pixels_sha256": "cfe069833c2327ce78ee3b576e59cfb370113bb77ad543a0e58aa9a762fa6931"
+  },
+  {
+    "path": "textures/skill/magic/mystic_shield.png",
+    "kind": "perk",
+    "id": "mystic_shield",
+    "concept": "Ward vs magic projectiles",
+    "pixels_sha256": "931a5a4de083bd43bd4d6e2ad8b8bf1d092214257b1e97479db8da12d4c088fc"
+  },
+  {
+    "path": "textures/skill/magic/philosophers_stone.png",
+    "kind": "perk",
+    "id": "philosophers_stone",
+    "concept": "Transmutation stone drops",
+    "pixels_sha256": "234f7ecb48c99b583784ab7dbb1c97cf682aa2f22ea64e3a977d5cf33c9a4ab0"
+  },
+  {
+    "path": "textures/skill/magic/potion_splash.png",
+    "kind": "perk",
+    "id": "potion_splash",
+    "concept": "Wider splash radius",
+    "pixels_sha256": "9b446ebf0ce7f83a49b84db0c7b2815c2745cdee3427f9a6b7b081a9ebf94b4c"
+  },
+  {
+    "path": "textures/skill/magic/quickcast.png",
+    "kind": "perk",
+    "id": "quickcast",
+    "concept": "Instant spells cycle faster",
+    "pixels_sha256": "fd4b61a6bceafc354bdf0736eb2ee32906f90ee9051c43836a1080d537f92fc4"
+  },
+  {
+    "path": "textures/skill/magic/quickening.png",
+    "kind": "perk",
+    "id": "quickening",
+    "concept": "Cast time reduced",
+    "pixels_sha256": "7749684225cd9fbc951595f12528c3a34421941a6f5aff5dee76c0e1e9c422b8"
+  },
+  {
+    "path": "textures/skill/magic/reservoir.png",
+    "kind": "perk",
+    "id": "reservoir",
+    "concept": "Deep mana reservoir regen",
+    "pixels_sha256": "c11c144ce9650ab6fa499efc0715466a6e66cbd5e080371a9749cec2c00cbe95"
+  },
+  {
+    "path": "textures/skill/magic/resonant_affixes.png",
+    "kind": "perk",
+    "id": "resonant_affixes",
+    "concept": "Affix resonance — spell damage",
+    "pixels_sha256": "05eb8fc5836dd9211e3bbe3ba55e36a5e67ca1989ec9df84d27179d6df818b3f"
+  },
+  {
+    "path": "textures/skill/magic/resonant_casting.png",
+    "kind": "perk",
+    "id": "resonant_casting",
+    "concept": "Overflow resonance — bonus damage",
+    "pixels_sha256": "008336679d1189466c633e92b97039cff6ed291d3fb2b5ce85684d9538b80717"
+  },
+  {
+    "path": "textures/skill/magic/safe_port.png",
+    "kind": "perk",
+    "id": "safe_port",
+    "concept": "Painless pearl teleport",
+    "pixels_sha256": "a6d878bdf5b89755824b2e1cc6ae0b0342426a206e7304e9c48ccd81515f2407"
+  },
+  {
+    "path": "textures/skill/magic/soul_magic.png",
+    "kind": "perk",
+    "id": "soul_magic",
+    "concept": "Soul abilities empowered",
+    "pixels_sha256": "4bdc21300b23e6ad08e99a5eb3b655197cfce38040310ecc1ae66f767a4803c3"
+  },
+  {
+    "path": "textures/skill/magic/source_attunement.png",
+    "kind": "perk",
+    "id": "source_attunement",
+    "concept": "Expanded source pool",
+    "pixels_sha256": "dafcba7646e936839260e62f538760d62067563f16b91185537302b07c060589"
+  },
+  {
+    "path": "textures/skill/magic/source_well.png",
+    "kind": "perk",
+    "id": "source_well",
+    "concept": "Source generation up",
+    "pixels_sha256": "1430a6e71640bb962a389386b7c4e69f75607011f8a465c22e56760cce8689a4"
+  },
+  {
+    "path": "textures/skill/magic/spell_amplifier.png",
+    "kind": "perk",
+    "id": "spell_amplifier",
+    "concept": "All spell damage amplified",
+    "pixels_sha256": "1ac70d86fb831862e1bde011b1ad5af5063a3ae2116a9739638696f150d9f763"
+  },
+  {
+    "path": "textures/skill/magic/spell_quickening.png",
+    "kind": "perk",
+    "id": "spell_quickening",
+    "concept": "Spell cast time down",
+    "pixels_sha256": "51b19a95c959c01d0ad568e368c066a5b2007b2ea7b1d9c21929021abfff88d5"
+  },
+  {
+    "path": "textures/skill/magic/spellsocket.png",
+    "kind": "perk",
+    "id": "spellsocket",
+    "concept": "Sockets grant spell level",
+    "pixels_sha256": "0d8282ce894ce650366e473c311bd961f32c05e67518e4f26b20502c706f9774"
+  },
+  {
+    "path": "textures/skill/magic/summoner.png",
+    "kind": "perk",
+    "id": "summoner",
+    "concept": "Strengthened summons",
+    "pixels_sha256": "fe9d993619f989b6335d57b5a1657049c78ef53e7d299ee8b42a45ce13a0f7d3"
+  },
+  {
+    "path": "textures/skill/magic/telekinesis.png",
+    "kind": "perk",
+    "id": "telekinesis",
+    "concept": "Telekinetic reach",
+    "pixels_sha256": "99b4e2c4035cf5a1f48f785d75adb9d3eeb02af7ee5241211f0b8e3219df909a"
+  },
+  {
+    "path": "textures/skill/magic/tempo.png",
+    "kind": "perk",
+    "id": "tempo",
+    "concept": "Spell cooldowns reduced",
+    "pixels_sha256": "fa1c496914b4fe50208e7b7e7e0b5906c082d5be9abb5a27589ac3ee8a28dd6a"
+  },
+  {
+    "path": "textures/skill/magic/triple_threat.png",
+    "kind": "perk",
+    "id": "triple_threat",
+    "concept": "Three traditions in concert",
+    "pixels_sha256": "f76db21113f2e4df47cffae5f503d0c890d870f3ac12656d2595c5a0e25599f1"
+  },
+  {
+    "path": "textures/skill/magic/unified_arcana.png",
+    "kind": "perk",
+    "id": "unified_arcana",
+    "concept": "Source refunds Iron's mana",
+    "pixels_sha256": "c6b0837544d1b853e8af6b23ac905a2305b9e39a42a5b86fcca16702a8f978b2"
+  },
+  {
+    "path": "textures/skill/magic/void_magic.png",
+    "kind": "perk",
+    "id": "void_magic",
+    "concept": "Void-charged ender damage",
+    "pixels_sha256": "2b0c1912ad5b3177305bc121e633483b520c0e4bd93d6a02e7eae4b129ae14cc"
+  },
+  {
+    "path": "textures/skill/magic/wellspring.png",
+    "kind": "perk",
+    "id": "wellspring",
+    "concept": "Deepened mana wellspring",
+    "pixels_sha256": "a8bde79392fca95311ebab7e4dcd49c30029053ae0ee85575d28eda4ab2c7c2b"
+  },
+  {
+    "path": "textures/skill/magic/wormhole_storage.png",
+    "kind": "perk",
+    "id": "wormhole_storage",
+    "concept": "Wormhole ender chest access",
+    "pixels_sha256": "de888e3769aac5dd62652ad9c3489cdff974f5c9f0a1bf93853b8961acbf77d9"
+  },
+  {
+    "path": "textures/skill/strength/armor_piercing.png",
+    "kind": "perk",
+    "id": "armor_piercing",
+    "concept": "Pierced plate — armor ignored",
+    "pixels_sha256": "c27c6fccfd6cec8bf4fd573e094ca02953bc4c1b9ecfbe68846e62ed36684871"
+  },
+  {
+    "path": "textures/skill/strength/berserker.png",
+    "kind": "perk",
+    "id": "berserker",
+    "concept": "Berserk axe — low-health crits",
+    "pixels_sha256": "5050042db788c643a77a26ba62526c3a8543af030d77a62c7e00b2b7bf7a2de2"
+  },
+  {
+    "path": "textures/skill/strength/blade_storm.png",
+    "kind": "perk",
+    "id": "blade_storm",
+    "concept": "Whirling blades vs crowds",
+    "pixels_sha256": "cc94debe28ad354b57f2303ba671ef8d8773ef4e20e8a45cfd48001c343caafa"
+  },
+  {
+    "path": "textures/skill/strength/blood_fury.png",
+    "kind": "perk",
+    "id": "blood_fury",
+    "concept": "Crit lifesteal drop",
+    "pixels_sha256": "1f528b5e6b2bc32b56cb18f719ed4be302e42727882d794ffe53cee5e4f06253"
+  },
+  {
+    "path": "textures/skill/strength/bloodlust.png",
+    "kind": "perk",
+    "id": "bloodlust",
+    "concept": "Bloodied fangs — kill frenzy speed",
+    "pixels_sha256": "c3a63c5d8718c9b69a1b7a987637d9b091ea190a130d43e3850e28c71877de80"
+  },
+  {
+    "path": "textures/skill/strength/boss_hunter.png",
+    "kind": "perk",
+    "id": "boss_hunter",
+    "concept": "Crowned prey — boss damage",
+    "pixels_sha256": "44b36a0c98138d9685d0cef4a54858e5bdc2b78b74b7bbdf0a8c9ea7b1651e8a"
+  },
+  {
+    "path": "textures/skill/strength/brutal_swing.png",
+    "kind": "perk",
+    "id": "brutal_swing",
+    "concept": "Two-handed brutal swing",
+    "pixels_sha256": "a68394829fd639c667670789c88b593446806edc8a24cbfbce1f7a1f29dbeb38"
+  },
+  {
+    "path": "textures/skill/strength/cataclysms_wrath.png",
+    "kind": "perk",
+    "id": "cataclysms_wrath",
+    "concept": "Cataclysm blade empowered",
+    "pixels_sha256": "5766dcb5dd104e8f4697f88327e4d78960af99e5f7c7a399dc659667dcda396f"
+  },
+  {
+    "path": "textures/skill/strength/chain_lightning_strike.png",
+    "kind": "perk",
+    "id": "chain_lightning_strike",
+    "concept": "Melee chains lightning",
+    "pixels_sha256": "ea00ab12105bb99b7c8695dc886135af814e0ef27bc79f1ae97621b64b3c2c9f"
+  },
+  {
+    "path": "textures/skill/strength/cleave.png",
+    "kind": "perk",
+    "id": "cleave",
+    "concept": "Cleaving strike hits nearby foes",
+    "pixels_sha256": "f32ed5a9c8f98920f98e1883e1860a2a1ffbc9db315eda8282d319972d22c27e"
+  },
+  {
+    "path": "textures/skill/strength/devastating_blow.png",
+    "kind": "perk",
+    "id": "devastating_blow",
+    "concept": "Opening blow vs full health",
+    "pixels_sha256": "a676dae26ddc609ec9507d248c7501975bbfce37cf0dcc15fb22fbf98303a858"
+  },
+  {
+    "path": "textures/skill/strength/draconic_fury.png",
+    "kind": "perk",
+    "id": "draconic_fury",
+    "concept": "Dragon weapon fire damage",
+    "pixels_sha256": "42b3c39d6b5fa4c21563d69e7012ebd5429f8e9b3101ac722af127886540e0f1"
+  },
+  {
+    "path": "textures/skill/strength/dragon_bone_mastery.png",
+    "kind": "perk",
+    "id": "dragon_bone_mastery",
+    "concept": "Dragon bone weapon damage",
+    "pixels_sha256": "58e17358f9c5b298731ded8cab3618e1a2557b2b872d9a33f7a633c5474511b8"
+  },
+  {
+    "path": "textures/skill/strength/dragon_slayer.png",
+    "kind": "perk",
+    "id": "dragon_slayer",
+    "concept": "Slayer's edge vs dragons",
+    "pixels_sha256": "527e5f9b16c4ac1e75ceab32b4d38f2d81442f84812f2288dea26f9a73508f13"
+  },
+  {
+    "path": "textures/skill/strength/execute.png",
+    "kind": "perk",
+    "id": "execute",
+    "concept": "Execution — finish the weakened",
+    "pixels_sha256": "76ec4a8709d3b038b9b51b3b2b02550dd83eadc9a670cda054a4ad41b03cca4e"
+  },
+  {
+    "path": "textures/skill/strength/fighting_spirit.png",
+    "kind": "perk",
+    "id": "fighting_spirit",
+    "concept": "Kill-fueled strength",
+    "pixels_sha256": "91ce1c99f994bb92da89a2fd67bc8ced4241777df2e23092c11b8832d7a1566a"
+  },
+  {
+    "path": "textures/skill/strength/gladiator.png",
+    "kind": "perk",
+    "id": "gladiator",
+    "concept": "Shield bash damage",
+    "pixels_sha256": "84683badba7b049b335e49ff6fd49766c4a92ab0198a01323bf607486016961b"
+  },
+  {
+    "path": "textures/skill/strength/heavy_strikes.png",
+    "kind": "perk",
+    "id": "heavy_strikes",
+    "concept": "Guard-crushing strikes",
+    "pixels_sha256": "67348e6ae6071662095cac4b7c254292f90e835c8b2804855b44e3114a570602"
+  },
+  {
+    "path": "textures/skill/strength/last_stand.png",
+    "kind": "perk",
+    "id": "last_stand",
+    "concept": "Survive a fatal hit at 1 HP with brief protection and bonus damage",
+    "pixels_sha256": "e7b29c47832c1037e9905b7ce8ce37b8c53e97e6f130b7db3a2ec44eb6df9c03"
+  },
+  {
+    "path": "textures/skill/strength/mowzies_might.png",
+    "kind": "perk",
+    "id": "mowzies_might",
+    "concept": "Mowzie ability might",
+    "pixels_sha256": "9b5b197bc5455097a5f3929a590d69fa30e7d12527ba01f9bc50a8b14560dfb9"
+  },
+  {
+    "path": "textures/skill/strength/mythical_berserker.png",
+    "kind": "perk",
+    "id": "mythical_berserker",
+    "concept": "Deathless rage",
+    "pixels_sha256": "75b0588427b780f9b116647a2dd3536da06af432fdd039e40178c03cec9ab053"
+  },
+  {
+    "path": "textures/skill/strength/nichirin_blade.png",
+    "kind": "perk",
+    "id": "nichirin_blade",
+    "concept": "Nichirin katana damage",
+    "pixels_sha256": "3a2b64335c990a730f44a1b21c97082f7cf0112f67bf4640280d2ba69c258b11"
+  },
+  {
+    "path": "textures/skill/strength/one_handed.png",
+    "kind": "perk",
+    "id": "one_handed",
+    "concept": "One-handed finesse damage",
+    "pixels_sha256": "898803bfb59eb5fcc93b170cd940483d3ad7de7a6c98d8f4f1ad4568773c7388"
+  },
+  {
+    "path": "textures/skill/strength/polearm_mastery.png",
+    "kind": "perk",
+    "id": "polearm_mastery",
+    "concept": "Halberd and lance mastery",
+    "pixels_sha256": "86f4064388e44977ffaa20789c3bc1597d56a82b863448d1443c5347616ba193"
+  },
+  {
+    "path": "textures/skill/strength/power_attack.png",
+    "kind": "perk",
+    "id": "power_attack",
+    "concept": "Crit power surge",
+    "pixels_sha256": "800e678cee4b91b7b5d7bf02f570d8967856c4168b47686a019226aa40337cf6"
+  },
+  {
+    "path": "textures/skill/strength/primal_fury.png",
+    "kind": "perk",
+    "id": "primal_fury",
+    "concept": "Primal fury when wounded",
+    "pixels_sha256": "ed0ce14e661f90c6192d61d22b2924a9821fd836d2651658c8e472df77cf3d7e"
+  },
+  {
+    "path": "textures/skill/strength/reapers_edge.png",
+    "kind": "perk",
+    "id": "reapers_edge",
+    "concept": "Reaper's cut — current-HP damage",
+    "pixels_sha256": "4340fb661d7a9c9263f393af9a30813918b538fb6a4d39d3c551c9029899831a"
+  },
+  {
+    "path": "textures/skill/strength/runic_might.png",
+    "kind": "perk",
+    "id": "runic_might",
+    "concept": "Runic weapon damage",
+    "pixels_sha256": "eccefcbc3e84fd572862ba058531bc902d66bce4fc4655d1c63681974b842ff5"
+  },
+  {
+    "path": "textures/skill/strength/sacred_fire.png",
+    "kind": "perk",
+    "id": "sacred_fire",
+    "concept": "Sacred flame ignites foes",
+    "pixels_sha256": "c80ec1333409ef2e7600646464a17071f75718c09f37faa530041a5b427c748a"
+  },
+  {
+    "path": "textures/skill/strength/samurais_edge.png",
+    "kind": "perk",
+    "id": "samurais_edge",
+    "concept": "Katana training damage",
+    "pixels_sha256": "09175e92d076be2fd1f0a1c26b95f1d82fbf20cdece3d33843d39329ab257eba"
+  },
+  {
+    "path": "textures/skill/strength/siege_breaker.png",
+    "kind": "perk",
+    "id": "siege_breaker",
+    "concept": "Siege maul vs bosses",
+    "pixels_sha256": "39eb7d58ae87beb7b7cb1cc7164d766dcee3c158dfd1f451087fd8dc580e230a"
+  },
+  {
+    "path": "textures/skill/strength/spartans_discipline.png",
+    "kind": "perk",
+    "id": "spartans_discipline",
+    "concept": "Spartan weapon discipline",
+    "pixels_sha256": "c0f01c03d9a46753526ed3015b0e6f4f0d4041dc913d133b22eae67c862f71f1"
+  },
+  {
+    "path": "textures/skill/strength/spectral_ward.png",
+    "kind": "perk",
+    "id": "spectral_ward",
+    "concept": "Blows ignore defenses",
+    "pixels_sha256": "f25e35c29498f5cc021be9453a4b596acf341e53a11c23ba2176ec389230ed41"
+  },
+  {
+    "path": "textures/skill/strength/stalwart_striker.png",
+    "kind": "perk",
+    "id": "stalwart_striker",
+    "concept": "Dungeon kills restore health",
+    "pixels_sha256": "73a1b7c92f3b8cc27bace4149278bd13902cf2ada8d4069ddfe88f930110d0f7"
+  },
+  {
+    "path": "textures/skill/strength/titans_grip.png",
+    "kind": "perk",
+    "id": "titans_grip",
+    "concept": "Titan grip — 2H with shield",
+    "pixels_sha256": "f3669e0098552f16a46732701a948d5ae976d514dbf78e734834772e5c95bc79"
+  },
+  {
+    "path": "textures/skill/strength/trophy_hunter.png",
+    "kind": "perk",
+    "id": "trophy_hunter",
+    "concept": "Elite trophy damage",
+    "pixels_sha256": "d1ab46280ea76b39d54ef3d862db94ab0ce8f4161c1d97a838e50f78ba8d9f16"
+  },
+  {
+    "path": "textures/skill/strength/unstoppable_force.png",
+    "kind": "perk",
+    "id": "unstoppable_force",
+    "concept": "Stunning impact chance",
+    "pixels_sha256": "d5d6d2b76ce956ec33880882d8ad898e6978f7ac4b61f92d2e16690c33b372f3"
+  },
+  {
+    "path": "textures/skill/strength/vampiric_fangs.png",
+    "kind": "perk",
+    "id": "vampiric_fangs",
+    "concept": "Vampiric lifesteal fangs",
+    "pixels_sha256": "7ba347d73aa3fff1c2a59567620544d1c10215b47855b23664021b03d88bde1a"
+  },
+  {
+    "path": "textures/skill/strength/vengeance.png",
+    "kind": "perk",
+    "id": "vengeance",
+    "concept": "Vengeful strike at your attacker",
+    "pixels_sha256": "7e01d78e7a05cac57847bab5dd2a3db2b7fbb38ea1260867791b75b929cab160"
+  },
+  {
+    "path": "textures/skill/strength/warlords_presence.png",
+    "kind": "perk",
+    "id": "warlords_presence",
+    "concept": "Warlord banner — allies inspired",
+    "pixels_sha256": "04bedce02bf1249165c0fe45b4c81584fc7d68c96ccd6d8839a6e105d5951d71"
+  },
+  {
+    "path": "textures/skill/strength/warmonger.png",
+    "kind": "perk",
+    "id": "warmonger",
+    "concept": "Armor-breaker damage",
+    "pixels_sha256": "4cf3a6ac89094966e540d319723d8a64833d8b45085bd904ca7c771aef028de6"
+  },
+  {
+    "path": "textures/skill/strength/weapon_master.png",
+    "kind": "perk",
+    "id": "weapon_master",
+    "concept": "All-weapon mastery",
+    "pixels_sha256": "ecbb3c493b8f86273073360c8dad74b1fd6970e99c5c22d08a3c78bbd8e16cf0"
+  },
+  {
+    "path": "textures/skill/tinkering/alloy_master.png",
+    "kind": "perk",
+    "id": "alloy_master",
+    "concept": "Alloy furnace — extra ingots",
+    "pixels_sha256": "3edf1d838929ee6ce317268dda13e6d1dc0cc91ca64199a746057759a4bcb0c9"
+  },
+  {
+    "path": "textures/skill/tinkering/armor_smith.png",
+    "kind": "perk",
+    "id": "armor_smith",
+    "concept": "Smithed armor bonus protection",
+    "pixels_sha256": "52927242a3e857eb438343486fed78684067bb240f2d1430c967e2fe6791d022"
+  },
+  {
+    "path": "textures/skill/tinkering/assembly_line.png",
+    "kind": "perk",
+    "id": "assembly_line",
+    "concept": "Assembly gear — batch output",
+    "pixels_sha256": "0bac9bc0df238c01576a5288b9c958655d7b6b2d652bf798d86a2ed520558646"
+  },
+  {
+    "path": "textures/skill/tinkering/auto_repair.png",
+    "kind": "perk",
+    "id": "auto_repair",
+    "concept": "Self-repairing gear",
+    "pixels_sha256": "2444283d1004f20417d1a72981c2d52f7d17f8b5b69f914b8488d8adf9b48bc2"
+  },
+  {
+    "path": "textures/skill/tinkering/ballistic_expert.png",
+    "kind": "perk",
+    "id": "ballistic_expert",
+    "concept": "Mechanical ranged damage",
+    "pixels_sha256": "394861f58953705c6bd07775e29de31ae7235b243f7542e5bf54cebce9ac3e0a"
+  },
+  {
+    "path": "textures/skill/tinkering/brewing_apparatus.png",
+    "kind": "perk",
+    "id": "brewing_apparatus",
+    "concept": "Tuned brewing stand speed",
+    "pixels_sha256": "02653c8ba1095017a67c3442150b2b8327366f01dbfda0839e50f1f2ab33266d"
+  },
+  {
+    "path": "textures/skill/tinkering/disassembler.png",
+    "kind": "perk",
+    "id": "disassembler",
+    "concept": "Disassembled component recovery",
+    "pixels_sha256": "c354bedcac041be6808bb9b50c7e07c93c66e3814b83ffe5bd6676f029849ddf"
+  },
+  {
+    "path": "textures/skill/tinkering/enchantment_transfer.png",
+    "kind": "perk",
+    "id": "enchantment_transfer",
+    "concept": "Enchant transfer chance",
+    "pixels_sha256": "4b4760749b3d6240547ac8f5c7e1deb497c1d772a8125343a0d5e9f2a5de3f44"
+  },
+  {
+    "path": "textures/skill/tinkering/explosive_ordinance.png",
+    "kind": "perk",
+    "id": "explosive_ordinance",
+    "concept": "Bigger TNT blast radius",
+    "pixels_sha256": "c0e56b65f75d4879c02863d3927a722581652ca55cecb54b51f2fcc334dac31d"
+  },
+  {
+    "path": "textures/skill/tinkering/forge_master.png",
+    "kind": "perk",
+    "id": "forge_master",
+    "concept": "Forge yields more output",
+    "pixels_sha256": "e46047868f24b26a04755d729f9c4f4f11a20257d2fee52040bc0867000e426d"
+  },
+  {
+    "path": "textures/skill/tinkering/gadgeteer.png",
+    "kind": "perk",
+    "id": "gadgeteer",
+    "concept": "Gadgets more effective",
+    "pixels_sha256": "14497b7aeaddc5f51245b582de2075f740f2882b8a1383964690adbf445c4de5"
+  },
+  {
+    "path": "textures/skill/tinkering/inventor.png",
+    "kind": "perk",
+    "id": "inventor",
+    "concept": "Inventive recipe variants",
+    "pixels_sha256": "a76c4e0ff3587cdf35bea2d9b4b15a4ee19437b882647e423efd13d06142db7b"
+  },
+  {
+    "path": "textures/skill/tinkering/key_forge.png",
+    "kind": "perk",
+    "id": "key_forge",
+    "concept": "Forged master key chance",
+    "pixels_sha256": "1e60a135255ecda6fa6692abd2104129afc3c9b300e2c19380055af48ec6138d"
+  },
+  {
+    "path": "textures/skill/tinkering/lock_expert.png",
+    "kind": "perk",
+    "id": "lock_expert",
+    "concept": "Locks picked faster",
+    "pixels_sha256": "ba4732c544417db6405c02dae735ae56e9f7f90307d76dfe69040c64fb4f32a6"
+  },
+  {
+    "path": "textures/skill/tinkering/locksmith.png",
+    "kind": "perk",
+    "id": "locksmith",
+    "concept": "Lockpicks spared from breaking",
+    "pixels_sha256": "90147d849934449588d69fc5491478234be15b213729686a9043e68e79970e3f"
+  },
+  {
+    "path": "textures/skill/tinkering/master_artificer.png",
+    "kind": "perk",
+    "id": "master_artificer",
+    "concept": "Artificer bonus enchantment",
+    "pixels_sha256": "b7729cf0f1b2717feaa7a1e0894a44266dfb2737e80448fa76936d99191bc2db"
+  },
+  {
+    "path": "textures/skill/tinkering/master_tinkerer.png",
+    "kind": "perk",
+    "id": "master_tinkerer",
+    "concept": "Tinkered durability bonus",
+    "pixels_sha256": "f9f3bdfd1470b15a7f76ae4617bc7786c950d5f50ff7b809db33efc5a8d2e816"
+  },
+  {
+    "path": "textures/skill/tinkering/mechanical_arm.png",
+    "kind": "perk",
+    "id": "mechanical_arm",
+    "concept": "Extended interaction reach",
+    "pixels_sha256": "11662b746bf57a7f41a9127354ead19e1df7335417f259b3cb0c99cb67278ee8"
+  },
+  {
+    "path": "textures/skill/tinkering/mechanical_knowledge.png",
+    "kind": "perk",
+    "id": "mechanical_knowledge",
+    "concept": "Faster redstone devices",
+    "pixels_sha256": "130d158c587fb8ff411150fca59dbe9f074797e9895481ba26e2eb5036369d15"
+  },
+  {
+    "path": "textures/skill/tinkering/mechanism_mastery.png",
+    "kind": "perk",
+    "id": "mechanism_mastery",
+    "concept": "Mechanisms trigger faster",
+    "pixels_sha256": "ad203755ec80466906ad5d099f1bad9a899272326b6909eeea0f91cbb4cd9802"
+  },
+  {
+    "path": "textures/skill/tinkering/modular_equipment.png",
+    "kind": "perk",
+    "id": "modular_equipment",
+    "concept": "Extra modification slots",
+    "pixels_sha256": "1cc9df7ae0accdbfdd36ba9dd1a296ae2f37d0b5e45e032be2a8e03cdea782d5"
+  },
+  {
+    "path": "textures/skill/tinkering/overclock.png",
+    "kind": "perk",
+    "id": "overclock",
+    "concept": "Overclocked crafting stations",
+    "pixels_sha256": "6c405e84a2692d9cce48ff7d12095ce01186703330cd72d68861a3efdd9a42d0"
+  },
+  {
+    "path": "textures/skill/tinkering/power_tools.png",
+    "kind": "perk",
+    "id": "power_tools",
+    "concept": "Powered tool efficiency",
+    "pixels_sha256": "df4b79cdb49e5461d0576993c08eb9422d413cfaea999ec9c0b18bc5213a09ac"
+  },
+  {
+    "path": "textures/skill/tinkering/precision_tools.png",
+    "kind": "perk",
+    "id": "precision_tools",
+    "concept": "Precision-built tool durability",
+    "pixels_sha256": "1f363028916b89d86e2d10413e2957038cf2b2454a4513a8cbaed23fabda0f3f"
+  },
+  {
+    "path": "textures/skill/tinkering/repair_expert.png",
+    "kind": "perk",
+    "id": "repair_expert",
+    "concept": "Cheaper anvil repairs",
+    "pixels_sha256": "851a91b932ba9a63989db45945683df5f14099d0da8462331f33d67f2f4c70e0"
+  },
+  {
+    "path": "textures/skill/tinkering/runic_engineering.png",
+    "kind": "perk",
+    "id": "runic_engineering",
+    "concept": "Runic repair bonus effects",
+    "pixels_sha256": "8ca43cff6888c00f01c5d07d724ac51ae4bb39e1f8db09016c85258858cfb5e2"
+  },
+  {
+    "path": "textures/skill/tinkering/safe_builder.png",
+    "kind": "perk",
+    "id": "safe_builder",
+    "concept": "Hardened built locks",
+    "pixels_sha256": "a78ab137718c0c6dfb4dea1b8c236b237b58af18dbf6e7cb2a7f79015418cfbc"
+  },
+  {
+    "path": "textures/skill/tinkering/safe_cracker.png",
+    "kind": "perk",
+    "id": "safe_cracker",
+    "concept": "Cracked lock complexity",
+    "pixels_sha256": "96ff9f28c613b3627d16f7e6661feeb1eaecfad20660064c263e244e58527404"
+  },
+  {
+    "path": "textures/skill/tinkering/salvage_master.png",
+    "kind": "perk",
+    "id": "salvage_master",
+    "concept": "Master salvage yields",
+    "pixels_sha256": "b2d5c88fb32bb05708ce486c45073ddf5e970e5a6e57f763920a51fef49c43a5"
+  },
+  {
+    "path": "textures/skill/tinkering/siege_mechanic.png",
+    "kind": "perk",
+    "id": "siege_mechanic",
+    "concept": "Siege engines reload faster",
+    "pixels_sha256": "f61e4e9ab2217a2f0dc212455c20ebe9dc7906d47e40ffe33d2b5b873f2d13c8"
+  },
+  {
+    "path": "textures/skill/tinkering/spring_loaded.png",
+    "kind": "perk",
+    "id": "spring_loaded",
+    "concept": "Spring-boosted jumps",
+    "pixels_sha256": "2f7e8f7509ec8ccd59857eb622382c0e76abd4c6a3c2d4af33df66bda247c4ef"
+  },
+  {
+    "path": "textures/skill/tinkering/tinkers_touch.png",
+    "kind": "perk",
+    "id": "tinkers_touch",
+    "concept": "Tinker's crafted durability",
+    "pixels_sha256": "c0c8104da8ed1cf5cf7fb6c095f0405e2571a0c3e91b346830e0d254fb13dee1"
+  },
+  {
+    "path": "textures/skill/tinkering/tool_smith.png",
+    "kind": "perk",
+    "id": "tool_smith",
+    "concept": "Repaired tool efficiency",
+    "pixels_sha256": "52ae1573572e2452d49325460812ab6e44d095739d0bfa654d3afb4ed458ddf5"
+  },
+  {
+    "path": "textures/skill/tinkering/trap_maker.png",
+    "kind": "perk",
+    "id": "trap_maker",
+    "concept": "Deadlier placed traps",
+    "pixels_sha256": "17b405a1af74e5c5e6e288bf43d6bbe852e737cd677b94420b6ee5a1775f204f"
+  },
+  {
+    "path": "textures/skill/tinkering/waystone_tinker.png",
+    "kind": "perk",
+    "id": "waystone_tinker",
+    "concept": "Cheaper waystone travel",
+    "pixels_sha256": "23ae5be646974ee29e79939f37782accacdb8375dfb0d135d48e0ae7be10482a"
+  },
+  {
+    "path": "textures/skill/tinkering/weapon_smith.png",
+    "kind": "perk",
+    "id": "weapon_smith",
+    "concept": "Repaired weapon damage",
+    "pixels_sha256": "cecae5d509c22c98731eddf7f9be0cad2c6841583676f2d64561992b7f0c4a7a"
+  },
+  {
+    "path": "textures/skill/wisdom/ancient_inscriptions.png",
+    "kind": "perk",
+    "id": "ancient_inscriptions",
+    "concept": "Ancient artifact inscriptions",
+    "pixels_sha256": "6d0ed91471930c260ac5abef03949ebc2dd21b96ea9ed3f8c6fe19ee5c13e1be"
+  },
+  {
+    "path": "textures/skill/wisdom/apotheosis_wisdom.png",
+    "kind": "perk",
+    "id": "apotheosis_wisdom",
+    "concept": "Raised enchantment cap",
+    "pixels_sha256": "b5cf020c9681e1d067640649b3c2bc19d313b5122f5ce0e0aacd5936e878fab8"
+  },
+  {
+    "path": "textures/skill/wisdom/arcane_linguist.png",
+    "kind": "perk",
+    "id": "arcane_linguist",
+    "concept": "Spell text fluency",
+    "pixels_sha256": "a625e7c5f185a00ede8fd97eec4791a3b21932a27d6d79c81706d379beddc020"
+  },
+  {
+    "path": "textures/skill/wisdom/arcane_ward.png",
+    "kind": "perk",
+    "id": "arcane_ward",
+    "concept": "Ward vs Ars constructs",
+    "pixels_sha256": "ed282504bf930fc14e12d1432be507823d24d2d447295cfa6a8ded847d4c43bb"
+  },
+  {
+    "path": "textures/skill/wisdom/ars_savant.png",
+    "kind": "perk",
+    "id": "ars_savant",
+    "concept": "Savant familiar abilities",
+    "pixels_sha256": "8b1d6555974bd19301145e9c30a5c6b354e1d65eadf95afaad0e76277159db24"
+  },
+  {
+    "path": "textures/skill/wisdom/bookcraft.png",
+    "kind": "perk",
+    "id": "bookcraft",
+    "concept": "Enchanted books sell higher",
+    "pixels_sha256": "303e81df2e45c8fc3bddb592f071b8dbd894308f18cf0d24271915bce296d5ae"
+  },
+  {
+    "path": "textures/skill/wisdom/curse_breaker.png",
+    "kind": "perk",
+    "id": "curse_breaker",
+    "concept": "Curses ground away",
+    "pixels_sha256": "c4c33f62e01f755091c196bd7516fc0c291c4d9164ff56671ba4aa24f17adc1b"
+  },
+  {
+    "path": "textures/skill/wisdom/dimensional_wisdom.png",
+    "kind": "perk",
+    "id": "dimensional_wisdom",
+    "concept": "Enchants stronger off-world",
+    "pixels_sha256": "79ad62716bcb72e78de60c10ffc0cdaebf38ad5dd4bf82ed3c722090c8d0878c"
+  },
+  {
+    "path": "textures/skill/wisdom/disenchant_mastery.png",
+    "kind": "perk",
+    "id": "disenchant_mastery",
+    "concept": "Grindstone returns more XP",
+    "pixels_sha256": "8f1e454eb0431679bdb2d91641174e4070e097b4131f9245d299fe52389f494a"
+  },
+  {
+    "path": "textures/skill/wisdom/druidic_knowledge.png",
+    "kind": "perk",
+    "id": "druidic_knowledge",
+    "concept": "Nature enchantments stronger",
+    "pixels_sha256": "93061782743b2400815591e9f4c743a127bb5794363c1b8638ab4441c780332e"
+  },
+  {
+    "path": "textures/skill/wisdom/elder_knowledge.png",
+    "kind": "perk",
+    "id": "elder_knowledge",
+    "concept": "Enchanting XP returned",
+    "pixels_sha256": "15759ce12dbe6d576d34aa1b13775275b499836dfcc1fa95f4d54680cc6505bc"
+  },
+  {
+    "path": "textures/skill/wisdom/enchanters_insight.png",
+    "kind": "perk",
+    "id": "enchanters_insight",
+    "concept": "Cheaper enchanting XP",
+    "pixels_sha256": "35984b57b9ce0a8cc2598bab4e21a5f4d7e9ca188b3085e8c89f30014a49b94e"
+  },
+  {
+    "path": "textures/skill/wisdom/enchantment_amplifier.png",
+    "kind": "perk",
+    "id": "enchantment_amplifier",
+    "concept": "Anvil bonus level chance",
+    "pixels_sha256": "4bfa5707b02fc5a0fab7ecfa015e35f1ad94e9b72fe389c6fc56e85e8ed53b0c"
+  },
+  {
+    "path": "textures/skill/wisdom/enchantment_preservation.png",
+    "kind": "perk",
+    "id": "enchantment_preservation",
+    "concept": "Enchants kept on death",
+    "pixels_sha256": "86dac3ebd5da88ffd673c760b0092f022a3a024a3443e632a9a973742d81bde6"
+  },
+  {
+    "path": "textures/skill/wisdom/enchantment_stacking.png",
+    "kind": "perk",
+    "id": "enchantment_stacking",
+    "concept": "Additional enchantment chance",
+    "pixels_sha256": "1601b0c9e379e3fadf222cd22933bf62710d4825efce0b24669bbaa046134a0c"
+  },
+  {
+    "path": "textures/skill/wisdom/enlightenment.png",
+    "kind": "perk",
+    "id": "enlightenment",
+    "concept": "Enlightened skill XP",
+    "pixels_sha256": "3bc8f8d1f460d97df439667ed14c11a786d9fbea373bbfd4b1bbc8d4a49fee65"
+  },
+  {
+    "path": "textures/skill/wisdom/experienced_enchanter.png",
+    "kind": "perk",
+    "id": "experienced_enchanter",
+    "concept": "Enchanting costs less XP",
+    "pixels_sha256": "63c4f39db95e115e06f7227f0344d21dd9f54df441073dd09affd805f1e2fb27"
+  },
+  {
+    "path": "textures/skill/wisdom/focus.png",
+    "kind": "perk",
+    "id": "focus",
+    "concept": "Iron concentration — casts uninterrupted",
+    "pixels_sha256": "9fcc196d7191c7bae5e0c24b6a257c2ce4e1b9243110bbe782cc7018d0fe9c57"
+  },
+  {
+    "path": "textures/skill/wisdom/grand_sage.png",
+    "kind": "perk",
+    "id": "grand_sage",
+    "concept": "Grand sage amplification",
+    "pixels_sha256": "d2c7cf6b65350fc4e30512c3ddaecd45adba4b7ab742b41622e281bfeaf3d017"
+  },
+  {
+    "path": "textures/skill/wisdom/imbued_focus.png",
+    "kind": "perk",
+    "id": "imbued_focus",
+    "concept": "Spells cast at higher level",
+    "pixels_sha256": "3320315398e8f96b49025132b53052c4fafa1f3c48f985202acc5ae56fb8f6e7"
+  },
+  {
+    "path": "textures/skill/wisdom/lapis_conservation.png",
+    "kind": "perk",
+    "id": "lapis_conservation",
+    "concept": "Lapis spared when enchanting",
+    "pixels_sha256": "595a65e7f4f8259dcfd40b3b608b2a8e816dff9101fd3cf47ad05717fce3dd10"
+  },
+  {
+    "path": "textures/skill/wisdom/lore_mastery.png",
+    "kind": "perk",
+    "id": "lore_mastery",
+    "concept": "Lore-mastered grindstone XP",
+    "pixels_sha256": "f05dccb30c2af9cba392fec3c2b215e787360a3c43dbdf6059749c0cd2f6e7e8"
+  },
+  {
+    "path": "textures/skill/wisdom/mending_boost.png",
+    "kind": "perk",
+    "id": "mending_boost",
+    "concept": "Faster mending repair",
+    "pixels_sha256": "66471ab31b44aa4829e89c612764ce02885b805a1d3d6862af1d2d9370602225"
+  },
+  {
+    "path": "textures/skill/wisdom/mystic_attunement.png",
+    "kind": "perk",
+    "id": "mystic_attunement",
+    "concept": "Magical items attuned",
+    "pixels_sha256": "90ba8674148a0fe854e452d434a6bfd9b11843d6e76fbf1f652fe8100ce887e6"
+  },
+  {
+    "path": "textures/skill/wisdom/mystic_sight.png",
+    "kind": "perk",
+    "id": "mystic_sight",
+    "concept": "See enchantments at a glance",
+    "pixels_sha256": "6a4755dee7ef5e06c558f4ad39f400e4b58a5f9625b6d26c1238d6f1ee1c2266"
+  },
+  {
+    "path": "textures/skill/wisdom/rune_mastery.png",
+    "kind": "perk",
+    "id": "rune_mastery",
+    "concept": "Rune enchantments effective",
+    "pixels_sha256": "e18bff4acfe15f12402b5850cb862b3310637baa1d4c3009be30a12a97df9f9f"
+  },
+  {
+    "path": "textures/skill/wisdom/runic_enchantment.png",
+    "kind": "perk",
+    "id": "runic_enchantment",
+    "concept": "Runic gear enchants stronger",
+    "pixels_sha256": "69e72f95d4a38c00941e7fbcfc07e09096ff5f72a11b04b18beedc9d5424904b"
+  },
+  {
+    "path": "textures/skill/wisdom/scroll_scribe.png",
+    "kind": "perk",
+    "id": "scroll_scribe",
+    "concept": "Scribe enchantment scrolls",
+    "pixels_sha256": "16da5a084d59bdbfee06b4756126a077b7805823d2792cd45de138548dc8b502"
+  },
+  {
+    "path": "textures/skill/wisdom/soul_binding.png",
+    "kind": "perk",
+    "id": "soul_binding",
+    "concept": "Soulbound items never drop",
+    "pixels_sha256": "04ae387c21556bfd0f9a6e604cc61ceda60a4aa6a2a2ac8495c732c76d121cde"
+  },
+  {
+    "path": "textures/skill/wisdom/spell_inscription.png",
+    "kind": "perk",
+    "id": "spell_inscription",
+    "concept": "Inscribed spells cost less",
+    "pixels_sha256": "f15587faa41b2fcab7bcf26523ea891628d687c672f3d78e602d2cfdddbefe07"
+  },
+  {
+    "path": "textures/skill/wisdom/temporal_wisdom.png",
+    "kind": "perk",
+    "id": "temporal_wisdom",
+    "concept": "Enchant effects linger in combat",
+    "pixels_sha256": "23bb4e56b72985ced1e031f70d826091c900b12ebf4b314e22f3eeacca831b6f"
+  },
+  {
+    "path": "textures/skill/wisdom/tome_of_knowledge.png",
+    "kind": "perk",
+    "id": "tome_of_knowledge",
+    "concept": "Books hold more levels",
+    "pixels_sha256": "d2d0b15fadac456c1d58c8f2862b951ebe2e4aab1260bc3306d8f0ae86e1dc72"
+  },
+  {
+    "path": "textures/skill/wisdom/unbreaking_mastery.png",
+    "kind": "perk",
+    "id": "unbreaking_mastery",
+    "concept": "Unbreaking chance improved",
+    "pixels_sha256": "ed8de86271b3e803b917d7b23b4cc15a8f0fc700d2632edc64ebc126e9702055"
+  },
+  {
+    "path": "textures/skill/wisdom/ward_master.png",
+    "kind": "perk",
+    "id": "ward_master",
+    "concept": "Wards last longer",
+    "pixels_sha256": "479746c6f09a2390e1f3e41552aaebf5dbddfeee74b0d58e2857e11e321d6c29"
+  },
+  {
+    "path": "textures/skill/wisdom/wisdom_of_ages.png",
+    "kind": "perk",
+    "id": "wisdom_of_ages",
+    "concept": "Aged wisdom — cheap repairs",
+    "pixels_sha256": "14dec2c82724381533a61fd7051b084bedab49ef3c6c35138b74bf0d0c0898f4"
+  },
+  {
+    "path": "textures/skill/wisdom/green_thumb.png",
+    "kind": "perk",
+    "id": "green_thumb",
+    "concept": "Bonemealed crop — chance for an extra growth attempt",
+    "pixels_sha256": "6b8ba8c979766d5277ed3a135c939d36fa7794f72e2e3c69fb88e1ad841890e9"
+  },
+  {
+    "path": "textures/skill/wisdom/nourishing_meal.png",
+    "kind": "perk",
+    "id": "nourishing_meal",
+    "concept": "Hearty meal — bonus saturation from culinary food",
+    "pixels_sha256": "c082c8728acbd0976f16f84b907452b67c8fb64e0d823cdf2780c36464444004"
+  },
+  {
+    "path": "textures/skill/constitution/comfort_food.png",
+    "kind": "perk",
+    "id": "comfort_food",
+    "concept": "Comfort stew — chance to clear a harmful effect",
+    "pixels_sha256": "44575fe8102d58976993aee303b949f2f787e2027c873de3179020adc2771dbf"
+  },
+  {
+    "path": "textures/skill/fortune/angler_luck.png",
+    "kind": "perk",
+    "id": "angler_luck",
+    "concept": "Prize catch — bonus Starcatcher treasure roll",
+    "pixels_sha256": "f8e4188bbb97398768b7713eaf1300f2d0e44fd9c7a72ecb9807b502f37edd88"
+  },
+  {
+    "path": "textures/skill/fortune/catch_of_the_day.png",
+    "kind": "perk",
+    "id": "catch_of_the_day",
+    "concept": "First catch of the day — Luck buff",
+    "pixels_sha256": "f28915e0f51e62fdc7751cdfb3353cb0135e1a70fc7ac76bd11183d730d84fa2"
+  },
+  {
+    "path": "textures/skill/dexterity/anglers_insight.png",
+    "kind": "perk",
+    "id": "anglers_insight",
+    "concept": "Insightful catch — bonus XP per catch",
+    "pixels_sha256": "52e9afc8538b4ae18de43c6c6d8f975cc0a0dd24b5a20ba1d22dcddc76cde1e1"
+  },
+  {
+    "path": "textures/skill/tinkering/steady_hammer.png",
+    "kind": "perk",
+    "id": "steady_hammer",
+    "concept": "Steady smithing hammer — salvage poor forgings",
+    "pixels_sha256": "402f5fcb90dda42db8ec4af64d2c86a12de3b2d2c06b915a434df7abee6a0fdb"
+  },
+  {
+    "path": "textures/skill/tinkering/blueprint_savant.png",
+    "kind": "perk",
+    "id": "blueprint_savant",
+    "concept": "Studied blueprint — bonus Uses progress",
+    "pixels_sha256": "87f5f40bd7bc7337d946921900b74fb367dbcc65853c90e8ef0c64effc3c5e8a"
+  },
+  {
+    "path": "textures/skill/tinkering/metallurgist.png",
+    "kind": "perk",
+    "id": "metallurgist",
+    "concept": "Alloy furnace — bonus smelting output",
+    "pixels_sha256": "3830fa8d409fbecc2b8ca9a0907c24a1c7d45dbcfaa8ccdf0c8c77ff2d38422e"
+  },
+  {
+    "path": "textures/skill/tinkering/master_smith.png",
+    "kind": "perk",
+    "id": "master_smith",
+    "concept": "Master's anvil — chance for a higher quality tier",
+    "pixels_sha256": "73eb60a06d8a70a163207d30afeb47bd4f42ab873e84d29a29030858db8ec87e"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_cast_keeper.png",
+    "kind": "perk",
+    "id": "tc_cast_keeper",
+    "concept": "Sand cast returned after a completed pour",
+    "pixels_sha256": "f5863ffd9d5afe484c7b586afff35423a8a228313a09269b8c31ff786c871d8e"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_thermal_rhythm.png",
+    "kind": "perk",
+    "id": "tc_thermal_rhythm",
+    "concept": "Faster melting at a focused smeltery",
+    "pixels_sha256": "0d5f39aad723efe418c8e6587910de1e18ca4b85385adc3c4e15bdf912074f70"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_repair_memory.png",
+    "kind": "perk",
+    "id": "tc_repair_memory",
+    "concept": "Repaired tool remembers the repair and wears slower",
+    "pixels_sha256": "c5e6ad73e01bf9a38dca37db35058ebdf3f177f7f29d7bde03316cc606ee1737"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_material_harmony.png",
+    "kind": "perk",
+    "id": "tc_material_harmony",
+    "concept": "Many materials repair better together",
+    "pixels_sha256": "5b080a56d80e2c744734b7d52df04c9a1a640cd2ecfe6988a0ee8c930cb41d64"
+  },
+  {
+    "path": "textures/skill/strength/tc_tempered_edge.png",
+    "kind": "perk",
+    "id": "tc_tempered_edge",
+    "concept": "Fully wound-up strike with a tempered blade",
+    "pixels_sha256": "41b1d7dfbf55c8a8f7ea0eebcc3b377c8cc8d186975fa0b884518f796bb38a15"
+  },
+  {
+    "path": "textures/skill/dexterity/tc_counterweight.png",
+    "kind": "perk",
+    "id": "tc_counterweight",
+    "concept": "Broad weapon balanced to swing faster",
+    "pixels_sha256": "59297097d085790f342e1e6109ee6f535fe39a838b59c8c1c35073e1a9960cf5"
+  },
+  {
+    "path": "textures/skill/endurance/tc_precision_footing.png",
+    "kind": "perk",
+    "id": "tc_precision_footing",
+    "concept": "Planted feet mine faster",
+    "pixels_sha256": "e0e2d520cf785fdc8d837b18b275a37da31faa455b99bc83fb58847c2c60a9d7"
+  },
+  {
+    "path": "textures/skill/endurance/tc_slime_steward.png",
+    "kind": "perk",
+    "id": "tc_slime_steward",
+    "concept": "Spent overslime still shields the tool",
+    "pixels_sha256": "902c127b085b59c5ac6b64525ca863b4f32e50c9912a9ca49114441c554110cd"
+  },
+  {
+    "path": "textures/skill/constitution/tc_plate_discipline.png",
+    "kind": "perk",
+    "id": "tc_plate_discipline",
+    "concept": "A full set of plate resists knockback",
+    "pixels_sha256": "42c60b543dcd0196a22e71d6fb809c62cdb793a29e4a542005c45202edf1c34f"
+  },
+  {
+    "path": "textures/skill/dexterity/tc_measured_draw.png",
+    "kind": "perk",
+    "id": "tc_measured_draw",
+    "concept": "A fully drawn shot flies true",
+    "pixels_sha256": "b05134d9c420184ff66bd970089795dcfac71dc77aa85eb5aa55eba557887c71"
+  },
+  {
+    "path": "textures/skill/dexterity/tc_returning_hand.png",
+    "kind": "perk",
+    "id": "tc_returning_hand",
+    "concept": "A returned tool throws faster next time",
+    "pixels_sha256": "f49eafff3133b9a9690e786e78ab3d7689111d42c38842350ee50cca513cd3bb"
+  },
+  {
+    "path": "textures/skill/constitution/tc_ember_guard.png",
+    "kind": "perk",
+    "id": "tc_ember_guard",
+    "concept": "The forge you tend burns you less",
+    "pixels_sha256": "58f55d160737ef7513c5755a9113ded8879d58ea9aa32009be8a30bb34273674"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_field_service.png",
+    "kind": "perk",
+    "id": "tc_field_service",
+    "concept": "A repair kit goes further in the field",
+    "pixels_sha256": "981c1b27b5dc52de9e47f4e1e010dc8ba357e65feb2591fa699d9c576caca7ed"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_workshop_cadence.png",
+    "kind": "perk",
+    "id": "tc_workshop_cadence",
+    "concept": "A rhythm of casts cools the next ones faster",
+    "pixels_sha256": "ff4af005e7ebadec09c8188ff185a929f0ac7bf4c2d8a81f880a08c5ae5a22ff"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_adaptive_grip.png",
+    "kind": "perk",
+    "id": "tc_adaptive_grip",
+    "concept": "Switching roles with one tool sharpens the next action",
+    "pixels_sha256": "87b27f4bcd640b93cdc2e19916a08e507c3be3e6308bd2c5323c7e33171e519a"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_keystone_tinker.png",
+    "kind": "perk",
+    "id": "tc_keystone_tinker",
+    "concept": "Keystone fitted at the station — one permanent upgrade slot",
+    "pixels_sha256": "583092696e2208be0309a9d3c0f53a620178b0bf0a9fabd9db6923fe39e98acd"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_mana_polisher.png",
+    "kind": "perk",
+    "id": "tc_mana_polisher",
+    "concept": "Mana-fed repair, asking for less mana",
+    "pixels_sha256": "ef696182150272a9b3404d31dd669d2c77ddd9fdb191fb33f9c18126826d3116"
+  },
+  {
+    "path": "textures/skill/magic/tc_source_tempering.png",
+    "kind": "perk",
+    "id": "tc_source_tempering",
+    "concept": "Source-repaired armour tempers the next spell",
+    "pixels_sha256": "29ae5d640f4ae0d56ff5f90faac6e0cffeb7fe1669d1bb58b1bac2b20104d64f"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_clockwork_alternation.png",
+    "kind": "perk",
+    "id": "tc_clockwork_alternation",
+    "concept": "Alternating hands keep the tool turning over",
+    "pixels_sha256": "71517e5caefa4fb89890f50f86500d04f8f037a1ac80b9de828dc71409d4645c"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_seasoned_hands.png",
+    "kind": "perk",
+    "id": "tc_seasoned_hands",
+    "concept": "Practised hands teach the tool faster",
+    "pixels_sha256": "c96f0808f7434146897aa4fa39bdcd1da55962c49449afbf3ca55834e9ceaeca"
+  },
+  {
+    "path": "textures/skill/wisdom/tc_banquet_of_cinders.png",
+    "kind": "perk",
+    "id": "tc_banquet_of_cinders",
+    "concept": "A smith's meal still burning in you",
+    "pixels_sha256": "58c9fd9e199b93e73a9bdfb761946d6fb36432ec537e926150ae361037ff34c0"
+  },
+  {
+    "path": "textures/skill/constitution/tc_soulsteel_resolve.png",
+    "kind": "perk",
+    "id": "tc_soulsteel_resolve",
+    "concept": "Soul-stained steel holds you steady",
+    "pixels_sha256": "cd6567baebf8e4e72245bc1df0940a5721ce7acef872f3cfb565aa59c3aea2f8"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_charged_craft.png",
+    "kind": "perk",
+    "id": "tc_charged_craft",
+    "concept": "A charged tool spends less of its own energy",
+    "pixels_sha256": "4113dc5064ddf35cddb1293a06fbdf8421a19677fc0322f3730d31c211afd2a8"
+  },
+  {
+    "path": "textures/skill/wisdom/tc_thinking_last_thought.png",
+    "kind": "perk",
+    "id": "tc_thinking_last_thought",
+    "concept": "Dragged back from a death, and still standing",
+    "pixels_sha256": "c235871cdeec4f652bc1977e3af8595cb7930207d452bd8ef33ef1164b920644"
+  },
+  {
+    "path": "textures/skill/wisdom/tc_thinking_studied_recall.png",
+    "kind": "perk",
+    "id": "tc_thinking_studied_recall",
+    "concept": "Experience the sculk drank still teaches you something",
+    "pixels_sha256": "a01291139e956a5491cfeabf6a3bb7b3f8c37e7fa3dd15826c23c65a6332e176"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_thinking_embellished_focus.png",
+    "kind": "perk",
+    "id": "tc_thinking_embellished_focus",
+    "concept": "A Thinking modifier sharpened by the smith who set it",
+    "pixels_sha256": "bbf575859ff06fa74a595b29d15fe28ba7ccc98e321b6599bb95336e28c40452"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_jeweler_setting.png",
+    "kind": "perk",
+    "id": "tc_jeweler_setting",
+    "concept": "A stone freshly set holds its setting",
+    "pixels_sha256": "c4a10e7f50f14a3416957f6fbf16b21073bf327013e26a46fa1228143848c889"
+  },
+  {
+    "path": "textures/skill/wisdom/tc_gem_attunement.png",
+    "kind": "perk",
+    "id": "tc_gem_attunement",
+    "concept": "The gem you wear answers the hand that swings",
+    "pixels_sha256": "70c95e8410ebc393ae4d9c5a7525d189e810821d848d56edec2bafd8fba4af35"
+  },
+  {
+    "path": "textures/skill/constitution/tc_undying_lustre.png",
+    "kind": "perk",
+    "id": "tc_undying_lustre",
+    "concept": "The ring that refuses a death, and survives doing it",
+    "pixels_sha256": "72767353461ec1e7d1497a7cfae156c12a4c70db05585373bcd08c491b1eb2d0"
+  },
+  {
+    "path": "textures/skill/tinkering/tc_polished_facet.png",
+    "kind": "perk",
+    "id": "tc_polished_facet",
+    "concept": "A jewel takes a repair as well as a blade does",
+    "pixels_sha256": "df096ca122b57fa3067743298ddd66178d1477e43c23a6be9624d3d534ad7eeb"
+  },
+  {
+    "path": "textures/skill/dexterity/tide_measured_cast.png",
+    "kind": "perk",
+    "id": "tide_measured_cast",
+    "concept": "Bent fishing rod and casting arc — shorter preparation, no faster bite",
+    "pixels_sha256": "2adead3a251653601fb22f889b52d8887e2782db580f72477efeeb0927b51817"
+  },
+  {
+    "path": "textures/skill/tinkering/tide_patient_hands.png",
+    "kind": "perk",
+    "id": "tide_patient_hands",
+    "concept": "Patient Hands: native catch durability conservation",
+    "pixels_sha256": "7712cf74ce8da6f5b9643cf50691ab4602b3cec328c031006a30d8b881ccb105"
+  },
+  {
+    "path": "textures/skill/endurance/tide_careful_landing.png",
+    "kind": "perk",
+    "id": "tide_careful_landing",
+    "concept": "Careful Landing: native catch durability conservation",
+    "pixels_sha256": "25904619edb2304a98a4fb22aac2a83eae4a40832ca1c704bfe094aa70e27007"
+  },
+  {
+    "path": "textures/skill/fortune/tide_baitkeeper.png",
+    "kind": "perk",
+    "id": "tide_baitkeeper",
+    "concept": "Baitkeeper: one protected native bait unit per fish cast.",
+    "pixels_sha256": "d848d9d93a8ce77f7c0a610c730ccc4c4ba5b1611f508362f1dce2c95da340b6"
+  },
+  {
+    "path": "textures/skill/wisdom/ss_resonant_reading.png",
+    "kind": "perk",
+    "id": "ss_resonant_reading",
+    "concept": "Native weapon lore: read existing awakening and gems without rolling.",
+    "pixels_sha256": "9f487e7a31397a9c124ff8d354897417619f948ab35c6c4f6591e18836761566"
+  },
+  {
+    "path": "textures/skill/tinkering/ss_patient_temper.png",
+    "kind": "perk",
+    "id": "ss_patient_temper",
+    "concept": "Controlled ordinary blade wear; no ability-cost discount.",
+    "pixels_sha256": "ebc4251700b4e806c85aeb1b8316ce2add1755a2166c42e1540844a5d0732fc8"
+  },
+  {
+    "path": "textures/skill/endurance/tide_many_waters.png",
+    "kind": "perk",
+    "id": "tide_many_waters",
+    "concept": "Four distinct fishing habitats prepare a later cast.",
+    "pixels_sha256": "2946fb045c510640c3bc3afe65ab858ffa04053928f9d5e796489912654b0cba"
+  },
+  {
+    "path": "textures/skill/magic/tom_aqua_attunement.png",
+    "kind": "perk",
+    "id": "tom_aqua_attunement",
+    "concept": "Aqua attunement: a flowing fish and star bind one native spell-power bonus.",
+    "pixels_sha256": "79bf657353a446efdf6af90062810ae2ae8f75fd3b8c00693976498491bc8f5d"
+  },
+  {
+    "path": "textures/skill/strength/ss_measured_steel.png",
+    "kind": "perk",
+    "id": "ss_measured_steel",
+    "concept": "ss measured steel",
+    "pixels_sha256": "f65d332a780c358f9a2348c3862fdc73c0448266ecdad2c63b2f1c733a3b1197"
+  },
+  {
+    "path": "textures/skill/dexterity/sm_countergrip.png",
+    "kind": "perk",
+    "id": "sm_countergrip",
+    "concept": "sm countergrip",
+    "pixels_sha256": "7a2d78fefc9bd78dee9202c6017c109fd37e5f68b403a79e44c52263652414cf"
+  },
+  {
+    "path": "textures/skill/tinkering/sm_measured_blows.png",
+    "kind": "perk",
+    "id": "sm_measured_blows",
+    "concept": "sm measured blows",
+    "pixels_sha256": "ed6398314fcd8805babefbf63e8709aa4d9537dcd3ca92c88229a77c2e658c55"
+  },
+  {
+    "path": "textures/skill/tinkering/ss_relic_care.png",
+    "kind": "perk",
+    "id": "ss_relic_care",
+    "concept": "Paid unique weapon repair restores additional durability.",
+    "pixels_sha256": "057725171a1885dad3297cbf7ddc4656396c9cd9157e5ba12afd8703682e30e7"
+  },
+  {
+    "path": "textures/skill/tinkering/sm_relic_care.png",
+    "kind": "perk",
+    "id": "sm_relic_care",
+    "concept": "Paid unique weapon repair restores additional durability.",
+    "pixels_sha256": "bee534af707bc3f303ba4d9e0c8f4c6df8ed6e4fed84e37872d13d869e3fe8ff"
+  },
+  {
+    "path": "textures/skill/strength/sm_couched_discipline.png",
+    "kind": "perk",
+    "id": "sm_couched_discipline",
+    "concept": "Couched Discipline rewards controlled mounted combat.",
+    "pixels_sha256": "7c9fadec5f06533c1fd27c89686c5d85448461b1ad4bb3029cb4d2ef74b109d0"
+  },
+  {
+    "path": "textures/skill/constitution/sm_saddleward.png",
+    "kind": "perk",
+    "id": "sm_saddleward",
+    "concept": "Saddleward rewards controlled mounted combat.",
+    "pixels_sha256": "201195aa8ea61993fb0cf9a1fb254ff083d8fc664229b5434d82474d26af0a3c"
+  },
+  {
+    "path": "textures/skill/endurance/tom_measured_current.png",
+    "kind": "perk",
+    "id": "tom_measured_current",
+    "concept": "Measured Current rewards completed paid native casts.",
+    "pixels_sha256": "8ecc9d70f680c47e34a5e8e7a863751223fb208a5b059b7c56c4c87f8714aea3"
+  },
+  {
+    "path": "textures/skill/wisdom/tom_changing_tides.png",
+    "kind": "perk",
+    "id": "tom_changing_tides",
+    "concept": "Changing Tides rewards completed paid native casts.",
+    "pixels_sha256": "533584dc0b713563194b0df41955511bafddae8063fe30a36ffd39c1f3bfc15e"
+  },
+  {
+    "path": "textures/skill/constitution/tom_bound_companion.png",
+    "kind": "perk",
+    "id": "tom_bound_companion",
+    "concept": "Bound Companion rewards completed paid native casts.",
+    "pixels_sha256": "7e6ea0340148d7c516ae8e3158f76f87a4d826a92a2a1f8f1cd08274e19de403"
+  },
+  {
+    "path": "textures/skill/dexterity/tide_sure_line.png",
+    "kind": "perk",
+    "id": "tide_sure_line",
+    "concept": "A steadier normal catch window.",
+    "pixels_sha256": "1a9958b7fc36f172f8bbd96ead2bc449870b68264795ede1c3329047d5c0061d"
+  },
+  {
+    "path": "textures/skill/intelligence/tom_talent_composure.png",
+    "kind": "perk",
+    "id": "tom_talent_composure",
+    "concept": "A legally equipped native talent steadies a paid cast.",
+    "pixels_sha256": "116043b87bf805b695436e3500092a93edaf270b48c490d27762be5275e944db"
+  },
+  {
+    "path": "textures/skill/wisdom/tide_read_the_water.png",
+    "kind": "perk",
+    "id": "tide_read_the_water",
+    "concept": "Read known native habitat requirements.",
+    "pixels_sha256": "5755f79312d356fe123fe0a3f42d50ab2516fc641a022dad389703037204ea9b"
+  },
+  {
+    "path": "textures/skill/wisdom/tide_field_naturalist.png",
+    "kind": "perk",
+    "id": "tide_field_naturalist",
+    "concept": "Read known native habitat requirements.",
+    "pixels_sha256": "392cbbe63d90305fa65114dac5f9596aedb0441fa30bbaafc63507260767e207"
+  },
+  {
+    "path": "textures/skill/magic/ss_spellsteel_discipline.png",
+    "kind": "perk",
+    "id": "ss_spellsteel_discipline",
+    "concept": "Spellsteel Discipline rewards a completed native ability.",
+    "pixels_sha256": "00e697c5febdfb213de31300d60e3a2f99b4b1efee4effe2923c4f334bbc436b"
+  },
+  {
+    "path": "textures/skill/endurance/ss_awake_and_ready.png",
+    "kind": "perk",
+    "id": "ss_awake_and_ready",
+    "concept": "Awake and Ready rewards a completed native ability.",
+    "pixels_sha256": "ada63fd1a7f159bac30d8a4c82aca5807bf2f23780ea3d393d39f00e13d785d6"
+  },
+  {
+    "path": "textures/skill/constitution/ss_gemguard.png",
+    "kind": "perk",
+    "id": "ss_gemguard",
+    "concept": "A successfully applied native gem effect grants Guard.",
+    "pixels_sha256": "11f24ba050a6c2a679ba73f9741133dcf5ce40f70680f3cb41e9461421d437ce"
+  },
+  {
+    "path": "textures/skill/strength/tom_relic_discipline.png",
+    "kind": "perk",
+    "id": "tom_relic_discipline",
+    "concept": "An advanced native relic steadies its wielder after a direct hit.",
+    "pixels_sha256": "dc101b133ce090defec934769473e8e28996a12100e9d55d23108fd23282461c"
+  },
+  {
+    "path": "textures/skill/dexterity/ss_returning_grip.png",
+    "kind": "perk",
+    "id": "ss_returning_grip",
+    "concept": "A native owner return after a committed projectile hit steadies its wielder.",
+    "pixels_sha256": "f99ac5f47b39f03842fb6f668e545223ea09d7cc8748e70bef955a492dc149b3"
+  },
+  {
+    "path": "textures/skill/dexterity/sm_long_measure.png",
+    "kind": "perk",
+    "id": "sm_long_measure",
+    "concept": "A legal outer reach hit grants measured movement.",
+    "pixels_sha256": "679c1303ec435fe21ab93e70a0d9709e376bcbbe43d3666c22b86c0a361ff12a"
+  },
+  {
+    "path": "textures/skill/wisdom/sm_breach_reader.png",
+    "kind": "perk",
+    "id": "sm_breach_reader",
+    "concept": "Breach Reader rewards verified native combat.",
+    "pixels_sha256": "31b9071c2c0593a8dc5b6c193c2fb8c4693d6e647459fe88fa55fc28f5fa84e2"
+  },
+  {
+    "path": "textures/skill/wisdom/sm_many_forms_one_hand.png",
+    "kind": "perk",
+    "id": "sm_many_forms_one_hand",
+    "concept": "Many Forms, One Hand rewards verified native combat.",
+    "pixels_sha256": "44798aa7600542cb8b2a91b694d9aa00fa95cd24352335235af3f37f2c3aacb8"
+  },
+  {
+    "path": "textures/skill/wisdom/tom_pressure_reader.png",
+    "kind": "perk",
+    "id": "tom_pressure_reader",
+    "concept": "Pressure Reader requires a committed native outcome.",
+    "pixels_sha256": "d24534bd61a4e4b1ec6e5df08203f1f81af37d5b6076531aab2ed2567536c1cf"
+  },
+  {
+    "path": "textures/skill/tinkering/tom_artificers_poise.png",
+    "kind": "perk",
+    "id": "tom_artificers_poise",
+    "concept": "Artificer’s Poise requires a committed native outcome.",
+    "pixels_sha256": "687abc67b827e518572823544fc1fbae9ae891c5675359e163d8304b918ffa93"
+  },
+  {
+    "path": "textures/skill/strength/passive_attack_damage.png",
+    "kind": "passive",
+    "id": "attack_damage",
+    "concept": "Bared blade — physical damage dealt",
+    "pixels_sha256": "fb18f8dd500e60c7178aafdbb790c61c2cad85817db3bbd01c7234fe91082ca0"
+  },
+  {
+    "path": "textures/skill/strength/passive_attack_knockback.png",
+    "kind": "passive",
+    "id": "attack_knockback",
+    "concept": "Heavy fist — knockback dealt",
+    "pixels_sha256": "85c14739e5a5c985f648ab4784a913a95e6417676b5a82bd4db6b2f6ef260d42"
+  },
+  {
+    "path": "textures/skill/constitution/passive_max_health.png",
+    "kind": "passive",
+    "id": "max_health",
+    "concept": "Full heart — maximum health",
+    "pixels_sha256": "e2e1ad731597189ad81b681f45585c9f308d05de9ad35fdada8f5217a23cb85b"
+  },
+  {
+    "path": "textures/skill/constitution/passive_knockback_resistance.png",
+    "kind": "passive",
+    "id": "knockback_resistance",
+    "concept": "Braced anchor — resist knockback",
+    "pixels_sha256": "fcb7de0fe5a4169603aba798408799647690eb41a206801d478417dd5a90cf22"
+  },
+  {
+    "path": "textures/skill/constitution/passive_swim_speed.png",
+    "kind": "passive",
+    "id": "swim_speed",
+    "concept": "Swift fish — swim speed",
+    "pixels_sha256": "aabf565eb5e0e167a77209f115ce8a540abb415314478c134a80ad60cd82606f"
+  },
+  {
+    "path": "textures/skill/dexterity/passive_movement_speed.png",
+    "kind": "passive",
+    "id": "movement_speed",
+    "concept": "Runner's boot — movement speed",
+    "pixels_sha256": "54733235a1e8f3bfce5eb17057cc9a4f6138c68872ef5247f2249ba7e8ce5993"
+  },
+  {
+    "path": "textures/skill/dexterity/passive_projectile_damage.png",
+    "kind": "passive",
+    "id": "projectile_damage",
+    "concept": "Sharp arrow — projectile damage",
+    "pixels_sha256": "93cdaf57433f97f5967d218b2bcc3439dd8551b5ded9e53c82be5653d6b3ffeb"
+  },
+  {
+    "path": "textures/skill/endurance/passive_armor.png",
+    "kind": "passive",
+    "id": "armor",
+    "concept": "Plate armor — damage nullified",
+    "pixels_sha256": "dcaae32f973cf5431e56e9ed2085352f16f54fe8244729eff17ce1330e871294"
+  },
+  {
+    "path": "textures/skill/endurance/passive_armor_toughness.png",
+    "kind": "passive",
+    "id": "armor_toughness",
+    "concept": "Tough helm — mitigate strong attacks",
+    "pixels_sha256": "7c35b48aeb137852668aee1814133ed3f34e52a38c491b00d74c6c9df9a6ad31"
+  },
+  {
+    "path": "textures/skill/intelligence/passive_attack_speed.png",
+    "kind": "passive",
+    "id": "attack_speed",
+    "concept": "Quick blades — hand cooldown",
+    "pixels_sha256": "649354c0cd78739c8d9f576da3b196d767ad8eecd408fdf3cfea03b62722bc77"
+  },
+  {
+    "path": "textures/skill/intelligence/passive_entity_reach.png",
+    "kind": "passive",
+    "id": "entity_reach",
+    "concept": "Extended hand — attack reach",
+    "pixels_sha256": "34da9497ec5fe77732536fcd7e1da6a2d7b4df0507b306a7f24f3fe1b32a51b7"
+  },
+  {
+    "path": "textures/skill/building/passive_block_reach.png",
+    "kind": "passive",
+    "id": "block_reach",
+    "concept": "Builder's hand — block reach",
+    "pixels_sha256": "4846689eae7922ea359a7872f07bc66f3c5a899902d8fd870518e57137540d92"
+  },
+  {
+    "path": "textures/skill/building/passive_break_speed.png",
+    "kind": "passive",
+    "id": "break_speed",
+    "concept": "Worn pick — block break speed",
+    "pixels_sha256": "237ab302319ab4612edb7059edbaa0f03d4cdba7e281500bfe3ebf384cf8e37e"
+  },
+  {
+    "path": "textures/skill/wisdom/passive_enchanting_power.png",
+    "kind": "passive",
+    "id": "enchanting_power",
+    "concept": "Charged spellbook — enchanting power",
+    "pixels_sha256": "ec7d0289f2d4ab3acddc4c2074b128830af8253ea558a848a1cdb9441d0e8653"
+  },
+  {
+    "path": "textures/skill/wisdom/passive_xp_bonus.png",
+    "kind": "passive",
+    "id": "xp_bonus",
+    "concept": "Bright orb — bonus XP",
+    "pixels_sha256": "9b35a3234dd69faf570f93a4864eecfb71cefbc561b24ce65c85514c5f20eb4d"
+  },
+  {
+    "path": "textures/skill/magic/passive_beneficial_effect.png",
+    "kind": "passive",
+    "id": "beneficial_effect",
+    "concept": "Tonic — positive effects last longer",
+    "pixels_sha256": "9f89e2ebea79cb4aa75b229289ed283d433964b04dc8d17d245c4375912c7e71"
+  },
+  {
+    "path": "textures/skill/magic/passive_magic_resist.png",
+    "kind": "passive",
+    "id": "magic_resist",
+    "concept": "Arcane buckler — magic damage down",
+    "pixels_sha256": "02c6177868890ed1103191f59e8ee3892f745344ceff9e409dd0026a0dac4412"
+  },
+  {
+    "path": "textures/skill/fortune/passive_critical_damage.png",
+    "kind": "passive",
+    "id": "critical_damage",
+    "concept": "Marked target — critical damage",
+    "pixels_sha256": "f9bae71a99195608cc9797ea94a07ab931c00cac044143c9b55b3239b2004222"
+  },
+  {
+    "path": "textures/skill/fortune/passive_luck.png",
+    "kind": "passive",
+    "id": "fortune",
+    "concept": "Gilded clover — luck",
+    "pixels_sha256": "e2f2d0a991755770b89f7d7779e310c5a0c521810c88b58bd8e95aa727c58b65"
+  },
+  {
+    "path": "textures/skill/tinkering/passive_repair_efficiency.png",
+    "kind": "passive",
+    "id": "repair_efficiency",
+    "concept": "Efficient anvil — cheaper repairs",
+    "pixels_sha256": "8036a703d6c3b22fe12ff1ac5128e0956c82dd501e60742185dbbea053c870e4"
+  },
+  {
+    "path": "textures/skill/tinkering/passive_crafting_luck.png",
+    "kind": "passive",
+    "id": "crafting_luck",
+    "concept": "Lucky gear — bonus craft output",
+    "pixels_sha256": "5ecf8598e531629dc85c6cd8499e86049945d48eec4b3501e0649314248fe030"
+  },
+  {
+    "path": "textures/skill/magic/passive_spell_power.png",
+    "kind": "passive",
+    "id": "spell_power",
+    "concept": "Charged wand — spell power",
+    "pixels_sha256": "0f5b26e9e32fbf18203a06a06e9b6cfa032353607250e0f3746450ba46ac394d"
+  },
+  {
+    "path": "textures/skill/intelligence/passive_max_mana.png",
+    "kind": "passive",
+    "id": "max_mana",
+    "concept": "Brimming drop — maximum mana",
+    "pixels_sha256": "59cc175aeba6790ebd9e7be88774839882cd0b58505c590df57962f135ca84a1"
+  },
+  {
+    "path": "textures/skill/wisdom/passive_cast_time_reduction.png",
+    "kind": "passive",
+    "id": "cast_time_reduction",
+    "concept": "Draining glass — cast time down",
+    "pixels_sha256": "6beef17f1c7d2d0f8012b03d43e2901a83c180127f528f29737846bfb87d301b"
+  },
+  {
+    "path": "textures/skill/magic/passive_ars_spell_damage.png",
+    "kind": "passive",
+    "id": "ars_spell_damage",
+    "concept": "Source sigil — Ars spell damage",
+    "pixels_sha256": "12e5ff49f5b78f05a7a6e6384e209c20d593427a9ed6132b499ae004521f1420"
+  },
+  {
+    "path": "textures/skill/intelligence/passive_ars_mana.png",
+    "kind": "passive",
+    "id": "ars_flat_mana",
+    "concept": "Mana flask — Ars mana reserve",
+    "pixels_sha256": "dc2605777644b06b1187850011d041b7a07cdcc7797a9d73ca1ec0ba75ffcd1e"
+  },
+  {
+    "path": "textures/skill/endurance/passive_ars_warding.png",
+    "kind": "passive",
+    "id": "ars_warding",
+    "concept": "Source ward — magical protection",
+    "pixels_sha256": "4a6ab75c8d3f61c9942368a8daacedca0c51497f4a70097b6306296c6ab5e34f"
+  },
+  {
+    "path": "textures/skill/strength/passive_life_steal.png",
+    "kind": "passive",
+    "id": "life_steal",
+    "concept": "Draining fangs — lifesteal",
+    "pixels_sha256": "60fe5ee69115ad4d7aae9840b481ffb76fbae106768234a6d7925f6d21462a73"
+  },
+  {
+    "path": "textures/skill/constitution/passive_healing_received.png",
+    "kind": "passive",
+    "id": "healing_received",
+    "concept": "Mended heart — healing received",
+    "pixels_sha256": "15f9e0faaf656308fdecd349a53e3b4f337c95e4ccf30982ab3464ebd1be9ca5"
+  },
+  {
+    "path": "textures/skill/dexterity/passive_draw_speed.png",
+    "kind": "passive",
+    "id": "draw_speed",
+    "concept": "Limber bow — draw speed",
+    "pixels_sha256": "9ca756a5672fd6fdce209ce8e26f62c74248d9f8df34f2ef05c9b5ec6e370227"
+  },
+  {
+    "path": "textures/skill/endurance/passive_dodge_chance.png",
+    "kind": "passive",
+    "id": "dodge_chance",
+    "concept": "Fleet wing — dodge chance",
+    "pixels_sha256": "c5daeaa6e393b02e739c559d5a59e9e602693637fdd0df23419a6317d2b33e1c"
+  },
+  {
+    "path": "textures/skill/intelligence/passive_experience_gained.png",
+    "kind": "passive",
+    "id": "experience_gained",
+    "concept": "Gilded book — experience gained",
+    "pixels_sha256": "aad3bc48559013425e6bf998001b7d4e3f7cc79809bf2de052ebb3ce60727bf9"
+  },
+  {
+    "path": "textures/skill/building/passive_mining_speed.png",
+    "kind": "passive",
+    "id": "mining_speed",
+    "concept": "Powered pick — mining speed",
+    "pixels_sha256": "0dd9b1e16e18219d6233a5ca52d2e988556fefaf3fd49082ad67bec1fca90c97"
+  },
+  {
+    "path": "textures/skill/magic/passive_cold_damage.png",
+    "kind": "passive",
+    "id": "cold_damage",
+    "concept": "Biting frost — bonus cold damage",
+    "pixels_sha256": "61830af2733a7795866ea5b5490b604182faf757c484ddfacdde0e3146e05e74"
+  },
+  {
+    "path": "textures/skill/fortune/passive_crit_chance.png",
+    "kind": "passive",
+    "id": "crit_chance",
+    "concept": "Lucky mark — critical chance",
+    "pixels_sha256": "ce2dfc4ba292f4e233f468151185962825098abf6747dfbf33debb6bfe6a58ea"
+  },
+  {
+    "path": "textures/skill/magic/passive_fire_damage.png",
+    "kind": "passive",
+    "id": "fire_damage",
+    "concept": "Searing flame — bonus fire damage",
+    "pixels_sha256": "ae3b42bd9989a8165f47c28435bc2c4d80564cb324bf000e23b92ef1a22369d8"
+  },
+  {
+    "path": "textures/skill/dexterity/passive_arrow_velocity.png",
+    "kind": "passive",
+    "id": "arrow_velocity",
+    "concept": "Swift volley — arrow velocity",
+    "pixels_sha256": "a03001a099d80f1352b47073f2459e16e97231337f709f20afdc4ccc65932bc8"
+  },
+  {
+    "path": "textures/skill/strength/passive_armor_pierce.png",
+    "kind": "passive",
+    "id": "armor_pierce",
+    "concept": "Split plate — armor pierced",
+    "pixels_sha256": "e346f38d7f93776dc2f7c50002bc97a40649ae563e497688e1899531ea0f26fc"
+  },
+  {
+    "path": "textures/skill/strength/locked_0.png",
+    "kind": "skill",
+    "id": "strength / 1",
+    "concept": "Physical force, close combat and weapon damage.",
+    "pixels_sha256": "4324742eb9cc6012316489d5e87bbfe2f8019c24a546c014d2c16808770f7e78"
+  },
+  {
+    "path": "textures/skill/strength/locked_8.png",
+    "kind": "skill",
+    "id": "strength / 2",
+    "concept": "Physical force, close combat and weapon damage.",
+    "pixels_sha256": "1a273b756fcf1d34ff7308a64aa3037bbbc3d1f1389210971afec1174730c06c"
+  },
+  {
+    "path": "textures/skill/strength/locked_16.png",
+    "kind": "skill",
+    "id": "strength / 3",
+    "concept": "Physical force, close combat and weapon damage.",
+    "pixels_sha256": "3eaf93fe2442b89d443b94bed4e74b1f81c66361fcf2d9ba0daf54d95a24cdf2"
+  },
+  {
+    "path": "textures/skill/strength/locked_24.png",
+    "kind": "skill",
+    "id": "strength / 4",
+    "concept": "Physical force, close combat and weapon damage.",
+    "pixels_sha256": "f04a3ef78937d984d4d093f5ccdabc068e5c7ee4b55014a9870329cf99b33ed2"
+  },
+  {
+    "path": "textures/skill/constitution/locked_0.png",
+    "kind": "skill",
+    "id": "constitution / 1",
+    "concept": "Health, nourishment and recovery.",
+    "pixels_sha256": "5ccb84a1bc294c7cb0c665a8fae68cb635649ef4283fe34fd29eaffa45369180"
+  },
+  {
+    "path": "textures/skill/constitution/locked_8.png",
+    "kind": "skill",
+    "id": "constitution / 2",
+    "concept": "Health, nourishment and recovery.",
+    "pixels_sha256": "8e93bbaac648314cccb4c8cd15f71aa1eff4d27116d2003dbe356be620db5937"
+  },
+  {
+    "path": "textures/skill/constitution/locked_16.png",
+    "kind": "skill",
+    "id": "constitution / 3",
+    "concept": "Health, nourishment and recovery.",
+    "pixels_sha256": "db6242ad4c208750f4a7356556b42530aa7faa84247d793eb7d6465787008303"
+  },
+  {
+    "path": "textures/skill/constitution/locked_24.png",
+    "kind": "skill",
+    "id": "constitution / 4",
+    "concept": "Health, nourishment and recovery.",
+    "pixels_sha256": "c71dedb9b4609920769ca73e38d1042840a02223901517178f29613430bf7648"
+  },
+  {
+    "path": "textures/skill/dexterity/locked_0.png",
+    "kind": "skill",
+    "id": "dexterity / 1",
+    "concept": "Aim, agility and ranged combat.",
+    "pixels_sha256": "8d4c0a4da63ea261feaeba1f2ec76abb10e94baca7754c95c349d6488403eefe"
+  },
+  {
+    "path": "textures/skill/dexterity/locked_8.png",
+    "kind": "skill",
+    "id": "dexterity / 2",
+    "concept": "Aim, agility and ranged combat.",
+    "pixels_sha256": "812bd8d931b427c2f0daa5eee1dc41dc3cb5224ebb79538d91a3871f430cd2dc"
+  },
+  {
+    "path": "textures/skill/dexterity/locked_16.png",
+    "kind": "skill",
+    "id": "dexterity / 3",
+    "concept": "Aim, agility and ranged combat.",
+    "pixels_sha256": "2671dad3e20c397135de8263ce166e2a151fbbe0d5656158bfa914b7b826789c"
+  },
+  {
+    "path": "textures/skill/dexterity/locked_24.png",
+    "kind": "skill",
+    "id": "dexterity / 4",
+    "concept": "Aim, agility and ranged combat.",
+    "pixels_sha256": "8dbfef02842432c1a310bb36323ff1fc8b06fbd4200da61ee7a3b9f2c9b2bf4b"
+  },
+  {
+    "path": "textures/skill/endurance/locked_0.png",
+    "kind": "skill",
+    "id": "endurance / 1",
+    "concept": "Armor, resilience and survival.",
+    "pixels_sha256": "5839dd527056ae5b0bde22b8f3dc4c3358c605e0a340f859e7f79a574cd73ea7"
+  },
+  {
+    "path": "textures/skill/endurance/locked_8.png",
+    "kind": "skill",
+    "id": "endurance / 2",
+    "concept": "Armor, resilience and survival.",
+    "pixels_sha256": "9852a624a69f7b6bdc2a1af45ad9de1d72e3f0acb21a295749f504e6dfdf2284"
+  },
+  {
+    "path": "textures/skill/endurance/locked_16.png",
+    "kind": "skill",
+    "id": "endurance / 3",
+    "concept": "Armor, resilience and survival.",
+    "pixels_sha256": "687da0996e4cd5824f0465a98f3c87129d24fb9c3e777cccbebd23d048bed692"
+  },
+  {
+    "path": "textures/skill/endurance/locked_24.png",
+    "kind": "skill",
+    "id": "endurance / 4",
+    "concept": "Armor, resilience and survival.",
+    "pixels_sha256": "2b8ff58c8337426217d54a066620015efb6f3ab5b940bbd4d9066b9b5004abfb"
+  },
+  {
+    "path": "textures/skill/intelligence/locked_0.png",
+    "kind": "skill",
+    "id": "intelligence / 1",
+    "concept": "Learning, experience and studied precision.",
+    "pixels_sha256": "e6e47ecbd9befc890bcb76427c00bdeaba40ce2572c8fedc2a60706741e2a992"
+  },
+  {
+    "path": "textures/skill/intelligence/locked_8.png",
+    "kind": "skill",
+    "id": "intelligence / 2",
+    "concept": "Learning, experience and studied precision.",
+    "pixels_sha256": "44a6c22ff1c5cfffa64bcac217f2f124e27670ed5913e7ab8201a9f177254143"
+  },
+  {
+    "path": "textures/skill/intelligence/locked_16.png",
+    "kind": "skill",
+    "id": "intelligence / 3",
+    "concept": "Learning, experience and studied precision.",
+    "pixels_sha256": "eacdb5d1207fb654bc1750ef2d5707cd2ef57de3902654b983d0222a0341f11a"
+  },
+  {
+    "path": "textures/skill/intelligence/locked_24.png",
+    "kind": "skill",
+    "id": "intelligence / 4",
+    "concept": "Learning, experience and studied precision.",
+    "pixels_sha256": "7eece12a22c682a2afd54631d23ebdce367e201961e67b381ed6649a601b17d2"
+  },
+  {
+    "path": "textures/skill/building/locked_0.png",
+    "kind": "skill",
+    "id": "building / 1",
+    "concept": "Mining, placement and construction.",
+    "pixels_sha256": "dd1ea7f7d723e1ce9614cbf3c6a0396a024567deb09ad64673049aa40368a30f"
+  },
+  {
+    "path": "textures/skill/building/locked_8.png",
+    "kind": "skill",
+    "id": "building / 2",
+    "concept": "Mining, placement and construction.",
+    "pixels_sha256": "95810ce54457d079921bb57443b402a852251abdea5486843f9ba1feb433c657"
+  },
+  {
+    "path": "textures/skill/building/locked_16.png",
+    "kind": "skill",
+    "id": "building / 3",
+    "concept": "Mining, placement and construction.",
+    "pixels_sha256": "ff1a399edcc75636ca4ed941c567abc5db080973462658d93d7b8b7f9af53f92"
+  },
+  {
+    "path": "textures/skill/building/locked_24.png",
+    "kind": "skill",
+    "id": "building / 4",
+    "concept": "Mining, placement and construction.",
+    "pixels_sha256": "02c9065285554e4e26377c7a03a18d737ff85e93956357e4669b91c24d2a5799"
+  },
+  {
+    "path": "textures/skill/wisdom/locked_0.png",
+    "kind": "skill",
+    "id": "wisdom / 1",
+    "concept": "Understanding, beneficial effects and insight.",
+    "pixels_sha256": "19e440f3352c49c5e81a01a647983a4d268e8161cef2e18a709de327b966ed11"
+  },
+  {
+    "path": "textures/skill/wisdom/locked_8.png",
+    "kind": "skill",
+    "id": "wisdom / 2",
+    "concept": "Understanding, beneficial effects and insight.",
+    "pixels_sha256": "8030b8c505064997042c5b6a3f8979d176c2f4d50143457f093b5b6adf02dd01"
+  },
+  {
+    "path": "textures/skill/wisdom/locked_16.png",
+    "kind": "skill",
+    "id": "wisdom / 3",
+    "concept": "Understanding, beneficial effects and insight.",
+    "pixels_sha256": "72f5abe2c99dff60e2bba1de9937b43922f60e90137beee822bf331d3102ffcc"
+  },
+  {
+    "path": "textures/skill/wisdom/locked_24.png",
+    "kind": "skill",
+    "id": "wisdom / 4",
+    "concept": "Understanding, beneficial effects and insight.",
+    "pixels_sha256": "26cd0cec1296336a7851c827915116bcc0e994a4bdd7d967138423ea262aefde"
+  },
+  {
+    "path": "textures/skill/magic/locked_0.png",
+    "kind": "skill",
+    "id": "magic / 1",
+    "concept": "Arcane power, mana and spellcasting.",
+    "pixels_sha256": "e8c7a13eac3b6fd84c95a1f362e6eeff295154e81242cb7cb01fc98a0eee946e"
+  },
+  {
+    "path": "textures/skill/magic/locked_8.png",
+    "kind": "skill",
+    "id": "magic / 2",
+    "concept": "Arcane power, mana and spellcasting.",
+    "pixels_sha256": "5d4c2f38c1f45732316031036a4662e3c2d10d5eae4110c0525e0ff84e2c9e79"
+  },
+  {
+    "path": "textures/skill/magic/locked_16.png",
+    "kind": "skill",
+    "id": "magic / 3",
+    "concept": "Arcane power, mana and spellcasting.",
+    "pixels_sha256": "9ac5179b4d112a89475af252dae233a2dddef81dc3a2fdff6f0c0a6ee5e3c44a"
+  },
+  {
+    "path": "textures/skill/magic/locked_24.png",
+    "kind": "skill",
+    "id": "magic / 4",
+    "concept": "Arcane power, mana and spellcasting.",
+    "pixels_sha256": "73610d8cec03850f1dcd3414e0cc45f156b15635453168dc65dad66add8c6c2e"
+  },
+  {
+    "path": "textures/skill/fortune/locked_0.png",
+    "kind": "skill",
+    "id": "fortune / 1",
+    "concept": "Luck, treasures and exceptional rewards.",
+    "pixels_sha256": "f1473db163c7ce108da0ab970ce040c50af8b13ace358fc9394b043dae3abb51"
+  },
+  {
+    "path": "textures/skill/fortune/locked_8.png",
+    "kind": "skill",
+    "id": "fortune / 2",
+    "concept": "Luck, treasures and exceptional rewards.",
+    "pixels_sha256": "eab867d6493036aa5f7d0d2a250e1de487d21464405f27483ef68dba0530e428"
+  },
+  {
+    "path": "textures/skill/fortune/locked_16.png",
+    "kind": "skill",
+    "id": "fortune / 3",
+    "concept": "Luck, treasures and exceptional rewards.",
+    "pixels_sha256": "cb5643a21e741b2d8757ffdf9af5fe307e8759a2e338397ee5428c5334db2f7b"
+  },
+  {
+    "path": "textures/skill/fortune/locked_24.png",
+    "kind": "skill",
+    "id": "fortune / 4",
+    "concept": "Luck, treasures and exceptional rewards.",
+    "pixels_sha256": "d5f02f3ca22aa0677b1c6bdbdb3c55e576a24f709b011f460ebe656a605764f1"
+  },
+  {
+    "path": "textures/skill/tinkering/locked_0.png",
+    "kind": "skill",
+    "id": "tinkering / 1",
+    "concept": "Tools, repair and the forge.",
+    "pixels_sha256": "144870bb15837f7126e8c1a1ec5576173cbe37313ae609aca62d57efcbdb5c23"
+  },
+  {
+    "path": "textures/skill/tinkering/locked_8.png",
+    "kind": "skill",
+    "id": "tinkering / 2",
+    "concept": "Tools, repair and the forge.",
+    "pixels_sha256": "204f42de723ff69b79bfe2e217e367c6fef99f3c0ccc532a7be88697ea74909e"
+  },
+  {
+    "path": "textures/skill/tinkering/locked_16.png",
+    "kind": "skill",
+    "id": "tinkering / 3",
+    "concept": "Tools, repair and the forge.",
+    "pixels_sha256": "fc12ad833e779a77408b0a31d18c242cf80392ef4db2459669db9be62c0a8da6"
+  },
+  {
+    "path": "textures/skill/tinkering/locked_24.png",
+    "kind": "skill",
+    "id": "tinkering / 4",
+    "concept": "Tools, repair and the forge.",
+    "pixels_sha256": "7cf03e715139fe1a85c3fc2be30bd68b83fddd0d5092ccc9e4334a628bfc01b7"
+  },
+  {
+    "path": "textures/power/tide_stillwater_oath.png",
+    "kind": "power",
+    "id": "tide_stillwater_oath",
+    "concept": "A landed fish leaves one luminous loop ready for the next cast.",
+    "pixels_sha256": "5dc60cc149696bb3e4f23d69368d810395b384770e7d974748f1482444572110"
+  },
+  {
+    "path": "textures/power/ss_seal_of_the_interval.png",
+    "kind": "power",
+    "id": "ss_seal_of_the_interval",
+    "concept": "Seal of the Interval rewards a native weapon sequence.",
+    "pixels_sha256": "58701f646149ec4f330c488db052b86be618ece5a9962c1ad00d750baa9605d0"
+  },
+  {
+    "path": "textures/power/ss_awakened_arsenal.png",
+    "kind": "power",
+    "id": "ss_awakened_arsenal",
+    "concept": "Awakened Arsenal rewards a native weapon sequence.",
+    "pixels_sha256": "fc9269295b9317525ffb8adbd739ad0e3bfd9d2577567d6b9447b18f4e594782"
+  },
+  {
+    "path": "textures/power/ss_resonant_breath.png",
+    "kind": "power",
+    "id": "ss_resonant_breath",
+    "concept": "Resonant Breath follows a confirmed native gem proc.",
+    "pixels_sha256": "1af3121325b24aa218c899b9adb84fb30d9ebe9ade7cba5ed2bad8cbca4f8f36"
+  },
+  {
+    "path": "textures/power/ss_seal_of_gemguard.png",
+    "kind": "power",
+    "id": "ss_seal_of_gemguard",
+    "concept": "Seal of Gemguard follows a confirmed native gem proc.",
+    "pixels_sha256": "e82fcd69c774cbf80d70de438452083fb8a6f3572bdd67d4a365e5cd4ef4f791"
+  },
+  {
+    "path": "textures/power/tom_artificers_accord.png",
+    "kind": "power",
+    "id": "tom_artificers_accord",
+    "concept": "A paid armor activation and Aqua cast grant an artificer Guard.",
+    "pixels_sha256": "5b9788d27b6c619680b8ba1d7b52b60778cea1a91246c5f351c642aad8dcda07"
+  },
+  {
+    "path": "textures/power/tom_undertow.png",
+    "kind": "power",
+    "id": "tom_undertow",
+    "concept": "Undertow follows a verified originating Aqua cast.",
+    "pixels_sha256": "f648912256c868e4cf7441a88daab7147a53e45aeca3a7a86daabecb1141e50b"
+  },
+  {
+    "path": "textures/power/tom_confluence.png",
+    "kind": "power",
+    "id": "tom_confluence",
+    "concept": "Confluence follows a verified originating Aqua cast.",
+    "pixels_sha256": "39ae8c984a4b07292b598138ba5669680c73b548111532c554931eff11f16a62"
+  },
+  {
+    "path": "textures/power/ss_returning_steel.png",
+    "kind": "power",
+    "id": "ss_returning_steel",
+    "concept": "A successfully accepted owner return arms a slowing direct hit.",
+    "pixels_sha256": "8a260b8d0eaa962da30b8032c9f0681c833f54f27b7045b94fbdb5e5f333b372"
+  },
+  {
+    "path": "textures/power/ss_mark_of_the_draw.png",
+    "kind": "power",
+    "id": "ss_mark_of_the_draw",
+    "concept": "A deliberate first strike follows a quiet interval.",
+    "pixels_sha256": "a71fafbdd59c5321ad5091541699c8fbc5cab94a6d498573c4737b0f4cf5e8f7"
+  },
+  {
+    "path": "textures/power/sm_measured_reach.png",
+    "kind": "power",
+    "id": "sm_measured_reach",
+    "concept": "Two distinct outer reach hits grant resistance.",
+    "pixels_sha256": "1d4f127e8dfefbdbc9d5ba74a4ab32212eb196e7dec7f3b2997099004acecef1"
+  },
+  {
+    "path": "textures/power/sm_broken_guard.png",
+    "kind": "power",
+    "id": "sm_broken_guard",
+    "concept": "Broken Guard follows actual native combat outcomes.",
+    "pixels_sha256": "e9c61c6bca6de31505e7e7caf1ddd09ad7a0ed1fd0bbb108dd68fac83be946c7"
+  },
+  {
+    "path": "textures/power/sm_hold_the_breach.png",
+    "kind": "power",
+    "id": "sm_hold_the_breach",
+    "concept": "Hold the Breach follows actual native combat outcomes.",
+    "pixels_sha256": "ebd182e1878accc7f3ba6e3e9b3e7dde236e75ed72a90e3d51ed26b56372a887"
+  },
+  {
+    "path": "textures/power/sm_changing_arsenal.png",
+    "kind": "power",
+    "id": "sm_changing_arsenal",
+    "concept": "The Changing Arsenal follows actual native combat outcomes.",
+    "pixels_sha256": "91c9be7cbf45addd6506bbceffe792f9214210cd425a82b79f939181009129a1"
+  },
+  {
+    "path": "textures/power/sm_reversal.png",
+    "kind": "power",
+    "id": "sm_reversal",
+    "concept": "A surviving defender turns a blow back on its attacker.",
+    "pixels_sha256": "85fdb70e2e276973361025b9e0c0e2a6bb930270213887342d72d76df16a31f5"
+  },
+  {
+    "path": "textures/power/sm_first_pass.png",
+    "kind": "power",
+    "id": "sm_first_pass",
+    "concept": "A forward lance charge gives the mount a brief burst of speed.",
+    "pixels_sha256": "37eb00c4072eb0f99e72f0f37c80770fb565c3c2d51aba74da27b6757c3211fa"
+  },
+  {
+    "path": "textures/power/tom_sheltering_current.png",
+    "kind": "power",
+    "id": "tom_sheltering_current",
+    "concept": "An Aqua cast shelters its recently wounded caster.",
+    "pixels_sha256": "f793b0ff3b3ddf8a5320bab4c8005316ec337090a849602425040a79da4629a7"
+  },
+  {
+    "path": "textures/power/tom_companions_wake.png",
+    "kind": "power",
+    "id": "tom_companions_wake",
+    "concept": "A newly summoned companion stands steady.",
+    "pixels_sha256": "876ec1385d64d6bb8adf2c3f4f22b77cfd31317595a2c77d9349feebda1e0126"
+  },
+  {
+    "path": "textures/power/tom_stillwater.png",
+    "kind": "power",
+    "id": "tom_stillwater",
+    "concept": "Distinct paid Aqua casts build a defensive rhythm.",
+    "pixels_sha256": "1e631108837bc244204ddd5b20a4a7d1a37b5c0379a8a9e7ed3ed7a8b2d1f67a"
+  },
+  {
+    "path": "textures/power/tide_unbroken_thread.png",
+    "kind": "power",
+    "id": "tide_unbroken_thread",
+    "concept": "Two knots in an unbroken line prepare one protected fish retrieval.",
+    "pixels_sha256": "290004afbb66931fe3340ab9df3d5f8f6801a34e60610e5fc233539ed3090d71"
+  },
+  {
+    "path": "textures/power/tide_keeper_of_the_banks.png",
+    "kind": "power",
+    "id": "tide_keeper_of_the_banks",
+    "concept": "A bait pouch between river banks prepares one careful cast and one conserved bait unit.",
+    "pixels_sha256": "f60e93100d13372a56de2fc0a7aa1c1aa5dfdf156b88c1984d01d8d4954221a6"
+  },
+  {
+    "path": "textures/power/tide_between_ember_and_star.png",
+    "kind": "power",
+    "id": "tide_between_ember_and_star",
+    "concept": "Two legal casts prepared by catches across native mediums.",
+    "pixels_sha256": "58dceb004838e11c3036e7807eb501ef7539e6d5996c9e0a5b90c0409706e4a6"
+  },
+  {
+    "path": "textures/power/tide_anglers_almanac.png",
+    "kind": "power",
+    "id": "tide_anglers_almanac",
+    "concept": "Three known catches open expanded journal comparisons.",
+    "pixels_sha256": "f39a7b299c14f6294eb32e2025d92a3a877a17a2f0ecaeed41bde621e494ee31"
+  },
+  {
+    "path": "textures/power/tide_favor_from_the_deep.png",
+    "kind": "power",
+    "id": "tide_favor_from_the_deep",
+    "concept": "Favor one already known and eligible species.",
+    "pixels_sha256": "a3499f98f3b3464d1fe35c7d045ef8717e2154835e7b95a0d2cb23310cd36c12"
+  },
+  {
+    "path": "textures/power/ember_trail.png",
+    "kind": "power",
+    "id": "ember_trail",
+    "concept": "Footfalls leave fire in the caster's wake.",
+    "pixels_sha256": "0d7135ff1015f5811bb75ad2252df6c411cf69ad00d9182e208454ede6e70f96"
+  },
+  {
+    "path": "textures/power/kindle.png",
+    "kind": "power",
+    "id": "kindle",
+    "concept": "A burning target takes an empowered first hit.",
+    "pixels_sha256": "454593a8dc8457c0221b18c8326d97e3db732316764be07af24613c0d1d406a6"
+  },
+  {
+    "path": "textures/power/heat_haze.png",
+    "kind": "power",
+    "id": "heat_haze",
+    "concept": "Melee releases a close fire pulse.",
+    "pixels_sha256": "64fb215637e96697676ff471274404ae26d6139feb7d25f21f4ad7ed13ee062b"
+  },
+  {
+    "path": "textures/power/scorched_earth.png",
+    "kind": "power",
+    "id": "scorched_earth",
+    "concept": "Persistent fire fields erode armor.",
+    "pixels_sha256": "30d70b40272023cb561830121b5327a6c946e1a04070c72bef9c85b8b98f53bc"
+  },
+  {
+    "path": "textures/power/pyroclasm.png",
+    "kind": "power",
+    "id": "pyroclasm",
+    "concept": "Burning deaths detonate outward.",
+    "pixels_sha256": "22e16594ea3b35fb14042c0efc5c13fca36f0e52559d57a7e639f9886c7356f4"
+  },
+  {
+    "path": "textures/power/brittle.png",
+    "kind": "power",
+    "id": "brittle",
+    "concept": "Chilled targets take extra damage.",
+    "pixels_sha256": "ee8aaff0f563f969f517453ae2459e7a2de591098c219e90b1d3474ed838c957"
+  },
+  {
+    "path": "textures/power/frost_echo.png",
+    "kind": "power",
+    "id": "frost_echo",
+    "concept": "A projectile leaves a frozen patch.",
+    "pixels_sha256": "61d633ba4c22f14d80018d1a58fc241543fa0a044425b17527739bd72e603058"
+  },
+  {
+    "path": "textures/power/shatter.png",
+    "kind": "power",
+    "id": "shatter",
+    "concept": "A frozen target breaks into shards.",
+    "pixels_sha256": "2b46f5de0a94f65f7c8e952533eb39b95b8cb4747c004eb1940bdf2aea4a10f7"
+  },
+  {
+    "path": "textures/power/reforge_the_shadow.png",
+    "kind": "power",
+    "id": "reforge_the_shadow",
+    "concept": "A stronger summoned bear bursts with chill.",
+    "pixels_sha256": "259a8594bc8b53afd34e21cbbbb5caf043e182b929fa4e6628ab0606b6b86faa"
+  },
+  {
+    "path": "textures/power/glacial_sovereign.png",
+    "kind": "power",
+    "id": "glacial_sovereign",
+    "concept": "Repeated casts sustain nearby chill.",
+    "pixels_sha256": "a68463856dd6960833982a6b5e87dd79cc2c9b00372a51e698690ee861ef33ca"
+  },
+  {
+    "path": "textures/power/static_cling.png",
+    "kind": "power",
+    "id": "static_cling",
+    "concept": "Lightning chains leave a lingering shock.",
+    "pixels_sha256": "f0fd1df223bddd88a748d800d6407dc18de2441b97c9e58016e6980c60f225a0"
+  },
+  {
+    "path": "textures/power/crackle_arc.png",
+    "kind": "power",
+    "id": "crackle_arc",
+    "concept": "Charged melee arcs to another enemy.",
+    "pixels_sha256": "83fb6afdadc4dd5c514b714e34baa0852dbd35c78474538166e96eecd006ea4c"
+  },
+  {
+    "path": "textures/power/skybreaker.png",
+    "kind": "power",
+    "id": "skybreaker",
+    "concept": "Airborne lightning gains force.",
+    "pixels_sha256": "f429a9465c4ec5a620176c760458ebb0d790026bf609c27ef5f1f73c8c5ecd8f"
+  },
+  {
+    "path": "textures/power/conduit_mark.png",
+    "kind": "power",
+    "id": "conduit_mark",
+    "concept": "A marked target conducts the next lightning hit.",
+    "pixels_sha256": "160ce7022393c8aa0c82ac49c3d09a98ef2fee77209071f122d824bb1e7808fc"
+  },
+  {
+    "path": "textures/power/thunder_lord.png",
+    "kind": "power",
+    "id": "thunder_lord",
+    "concept": "Lightning strikes repeatedly during a short window.",
+    "pixels_sha256": "c51c7af0bfd3dd20a8beb70bb806e9bda3d7c7cda3884e653617ab4fa3d01060"
+  },
+  {
+    "path": "textures/power/sanctified_strike.png",
+    "kind": "power",
+    "id": "sanctified_strike",
+    "concept": "Holy damage smites undead.",
+    "pixels_sha256": "1a30fa09464463c4cc0429bcb900b75270329701781a485a9a2052b4d4723a6e"
+  },
+  {
+    "path": "textures/power/fortifying_bond.png",
+    "kind": "power",
+    "id": "fortifying_bond",
+    "concept": "Healing an ally strengthens the caster's guard.",
+    "pixels_sha256": "3cb54e1e62a9a973150d549c32ad13186443f33657de5b9b4a0da3452c6bee5d"
+  },
+  {
+    "path": "textures/power/guided_fate.png",
+    "kind": "power",
+    "id": "guided_fate",
+    "concept": "Guided projectile hits refund cooldown.",
+    "pixels_sha256": "f344af6653e6753c523737307479bfeb0fb9c37743e1406e8c085af39723b5ce"
+  },
+  {
+    "path": "textures/power/wings_of_judgment.png",
+    "kind": "power",
+    "id": "wings_of_judgment",
+    "concept": "Angel wings empower radiant attacks.",
+    "pixels_sha256": "9677a3b2e7a2ae63ceba123c08fe62a95d87c9c58f4f9fe87e60896c5d09eead"
+  },
+  {
+    "path": "textures/power/herald_of_dawn.png",
+    "kind": "power",
+    "id": "herald_of_dawn",
+    "concept": "A dawn pulse heals and protects nearby allies.",
+    "pixels_sha256": "c5e1adaa4de595eff2162517ca129c582e0e2586c26c1c9cf2bba0f8d06ca814"
+  },
+  {
+    "path": "textures/power/step_between.png",
+    "kind": "power",
+    "id": "step_between",
+    "concept": "A teleport prepares an empowered spell.",
+    "pixels_sha256": "19cbf953b74392793656f8ecdae10b0019f6bb902ec0ed16457526ae1c66dbf0"
+  },
+  {
+    "path": "textures/power/arcane_echo.png",
+    "kind": "power",
+    "id": "arcane_echo",
+    "concept": "A projectile creates a phantom copy.",
+    "pixels_sha256": "8191228d9bdb9a435d21c6a52bebfb6c29b8275f042021b620a668dc9386842c"
+  },
+  {
+    "path": "textures/power/counterspell_riposte.png",
+    "kind": "power",
+    "id": "counterspell_riposte",
+    "concept": "A successful counterspell prepares a stronger spell.",
+    "pixels_sha256": "f65ccdb4d3014b7ca1f52d4f4ae756213decb0f111e5a692fc16ebf520482b5c"
+  },
+  {
+    "path": "textures/power/black_hole_resonance.png",
+    "kind": "power",
+    "id": "black_hole_resonance",
+    "concept": "Pulled enemies sustain the black hole on death.",
+    "pixels_sha256": "0aab07fe1037ef3fc4c5bbd1c716777802aed5c619901b6bf2b266e20279b304"
+  },
+  {
+    "path": "textures/power/unraveled.png",
+    "kind": "power",
+    "id": "unraveled",
+    "concept": "Lethal damage rewinds location and restores life.",
+    "pixels_sha256": "6e404b9c52f343bace7547767245e0b42b0b606e0e4e4cc4b3932d92f9d13992"
+  },
+  {
+    "path": "textures/power/fang_follow_through.png",
+    "kind": "power",
+    "id": "fang_follow_through",
+    "concept": "A fang spell prepares a rooting melee hit.",
+    "pixels_sha256": "5e8499d001e7223313c1f84719726d8cb473bd2c13993643f4d88008a4cb9792"
+  },
+  {
+    "path": "textures/power/vex_taunt.png",
+    "kind": "power",
+    "id": "vex_taunt",
+    "concept": "A summoned vex diverts an enemy's attention.",
+    "pixels_sha256": "0d1d49e4eb9dd771958ac560b9c42623ec7c068bd01871181643acad3350f227"
+  },
+  {
+    "path": "textures/power/creeper_cascade_mastery.png",
+    "kind": "power",
+    "id": "creeper_cascade_mastery",
+    "concept": "Explosive heads gain an extra chain hop.",
+    "pixels_sha256": "9a717282c1ed212d9708b83bd0c6f34225be586d48565db55a4980d6f8c332ac"
+  },
+  {
+    "path": "textures/power/shield_wall.png",
+    "kind": "power",
+    "id": "shield_wall",
+    "concept": "A second shield panel guards another direction.",
+    "pixels_sha256": "15607924e91766452e61404100ca9f4e6ea6cb31a2ec229cc8b5b0eb8690c4eb"
+  },
+  {
+    "path": "textures/power/tricksters_aria.png",
+    "kind": "power",
+    "id": "tricksters_aria",
+    "concept": "Invisible projectile casts prepare an ambush.",
+    "pixels_sha256": "599aad48fbeb5d19014d540e049b4b425b921f9777f1a1be846d2f13f5b141ef"
+  },
+  {
+    "path": "textures/power/poisoners_thumb.png",
+    "kind": "power",
+    "id": "poisoners_thumb",
+    "concept": "Poisoned targets suffer greater damage.",
+    "pixels_sha256": "2091e1e50e0d7668caf150ee5d02789da4a8fd3cda2f598f47002c8569192fc2"
+  },
+  {
+    "path": "textures/power/rooted.png",
+    "kind": "power",
+    "id": "rooted",
+    "concept": "Standing rooted increases recovery and stability.",
+    "pixels_sha256": "525934977f517b2184095ad9b0b983e3f1c4327e02ed1bc8549e5d506f8831f2"
+  },
+  {
+    "path": "textures/power/blight_spread.png",
+    "kind": "power",
+    "id": "blight_spread",
+    "concept": "A death spreads blight to nearby enemies.",
+    "pixels_sha256": "3214a0e14e436206fabce50152f627b86c7e426d1f94a89ca427e3567a566431"
+  },
+  {
+    "path": "textures/power/venomous_harvest.png",
+    "kind": "power",
+    "id": "venomous_harvest",
+    "concept": "Poison kills replenish mana.",
+    "pixels_sha256": "29f2a759982c42bf1ec2bf0648cd9a38e913005b2e4891b64a955fc84d7dfb07"
+  },
+  {
+    "path": "textures/power/the_grove_remembers.png",
+    "kind": "power",
+    "id": "the_grove_remembers",
+    "concept": "Lit bark and green thorn tips mark multiple afflictions; the pink cross denies healing.",
+    "pixels_sha256": "9479f56c209e75f5f55df62bedae1e9dbd8072526b586e4dee86e9698bac4edc"
+  },
+  {
+    "path": "textures/power/crimson_tithe.png",
+    "kind": "power",
+    "id": "crimson_tithe",
+    "concept": "Blood damage returns life to its caster.",
+    "pixels_sha256": "d61e9dbedd0342fab676158f3cb50f0075413c8d271b3bb296a76f8b7915fb90"
+  },
+  {
+    "path": "textures/power/marrow_sense.png",
+    "kind": "power",
+    "id": "marrow_sense",
+    "concept": "Low health hastens blood casting.",
+    "pixels_sha256": "49815f69a5d3aa1c575a643b9d1781bcd62481fcc598ea6662fa767aee0484ef"
+  },
+  {
+    "path": "textures/power/sacrifice_cascade.png",
+    "kind": "power",
+    "id": "sacrifice_cascade",
+    "concept": "A sacrifice spreads bleeding through nearby foes.",
+    "pixels_sha256": "65a2c0fb15053cbfa4240f33f8b391a29c9244607282f0eee975fc3d84f1d58f"
+  },
+  {
+    "path": "textures/power/harvest_the_weak.png",
+    "kind": "power",
+    "id": "harvest_the_weak",
+    "concept": "Finishing weakened enemies grows maximum health.",
+    "pixels_sha256": "1b1263dda1203f17d8e7f7798945706d07b7d0be8666d5bcb415d57d3c5a94aa"
+  },
+  {
+    "path": "textures/power/the_hearts_toll.png",
+    "kind": "power",
+    "id": "the_hearts_toll",
+    "concept": "Blood spells trade current life for greater force.",
+    "pixels_sha256": "cde57a30eaade2a02d87ca348fb248dbe27a996853a13c44530af1da61a7b34e"
+  },
+  {
+    "path": "textures/power/forbidden_knowledge.png",
+    "kind": "power",
+    "id": "forbidden_knowledge",
+    "concept": "Eldritch knowledge doubles a kill's spoils.",
+    "pixels_sha256": "03b1e994af32f193165441cadfb8e8d57b3fdb64a8955197d99b4ec5b42540db"
+  },
+  {
+    "path": "textures/power/blind_witness.png",
+    "kind": "power",
+    "id": "blind_witness",
+    "concept": "Blinded targets take increased damage.",
+    "pixels_sha256": "a6d6e0601ab34469ce642175e3e220a2bfe9389e0aba3e1e59d00e32d673cc50"
+  },
+  {
+    "path": "textures/power/kinetic_affinity.png",
+    "kind": "power",
+    "id": "kinetic_affinity",
+    "concept": "Telekinesis makes a held target vulnerable to falling.",
+    "pixels_sha256": "50c60bc299f3bd3490c39fa9c0cf8ef3bb4d6225ae878387c82725226373c94d"
+  },
+  {
+    "path": "textures/power/piercing_insight.png",
+    "kind": "power",
+    "id": "piercing_insight",
+    "concept": "Revealed targets lose part of their spell resistance.",
+    "pixels_sha256": "03a0c61126c95168542e15fb8e3771f093ab00a085aed2e3ec4e5f239e6de6fd"
+  },
+  {
+    "path": "textures/power/the_apocrypha_awakens.png",
+    "kind": "power",
+    "id": "the_apocrypha_awakens",
+    "concept": "A depleted mana reserve awakens forbidden power.",
+    "pixels_sha256": "ad817fdb7931cdc96aba1e6feb7b0686038bd3392a41aaebe17c31d585b33dd2"
+  },
+  {
+    "path": "textures/power/trueshot.png",
+    "kind": "power",
+    "id": "trueshot",
+    "concept": "A centered aim strengthens projectile hits.",
+    "pixels_sha256": "a423e5a32b15757051c871316183a248ea597f9663ddcb33e53dd36e217146ba"
+  },
+  {
+    "path": "textures/power/ricochet_primer.png",
+    "kind": "power",
+    "id": "ricochet_primer",
+    "concept": "A prepared projectile pierces another target.",
+    "pixels_sha256": "7257ffd1eff039f0381ef848af65b9efb70c16482d46473b2f7b4e5f43ca586e"
+  },
+  {
+    "path": "textures/power/volley_memory.png",
+    "kind": "power",
+    "id": "volley_memory",
+    "concept": "Repeated hits empower the following shot.",
+    "pixels_sha256": "7250f51c5628fc38aceb1752c88c85b9196f07f69b6c86981e0537b875e15d1a"
+  },
+  {
+    "path": "textures/power/gravity_well.png",
+    "kind": "power",
+    "id": "gravity_well",
+    "concept": "A projectile slows an airborne target's fall.",
+    "pixels_sha256": "d52d3dfa29eb5ae104cdf1df959ac822493f4ea72560bb07b819fc30ab38e26f"
+  },
+  {
+    "path": "textures/power/arcanists_barrage.png",
+    "kind": "power",
+    "id": "arcanists_barrage",
+    "concept": "Repeated combat shots echo into a magical barrage.",
+    "pixels_sha256": "1c14e41c6f4d1b1aa63d52f159784df03fe9b6e07e29293d0892e50796d6b7a7"
+  },
+  {
+    "path": "textures/power/unbroken_focus.png",
+    "kind": "power",
+    "id": "unbroken_focus",
+    "concept": "Uninterrupted channeling steadily gains force.",
+    "pixels_sha256": "eedd220043b9eb4115e4e507b6fae0e138778e9956aea2787d59d6b3be78cda3"
+  },
+  {
+    "path": "textures/power/tidal_draw.png",
+    "kind": "power",
+    "id": "tidal_draw",
+    "concept": "A sustained channel pulls enemies toward the aim.",
+    "pixels_sha256": "fd682ac037b6a55c5cd3e3ad2e7da462ba188954190f15cf2a059ccf48a6470b"
+  },
+  {
+    "path": "textures/power/harmonic_resonance.png",
+    "kind": "power",
+    "id": "harmonic_resonance",
+    "concept": "A sustained channel widens its area.",
+    "pixels_sha256": "b735d15d367d0b7724269da855720538189c627556ec2d56e6aa3d10502a038b"
+  },
+  {
+    "path": "textures/power/siphon_bond.png",
+    "kind": "power",
+    "id": "siphon_bond",
+    "concept": "A siphoning channel restores additional health.",
+    "pixels_sha256": "2498c3a139c1ebe8e3c61d6c37fff0f8caa3c8741ac045d8870039e78677d178"
+  },
+  {
+    "path": "textures/power/the_long_note.png",
+    "kind": "power",
+    "id": "the_long_note",
+    "concept": "A long channel splits damage onto a second target.",
+    "pixels_sha256": "7f7a9daba02cfbcc899c623bf5ea9b20d29d087868aa89c07a077794899d9f17"
+  },
+  {
+    "path": "textures/power/pack_tactics.png",
+    "kind": "power",
+    "id": "pack_tactics",
+    "concept": "Summons coordinate attacks against a shared target.",
+    "pixels_sha256": "26852bb91cb1c28fae32cb917702144de2941abeb4d4cbce22b55896fca1dfda"
+  },
+  {
+    "path": "textures/power/fallen_echo.png",
+    "kind": "power",
+    "id": "fallen_echo",
+    "concept": "A fallen summon empowers the caster briefly.",
+    "pixels_sha256": "7addb9ec756f7a8148c8fd114b8aa52e5808dc17b16ad4db8d1785f2ac01887c"
+  },
+  {
+    "path": "textures/power/soul_tether.png",
+    "kind": "power",
+    "id": "soul_tether",
+    "concept": "Nearby summons share a protective tether.",
+    "pixels_sha256": "9023c5d539113d3ab40bbbf569b835311bb1adf0598bd2af06a64779b7430882"
+  },
+  {
+    "path": "textures/power/lingering_binding.png",
+    "kind": "power",
+    "id": "lingering_binding",
+    "concept": "An unsummon releases the creature's stored damage.",
+    "pixels_sha256": "95580befc37ef2ea5886555fcace653f445279fd8fa9b0a4e80a228835c88b42"
+  },
+  {
+    "path": "textures/power/the_conductor.png",
+    "kind": "power",
+    "id": "the_conductor",
+    "concept": "A conductor maintains two distinct summon batches.",
+    "pixels_sha256": "afc1779f968744a9de51d6879d4971e40147709c8d30f189249d12be78770ced"
+  },
+  {
+    "path": "textures/power/phase_recoil.png",
+    "kind": "power",
+    "id": "phase_recoil",
+    "concept": "Teleporting accelerates the next projectile.",
+    "pixels_sha256": "384c35427ae1d00655dd1f2ea28fb1f44e231e55265c8793086832aa40944278"
+  },
+  {
+    "path": "textures/power/vanishing_trail.png",
+    "kind": "power",
+    "id": "vanishing_trail",
+    "concept": "A teleport leaves a decoy that draws attention.",
+    "pixels_sha256": "c265fa94f1851a1037ec4fe22b1d11be7d2cc0c27e97199e784082ea85f68d91"
+  },
+  {
+    "path": "textures/power/clean_exit.png",
+    "kind": "power",
+    "id": "clean_exit",
+    "concept": "A teleport removes movement impairments.",
+    "pixels_sha256": "a5f7a8f053c3c7ac23dd0a26366089561f93f5d68eb1e82b10e9cf26cf2ea2d3"
+  },
+  {
+    "path": "textures/power/blink_strike.png",
+    "kind": "power",
+    "id": "blink_strike",
+    "concept": "The first strike after teleporting gains damage.",
+    "pixels_sha256": "9b28c6cfd81246f12c36b6c5a346067572e0e1664bb2d1e9410b7a28cdbd50bc"
+  },
+  {
+    "path": "textures/power/folded_space.png",
+    "kind": "power",
+    "id": "folded_space",
+    "concept": "A quick second teleport costs less mana.",
+    "pixels_sha256": "c82a4fbbe849a7ed68e453967e6f314c178c36db41328244c69e799bd7e2c66f"
+  },
+  {
+    "path": "textures/power/staff_strike.png",
+    "kind": "power",
+    "id": "staff_strike",
+    "concept": "Staff melee shortens the next spell's cast time.",
+    "pixels_sha256": "91097711770dc9b9d5c8bd2f782727956acc15ab67f5d516b58b84e676239efd"
+  },
+  {
+    "path": "textures/power/spell_parry.png",
+    "kind": "power",
+    "id": "spell_parry",
+    "concept": "A magic blade reflects part of blocked spell damage.",
+    "pixels_sha256": "8c0383a588c3bec576ddc2e6f3aa4b8db073d7d7728aee2afe98cf88bb3e5ac5"
+  },
+  {
+    "path": "textures/power/imbued_rhythm.png",
+    "kind": "power",
+    "id": "imbued_rhythm",
+    "concept": "Alternating weapon and spell attacks builds damage.",
+    "pixels_sha256": "1e3e8458d20fabd19534d90418cb8ffd6b8bd8cf66494e29aa8ae3447b426017"
+  },
+  {
+    "path": "textures/power/arcane_riposte.png",
+    "kind": "power",
+    "id": "arcane_riposte",
+    "concept": "A magic sword's triggered spell recovers sooner.",
+    "pixels_sha256": "10d67482c5409dbaef7774a71051a9e570884ae861b23e7d6e57ad3e9c69b81c"
+  },
+  {
+    "path": "textures/power/warmages_covenant.png",
+    "kind": "power",
+    "id": "warmages_covenant",
+    "concept": "A critical melee hit prepares a stronger spell.",
+    "pixels_sha256": "725f13b2e763aca066a9def0dcd0bdf0363f1c5827ff01eaf3db364058107c0c"
+  },
+  {
+    "path": "textures/power/lingering_grace.png",
+    "kind": "power",
+    "id": "lingering_grace",
+    "concept": "An expiring self buff prepares a spell cooldown refund.",
+    "pixels_sha256": "6849a645a9f943bdd4519c31c1d93bef197cc43be02fc36c9cca7b0eb53d05df"
+  },
+  {
+    "path": "textures/power/shared_flame.png",
+    "kind": "power",
+    "id": "shared_flame",
+    "concept": "A personal utility spell extends to nearby allies.",
+    "pixels_sha256": "3ddb5edd52aad60db0f4bedbd307f773f766a664fc0194a9d1c864af99db4d7e"
+  },
+  {
+    "path": "textures/power/shield_break_counter.png",
+    "kind": "power",
+    "id": "shield_break_counter",
+    "concept": "A broken barrier leaves temporary damage protection.",
+    "pixels_sha256": "0baee18e4e4b5d6a492c7f8cf7ac9aa0636d96608748d1832ae2c053852cc568"
+  },
+  {
+    "path": "textures/power/empowered_dispel.png",
+    "kind": "power",
+    "id": "empowered_dispel",
+    "concept": "Removing debuffs prepares stronger spell damage.",
+    "pixels_sha256": "4fb93cc0c327f8c774c83b3e4ede0fc45bb2b2b45de8267f9f0f40c30d4533d1"
+  },
+  {
+    "path": "textures/power/the_still_mind.png",
+    "kind": "power",
+    "id": "the_still_mind",
+    "concept": "Full health and mana prepare a powerful afflicting spell.",
+    "pixels_sha256": "3b704e14f837f5636bf692d10500f84d4c76a9b100f351a8f362a94271873256"
+  },
+  {
+    "path": "textures/power/tc_first_heat.png",
+    "kind": "power",
+    "id": "tc_first_heat",
+    "concept": "Repeated Tinkers' melee strikes prepare extra damage.",
+    "pixels_sha256": "8d3b967b82978fbc482188c2cf7a2ebe1a41bd0c6dafe4226c49b3d2f9bd3f1e"
+  },
+  {
+    "path": "textures/power/tc_plumb_line.png",
+    "kind": "power",
+    "id": "tc_plumb_line",
+    "concept": "Grounded committed mining prepares a speed window.",
+    "pixels_sha256": "59e85a53a421472efb6faef127d06206d70cfae97e3dbbce88d8f660550f9e4a"
+  },
+  {
+    "path": "textures/power/tc_quench.png",
+    "kind": "power",
+    "id": "tc_quench",
+    "concept": "A paid repair grants temporary fire protection.",
+    "pixels_sha256": "fa789d8d95f5b39a4ba177f4c2a5585ff7cd09315952e04e6eef70e381d43ea8"
+  },
+  {
+    "path": "textures/power/tc_working_memory.png",
+    "kind": "power",
+    "id": "tc_working_memory",
+    "concept": "A part change prepares a stronger paid repair on that tool.",
+    "pixels_sha256": "44af98748232280819249ff54cfac4d1361fb38bd5baf2a0d446613d88c6b298"
+  },
+  {
+    "path": "textures/power/tc_hammer_and_tongs.png",
+    "kind": "power",
+    "id": "tc_hammer_and_tongs",
+    "concept": "A substantial shield block prepares stronger Tinkers' melee.",
+    "pixels_sha256": "1e9ac1f44a38485d7722b0a3924a05382226dab234b1cf4d28a08ee6ce862a1e"
+  },
+  {
+    "path": "textures/power/tc_temper_reserve.png",
+    "kind": "power",
+    "id": "tc_temper_reserve",
+    "concept": "A substantial repair protects the tool against wear.",
+    "pixels_sha256": "d3172d35e489f0168ef7a8bc0119cb14c7d0791109146ea0a27ade0c24ff7bc0"
+  },
+  {
+    "path": "textures/power/tc_resonant_return.png",
+    "kind": "power",
+    "id": "tc_resonant_return",
+    "concept": "A returned thrown tool prepares a stronger next throw.",
+    "pixels_sha256": "d3abe3ca247ce12a675628e9b473efc6ecb6dd969ffb81c0bcac33cc7ad2b1b0"
+  },
+  {
+    "path": "textures/power/tc_workshop_aegis.png",
+    "kind": "power",
+    "id": "tc_workshop_aegis",
+    "concept": "An attributed cast protects the crafter within the workshop.",
+    "pixels_sha256": "ea0d7c5527c1f24733dd803a093f69c55234052cee9cf42740b0f88420306348"
+  },
+  {
+    "path": "textures/power/tc_great_work.png",
+    "kind": "power",
+    "id": "tc_great_work",
+    "concept": "Assembly repair and casting together inspire the artisan.",
+    "pixels_sha256": "927c9e72c4292b69582c5952b972783cff30c0f5463371cd641292baf6a833f7"
+  },
+  {
+    "path": "textures/power/tc_last_temper.png",
+    "kind": "power",
+    "id": "tc_last_temper",
+    "concept": "A tool survives ordinary wear on its last durability.",
+    "pixels_sha256": "7312ba443a2ff383eefda7aa2e708f051fa4cd1a2c3cc9a6bd4065e463c51660"
+  },
+  {
+    "path": "textures/power/tc_foundry_heart.png",
+    "kind": "power",
+    "id": "tc_foundry_heart",
+    "concept": "Owned melting operations prepare faster melting and cooling.",
+    "pixels_sha256": "c2910585d6526045b7bb00e87827b59258cd52e63da313dd7c804e6211f2b176"
+  },
+  {
+    "path": "textures/power/tc_many_hands.png",
+    "kind": "power",
+    "id": "tc_many_hands",
+    "concept": "Working with an ally grants stronger paid repairs.",
+    "pixels_sha256": "ea5a74d706d03630a076cb54d1600b68c1944f6305c778c1ca0706161f9ba2a6"
+  },
+  {
+    "path": "textures/gui/powers.png",
+    "kind": "control",
+    "id": "powers",
+    "concept": "Open the Powers catalogue.",
+    "pixels_sha256": "b79a1e19d16b26fd66a60c474028a0495dfafd0ce38d750359555896e0da1f53"
+  },
+  {
+    "path": "textures/mob_effect/integration_slow.png",
+    "kind": "effect",
+    "id": "integration_slow",
+    "concept": "A bounded ten percent movement slow.",
+    "pixels_sha256": "304318c524e35f16f05f034f882e60d669a11ed8b2de62b0b53647b483688101"
+  }
+]

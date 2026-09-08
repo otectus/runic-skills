@@ -15,7 +15,7 @@ not -- and then reads the real, obfuscated mod jars out of the pack and checks t
 there under that exact name and descriptor.
 
     python tools/verify_against_pack.py
-    python tools/verify_against_pack.py --jar build/libs/runicskills-2.0.7.jar --mods "<pack>/mods"
+    python tools/verify_against_pack.py --jar build/libs/runicskills-2.1.0.jar --mods "<pack>/mods"
 
 Exit code 0 if every reference resolves, 1 otherwise.
 """

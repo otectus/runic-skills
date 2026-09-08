@@ -125,6 +125,7 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public void onServerStopped(final ServerStoppedEvent event) {
         RunicSkills.server = null;
+        com.otectus.runicskills.integration.common.IntegrationRules.reset();
         // Reset every static tick baseline. These are keyed on server.getTickCount(), which
         // restarts at 0 with the server — so in a single JVM that hosts more than one world (a
         // singleplayer player returning to the main menu and loading a different save), stale
@@ -211,6 +212,7 @@ public class PlayerLifecycleHandler {
         event.addListener(new PerkGroupsReloadListener());
         event.addListener(new com.otectus.runicskills.registry.skill.SkillVisualsReloadListener());
         event.addListener(new PowerOverridesReloadListener());
+        event.addListener(new com.otectus.runicskills.integration.common.IntegrationRulesReloadListener());
         // Master Researcher's recipe index is a snapshot of the recipe manager, and /reload
         // replaces every recipe in it. Nothing to prepare, so the listener is just the drop.
         event.addListener((ResourceManagerReloadListener)
@@ -224,6 +226,17 @@ public class PlayerLifecycleHandler {
         // slimeknights type, and a rule file that a server cannot yet resolve is skipped by its own
         // requires_mods rather than by never being read.
         event.addListener(new com.otectus.runicskills.common.rules.TConstructRulesLoader());
+    }
+
+    /** Vanilla /reload must refresh the same client decisions as login and /skillsreload. */
+    @SubscribeEvent
+    public void onDatapackSync(net.minecraftforge.event.OnDatapackSyncEvent event) {
+        if (event.getPlayer() != null) return; // Login already sends the full snapshot in order.
+        for (ServerPlayer player : event.getPlayerList().getPlayers()) {
+            PerkGroupsSyncCP.sendToPlayer(player);
+            PowerOverridesSyncCP.sendToPlayer(player);
+            SyncSkillCapabilityCP.send(player);
+        }
     }
 
     @SubscribeEvent
@@ -250,6 +263,8 @@ public class PlayerLifecycleHandler {
                 // touched: a survive-lethal perk or a Chaos Roll that death made ready again would
                 // turn dying into the cheapest way to use it.
                 if (event.isWasDeath()) {
+                    com.otectus.runicskills.common.powers.PowerRuntime.clearPlayer(serverPlayerOld.getUUID());
+                    com.otectus.runicskills.common.powers.PowerCooldownDebt.restore(serverPlayerNew);
                     PerkEffectsHandler.clearCombatWindows(serverPlayerOld.getUUID());
                     EnchantingLorePerkHandler.clearCombatWindows(serverPlayerOld.getUUID());
                     // A death ends the repair budget too. The gear that earned the fraction is on
@@ -261,6 +276,15 @@ public class PlayerLifecycleHandler {
                 }
                 serverPlayerOld.invalidateCaps();
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // A rewind snapshot has no meaning in a different dimension; debt still does.
+            com.otectus.runicskills.common.powers.PowerRuntime.clearPlayer(player.getUUID());
+            com.otectus.runicskills.common.powers.PowerCooldownDebt.restore(player);
         }
     }
 

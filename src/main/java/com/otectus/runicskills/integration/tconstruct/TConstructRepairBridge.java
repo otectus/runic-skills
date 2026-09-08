@@ -52,12 +52,29 @@ public final class TConstructRepairBridge {
         float factor = repairFactor(tool);
         if (factor <= 0.0F) return 0;
 
-        int scaled = (int) Math.floor(Math.min(points, damage) * (double) factor);
+        // Scale the offered budget before clamping: a half-rate repair offered 10 points can
+        // still finish a tool missing 4, and a native multiplier must not amplify paid bonuses.
+        int scaled = TConstructRepairMath.offeredRepair(points, damage, factor);
         if (scaled <= 0) return 0;
 
         ToolDamageUtil.repair(tool, scaled);
         // The committed difference, not the requested amount: the helper clamps to the remaining
         // damage, and a caller holding a budget must only be charged for what it bought.
+        return Math.max(0, damage - tool.getDamage());
+    }
+
+    /**
+     * Restores an already calculated share of a committed native repair. Native repair factors
+     * have already affected that paid amount; applying them again would square the modifier and
+     * let enhanced factors exceed the shared bonus cap. A refusal still takes precedence.
+     */
+    public static int paidRepairBonus(ItemStack stack, int points) {
+        if (!TConstructEquipmentAdapter.isNativeTool(stack) || points <= 0) return 0;
+        ToolStack tool = ToolStack.from(stack);
+        if (tool.isBroken() || tool.isUnbreakable() || repairFactor(tool) <= 0.0F) return 0;
+        int damage = tool.getDamage();
+        if (damage <= 0) return 0;
+        ToolDamageUtil.repair(tool, Math.min(points, damage));
         return Math.max(0, damage - tool.getDamage());
     }
 
@@ -69,7 +86,7 @@ public final class TConstructRepairBridge {
         float factor = 1.0F;
         for (ModifierEntry entry : tool.getModifierList()) {
             factor = entry.getHook(ModifierHooks.REPAIR_FACTOR).getRepairFactor(tool, entry, factor);
-            if (factor <= 0.0F) return 0.0F;
+            if (!Float.isFinite(factor) || factor <= 0.0F) return 0.0F;
         }
         return factor;
     }

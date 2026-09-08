@@ -106,6 +106,9 @@ public final class WearAvoidance {
      */
     private static final java.util.List<Contributor> CONTRIBUTORS =
             new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** New-catalog effects which may spare at most one point of this entire native spend. */
+    private static final java.util.List<Contributor> SINGLE_POINT_CONTRIBUTORS =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
 
     /** Installed clamps, in registration order. Copy-on-write for the same reason. */
     private static final java.util.List<Clamp> CLAMPS =
@@ -117,6 +120,9 @@ public final class WearAvoidance {
     /** Adds {@code contributor} to the single avoidance sum. Called from an integration bootstrap. */
     public static void addContributor(Contributor contributor) {
         if (contributor != null) CONTRIBUTORS.add(contributor);
+    }
+    public static void addSinglePointContributor(Contributor contributor) {
+        if (contributor != null) SINGLE_POINT_CONTRIBUTORS.add(contributor);
     }
 
     /** Adds {@code clamp} to the post-sampling stage. Called from an integration bootstrap. */
@@ -208,8 +214,19 @@ public final class WearAvoidance {
     public static int reduce(ServerPlayer user, ItemStack stack, int amount, RandomSource random) {
         if (amount <= 0 || random == null) return Math.max(0, amount);
         double avoided = avoidance(user, stack);
+        double onePoint = 0;
+        for (Contributor contributor : SINGLE_POINT_CONTRIBUTORS) {
+            double extra = contributor.avoidance(user, stack);
+            if (Double.isFinite(extra) && extra > 0) onePoint = Math.min(.30, onePoint + extra);
+        }
         int spending = amount;
-        if (avoided > 0.0D) {
+        if (onePoint > 0) {
+            // One combined trial for the first point. All remaining points keep only the
+            // existing probability; a bulk damage amount cannot multiply a one-point perk.
+            int spared = random.nextDouble() < Math.min(MAX_AVOIDANCE, avoided + onePoint) ? 1 : 0;
+            if (amount > 1 && avoided > 0) spared += sample(amount - 1, avoided, random);
+            spending = amount - spared;
+        } else if (avoided > 0.0D) {
             int spared = sample(amount, avoided, random);
             spending = Math.max(0, Math.min(amount, amount - spared));
         }

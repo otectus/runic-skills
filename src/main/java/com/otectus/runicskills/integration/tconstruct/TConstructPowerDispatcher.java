@@ -149,7 +149,8 @@ public final class TConstructPowerDispatcher {
         }
         state.firstHeatPreparedUntil = 0L;
 
-        if (player.getAttackStrengthScale(0.5F) < TConstructPowers.value(power, "readiness")) {
+        if (RunicActionContext.attackStrength(player.getUUID(), player.getAttackStrengthScale(0.5F))
+                < TConstructPowers.value(power, "readiness")) {
             return 0.0;
         }
         long window = TConstructPowers.ticks(power, "window_seconds");
@@ -337,11 +338,11 @@ public final class TConstructPowerDispatcher {
         if (temper != null && active(player, RegistryPowers.TC_TEMPER_RESERVE)) {
             TConstructPowerState.Player state = TConstructPowerState.peek(player.getUUID());
             if (state != null && state.temperReserveUntil > tick
-                    && itemId(stack).equals(state.temperReserveItem)) {
+                    && TConstructPerkState.isSameTool(state.temperReserveTool, stack)) {
                 share += TConstructPowers.value(temper, "avoidance_points") / 100.0;
             } else if (state != null && state.temperReserveUntil <= tick) {
                 state.temperReserveUntil = 0L;
-                state.temperReserveItem = null;
+                state.temperReserveTool = TConstructPerkState.reference(ItemStack.EMPTY);
             }
         }
 
@@ -404,6 +405,16 @@ public final class TConstructPowerDispatcher {
      */
     public static double repairBonusShare(ServerPlayer player, ItemStack delivered,
                                           TinkerStationBlockEntity station) {
+        return repairBonusShare(player, delivered, station, true);
+    }
+
+    public static double previewRepairBonusShare(ServerPlayer player, ItemStack delivered,
+                                                 TinkerStationBlockEntity station) {
+        return repairBonusShare(player, delivered, station, false);
+    }
+
+    private static double repairBonusShare(ServerPlayer player, ItemStack delivered,
+                                           TinkerStationBlockEntity station, boolean commit) {
         if (player == null || player instanceof FakePlayer) return 0.0;
         long tick = now(player);
         double share = 0.0;
@@ -413,23 +424,27 @@ public final class TConstructPowerDispatcher {
             TConstructPowerState.Player state = TConstructPowerState.peek(player.getUUID());
             if (state != null && state.workingMemoryUntil > tick
                     && station.getBlockPos().equals(state.workingMemoryStation)
-                    && itemId(delivered).equals(state.workingMemoryItem)) {
-                clearWorkingMemory(state);
-                if (spendCooldown(player, workingMemory, tick)) {
+                    && sameRepairedTool(state.workingMemoryTool,
+                            station.getItem(TinkerStationBlockEntity.TINKER_SLOT))) {
+                if (commit ? spendCooldown(player, workingMemory, tick) : ready(player, workingMemory, tick)) {
                     share += TConstructPowers.value(workingMemory, "repair_percent") / 100.0;
-                    PowerDispatch.fireProc(player, workingMemory);
+                    if (commit) {
+                        clearWorkingMemory(state);
+                        PowerDispatch.fireProc(player, workingMemory);
+                    }
                 }
-            } else if (state != null && state.workingMemoryUntil <= tick) {
+            } else if (commit && state != null && state.workingMemoryUntil <= tick) {
                 clearWorkingMemory(state);
             }
         }
 
         Power manyHands = of(RegistryPowers.TC_MANY_HANDS);
-        if (manyHands != null) {
+        if (manyHands != null && !RegistryPowers.isDisabled(manyHands)
+                && TConstructPowers.unavailable(manyHands) == null) {
             TConstructPowerState.Player state = TConstructPowerState.peek(player.getUUID());
             if (state != null && state.manyHandsBonusUntil > tick) {
                 share += TConstructPowers.value(manyHands, "repair_percent") / 100.0;
-            } else if (state != null) {
+            } else if (commit && state != null) {
                 state.manyHandsBonusUntil = 0L;
             }
         }
@@ -463,7 +478,7 @@ public final class TConstructPowerDispatcher {
                 && restored >= threshold(temper, max)
                 && spendCooldown(player, temper, tick)) {
             TConstructPowerState.Player state = TConstructPowerState.of(player.getUUID());
-            state.temperReserveItem = itemId(delivered);
+            state.temperReserveTool = TConstructPerkState.reference(delivered);
             state.temperReserveUntil = tick + TConstructPowers.ticks(temper, "duration_seconds");
             PowerDispatch.fireProc(player, temper);
         }
@@ -505,7 +520,7 @@ public final class TConstructPowerDispatcher {
         // banking both.
         TConstructPowerState.Player state = TConstructPowerState.of(player.getUUID());
         state.workingMemoryStation = station.getBlockPos().immutable();
-        state.workingMemoryItem = itemId(delivered);
+        state.workingMemoryTool = repairIdentity(delivered);
         state.workingMemoryUntil = tick + TConstructPowers.ticks(power, "window_seconds");
     }
 
@@ -519,7 +534,7 @@ public final class TConstructPowerDispatcher {
 
     private static void clearWorkingMemory(TConstructPowerState.Player state) {
         state.workingMemoryStation = null;
-        state.workingMemoryItem = null;
+        state.workingMemoryTool = ItemStack.EMPTY;
         state.workingMemoryUntil = 0L;
     }
 
@@ -675,21 +690,43 @@ public final class TConstructPowerDispatcher {
     private static void manyHandsContribution(ServerPlayer contributor, BlockPos workshop, long tick) {
         MinecraftServer server = contributor.getServer();
         if (server == null) return;
-        UUID holderId = WorkshopFocusService.holderOf(contributor.level(), workshop);
-        if (holderId == null) return;
-        ServerPlayer owner = server.getPlayerList().getPlayer(holderId);
+        WorkshopFocusService.Focus focus = WorkshopFocusService.focusAt(contributor.level(), workshop);
+        // Stations do not occupy a controller/associated-casting anchor. Attribute a station
+        // assembly to the nearest active allied workshop whose configured radius covers it.
+        if (focus == null) {
+            double bestDistance = Double.MAX_VALUE;
+            double radius = HandlerCommonConfig.HANDLER.instance().tconstructWorkshopFocusRadius;
+            for (ServerPlayer candidate : server.getPlayerList().getPlayers()) {
+                if (candidate.level() != contributor.level()) continue;
+                if (candidate != contributor && !PowerRuntime.AllyDetector.isAlly(candidate, contributor)) continue;
+                if (!active(candidate, RegistryPowers.TC_MANY_HANDS)) continue;
+                WorkshopFocusService.Focus candidateFocus = WorkshopFocusService.activeFocus(candidate);
+                if (candidateFocus == null) continue;
+                double distance = candidateFocus.controller().distSqr(workshop);
+                if (distance <= radius * radius && distance < bestDistance) {
+                    focus = candidateFocus;
+                    bestDistance = distance;
+                }
+            }
+        }
+        if (focus == null) return;
+        ServerPlayer owner = server.getPlayerList().getPlayer(focus.player());
         if (owner == null) return;
         Power power = of(RegistryPowers.TC_MANY_HANDS);
         if (power == null || !active(owner, RegistryPowers.TC_MANY_HANDS)) return;
 
         TConstructPowerState.Player state = TConstructPowerState.of(owner.getUUID());
-        BlockPos anchor = workshop.immutable();
+        BlockPos anchor = focus.controller();
         if (!anchor.equals(state.manyHandsWorkshop)) {
             state.manyHandsWorkshop = anchor;
             state.manyHandsOwnerAt = 0L;
             state.manyHandsContributors.clear();
         }
 
+        long window = TConstructPowers.ticks(power, "window_seconds");
+        // Expire before applying the capacity limit, or three departed allies can fill the
+        // collection and prevent a new contributor from completing the award.
+        state.manyHandsContributors.entrySet().removeIf(entry -> tick - entry.getValue() > window);
         if (contributor.getUUID().equals(owner.getUUID())) {
             state.manyHandsOwnerAt = tick;
         } else if (PowerRuntime.AllyDetector.isAlly(owner, contributor)) {
@@ -701,9 +738,7 @@ public final class TConstructPowerDispatcher {
             return;
         }
 
-        long window = TConstructPowers.ticks(power, "window_seconds");
         if (state.manyHandsOwnerAt <= 0L || tick - state.manyHandsOwnerAt > window) return;
-        state.manyHandsContributors.entrySet().removeIf(entry -> tick - entry.getValue() > window);
         if (state.manyHandsContributors.isEmpty()) return;
         if (!spendCooldown(owner, power, tick)) return;
 
@@ -711,7 +746,8 @@ public final class TConstructPowerDispatcher {
         award(owner, tick, duration);
         for (Map.Entry<UUID, Long> entry : state.manyHandsContributors.entrySet()) {
             ServerPlayer ally = server.getPlayerList().getPlayer(entry.getKey());
-            if (ally != null) award(ally, tick, duration);
+            if (ally != null && ally.level() == owner.level()
+                    && PowerRuntime.AllyDetector.isAlly(owner, ally)) award(ally, tick, duration);
         }
         state.manyHandsOwnerAt = 0L;
         state.manyHandsContributors.clear();
@@ -824,6 +860,17 @@ public final class TConstructPowerDispatcher {
         net.minecraft.resources.ResourceLocation id =
                 net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
         return id == null ? "" : id.toString();
+    }
+
+    private static ItemStack repairIdentity(ItemStack stack) {
+        if (!TConstructEquipmentAdapter.isNativeTool(stack)) return ItemStack.EMPTY;
+        ItemStack identity = stack.copy();
+        ToolStack.from(identity).setDamage(0);
+        return identity;
+    }
+
+    private static boolean sameRepairedTool(ItemStack expected, ItemStack candidate) {
+        return !expected.isEmpty() && ItemStack.isSameItemSameTags(expected, repairIdentity(candidate));
     }
 
 }

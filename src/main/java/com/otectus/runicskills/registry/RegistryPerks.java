@@ -73,6 +73,109 @@ public class RegistryPerks {
     // textual order, so a map declared after them is still null when the first one calls
     // registerPerk() — which takes mod construction down with a NullPointerException.
 
+    public static final RegistryObject<Perk> SS_SPELLSTEEL_DISCIPLINE = registerPerk("ss_spellsteel_discipline", () -> register("ss_spellsteel_discipline", RegistrySkills.MAGIC,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssSpellsteelDisciplineRequiredLevel), HandlerResources.SS_SPELLSTEEL_DISCIPLINE_PERK));
+    public static final RegistryObject<Perk> SS_AWAKE_AND_READY = registerPerk("ss_awake_and_ready", () -> register("ss_awake_and_ready", RegistrySkills.ENDURANCE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssAwakeAndReadyRequiredLevel), HandlerResources.SS_AWAKE_AND_READY_PERK));
+    public static final RegistryObject<Perk> SS_GEMGUARD = registerPerk("ss_gemguard", () -> register("ss_gemguard", RegistrySkills.CONSTITUTION,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssGemguardRequiredLevel), HandlerResources.SS_GEMGUARD_PERK));
+    public static final RegistryObject<Perk> TOM_PRESSURE_READER = registerPerk("tom_pressure_reader", () -> register("tom_pressure_reader", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomPressureReaderRequiredLevel), HandlerResources.TOM_PRESSURE_READER_PERK));
+    public static final RegistryObject<Perk> TOM_ARTIFICERS_POISE = registerPerk("tom_artificers_poise", () -> register("tom_artificers_poise", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomArtificersPoiseRequiredLevel), HandlerResources.TOM_ARTIFICERS_POISE_PERK));
+    public static final RegistryObject<Perk> TOM_RELIC_DISCIPLINE = registerPerk("tom_relic_discipline", () -> register("tom_relic_discipline", RegistrySkills.STRENGTH,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomRelicDisciplineRequiredLevel), HandlerResources.TOM_RELIC_DISCIPLINE_PERK));
+    public static final RegistryObject<Perk> SS_RETURNING_GRIP = registerPerk("ss_returning_grip", () -> register("ss_returning_grip", RegistrySkills.DEXTERITY,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssReturningGripRequiredLevel), HandlerResources.SS_RETURNING_GRIP_PERK));
+    public static final RegistryObject<Perk> SS_MEASURED_STEEL = registerPerk("ss_measured_steel", () -> register(
+            "ss_measured_steel", RegistrySkills.STRENGTH,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssMeasuredSteelRequiredLevel),
+            HandlerResources.SS_MEASURED_STEEL_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ssMeasuredSteelPercent)));
+    public static final RegistryObject<Perk> SM_LONG_MEASURE = registerPerk("sm_long_measure", () -> register("sm_long_measure", RegistrySkills.DEXTERITY,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smLongMeasureRequiredLevel), HandlerResources.SM_LONG_MEASURE_PERK));
+    public static final RegistryObject<Perk> SM_BREACH_READER = registerPerk("sm_breach_reader", () -> register("sm_breach_reader", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smBreachReaderRequiredLevel), HandlerResources.SM_BREACH_READER_PERK));
+    public static final RegistryObject<Perk> SM_MANY_FORMS_ONE_HAND = registerPerk("sm_many_forms_one_hand", () -> register("sm_many_forms_one_hand", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smManyFormsOneHandRequiredLevel), HandlerResources.SM_MANY_FORMS_ONE_HAND_PERK));
+    public static final RegistryObject<Perk> SM_COUNTERGRIP = registerPerk("sm_countergrip", () -> register(
+            "sm_countergrip", RegistrySkills.DEXTERITY,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smCountergripRequiredLevel),
+            HandlerResources.SM_COUNTERGRIP_PERK));
+    public static final RegistryObject<Perk> SM_MEASURED_BLOWS = registerPerk("sm_measured_blows", () -> register(
+            "sm_measured_blows", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smMeasuredBlowsRequiredLevel),
+            HandlerResources.SM_MEASURED_BLOWS_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().smMeasuredBlowsPercent)));
+
+    public static final RegistryObject<Perk> SS_RELIC_CARE = registerPerk("ss_relic_care", () -> register(
+            "ss_relic_care", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssRelicCareRequiredLevel),
+            HandlerResources.SS_RELIC_CARE_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ssRelicCarePercent)));
+    public static final RegistryObject<Perk> SM_RELIC_CARE = registerPerk("sm_relic_care", () -> register(
+            "sm_relic_care", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smRelicCareRequiredLevel),
+            HandlerResources.SM_RELIC_CARE_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().smRelicCarePercent)));
+
+    public static final RegistryObject<Perk> SM_COUCHED_DISCIPLINE = registerPerk("sm_couched_discipline", () -> register("sm_couched_discipline", RegistrySkills.STRENGTH,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smCouchedDisciplineRequiredLevel), HandlerResources.SM_COUCHED_DISCIPLINE_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().smCouchedDisciplinePercent)));
+    public static final RegistryObject<Perk> SM_SADDLEWARD = registerPerk("sm_saddleward", () -> register("sm_saddleward", RegistrySkills.CONSTITUTION,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().smSaddlewardRequiredLevel), HandlerResources.SM_SADDLEWARD_PERK));
+    public static final RegistryObject<Perk> TOM_MEASURED_CURRENT = registerPerk("tom_measured_current", () -> register("tom_measured_current", RegistrySkills.ENDURANCE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomMeasuredCurrentRequiredLevel), HandlerResources.TOM_MEASURED_CURRENT_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tomMeasuredCurrentPercent)));
+    public static final RegistryObject<Perk> TOM_CHANGING_TIDES = registerPerk("tom_changing_tides", () -> register("tom_changing_tides", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomChangingTidesRequiredLevel), HandlerResources.TOM_CHANGING_TIDES_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tomChangingTidesPercent)));
+    public static final RegistryObject<Perk> TOM_BOUND_COMPANION = registerPerk("tom_bound_companion", () -> register("tom_bound_companion", RegistrySkills.CONSTITUTION,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomBoundCompanionRequiredLevel), HandlerResources.TOM_BOUND_COMPANION_PERK));
+    public static final RegistryObject<Perk> TIDE_SURE_LINE = registerPerk("tide_sure_line", () -> register("tide_sure_line", RegistrySkills.DEXTERITY,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideSureLineRequiredLevel), HandlerResources.TIDE_SURE_LINE_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideSureLineHundredths)));
+    public static final RegistryObject<Perk> TOM_TALENT_COMPOSURE = registerPerk("tom_talent_composure", () -> register("tom_talent_composure", RegistrySkills.INTELLIGENCE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomTalentComposureRequiredLevel), HandlerResources.TOM_TALENT_COMPOSURE_PERK));
+    public static final RegistryObject<Perk> TIDE_READ_THE_WATER = registerPerk("tide_read_the_water", () -> register("tide_read_the_water", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideReadTheWaterRequiredLevel), HandlerResources.TIDE_READ_THE_WATER_PERK));
+    public static final RegistryObject<Perk> TIDE_FIELD_NATURALIST = registerPerk("tide_field_naturalist", () -> register("tide_field_naturalist", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideFieldNaturalistRequiredLevel), HandlerResources.TIDE_FIELD_NATURALIST_PERK));
+    public static final RegistryObject<Perk> TIDE_MANY_WATERS = registerPerk("tide_many_waters", () -> register(
+            "tide_many_waters", RegistrySkills.ENDURANCE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideManyWatersRequiredLevel),
+            HandlerResources.TIDE_MANY_WATERS_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideManyWatersPercent)));
+
+    public static final RegistryObject<Perk> TOM_AQUA_ATTUNEMENT = registerPerk("tom_aqua_attunement", () -> register(
+            "tom_aqua_attunement", RegistrySkills.MAGIC,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tomAquaAttunementRequiredLevel),
+            HandlerResources.TOM_AQUA_ATTUNEMENT_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tomAquaAttunementPercent)));
+
+    public static final RegistryObject<Perk> SS_PATIENT_TEMPER = registerPerk("ss_patient_temper", () -> register(
+            "ss_patient_temper", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssPatientTemperRequiredLevel),
+            HandlerResources.SS_PATIENT_TEMPER_PERK, new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().ssPatientTemperPercent)));
+
+    public static final RegistryObject<Perk> SS_RESONANT_READING = registerPerk("ss_resonant_reading", () -> register(
+            "ss_resonant_reading", RegistrySkills.WISDOM,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().ssResonantReadingRequiredLevel),
+            HandlerResources.SS_RESONANT_READING_PERK));
+
+    public static final RegistryObject<Perk> TIDE_MEASURED_CAST = registerPerk("tide_measured_cast", () -> register(
+            "tide_measured_cast", RegistrySkills.DEXTERITY,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideMeasuredCastRequiredLevel),
+            HandlerResources.TIDE_MEASURED_CAST_PERK,
+            new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideMeasuredCastPercent)));
+
+    public static final RegistryObject<Perk> TIDE_BAITKEEPER = registerPerk("tide_baitkeeper", () -> register(
+            "tide_baitkeeper", RegistrySkills.FORTUNE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideBaitkeeperRequiredLevel),
+            HandlerResources.TIDE_BAITKEEPER_PERK,
+            new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideBaitkeeperPercent)));
+
+    public static final RegistryObject<Perk> TIDE_PATIENT_HANDS = registerPerk("tide_patient_hands", () -> register(
+            "tide_patient_hands", RegistrySkills.TINKERING,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tidePatientHandsRequiredLevel),
+            HandlerResources.TIDE_PATIENT_HANDS_PERK,
+            new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tidePatientHandsPercent)));
+    public static final RegistryObject<Perk> TIDE_CAREFUL_LANDING = registerPerk("tide_careful_landing", () -> register(
+            "tide_careful_landing", RegistrySkills.ENDURANCE,
+            ScaledRequirement.forConfiguredCap(HandlerCommonConfig.HANDLER.instance().tideCarefulLandingRequiredLevel),
+            HandlerResources.TIDE_CAREFUL_LANDING_PERK,
+            new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideCarefulLandingPercent)));
+
     public static final RegistryObject<Perk> ONE_HANDED =
             registerPerk("one_handed", () -> register(
                     "one_handed",
@@ -4306,6 +4409,50 @@ public class RegistryPerks {
 
     public static boolean isDisabled(Perk perk) {
         if (perk == null) return false;
+        if (RunicSkills.MOD_ID.equals(perk.getMod())) {
+            if ("tom_aqua_attunement".equals(perk.getName()) && (!com.otectus.runicskills.integration.tom.TomAquaAttunement.available()
+                    || com.otectus.runicskills.integration.tom.TomAquaAttunement.percent() <= 0)) return true;
+            if ("tide_many_waters".equals(perk.getName()) && (!com.otectus.runicskills.integration.tide.TideManyWaters.available()
+                    || HandlerCommonConfig.HANDLER.instance().tideManyWatersPercent <= 0)) return true;
+            if ("ss_patient_temper".equals(perk.getName()) && (!com.otectus.runicskills.integration.simplyswords.SwordsWear.available()
+                    || HandlerCommonConfig.HANDLER.instance().ssPatientTemperPercent <= 0)) return true;
+            if ("ss_resonant_reading".equals(perk.getName()) && !com.otectus.runicskills.integration.simplyswords.SwordsInspection.available()) return true;
+            if ("tide_baitkeeper".equals(perk.getName()) && (!com.otectus.runicskills.integration.tide.TideBaitkeeper.available()
+                    || HandlerCommonConfig.HANDLER.instance().tideBaitkeeperPercent <= 0)) return true;
+            if ("tide_patient_hands".equals(perk.getName()) && (!com.otectus.runicskills.integration.tide.TideCatchBridge.available()
+                    || HandlerCommonConfig.HANDLER.instance().tidePatientHandsPercent <= 0)) return true;
+            if ("tide_careful_landing".equals(perk.getName()) && (!com.otectus.runicskills.integration.tide.TideCatchBridge.available()
+                    || HandlerCommonConfig.HANDLER.instance().tideCarefulLandingPercent <= 0)) return true;
+        }
+        if (RunicSkills.MOD_ID.equals(perk.getMod()) && "tide_measured_cast".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.tide.TidePreparation.available()
+                || HandlerCommonConfig.HANDLER.instance().tideMeasuredCastPercent <= 0)) return true;
+        if (RunicSkills.MOD_ID.equals(perk.getMod()) && java.util.Set.of("tom_pressure_reader", "tom_artificers_poise", "sm_many_forms_one_hand", "sm_breach_reader", "sm_long_measure", "ss_returning_grip", "tom_relic_discipline", "ss_gemguard", "ss_spellsteel_discipline", "ss_awake_and_ready", "ss_measured_steel", "sm_countergrip", "sm_measured_blows", "sm_couched_discipline", "sm_saddleward").contains(perk.getName())) {
+            if (!com.otectus.runicskills.integration.common.WeaponCombat.availability(perk.getName(), false).available()) return true;
+            if ("ss_measured_steel".equals(perk.getName()) && HandlerCommonConfig.HANDLER.instance().ssMeasuredSteelPercent <= 0) return true;
+            if ("sm_measured_blows".equals(perk.getName()) && HandlerCommonConfig.HANDLER.instance().smMeasuredBlowsPercent <= 0) return true;
+        }
+        if (RunicSkills.MOD_ID.equals(perk.getMod()) && "ss_relic_care".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.common.RelicCare.available(perk.getName())
+                || HandlerCommonConfig.HANDLER.instance().ssRelicCarePercent <= 0)) return true;
+        if (RunicSkills.MOD_ID.equals(perk.getMod()) && "sm_relic_care".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.common.RelicCare.available(perk.getName())
+                || HandlerCommonConfig.HANDLER.instance().smRelicCarePercent <= 0)) return true;
+        if ("runicskills".equals(perk.getMod()) && "sm_couched_discipline".equals(perk.getName()) && HandlerCommonConfig.HANDLER.instance().smCouchedDisciplinePercent <= 0) return true;
+        if ("runicskills".equals(perk.getMod()) && "tom_measured_current".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.tom.TomCastRewards.availability(false).available() || HandlerCommonConfig.HANDLER.instance().tomMeasuredCurrentPercent <= 0)) return true;
+        if ("runicskills".equals(perk.getMod()) && "tom_changing_tides".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.tom.TomCastRewards.availability(false).available() || HandlerCommonConfig.HANDLER.instance().tomChangingTidesPercent <= 0)) return true;
+        if ("runicskills".equals(perk.getMod()) && "tom_bound_companion".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.tom.TomCastRewards.availability(false).available())) return true;
+        if ("runicskills".equals(perk.getMod()) && "tide_sure_line".equals(perk.getName())
+                && (!com.otectus.runicskills.integration.tide.TideNormalWindow.availability(false).available() || HandlerCommonConfig.HANDLER.instance().tideSureLineHundredths <= 0)) return true;
+        if ("runicskills".equals(perk.getMod()) && "tom_talent_composure".equals(perk.getName())
+                && !com.otectus.runicskills.integration.tom.TomTalent.availability().available()) return true;
+        if ("runicskills".equals(perk.getMod()) && "tide_read_the_water".equals(perk.getName())
+                && !com.otectus.runicskills.integration.tide.TideJournal.availability(false, false).available()) return true;
+        if ("runicskills".equals(perk.getMod()) && "tide_field_naturalist".equals(perk.getName())
+                && !com.otectus.runicskills.integration.tide.TideJournal.availability(false, false).available()) return true;
         // Scholar's entire effect is the enchantment-name gate, so with the gate off the perk has
         // nothing left to do. Reporting it disabled here keeps it out of the selectable set instead
         // of letting a player spend a point on a guaranteed no-op (HIGH-03). Matched by name rather
@@ -4335,5 +4482,3 @@ public class RegistryPerks {
         return HandlerCommonConfig.HANDLER.instance().hideDisabledPerks && isDisabled(perk);
     }
 }
-
-

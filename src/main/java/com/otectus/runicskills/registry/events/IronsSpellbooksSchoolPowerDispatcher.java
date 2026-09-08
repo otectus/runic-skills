@@ -46,6 +46,7 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.RegistryObject;
@@ -375,7 +376,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         if (cling && hop >= 2) {
             Power p = RegistryPowers.STATIC_CLING.get();
             int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-            if (!PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(), now, icd)) return;
+            if (!com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p, now, icd)) return;
             int shockTicks = PowerOverridesManager.intValueOr(p, "shocked_ticks", 80);
             PowerRuntime.TargetTags.tag(SHOCKED_TAG, victim.getUUID(), now + shockTicks);
             victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, shockTicks, 0, false, true, true));
@@ -524,6 +525,8 @@ public class IronsSpellbooksSchoolPowerDispatcher {
     @SubscribeEvent
     public void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
         if (event.getLevel().isClientSide) return;
+        BLACK_HOLE_OWNERS.remove(event.getEntity().getId());
+        FIRE_FIELD_OWNERS.remove(event.getEntity().getId());
         if (!IronsSpellbooksPowerCompat.KIND_POLAR_BEAR_SUMMON
                 .equals(IronsSpellbooksPowerCompat.entityKind(event.getEntity()))) return;
         REFORGED_BEARS.remove(event.getEntity().getUUID());
@@ -540,9 +543,8 @@ public class IronsSpellbooksSchoolPowerDispatcher {
     /**
      * Scorched Earth (Fire Seal), first half — the caster's fire fields burn 40% longer.
      *
-     * <p>Only the fire field itself can be extended. {@code WallOfFireEntity} keeps its lifetime in
-     * a private field with no setter, so a wall of fire is tracked (its victims still get the
-     * armour shred) but not lengthened; see {@code IronsSpellbooksPowerCompat.setAoeDuration}.
+     * <p>The compatibility accessor also reaches WallOfFireEntity's private lifetime. The
+     * persistent stamp makes this a launch-time bonus, never a chunk-reload multiplier.
      */
     private void scorchedEarthOnFieldSpawn(Entity field, String kind) {
         if (!(IronsSpellbooksPowerCompat.ownerOf(field) instanceof ServerPlayer player)) return;
@@ -550,9 +552,14 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         FIRE_FIELD_OWNERS.put(field.getId(), player.getUUID());
 
         Power p = RegistryPowers.SCORCHED_EARTH.get();
+        if (field.getPersistentData().getBoolean("runicskills:scorched_earth_extended")) return;
         double multiplier = PowerOverridesManager.valueOr(p, "duration_multiplier", 1.4);
         int duration = IronsSpellbooksPowerCompat.aoeDuration(field);
-        if (duration > 0) IronsSpellbooksPowerCompat.setAoeDuration(field, (int) Math.round(duration * multiplier));
+        if (duration > 0) {
+            IronsSpellbooksPowerCompat.setAoeDuration(field,
+                    (int) Math.max(0, Math.min(1_728_000L, Math.round(duration * multiplier))));
+            field.getPersistentData().putBoolean("runicskills:scorched_earth_extended", true);
+        }
         fireProc(player, p, field);
     }
 
@@ -585,7 +592,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
         Power p = RegistryPowers.SHIELD_WALL.get();
         int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-        if (!PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(), now, icd)) return;
+        if (!com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p, now, icd)) return;
         PowerRuntime.ProcWindows.consume(player.getUUID(), p.getName() + ".cast");
 
         double allyRadius = PowerOverridesManager.valueOr(p, "ally_radius_blocks", 8.0);
@@ -670,7 +677,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         Power p = RegistryPowers.FROST_ECHO.get();
         long now = level.getGameTime();
         int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-        if (!PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(), now, icd)) return;
+        if (!com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p, now, icd)) return;
 
         double radius = PowerOverridesManager.valueOr(p, "patch_radius_blocks", 2.0);
         int duration = PowerOverridesManager.intValueOr(p, "patch_ticks", 60);
@@ -775,7 +782,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         if (!burningNearby || nearby.isEmpty()) return;
 
         int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-        if (!PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(), now, icd)) return;
+        if (!com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p, now, icd)) return;
 
         float damage = (float) PowerOverridesManager.valueOr(p, "pulse_damage", 4.0);
         int fireSeconds = PowerOverridesManager.intValueOr(p, "pulse_fire_seconds", 2);
@@ -835,6 +842,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onLivingDamage(LivingDamageEvent event) {
+        if (event.getAmount() <= 0 || !DamageContext.allowsStandardOutgoingModifiers()) return;
         LivingEntity victim = event.getEntity();
         if (victim == null || victim.level().isClientSide) return;
         if (!victim.isFullyFrozen()) return;
@@ -857,7 +865,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
 
     // ── LivingDeathEvent ────────────────────────────────────────────────────────────
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingDeath(LivingDeathEvent event) {
         LivingEntity victim = event.getEntity();
         if (victim == null || !(victim.level() instanceof ServerLevel level)) return;
@@ -884,6 +892,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
                 : cached;
         if (ownerId == null) return;
         ServerPlayer player = level.getServer().getPlayerList().getPlayer(ownerId);
+        if (player == null || !isEquipped(player, RegistryPowers.REFORGE_THE_SHADOW)) return;
 
         Power p = RegistryPowers.REFORGE_THE_SHADOW.get();
         double radius = PowerOverridesManager.valueOr(p, "death_burst_radius_blocks", 4.0);
@@ -988,12 +997,13 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         // Marrow Sense's teardown is deliberately outside the equipped-empty early-out below: a
         // player who unequips mid-cast must still get the modifier taken back off them.
         marrowSenseTeardown(player, now);
+        // Removing the last equipped Power must still release its held-target bookkeeping.
+        kineticAffinityOnTick(player, level, now);
 
         if (cap.equippedMarks.isEmpty() && cap.equippedSeals.isEmpty() && cap.equippedCrown.isEmpty()) {
             return;
         }
         emberTrailOnTick(player, level, now);
-        kineticAffinityOnTick(player, level, now);
     }
 
     /** Removes Marrow Sense's cast-time modifier once the cast it was applied for has begun. */
@@ -1037,6 +1047,7 @@ public class IronsSpellbooksSchoolPowerDispatcher {
         Power p = RegistryPowers.KINETIC_AFFINITY.get();
         LivingEntity held = IronsSpellbooksPowerCompat.telekinesisTarget(player);
         if (held != null) {
+            if (previous != null && !previous.equals(held.getUUID())) forgetKineticHold(id, previous);
             int tagTicks = PowerOverridesManager.intValueOr(p, "hold_tag_ticks", 40);
             PowerRuntime.TargetTags.tag(KINETIC_TAG, held.getUUID(), now + tagTicks);
             KINETIC_HELD.put(id, held.getUUID());
@@ -1108,6 +1119,19 @@ public class IronsSpellbooksSchoolPowerDispatcher {
     }
 
     // ── Player lifecycle ────────────────────────────────────────────────────────────
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        MARROW_SENSE_APPLIED.clear();
+        KINETIC_HELD.clear();
+        KINETIC_HOLDER.clear();
+        KINETIC_LAST_POS.clear();
+        BLACK_HOLE_OWNERS.clear();
+        FIRE_FIELD_OWNERS.clear();
+        REFORGED_BEARS.clear();
+        EMBER_LAST_POS.clear();
+        serverTicks = 0;
+    }
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {

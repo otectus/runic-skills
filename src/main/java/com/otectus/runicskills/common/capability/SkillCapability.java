@@ -425,6 +425,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      */
     public boolean unequipUnknownPower(String powerName) {
         if (powerName == null || powerName.isEmpty()) return false;
+        clearAnglingCharge(powerName);
         if (this.equippedMarks.remove(powerName)) return true;
         if (this.equippedSeals.remove(powerName)) return true;
         if (this.equippedCrown.equals(powerName)) {
@@ -437,6 +438,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     public boolean unequipPower(Power power) {
         if (power == null) return false;
         String name = power.getName();
+        clearAnglingCharge(name);
         return switch (power.getTier()) {
             case MARK -> this.equippedMarks.remove(name);
             case SEAL -> this.equippedSeals.remove(name);
@@ -668,6 +670,18 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
             powerCdTag.putLong(e.getKey(), e.getValue());
         }
         nbt.put("powerCooldowns", powerCdTag);
+        // Additive save field: keep the historical absolute-deadline API and record remaining
+        // play time alongside it, so disconnecting or restarting cannot reset a spent Power.
+        CompoundTag debtTag = new CompoundTag();
+        long gameTime = worldGameTime();
+        for (Map.Entry<String, Long> e : this.powerCooldowns.entrySet()) {
+            if (debtTag.size() >= CapabilityBounds.MAX_TIMER_ENTRIES) break;
+            if (!CapabilityBounds.isStorableKey(e.getKey())) continue;
+            long remaining = e.getValue() - gameTime;
+            if (remaining > 0) debtTag.putLong(e.getKey(),
+                    Math.min(remaining, CapabilityBounds.MAX_COOLDOWN_TICKS));
+        }
+        nbt.put("powerCooldownDebt", debtTag);
         CompoundTag powerWinTag = new CompoundTag();
         for (Map.Entry<String, Long> e : this.powerWindows.entrySet()) {
             powerWinTag.putLong(e.getKey(), e.getValue());
@@ -729,6 +743,33 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     /** The running server's tick count, or {@code 0} when there is no server (unit tests). */
     private static long serverTick() {
         return RunicSkills.server == null ? 0L : RunicSkills.server.getTickCount();
+    }
+
+    private void clearAnglingCharge(String name) {
+        com.otectus.runicskills.integration.tom.TomNativeRewards.clear(this,name);
+        if ("sm_changing_arsenal".equals(name)) com.otectus.runicskills.integration.simplyswords.MoreMimicry.clear(this);
+        if ("sm_measured_reach".equals(name)) com.otectus.runicskills.integration.simplyswords.MoreReach.clear(this);
+        if ("ss_returning_steel".equals(name)) com.otectus.runicskills.integration.simplyswords.SwordsReturns.clear(this);
+        com.otectus.runicskills.integration.tom.TomCombatRewards.clear(this,name);
+        com.otectus.runicskills.integration.common.IntegrationSlow.clear(this,name);
+        if ("ss_resonant_breath".equals(name)) setPowerWindow(name,0);
+        if (com.otectus.runicskills.integration.simplyswords.SwordsActivations.owns(name))
+            com.otectus.runicskills.integration.simplyswords.SwordsActivations.clear(this);
+        com.otectus.runicskills.integration.tide.TideJournal.clear(this, name);
+        if (com.otectus.runicskills.integration.tide.TideEmberAndStar.ID.equals(name))
+            com.otectus.runicskills.integration.tide.TideEmberAndStar.clear(this);
+        com.otectus.runicskills.integration.tom.TomCastRewards.clear(this, name);
+        com.otectus.runicskills.integration.common.IntegrationBuffs.clear(this, name);
+        if (com.otectus.runicskills.integration.tide.TideUnbrokenThread.ID.equals(name))
+            com.otectus.runicskills.integration.tide.TideUnbrokenThread.clear(this);
+        if (com.otectus.runicskills.integration.tide.TideKeeperOfTheBanks.ID.equals(name))
+            com.otectus.runicskills.integration.tide.TideKeeperOfTheBanks.clear(this);
+        if (com.otectus.runicskills.integration.tide.TidePowers.STILLWATER_OATH.equals(name))
+            setPowerWindow(name, 0);
+    }
+
+    private static long worldGameTime() {
+        return RunicSkills.server == null ? 0L : RunicSkills.server.overworld().getGameTime();
     }
 
     /**
@@ -809,12 +850,24 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     private static void readPowerSlots(ListTag source, List<String> target, int maxSlots) {
         for (int i = 0; i < source.size() && target.size() < maxSlots; i++) {
             String name = source.getString(i);
-            if (name.isEmpty() || target.contains(name)) continue;
+            if (!com.otectus.runicskills.common.util.PacketBounds.isContentIdValid(name) || target.contains(name)) continue;
             target.add(name);
         }
     }
 
     public void deserializeNBT(CompoundTag nbt) {
+        deserialize(nbt, true);
+    }
+
+    /**
+     * Applies a server snapshot without rebasing its world-time cooldown deadlines. A remote
+     * client has no running server clock; remaining debt is a save-load concern only.
+     */
+    public void deserializeSyncNBT(CompoundTag nbt) {
+        deserialize(nbt, false);
+    }
+
+    private void deserialize(CompoundTag nbt, boolean rebaseCooldownDebt) {
         int fromVersion = nbt.contains(KEY_DATA_VERSION, Tag.TAG_INT) ? nbt.getInt(KEY_DATA_VERSION) : 0;
         migrate(nbt, fromVersion);
         // Every key this method reads is recorded, so whatever is left over can be retained.
@@ -857,7 +910,7 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
 
         java.util.Collections.addAll(consumed,
                 "perkCooldowns", "power.equippedMarks", "power.equippedSeals", "power.equippedCrown",
-                "powerCooldowns", "powerWindows", "playerTitle", "betterCombatEntityRange",
+                "powerCooldowns", "powerCooldownDebt", "powerWindows", "playerTitle", "betterCombatEntityRange",
                 // Known, not orphaned: the retention pass writes back anything it does not
                 // recognise, and a compound this class both reads and rewrites must not also be
                 // replayed from a stale copy.
@@ -902,10 +955,23 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
                     PowerTier.SEAL.maxEquipped);
         }
         this.equippedCrown = nbt.contains("power.equippedCrown") ? nbt.getString("power.equippedCrown") : "";
+        if (!this.equippedCrown.isEmpty() && !com.otectus.runicskills.common.util.PacketBounds.isContentIdValid(this.equippedCrown)) this.equippedCrown = "";
         this.powerCooldowns.clear();
         if (nbt.contains("powerCooldowns", Tag.TAG_COMPOUND)) {
             CompoundTag cdTag = nbt.getCompound("powerCooldowns");
             skippedTimers += readBoundedTimers(cdTag, this.powerCooldowns, cdTag::getLong);
+        }
+        if (rebaseCooldownDebt && nbt.contains("powerCooldownDebt", Tag.TAG_COMPOUND)) {
+            CompoundTag debt = nbt.getCompound("powerCooldownDebt");
+            long now = worldGameTime();
+            int read = 0;
+            for (String name : debt.getAllKeys()) {
+                if (read++ >= CapabilityBounds.MAX_TIMER_ENTRIES) break;
+                if (!CapabilityBounds.isStorableKey(name)) continue;
+                long remaining = debt.getLong(name);
+                if (remaining > 0) this.powerCooldowns.put(name,
+                        now + Math.min(remaining, CapabilityBounds.MAX_COOLDOWN_TICKS));
+            }
         }
         this.powerWindows.clear();
         if (nbt.contains("powerWindows", Tag.TAG_COMPOUND)) {

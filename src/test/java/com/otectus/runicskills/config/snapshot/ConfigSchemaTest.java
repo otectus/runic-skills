@@ -23,6 +23,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * scanning its source instead.
  */
 class ConfigSchemaTest {
+    public static class ModeFixture {
+        @com.otectus.runicskills.config.storage.StringChoices(value = {"auto", "off", "observe"}, fallback = "off")
+        public String mode = "auto";
+    }
+
+    @Test
+    void invalidModeCannotBreakSnapshotEncodingOrEnableBenefits() {
+        var config = new ModeFixture();
+        for (String invalid : Arrays.asList(null, "typo", "a".repeat(5000))) {
+            config.mode = invalid;
+            assertEquals(1, com.otectus.runicskills.config.storage.ConfigClamps.apply(ModeFixture.class, config, ignored -> {}));
+            assertEquals("off", config.mode);
+            ConfigSchema.of(ModeFixture.class).encode(config);
+        }
+    }
+
+    @Test
+    void modeStringsAreBoundedAndPreserveNullAndEmpty() throws IOException {
+        var schema = ConfigSchema.of(ModeFixture.class);
+        var source = new ModeFixture();
+        var target = new ModeFixture();
+        for (String mode : Arrays.asList("off", "observe", "auto", "", null)) {
+            source.mode = mode;
+            schema.decodeInto(schema.encode(source), target);
+            assertEquals(mode, target.mode);
+        }
+        source.mode = "a".repeat(ConfigSchema.MAX_STRING_CHARS + 1);
+        assertThrows(RuntimeException.class, () -> schema.encode(source));
+    }
 
     /** Every field kind the format supports, including the null-vs-empty distinction. */
     public static class Fixture {

@@ -9,6 +9,7 @@ import com.otectus.runicskills.client.core.Utils;
 import com.otectus.runicskills.client.event.InventoryTabsScreenHandler;
 import com.otectus.runicskills.client.gui.DrawTabs;
 import com.otectus.runicskills.client.gui.InventoryTabLayout;
+import com.otectus.runicskills.client.gui.PowersIconButton;
 import com.otectus.runicskills.client.tooltip.PassiveTooltip;
 import com.otectus.runicskills.client.tooltip.PerkTooltip;
 import com.otectus.runicskills.common.capability.SkillCapability;
@@ -32,8 +33,6 @@ import com.otectus.runicskills.registry.title.Title;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -60,9 +59,7 @@ public class RunicSkillsScreen extends Screen {
     private static final int PANEL_HEIGHT = 194;
     private static final int PANEL_CENTER_X = PANEL_WIDTH / 2;
 
-    private static final int POWERS_BUTTON_WIDTH = 50;
-    private static final int POWERS_BUTTON_HEIGHT = 20;
-    private static final int POWERS_BUTTON_GAP = 4;
+    private static final int POWERS_BUTTON_INSET = 6;
 
     private static final int HEADER_NAME_Y = 7;
     private static final int HEADER_LEVEL_Y = 17;
@@ -151,6 +148,8 @@ public class RunicSkillsScreen extends Screen {
 
     private String searchValue = "";
     private EditBox searchTitle;
+    private PowersIconButton openPowers;
+    private List<Component> hoveredContentTooltip;
 
     public RunicSkillsScreen() {
         super(Component.translatable("screen.skill.title"));
@@ -171,21 +170,11 @@ public class RunicSkillsScreen extends Screen {
         this.searchTitle.setFocused(this.selectedPage == PAGE_TITLES);
         this.searchTitle.setVisible(this.selectedPage == PAGE_TITLES);
 
-        // A visible way into the Powers panel. Its keybind ships unbound -- no default key can be
-        // chosen safely without testing it against a real pack's controls -- which left a whole
-        // shipped screen reachable only by a player who already knew it existed and went to
-        // Options to bind it (RS-023). A real Button also gets focus order and narration for free,
-        // which the hand-drawn tab strip does not. It sits centred just below the panel rather
-        // than above its top-right corner, where it crowded the tab strip.
-        Button openPowers = Button.builder(
-                        Component.translatable("screen.runicskills.powers.open"),
-                        b -> this.minecraft.setScreen(new PowersScreen()))
-                .bounds(x + (PANEL_WIDTH - POWERS_BUTTON_WIDTH) / 2,
-                        y + PANEL_HEIGHT + POWERS_BUTTON_GAP,
-                        POWERS_BUTTON_WIDTH, POWERS_BUTTON_HEIGHT)
-                .tooltip(Tooltip.create(Component.translatable("screen.runicskills.powers.open.tooltip")))
-                .build();
-        this.addRenderableWidget(openPowers);
+        this.openPowers = this.addRenderableWidget(new PowersIconButton(
+                x + PANEL_WIDTH - POWERS_BUTTON_INSET - PowersIconButton.SIZE,
+                y + POWERS_BUTTON_INSET,
+                b -> this.minecraft.setScreen(new PowersScreen(this))));
+        updatePowersButton();
     }
 
     @Override
@@ -193,14 +182,19 @@ public class RunicSkillsScreen extends Screen {
         // Invalidate the per-frame detail-state cache so the first reader rebuilds.
         this.detailStateCacheValid = false;
         this.cachedDetailState = null;
+        this.hoveredContentTooltip = null;
 
         int x = panelLeft();
         int y = panelTop();
 
         updateSearchBox(x, y);
+        updatePowersButton();
         drawScreen(guiGraphics, x, y, mouseX, mouseY, delta);
 
         super.render(guiGraphics, mouseX, mouseY, delta);
+        if (this.hoveredContentTooltip != null) {
+            Utils.drawToolTipList(guiGraphics, this.hoveredContentTooltip, mouseX, mouseY);
+        }
 
         // After super.render, so the tab label is not painted over by the widgets and tooltips
         // this screen draws. The layout is the one the bodies were actually drawn with.
@@ -208,6 +202,13 @@ public class RunicSkillsScreen extends Screen {
         if (drawn != null && !InventoryTabsScreenHandler.suppressed()) {
             DrawTabs.renderTooltip(guiGraphics, mouseX, mouseY, drawn);
         }
+    }
+
+    private void updatePowersButton() {
+        // Detail and title pages already use this header corner for their own controls.
+        this.openPowers.visible = this.selectedPage == PAGE_OVERVIEW;
+        this.openPowers.active = this.minecraft.player != null && SkillCapability.getLocal() != null;
+        if (!this.openPowers.visible) this.openPowers.setFocused(false);
     }
 
     /**
@@ -279,11 +280,16 @@ public class RunicSkillsScreen extends Screen {
             return;
         }
 
-        Utils.drawCenter(guiGraphics, client.player.getName(), panelX + PANEL_CENTER_X, panelY + HEADER_NAME_Y);
-        Utils.drawCenter(guiGraphics,
-                Component.translatable("screen.skill.level", client.player.experienceLevel, Utils.getPlayerXP(client.player)),
-                panelX + PANEL_CENTER_X,
-                panelY + HEADER_LEVEL_Y);
+        // Reserve the upper-right control even for long multiplayer display names.
+        Utils.drawCenter(guiGraphics, Component.literal(ellipsize(client.player.getName().getString(), 112)),
+                panelX + PANEL_CENTER_X - 6, panelY + HEADER_NAME_Y);
+        Component levelText = Component.translatable("screen.skill.level", client.player.experienceLevel,
+                Utils.getPlayerXP(client.player));
+        Utils.drawCenter(guiGraphics, Component.literal(ellipsize(levelText.getString(), 122)),
+                panelX + PANEL_CENTER_X - 6, panelY + HEADER_LEVEL_Y);
+        if (new Area(panelX + 12, panelY + HEADER_NAME_Y, 132, 19).contains(mouseX, mouseY)) {
+            this.hoveredContentTooltip = List.of(client.player.getName(), levelText);
+        }
 
         drawTitleButton(guiGraphics, panelX, panelY, mouseX, mouseY);
 
@@ -562,7 +568,7 @@ public class RunicSkillsScreen extends Screen {
 
     private void drawPassiveIcon(GuiGraphics guiGraphics, SkillCapability capability, Passive passive, IconLayout iconLayout, int mouseX, int mouseY) {
         int maxState = passive.getLevel() == passive.getMaxLevel() ? 24 : 0;
-        guiGraphics.blit(passive.getTexture(), iconLayout.textureX(), iconLayout.textureY(), 0.0F, 0.0F, 20, 20, 20, 20);
+        guiGraphics.blit(passive.getTexture(), iconLayout.textureX(), iconLayout.textureY(), 0.0F, 0.0F, 16, 16, 16, 16);
         guiGraphics.blit(HandlerResources.PERK_ICONS, iconLayout.frameX(), iconLayout.frameY(), 0.0F, maxState, 24, 24, 72, 72);
 
         int iconAddState = passive.getLevel() < passive.getMaxLevel()
@@ -580,7 +586,7 @@ public class RunicSkillsScreen extends Screen {
             }
 
             guiGraphics.pose().pushPose();
-            Utils.drawToolTipList(guiGraphics, PassiveTooltip.tooltip(passive), mouseX, mouseY);
+            this.hoveredContentTooltip = PassiveTooltip.tooltip(passive);
             RenderSystem.enableBlend();
             guiGraphics.blit(HandlerResources.PERK_ICONS, iconLayout.frameX(), iconLayout.frameY(), 0.0F, 48.0F, 24, 24, 72, 72);
             guiGraphics.blit(HandlerResources.PERK_PAGE[PAGE_DETAIL], iconLayout.frameX() + 2, iconLayout.frameY() + 2, 1, 167 + iconLessState, 9, 9);
@@ -598,7 +604,7 @@ public class RunicSkillsScreen extends Screen {
 
     private void drawPerkIcon(GuiGraphics guiGraphics, SkillCapability capability, Perk perk, IconLayout iconLayout, int mouseX, int mouseY) {
         int toggleState = perk.canPerk() ? 24 : 0;
-        guiGraphics.blit(perk.getTexture(), iconLayout.textureX(), iconLayout.textureY(), 0.0F, 0.0F, 20, 20, 20, 20);
+        guiGraphics.blit(perk.getTexture(), iconLayout.textureX(), iconLayout.textureY(), 0.0F, 0.0F, 16, 16, 16, 16);
         guiGraphics.blit(HandlerResources.PERK_ICONS, iconLayout.frameX(), iconLayout.frameY(), 24.0F, toggleState, 24, 24, 72, 72);
 
         if (!perk.getToggle()) {
@@ -617,7 +623,7 @@ public class RunicSkillsScreen extends Screen {
         }
 
         if (iconLayout.frameBounds().contains(mouseX, mouseY)) {
-            Utils.drawToolTipList(guiGraphics, PerkTooltip.tooltip(perk), mouseX, mouseY);
+            this.hoveredContentTooltip = PerkTooltip.tooltip(perk);
         }
     }
 
@@ -1239,11 +1245,11 @@ public class RunicSkillsScreen extends Screen {
 
     private record IconLayout(int frameX, int frameY) {
         private int textureX() {
-            return this.frameX + 2;
+            return this.frameX + 4;
         }
 
         private int textureY() {
-            return this.frameY + 2;
+            return this.frameY + 4;
         }
 
         private Area frameBounds() {

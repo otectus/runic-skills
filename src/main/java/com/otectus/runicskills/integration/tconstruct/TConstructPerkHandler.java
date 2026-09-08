@@ -16,6 +16,8 @@ import com.otectus.runicskills.integration.tconstruct.addons.TcAddonHooks;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RunicAttributeModifiers;
 import com.otectus.runicskills.registry.perks.Perk;
+import com.otectus.runicskills.network.ServerNetworking;
+import com.otectus.runicskills.network.packet.client.TConstructMiningCP;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -81,6 +83,7 @@ import java.util.UUID;
  * a personal temporary benefit does not survive any of those and does not travel with an item.
  */
 public final class TConstructPerkHandler {
+    private static final java.util.Map<UUID, TConstructMiningCP> LAST_MINING = new java.util.HashMap<>();
 
     /** How often the two attribute perks are reconciled. Twice a second is well inside a swing. */
     private static final int ATTRIBUTE_INTERVAL_TICKS = 10;
@@ -113,7 +116,7 @@ public final class TConstructPerkHandler {
     // -- Gates ------------------------------------------------------------------------------------
 
     /** Whether {@code perk} may act for {@code player} right now, capability and config included. */
-    static boolean active(ServerPlayer player, net.minecraftforge.registries.RegistryObject<Perk> perk,
+    static boolean active(Player player, net.minecraftforge.registries.RegistryObject<Perk> perk,
                                   Capability capability) {
         if (player == null || player instanceof FakePlayer || perk == null) return false;
         if (!HandlerCommonConfig.HANDLER.instance().enableTConstructPerks) return false;
@@ -140,7 +143,7 @@ public final class TConstructPerkHandler {
     private static double repairMemoryAvoidance(ServerPlayer player, ItemStack stack) {
         if (!active(player, RegistryPerks.TC_REPAIR_MEMORY, Capability.WEAR_AVOIDANCE)) return 0.0;
         TConstructPerkState.Player state = TConstructPerkState.peek(player.getUUID());
-        if (state == null || state.repairMemoryCharges <= 0) return 0.0;
+        if (state == null) return 0.0;
         if (!TConstructPerkState.isSameTool(state.repairMemoryTool, stack)) return 0.0;
 
         long tick = now(player);
@@ -152,6 +155,7 @@ public final class TConstructPerkHandler {
 
         long root = RunicActionContext.rootActionId();
         if (root != state.repairMemoryChargedRoot) {
+            if (state.repairMemoryCharges <= 0) return 0.0;
             if (!RunicActionContext.claim(CLAIM_REPAIR_MEMORY)) return 0.0;
             state.repairMemoryChargedRoot = root;
             state.repairMemoryCharges--;
@@ -242,7 +246,7 @@ public final class TConstructPerkHandler {
     public void onAddonExperiencePickup(PlayerXpEvent.PickupXp event) {
         if (!event.isCanceled()) return;
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
-        if (event.getOrb() == null) return;
+        if (event.getOrb() == null || !event.getOrb().isRemoved()) return;
         int consumed = event.getOrb().getValue();
         if (consumed <= 0) return;
 
@@ -257,9 +261,8 @@ public final class TConstructPerkHandler {
     /**
      * Offers one delivered station take to the add-on adapters.
      *
-     * <p>Called from {@code TConstructStationBridge.transformDelivered}, the same point the repair
-     * perks act at and for the same reason: it is reached identically by a click and a shift-click,
-     * and it is the copy the player will actually hold.
+     * <p>Called after an accepted station take has resolved the actual cursor/inventory stack.
+     * Merely requesting a result preview cannot arm an add-on benefit.
      */
     static void onStationDelivered(ServerPlayer player, ItemStack delivered) {
         if (player == null || player instanceof FakePlayer) return;
@@ -287,7 +290,7 @@ public final class TConstructPerkHandler {
      *
      * @param delivered the copy about to be handed over, mutated in place
      */
-    static void onStationRepair(ServerPlayer player, ItemStack delivered, TinkerStationBlockEntity station) {
+    static void applyStationRepairBonus(ServerPlayer player, ItemStack delivered, TinkerStationBlockEntity station) {
         if (player == null || player instanceof FakePlayer) return;
         if (!TConstructEquipmentAdapter.isNativeTool(delivered)) return;
         if (!TConstructCompatibilityStatus.current().supports(Capability.REPAIR)) return;
@@ -300,6 +303,19 @@ public final class TConstructPerkHandler {
         if (restored <= 0) return;
 
         applyRepairBonus(player, delivered, output, restored, station);
+    }
+
+    /** Only an accepted take can arm benefits or spend a prepared repair Power's cooldown. */
+    static void onStationRepair(ServerPlayer player, ItemStack delivered, TinkerStationBlockEntity station,
+                                int restored) {
+        if (player == null || player instanceof FakePlayer || restored <= 0
+                || !TConstructEquipmentAdapter.isNativeTool(delivered)) return;
+        ToolStack output = ToolStack.from(delivered);
+        ItemStack base = station.getCraftingResult().getResult();
+        if (TConstructEquipmentAdapter.isNativeTool(base)
+                && ToolStack.from(base).getDamage() > output.getDamage()) {
+            TConstructPowerDispatcher.repairBonusShare(player, delivered, station);
+        }
         armRepairMemory(player, delivered, output, restored);
         // The Powers that turn on a paid repair are offered the native amount, after the bonus has
         // been paid and before anything else can change the tool: Quench, Temper Reserve and the
@@ -326,18 +342,18 @@ public final class TConstructPerkHandler {
         }
         // Working Memory and Many Hands pay into the same channel, so the cap is applied to the sum
         // once (§13.2) rather than to each contribution on its own.
-        share += TConstructPowerDispatcher.repairBonusShare(player, delivered, station);
+        share += TConstructPowerDispatcher.previewRepairBonusShare(player, delivered, station);
         // And the add-on perks: Polished Facet is a repair contribution like any other, so it is
         // summed here and bounded by the same cap rather than applied on its own.
         share += TcAddonHooks.repairBonusShare(player, delivered);
         if (share <= 0.0) return;
         share = Math.min(share, config.tconstructRepairBonusCap);
-        int extra = (int) Math.floor(restored * share);
+        int extra = TConstructRepairMath.paidBonus(restored, output.getDamage(), share);
         // Bounded by the damage that is actually left: §13.2 limits a paid-repair bonus by the
         // remaining native damage, and a repair past zero is not a bonus, it is a different item.
         extra = Math.min(extra, output.getDamage());
         if (extra <= 0) return;
-        TConstructRepairBridge.repair(delivered, extra, com.otectus.runicskills.common.durability.RepairSource.MATERIAL_STATION);
+        TConstructRepairBridge.paidRepairBonus(delivered, extra);
     }
 
     /** How many distinct materials a tool is built from, counting each variant id once. */
@@ -411,7 +427,7 @@ public final class TConstructPerkHandler {
         if (frame.origin() != ActionOrigin.MELEE || !player.getUUID().equals(frame.actor())) return;
 
         ItemStack weapon = player.getMainHandItem();
-        if (!weapon.is(TinkerTags.Items.MELEE)) return;
+        if (!usable(weapon) || !weapon.is(TinkerTags.Items.MELEE)) return;
         if (!RunicActionContext.claim(CLAIM_MELEE)) return;
 
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
@@ -419,7 +435,7 @@ public final class TConstructPerkHandler {
         double bonus = 0.0;
 
         if (active(player, RegistryPerks.TC_TEMPERED_EDGE, Capability.CLASSIFICATION)
-                && player.getAttackStrengthScale(0.5F) >= 0.9F
+                && RunicActionContext.attackStrength(player.getUUID(), player.getAttackStrengthScale(0.5F)) >= 0.9F
                 && PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), COOLDOWN_TEMPERED_EDGE,
                         tick, config.tcTemperedEdgeCooldownTicks)) {
             bonus += config.tcTemperedEdgePercent / 100.0;
@@ -458,9 +474,10 @@ public final class TConstructPerkHandler {
      */
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onBreakSpeed(PlayerEvent.BreakSpeed event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        Player player = event.getEntity();
+        if (player instanceof FakePlayer) return;
         ItemStack tool = player.getMainHandItem();
-        if (!tool.is(TinkerTags.Items.HARVEST)) return;
+        if (!usable(tool) || !tool.is(TinkerTags.Items.HARVEST)) return;
 
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
         double bonus = 0.0;
@@ -473,16 +490,29 @@ public final class TConstructPerkHandler {
             bonus += config.tcPrecisionFootingPercent / 100.0;
         }
 
-        if (consumeAdaptiveGrip(player, tool, TConstructPerkState.Role.MINING)) {
-            bonus += config.tcAdaptiveGripPercent / 100.0;
-        }
-
-        // Plumb Line and Inspired join the same sum, under the same single cap.
-        bonus += TConstructPowerDispatcher.miningSpeedBonus(player);
+        bonus += player instanceof ServerPlayer serverPlayer
+                ? temporaryMiningBonus(serverPlayer)
+                : TConstructMiningState.bonus(player.getInventory().selected);
 
         if (bonus <= 0.0) return;
         double capped = Math.min(bonus, config.tconstructNewMiningBonusCap);
         event.setNewSpeed((float) (event.getNewSpeed() * (1.0 + capped)));
+    }
+
+    private static float temporaryMiningBonus(ServerPlayer player) {
+        ItemStack tool = player.getMainHandItem();
+        if (!usable(tool) || !tool.is(TinkerTags.Items.HARVEST)) return 0.0F;
+        double bonus = TConstructPowerDispatcher.miningSpeedBonus(player);
+        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        if (adaptiveGripReady(player, tool)) bonus += config.tcAdaptiveGripPercent / 100.0;
+        return (float) Math.max(0.0, Math.min(config.tconstructNewMiningBonusCap, bonus));
+    }
+
+    private static void syncMining(ServerPlayer player) {
+        if (player.connection == null) return;
+        TConstructMiningCP next = new TConstructMiningCP(temporaryMiningBonus(player), player.getInventory().selected);
+        TConstructMiningCP previous = LAST_MINING.put(player.getUUID(), next);
+        if (!next.equals(previous)) ServerNetworking.sendToPlayer(next, player);
     }
 
     /** Records a committed mined block as Adaptive Grip's previous action. */
@@ -490,6 +520,11 @@ public final class TConstructPerkHandler {
     public void onBlockBreakCommitted(BlockBreakCommittedEvent event) {
         ServerPlayer player = event.getPlayer();
         if (player == null || player instanceof FakePlayer) return;
+        if (RunicActionContext.current().actor() != null
+                && !RunicActionContext.claim("tconstruct:adaptive-mining")) return;
+        // BreakSpeed is queried repeatedly while one block is being mined. Spend only once the
+        // block actually broke, before recording a new role switch for the following action.
+        consumeAdaptiveGrip(player, player.getMainHandItem(), TConstructPerkState.Role.MINING);
         recordAdaptiveGripAction(player, player.getMainHandItem(), TConstructPerkState.Role.MINING);
     }
 
@@ -533,7 +568,15 @@ public final class TConstructPerkHandler {
     /** Spends an armed Adaptive Grip bonus on this action, if one is armed for this tool. */
     private static boolean consumeAdaptiveGrip(ServerPlayer player, ItemStack tool,
                                                TConstructPerkState.Role role) {
+        if (!adaptiveGripReady(player, tool)) return false;
+        TConstructPerkState.peek(player.getUUID()).adaptiveGripArmedUntil = 0L;
+        return role != null;
+    }
+
+    /** A speed query observes preparation without consuming a committed-action benefit. */
+    private static boolean adaptiveGripReady(ServerPlayer player, ItemStack tool) {
         if (!active(player, RegistryPerks.TC_ADAPTIVE_GRIP, Capability.CLASSIFICATION)) return false;
+        if (!isHybridTool(tool)) return false;
         TConstructPerkState.Player state = TConstructPerkState.peek(player.getUUID());
         if (state == null || state.adaptiveGripArmedUntil <= 0L) return false;
         if (!TConstructPerkState.isSameTool(state.adaptiveGripTool, tool)) return false;
@@ -541,16 +584,17 @@ public final class TConstructPerkHandler {
             state.adaptiveGripArmedUntil = 0L;
             return false;
         }
-        // Consumed on the committed action, whichever of the two roles it turned out to be — the
-        // perk promises one bonus, not one per role.
-        state.adaptiveGripArmedUntil = 0L;
-        return role != null;
+        return true;
     }
 
     /** Whether a tool can do both jobs the perk alternates between. */
     private static boolean isHybridTool(ItemStack stack) {
-        return TConstructEquipmentAdapter.isNativeTool(stack)
+        return usable(stack)
                 && stack.is(TinkerTags.Items.HARVEST) && stack.is(TinkerTags.Items.MELEE);
+    }
+
+    private static boolean usable(ItemStack stack) {
+        return TConstructEquipmentAdapter.isNativeTool(stack) && !ToolStack.from(stack).isBroken();
     }
 
     // -- Incoming damage: Ember Guard -------------------------------------------------------------
@@ -646,10 +690,9 @@ public final class TConstructPerkHandler {
 
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
         double share = Math.min(config.tcFieldServicePercent / 100.0, config.tconstructRepairBonusCap);
-        int extra = Math.min((int) Math.floor(restored * share), output.getDamage());
+        int extra = TConstructRepairMath.paidBonus(restored, output.getDamage(), share);
         if (extra <= 0) return;
-        TConstructRepairBridge.repair(result, extra,
-                com.otectus.runicskills.common.durability.RepairSource.REPAIR_KIT);
+        TConstructRepairBridge.paidRepairBonus(result, extra);
     }
 
     // -- Workshop: Thermal Rhythm, Workshop Cadence, Cast Keeper ----------------------------------
@@ -810,6 +853,11 @@ public final class TConstructPerkHandler {
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.player instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (!HandlerCommonConfig.HANDLER.instance().enableTConstructPerks) {
+            TConstructPerkState.clear(player.getUUID());
+            TcAddonHooks.forget(player.getUUID());
+        }
+        syncMining(player);
         if (player.tickCount % ATTRIBUTE_INTERVAL_TICKS != 0) return;
 
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
@@ -832,7 +880,8 @@ public final class TConstructPerkHandler {
     private static double counterweightAmount(ServerPlayer player, HandlerCommonConfig config) {
         if (!active(player, RegistryPerks.TC_COUNTERWEIGHT, Capability.CLASSIFICATION)) return 0.0;
         ItemStack weapon = player.getMainHandItem();
-        if (!weapon.is(TinkerTags.Items.MELEE) || !weapon.is(TinkerTags.Items.BROAD_TOOLS)) return 0.0;
+        if (!usable(weapon) || !weapon.is(TinkerTags.Items.MELEE)
+                || !weapon.is(TinkerTags.Items.BROAD_TOOLS)) return 0.0;
         return Math.min(config.tcCounterweightPercent / 100.0, config.tconstructNewActionSpeedBonusCap);
     }
 
@@ -848,7 +897,7 @@ public final class TConstructPerkHandler {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
             ItemStack piece = player.getItemBySlot(slot);
-            if (piece.is(TinkerTags.Items.ARMOR)) worn++;
+            if (usable(piece) && piece.is(TinkerTags.Items.ARMOR)) worn++;
         }
         return worn >= 3 ? config.tcPlateDisciplineAmount : 0.0;
     }
@@ -882,6 +931,7 @@ public final class TConstructPerkHandler {
     /** §10.1: a temporary benefit does not survive a logout. */
     @SubscribeEvent
     public void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        LAST_MINING.remove(event.getEntity().getUUID());
         TConstructPerkState.clear(event.getEntity().getUUID());
         TcAddonHooks.forget(event.getEntity().getUUID());
     }
@@ -889,23 +939,32 @@ public final class TConstructPerkHandler {
     /** Nor a death or a dimension change — {@code Clone} covers both, and a respec goes through it. */
     @SubscribeEvent
     public void onClone(PlayerEvent.Clone event) {
+        LAST_MINING.remove(event.getEntity().getUUID());
         TConstructPerkState.clear(event.getEntity().getUUID());
+        TcAddonHooks.forget(event.getEntity().getUUID());
     }
 
     /** Nor a dimension change, which does not clone the player. */
     @SubscribeEvent
     public void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        LAST_MINING.remove(event.getEntity().getUUID());
         TConstructPerkState.clear(event.getEntity().getUUID());
+        TcAddonHooks.forget(event.getEntity().getUUID());
     }
 
     /** Everything, on server stop, so a second world in this JVM starts clean. */
     @SubscribeEvent
     public void onServerStopped(ServerStoppedEvent event) {
+        LAST_MINING.clear();
         TConstructPerkState.clearAll();
+        TcAddonHooks.forgetAll();
     }
 
     /** Drops one player's memory. Called by the respec path and by tests. */
     public static void forget(Player player) {
-        if (player != null) TConstructPerkState.clear(player.getUUID());
+        if (player != null) {
+            TConstructPerkState.clear(player.getUUID());
+            TcAddonHooks.forget(player.getUUID());
+        }
     }
 }

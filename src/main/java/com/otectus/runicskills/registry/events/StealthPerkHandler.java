@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -52,7 +53,8 @@ public class StealthPerkHandler {
      * the witnesses lose the thread: any mob nearby that had just locked onto the killer drops the
      * target, which is what "not alerted" means in vanilla's terms.
      */
-    @SubscribeEvent
+    // Wait for resurrection handlers before changing witnesses' targets for a completed kill.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
     public void onStealthKill(LivingDeathEvent event) {
         if (!(event.getSource().getEntity() instanceof Player killer)) return;
         if (killer.level().isClientSide() || !killer.isCrouching()) return;

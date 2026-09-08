@@ -1,6 +1,7 @@
 package com.otectus.runicskills.gametest;
 
 import com.otectus.runicskills.RunicSkills;
+import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus;
 import net.minecraftforge.event.RegisterGameTestsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -32,12 +33,16 @@ import java.util.Map;
 public final class TConstructGameTests {
 
     /** Fully-qualified names of the test classes that require Tinker's Construct at runtime. */
-    private static final String[] TEST_CLASSES = {
-            "com.otectus.runicskills.gametest.tconstruct.NativeWearGameTest",
+    private static final String[] API_TEST_CLASSES = {
             "com.otectus.runicskills.gametest.tconstruct.NativeRepairGameTest",
-            "com.otectus.runicskills.gametest.tconstruct.WorkmanshipGameTest",
             "com.otectus.runicskills.gametest.tconstruct.StackRequirementGameTest",
             "com.otectus.runicskills.gametest.tconstruct.CompatibilityStatusGameTest",
+            "com.otectus.runicskills.gametest.tconstruct.TcAddonAbsenceGameTest",
+    };
+
+    private static final String[] STABLE_TEST_CLASSES = {
+            "com.otectus.runicskills.gametest.tconstruct.NativeWearGameTest",
+            "com.otectus.runicskills.gametest.tconstruct.WorkmanshipGameTest",
             "com.otectus.runicskills.gametest.tconstruct.StationTransactionGameTest",
             "com.otectus.runicskills.gametest.tconstruct.ProjectileSnapshotGameTest",
             "com.otectus.runicskills.gametest.tconstruct.HarvestAoeGameTest",
@@ -47,7 +52,6 @@ public final class TConstructGameTests {
             "com.otectus.runicskills.gametest.tconstruct.TcArtificePowersGameTest",
             "com.otectus.runicskills.gametest.tconstruct.LastTemperGameTest",
             "com.otectus.runicskills.gametest.tconstruct.TcKeystoneTinkerGameTest",
-            "com.otectus.runicskills.gametest.tconstruct.TcAddonAbsenceGameTest",
     };
 
     /**
@@ -70,12 +74,9 @@ public final class TConstructGameTests {
             new String[]{"tinkers_advanced", "etstlib"},
             "com.otectus.runicskills.gametest.tconstruct.addons.TinkersThinkingPerksGameTest",
             new String[]{"tinkers_thinking"},
-            // Tinkers' Jewelry has no gametest profile: Modrinth's newest 1.20.1 Forge build is
-            // 1.1.0 and the reference pack runs 1.2.0, so no run this build can boot would be about
-            // the jar anyone is using. The class is still registered when the add-on IS present, so
-            // a pack developer who supplies 1.2.0 themselves gets the coverage.
+            // The jewelry profile pins the publisher's exact 1.2.0 CurseForge artifact.
             "com.otectus.runicskills.gametest.tconstruct.addons.TinkersJewelryPerksGameTest",
-            new String[]{"tinkersjewelry"});
+            new String[]{"tinkersjewelry", "curios", "attributeslib"});
 
     private TConstructGameTests() {
     }
@@ -85,7 +86,21 @@ public final class TConstructGameTests {
         if (!ModList.get().isLoaded("tconstruct")) {
             return;
         }
-        for (String className : TEST_CLASSES) {
+        register(event, API_TEST_CLASSES);
+        // Conservative profiles intentionally omit the bytecode seams these cases exercise.
+        // Their native classification/repair and explicit unavailable-capability assertions still run.
+        if (!TConstructCompatibilityStatus.current().profile().allowsMixins()) return;
+        register(event, STABLE_TEST_CLASSES);
+        ADDON_TEST_CLASSES.forEach((className, required) -> {
+            for (String modId : required) {
+                if (!ModList.get().isLoaded(modId)) return;
+            }
+            register(event, new String[]{className});
+        });
+    }
+
+    private static void register(RegisterGameTestsEvent event, String[] classes) {
+        for (String className : classes) {
             try {
                 event.register(Class.forName(className, true, TConstructGameTests.class.getClassLoader()));
             } catch (ClassNotFoundException e) {
@@ -93,16 +108,5 @@ public final class TConstructGameTests {
                         "Tinker's Construct is loaded but gametest class " + className + " is missing", e);
             }
         }
-        ADDON_TEST_CLASSES.forEach((className, required) -> {
-            for (String modId : required) {
-                if (!ModList.get().isLoaded(modId)) return;
-            }
-            try {
-                event.register(Class.forName(className, true, TConstructGameTests.class.getClassLoader()));
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException("every add-on " + className + " needs is loaded but "
-                        + "the class is missing", e);
-            }
-        });
     }
 }

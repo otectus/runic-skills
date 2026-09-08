@@ -2,6 +2,8 @@ package com.otectus.runicskills.mixin.tconstruct;
 
 import com.otectus.runicskills.common.actions.RunicActionContext;
 import com.otectus.runicskills.common.durability.WearAvoidance;
+import com.otectus.runicskills.integration.tconstruct.addons.TcAddonHooks;
+import com.otectus.runicskills.integration.tconstruct.addons.TinkersJewelryAdapter;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -56,10 +58,13 @@ public class MixToolDamageUtil {
     private static boolean runicskills$applyWearAvoidance(IToolStackView tool, int amount,
                                                           LivingEntity entity, ItemStack stack) {
         int reduced = amount;
-        if (entity instanceof ServerPlayer player
-                && RunicActionContext.isOrdinaryUseBy(player.getUUID())) {
+        if (entity instanceof ServerPlayer player) {
             ItemStack subject = stack == null || stack.isEmpty() ? player.getMainHandItem() : stack;
-            reduced = WearAvoidance.reduce(player, subject, amount, player.getRandom());
+            if (TcAddonHooks.inDeathResolution(player)) {
+                reduced = TinkersJewelryAdapter.reduceDeathWear(player, subject, amount);
+            } else if (RunicActionContext.isOrdinaryUseBy(player.getUUID())) {
+                reduced = WearAvoidance.reduce(player, subject, amount, player.getRandom());
+            }
         }
         // Forwarded even at zero rather than short-circuited: directDamage already returns false for
         // a non-positive amount, and letting it decide keeps the "did this break the tool?" answer

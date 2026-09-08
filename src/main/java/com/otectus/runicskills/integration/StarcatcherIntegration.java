@@ -63,6 +63,9 @@ public class StarcatcherIntegration {
 
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event) {
+        // Tide posts copied drops before delivery/bait/journal commit, including foreign fish.
+        // This ownership exclusion applies even when Tide's new benefits are disabled.
+        if (com.otectus.runicskills.integration.tide.TideFishingOrigin.isTide(event.getHookEntity())) return;
         if (!isActive()) return;
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
         if (!isModLoaded() || !(player.level() instanceof ServerLevel level)) return;

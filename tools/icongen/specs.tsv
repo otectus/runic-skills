@@ -133,7 +133,7 @@ blood_warded	round_shield	blood	crimson	dropb	blood	Crimson ward vs blood magic
 bulwark	shield	steel	gold	starb	crimson	Bulwark reflecting damage
 cataclysm_resistance	shield	obsidian	crimson	skullb	crimson	Obsidian shield vs cataclysm bosses
 colony_guardian	house	steel	sand	shieldb	emerald	Guarded homestead — safe in colonies
-counter_attack	dual_swords	crimson	steel	shieldb	crimson	Riposte blades
+counter_attack	shield_bang	crimson	steel	arrowb	crimson	Damage received prepares one retaliatory melee strike
 diamond_skin	gem	diamond	frost	shieldb	diamond	Diamond facet skin — permanent resistance
 dragon_breath_shield	dragon	ender	arcane	shieldb	ender	Ward vs dragon breath
 dragon_scale_armor	chestplate	crimson	gold	shieldb	fire	Dragon-scale plate protection
@@ -358,7 +358,7 @@ execute	skull	crimson	shadow	downb	crimson	Execution — finish the weakened
 fighting_spirit	fist	crimson	gold	up	crimson	Kill-fueled strength
 gladiator	shield_bang	steel	gold	up	crimson	Shield bash damage
 heavy_strikes	warhammer	gold	steel	up	steel	Guard-crushing strikes
-last_stand	banner	crimson	shadow	heartb	crimson	Last banner at 1 HP
+last_stand	heart_crack	crimson	shadow	shieldb	gold	Survive a fatal hit at 1 HP with brief protection and bonus damage
 mowzies_might	fist	orange	gold	up	orange	Mowzie ability might
 mythical_berserker	skull	gold	crimson	heartb	gold	Deathless rage
 nichirin_blade	katana	crimson	gold	up	crimson	Nichirin katana damage
@@ -505,3 +505,36 @@ tc_jeweler_setting	ring	amethyst	gold	plus	gold	A stone freshly set holds its se
 tc_gem_attunement	gem	amethyst	arcane	sparkle	amethyst	The gem you wear answers the hand that swings
 tc_undying_lustre	gem_socket	amethyst	holy	shieldb	holy	The ring that refuses a death, and survives doing it
 tc_polished_facet	crystal_ball	diamond	amethyst	dropb	diamond	A jewel takes a repair as well as a blade does
+
+tide_measured_cast	tide_cast	water	gold	clockb	gold	Bent fishing rod and casting arc — shorter preparation, no faster bite
+tide_patient_hands	tide_grip	water	gold	anchorb	gold	Patient Hands: native catch durability conservation
+tide_careful_landing	tide_landing	water	gold	anchorb	gold	Careful Landing: native catch durability conservation
+tide_baitkeeper	tide_pouch	water	gold	plus	gold	Baitkeeper: one protected native bait unit per fish cast.
+ss_resonant_reading	book	amethyst	gold	eyeb	gold	Native weapon lore: read existing awakening and gems without rolling.
+ss_patient_temper	anvil	steel	gold	clockb	gold	Controlled ordinary blade wear; no ability-cost discount.
+tide_many_waters	map	water	gold	clockb	gold	Four distinct fishing habitats prepare a later cast.
+tom_aqua_attunement	fish	water	amethyst	starb	gold	Aqua attunement: a flowing fish and star bind one native spell-power bonus.
+ss_measured_steel	sword	steel	gold	clockb	gold	ss measured steel
+sm_countergrip	shield	steel	amethyst	up	gold	sm countergrip
+sm_measured_blows	hammer	steel	amethyst	clockb	water	sm measured blows
+ss_relic_care	anvil	steel	gold	plus	gold	Paid unique weapon repair restores additional durability.
+sm_relic_care	anvil	steel	amethyst	plus	amethyst	Paid unique weapon repair restores additional durability.
+sm_couched_discipline	polearm	steel	wood	up	amethyst	Couched Discipline rewards controlled mounted combat.
+sm_saddleward	shield	steel	wood	heartb	amethyst	Saddleward rewards controlled mounted combat.
+tom_measured_current	boot	water	amethyst	clockb	amethyst	Measured Current rewards completed paid native casts.
+tom_changing_tides	fish	water	amethyst	up	amethyst	Changing Tides rewards completed paid native casts.
+tom_bound_companion	shield	water	amethyst	heartb	amethyst	Bound Companion rewards completed paid native casts.
+tide_sure_line	fish	water	steel	up	gold	A steadier normal catch window.
+tom_talent_composure	gem	amethyst	water	shieldb	steel	A legally equipped native talent steadies a paid cast.
+tide_read_the_water	fish	water	gold	eyeb	amethyst	Read known native habitat requirements.
+tide_field_naturalist	book	water	gold	eyeb	amethyst	Read known native habitat requirements.
+ss_spellsteel_discipline	wand	amethyst	steel	up	gold	Spellsteel Discipline rewards a completed native ability.
+ss_awake_and_ready	shield	amethyst	steel	up	gold	Awake and Ready rewards a completed native ability.
+ss_gemguard	gem	amethyst	steel	shieldb	gold	A successfully applied native gem effect grants Guard.
+tom_relic_discipline	sword	water	amethyst	shieldb	steel	An advanced native relic steadies its wielder after a direct hit.
+ss_returning_grip	sword	steel	ice	arrowb	gold	A native owner return after a committed projectile hit steadies its wielder.
+sm_long_measure	polearm	steel	gold	clockb	water	A legal outer reach hit grants measured movement.
+sm_breach_reader	shield	crimson	steel	clockb	ice	Breach Reader rewards verified native combat.
+sm_many_forms_one_hand	sword	steel	amethyst	up	gold	Many Forms, One Hand rewards verified native combat.
+tom_pressure_reader	book	water	steel	shieldb	gold	Pressure Reader requires a committed native outcome.
+tom_artificers_poise	chestplate	amethyst	steel	clockb	gold	Artificer’s Poise requires a committed native outcome.

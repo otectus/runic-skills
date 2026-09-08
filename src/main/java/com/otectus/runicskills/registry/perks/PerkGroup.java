@@ -17,6 +17,22 @@ import java.util.Set;
  * @param messageKey optional i18n key sent to clients when the cap is hit; may be null
  */
 public record PerkGroup(ResourceLocation id, int maxActive, Set<String> perks, @Nullable String messageKey) {
+    public static final int MAX_GROUPS = 4096;
+    public static final int MAX_PERKS_PER_GROUP = 8192;
+
+    public PerkGroup {
+        java.util.Objects.requireNonNull(id, "group id");
+        if (maxActive < 1) throw new IllegalArgumentException("max_active must be positive");
+        if (perks == null || perks.isEmpty() || perks.size() > MAX_PERKS_PER_GROUP)
+            throw new IllegalArgumentException("group perk count out of bounds");
+        for (String perk : perks) {
+            if (perk == null || perk.isBlank() || perk.length() > Short.MAX_VALUE)
+                throw new IllegalArgumentException("invalid group perk id");
+        }
+        if (messageKey != null && messageKey.length() > Short.MAX_VALUE)
+            throw new IllegalArgumentException("group message key is too long to sync");
+        perks = Set.copyOf(perks);
+    }
 
     /** True if the given perk registry path (no namespace) is a member of this group. */
     public boolean contains(String perkPath) {

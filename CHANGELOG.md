@@ -1,13 +1,80 @@
 # Changelog
 
-## [2.1.0] - 2026-09-06 — Tinkers' Thinking and Tinkers' Jewelry perks, Katanas covered by the core seams
+## [2.1.1] - 2026-09-08 — Four-mod integration development
 
-No network protocol change (stays at 12) and no capability or NBT schema change: the add-on state
-`TcAddonState` holds is server-memory only and never touches a save. No new mixins either — neither
-adapter contributes one; both are wired entirely through the FORGE events `TConstructPerkHandler`
-already subscribes and through `ForgeRegistries`/`IToolContext.getModifierLevel` lookups by
-registry id. `runicskills.mixins.json`'s common list is unchanged from 2.0.7 (5 client, 47 common,
-of which 15 target Tinkers' Construct — see the 2.0.7 entry's Release verification).
+Implemented all **32 perks and 24 Powers** for Simply Swords, Simply More, T.O. and Tide.
+Protocol **14** synchronizes integration settings, capability evidence and journal requests.
+Client and server must update together. This build has not been published.
+
+- Simply Swords: charged primary hits, ordinary wear, read-only awakening/gem inspection,
+  successful gem effects, paid/unlocked ability followups, owner-verified returns and paid repair.
+- Simply More: mounted travel and lance hits, native shield breaks, legal reach, counterattacks,
+  charged attacks, native Mimicry continuity and paid repair.
+- T.O.: optional companion, native Aqua attribute and Endurance mapping, paid casts and rotations,
+  owned summons, talent-slot validation, relic followups, counterspell interruption and paid armor output.
+- Tide: cast preparation, catch/wear/bait conservation, journal knowledge and comparison,
+  milestone/favor Powers, native success window, habitat/species sequences and lava/void charges.
+- Added all associated requirements, configuration, localization and original icons. Powers use
+  persistent cooldown debt, shared caps and transient sequence cleanup; missing capabilities leave
+  selections dormant without spending points.
+- Added bounded Guard, Speed, resistance and Slow effects with native damage ordering and ownership.
+  Native costs, awakening state, form selection, fish/XP delivery and upstream eligibility stay native.
+- Added exact artifact and transformed-hook verification, diagnostics and atomic rule reload.
+  Automatic family gates and client rule synchronization remain separate specification work.
+- Added representative native server evidence for every entry, with canceled/rejected actions,
+  source ownership, conservation and lifecycle checks. The release jars exclude the separate test harness.
+
+See [the implementation record](docs/FOUR_MOD_INTEGRATION_2.1.1.md) for the tested profiles,
+artifact hashes, supported native paths and remaining client/provider acceptance work.
+
+## [2.1.0] - 2026-09-06 — Tinkers integration, stabilization and runic art refresh
+
+Protocol **13** adds a bounded server-to-client mining prediction snapshot. Clients and servers
+must update together. Existing skill/perk/passive/title IDs, configuration keys, datapack folders,
+and capability version remain compatible. An additive `powerCooldownDebt` NBT compound saves
+ordinary Power cooldowns as remaining play time; the existing Artifice cooldown compound stays intact.
+No new mixin targets are added (5 client, 47 common).
+
+### Stabilization and refinement
+
+- Fixed Counter Attack damage ordering, forced critical damage, mining passives on hoes/obsidian,
+  survival cooldown relog bypasses, post-mitigation Last Stand immunity, Phoenix Rising rescue,
+  and repeated scaling of piercing/spectral arrows.
+- Ordinary Powers now preserve cooldowns across reconnect/restart and preserve cooldown refunds.
+  Power prerequisite checks require a currently eligible predecessor. Config refresh rebuilds
+  level gates instead of retaining startup values, and custom Power gates are honored. Client
+  snapshots retain server cooldown deadlines; configurable position history supports up to one minute.
+- Vanilla `/reload` synchronizes Power overrides and perk groups to connected clients. Power
+  tuning rejects non-finite values and bounds durations, keys and scan radii before gameplay/sync.
+- Shared Flame and friendly-fire exclusions recognize owned pets. Shield Break Counter reacts
+  to depleted absorption, and Empowered Dispel cannot bank expired windows or overflow duration.
+- Completed The Grove Remembers healing suppression with owner attribution and cleanse/unequip
+  checks, and Rooted's timed knockback resistance. Unraveled waits for a full rewind history and
+  checks destination collision/bounds; changing dimension clears the previous world's history.
+- Public Power proc events now report every committed proc, independent of visual packet throttling.
+- Channel and summon preparation follows the projectile or summon through saves. Siphon and
+  damage banking use committed damage; Shatter ignores absorbed/recursive hits, and Scorched
+  Earth cannot repeatedly extend a field after chunk reload. Harvest grants one HP per qualifying
+  low-health blood-spell kill, and expired health bonuses cannot leave excess health behind.
+- Mana Shield now states its XP cost and no longer rounds fractional protection up to a whole hit; Blood
+  Fury heals from committed health damage. Apothic attribute delegation can reload on existing
+  players without losing bonuses or applying both providers at once.
+- Death rewards run after survival cancellation, so rescued targets do not grant kill benefits.
+  Unraveled must acquire its saved cooldown before rescuing a player; Siphon Bond cannot heal from
+  overkill damage.
+- Tinkers attack readiness is captured before vanilla resets it, and action scopes close correctly
+  after nested calls or exceptions. Repair Memory retains its last AoE charge; Adaptive Grip
+  survives preview queries; native repair factors apply once; shared repair caps remain enforced.
+- Tinkers mining bonuses synchronize to client prediction. Workshop focus/Many Hands attribution,
+  tool-specific repair preparation, Curios jewelry detection, Undying Lustre cost routing, add-on
+  lifecycle cleanup and save-safe modifier registration are corrected.
+- Jewelry runtime profiles select Mantle 1.11.113 to avoid the older Mantle/Jewelry parallel
+  class-initialization deadlock. Compilation retains the minimum stable Mantle API.
+- Replaced the main GUI Powers control with a square icon button with tooltip, keyboard focus,
+  narration and disabled styling. Native 16×16 art no longer stretches to uneven 20×20 pixels;
+  tooltip drawing follows all grid icons. Reauthored the icon catalogue in a shared runic style.
+- Added unit and Forge GameTest regressions and a complete registration-to-effect trace catalogue.
+  See `docs/STABILIZATION_2.1.0.md` for verification evidence and remaining runtime matrix limits.
 
 ### Tinkers' Thinking (three perks, no companion mod)
 
@@ -39,16 +106,15 @@ instead (`tinkers_thinking:last_effort`, `tinkers_thinking:sculk_power`).
 ### Tinkers' Jewelry (four perks, one reserved)
 
 No compile dependency and no stub source set: everything is addressed by material id, modifier id,
-or the `tconstruct:modifiable/durability` tag, the way Tinkers' itself addresses it. Two of the four
-read a worn piece from vanilla equipment slots rather than Curios, since Curios types are not on
-this build's classpath; **a piece worn in a Curios-only slot does not count for Gem Attunement.**
+or the `tconstruct:modifiable/durability` tag, the way Tinkers' itself addresses it. Worn jewelry is detected in vanilla equipment and, when Curios is installed, equipped Curios slots.
+The optional Curios helper loads only after presence detection.
 
 - **Jeweler's Setting** (`tc_jeweler_setting`, Tinkering 12): triggers on any Tinker Station take that
   delivers a jewelry-material piece (not only a repair — setting a stone is the moment a piece is
   finished). Adds `tcJewelerSettingPercent`% (default 10) durability-loss avoidance on that specific
   piece for `tcJewelerSettingSeconds`s (default 30) through the add-on wear-avoidance channel.
 - **Gem Attunement** (`tc_gem_attunement`, Wisdom 16): triggers while the player wears a jewelry piece
-  in a vanilla equipment slot. Adds `tcGemAttunementPercent`% (default 3) to the melee-damage sum.
+  in a vanilla equipment or equipped Curios slot. Adds `tcGemAttunementPercent`% (default 3) to the melee-damage sum.
 - **Undying Lustre** (`tc_undying_lustre`, Constitution 20): triggers only inside the death-resolution
   bracket, on the specific ring Tinkers' Jewelry's own `DamageItemEvents.undying` is charging (which
   spends durability through the same `ToolDamageUtil.damage` seam this mod already owns). Adds
@@ -85,7 +151,7 @@ overridden.
 
 New flags: `enableTinkersThinkingIntegration`, `enableTinkersJewelryIntegration` (both default on).
 New shared caps: `tconstructNewWearAvoidanceCap` (0.25), `tconstructNewExperienceBonusCap` (0.20).
-Seven percent/duration tuning fields (`tcThinkingLastThoughtPercent`, `tcThinkingLastThoughtSeconds`,
+Nine percent/duration tuning fields (`tcThinkingLastThoughtPercent`, `tcThinkingLastThoughtSeconds`,
 `tcThinkingStudiedRecallPercent`, `tcThinkingEmbellishedFocusPercent`, `tcJewelerSettingPercent`,
 `tcJewelerSettingSeconds`, `tcGemAttunementPercent`, `tcUndyingLustrePercent`,
 `tcPolishedFacetPercent` — nine fields in total) and seven required-level fields
@@ -107,12 +173,12 @@ Seven percent/duration tuning fields (`tcThinkingLastThoughtPercent`, `tcThinkin
   live coverage. `-PtinkersProfile=stable -PtinkersAddons=tcintegrations,botania,ars` puts Botania
   1.20.1-455-forge and Ars Nouveau 4.12.7 alongside TCIntegrations, so `ADDON_BOTANIA_REPAIR_CHARGE`
   and `ADDON_ARS_ARMOR_REPAIR` are exercised live instead of asserted `ABSENT` only; it registers no
-  gametest class of its own, so the whole-suite count matches the M1 baseline. Tinkers' Jewelry has no
-  live profile: Modrinth's newest 1.20.1 Forge build is 1.1.0 while the reference pack runs 1.2.0, so
-  a profile against 1.1.0 would be a green run about a jar nobody uses; `TinkersJewelryPerksGameTest`
-  still registers whenever `tinkersjewelry` is loaded, for a pack developer who supplies 1.2.0
-  themselves.
-- Gametest counts (whole-suite total, measured 2026-09-06): M0 (no profile) 116, unchanged.
+  gametest class of its own. `-PtinkersProfile=stable -PtinkersAddons=jewelry` now selects the exact
+  Forge 1.20.1 Jewelry 1.2.0 artifact (CurseForge file 6328912), Mantle 1.11.113 and the required
+  Apothic/Placebo dependencies. Its tests include real Curios equipment, the native Undying save-cost
+  seam and live Apothic attribute-provider refresh. Combined add-on profiles use the same Jewelry
+  runtime pins; executed release results are recorded in `docs/STABILIZATION_2.1.0.md`.
+- Historical pre-stabilization GameTest counts (whole-suite total, measured 2026-09-06): M0 (no profile) 116, unchanged.
   M1 (`-PtinkersProfile=stable`) 202, up from 200 — the two new `TcAddonAbsenceGameTest` methods.
   `-PtinkersAddons=thinking` 205 (M1 + the three Thinking methods).
   `-PtinkersProfile=stable -PtinkersAddons=tcintegrations,botania,ars` 202 (matches M1; no new class).

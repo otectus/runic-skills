@@ -1,0 +1,75 @@
+{
+  "data/traveloptics/tags/items/aqua_focus.json": {
+    "__comment": "items in this tag are treated as focus for Aqua school",
+    "replace": false,
+    "values": [
+      "alexscaves:pearl"
+    ]
+  },
+  "data/traveloptics/tags/items/can_cast_reversal.json": {
+    "__comment": "items in this tag are able to cast Reversal Spell",
+    "replace": false,
+    "values": [
+      "#forge:tools",
+      "#minecraft:swords",
+      "minecraft:diamond_sword",
+      "minecraft:iron_sword",
+      "minecraft:wooden_sword",
+      "minecraft:stone_sword",
+      "minecraft:golden_sword",
+      "minecraft:netherite_sword",
+      "cataclysm:coral_bardiche",
+      "cataclysm:khopesh",
+      "alexscaves:extinction_spear",
+      "irons_spellbooks:magehunter",
+      "irons_spellbooks:keeper_flamberge",
+      "irons_spellbooks:spellbreaker",
+      "irons_spellbooks:amethyst_rapier",
+      "alexscaves:sea_staff",
+      "traveloptics:abyssal_tidecaller",
+      "traveloptics:abyssal_tidecaller_level_one",
+      "traveloptics:abyssal_tidecaller_level_two",
+      "traveloptics:abyssal_tidecaller_level_three",
+      "traveloptics:flames_of_eldritch",
+      "traveloptics:flames_of_eldritch_level_one",
+      "traveloptics:flames_of_eldritch_level_two",
+      "traveloptics:flames_of_eldritch_level_three",
+      "traveloptics:harbingers_wrath",
+      "traveloptics:harbingers_wrath_level_one",
+      "traveloptics:harbingers_wrath_level_two",
+      "traveloptics:harbingers_wrath_level_three",
+      "traveloptics:scourge_of_the_sands",
+      "traveloptics:scourge_of_the_sands_level_one",
+      "traveloptics:scourge_of_the_sands_level_two",
+      "traveloptics:scourge_of_the_sands_level_three",
+      "traveloptics:thorns_of_oblivion",
+      "traveloptics:thorns_of_oblivion_level_one",
+      "traveloptics:thorns_of_oblivion_level_two",
+      "traveloptics:thorns_of_oblivion_level_three",
+      "traveloptics:voidstrike_reaper",
+      "traveloptics:voidstrike_reaper_level_one",
+      "traveloptics:voidstrike_reaper_level_two",
+      "traveloptics:voidstrike_reaper_level_three",
+      {
+        "id": "iceandfire:tide_trident",
+        "required": false
+      }
+    ]
+  },
+  "data/traveloptics/tags/items/echo_curio.json": {
+    "__comment": "items in this tag are treated as Echo curios",
+    "replace": false,
+    "values": [
+      "traveloptics:blood_echo",
+      "traveloptics:lightning_echo",
+      "traveloptics:ender_echo",
+      "traveloptics:holy_echo",
+      "traveloptics:eldritch_echo",
+      "traveloptics:evocation_echo",
+      "traveloptics:fire_echo",
+      "traveloptics:ice_echo",
+      "traveloptics:nature_echo",
+      "traveloptics:aqua_echo"
+    ]
+  }
+}

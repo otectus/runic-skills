@@ -15,8 +15,8 @@ import com.otectus.runicskills.handler.HandlerCommonConfig;
  * below one as "disabled", and that is how a pack turns a perk off — so scaling {@code -1} up to
  * {@code 1} would silently re-enable something an operator switched off.
  *
- * <p>Only the sixteen Tinker's Construct perks use this. The 470 older perks name a raw level in
- * config and always have; converting them would change what every existing pack's numbers mean.
+ * <p>Tinker's Construct and new four-mod integration reference levels use this. Older perks
+ * name raw levels in config; converting them would change existing packs' progression.
  */
 public final class ScaledRequirement {
 

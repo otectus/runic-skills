@@ -18,7 +18,6 @@ public class Passive {
     public final ResourceLocation key;
     private final Supplier<Skill> skillSupplier;
     public final ResourceLocation texture;
-    public final Attribute attribute;
     public final String attributeUuid;
 
     // Tunables from the config file. See Perk for the full rationale: these were captured once
@@ -27,6 +26,8 @@ public class Passive {
     // {@link com.otectus.runicskills.registry.RegistryPassives#refreshFromConfig()}.
     public volatile Object attributeValue;
     public volatile int[] levelsRequired;
+    // The provider is configuration-derived too: Apothic delegation may change on reload.
+    public volatile Attribute attribute;
 
     public Passive(ResourceLocation passiveKey, Supplier<Skill> skillSupplier, ResourceLocation passiveTexture, Attribute attribute, String attributeUuid, Object attributeValue, int... levelsRequired) {
         this.key = passiveKey;
@@ -47,6 +48,7 @@ public class Passive {
         if (rebuilt == null || rebuilt == this) return;
         this.attributeValue = rebuilt.attributeValue;
         this.levelsRequired = rebuilt.levelsRequired;
+        this.attribute = rebuilt.attribute;
     }
 
     public Skill getSkill() {

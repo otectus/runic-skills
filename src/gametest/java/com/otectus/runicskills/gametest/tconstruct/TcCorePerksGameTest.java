@@ -89,7 +89,14 @@ public class TcCorePerksGameTest {
         // must both be granted and must cost one charge between them (§4.3).
         int charges = config.tcRepairMemoryCharges;
         for (int spent = 1; spent < charges; spent++) {
-            inAction(player, () -> WearAvoidance.avoidance(player, tool));
+            inAction(player, () -> {
+                double root = WearAvoidance.avoidance(player, tool);
+                double child = WearAvoidance.avoidance(player, tool);
+                if (Math.abs(root - expected) > 1.0E-6 || Math.abs(child - expected) > 1.0E-6) {
+                    throw new GameTestAssertException("Repair Memory lost its charge within one AoE action");
+                }
+                return child;
+            });
         }
         double exhausted = inAction(player, () -> WearAvoidance.avoidance(player, tool));
         if (exhausted != 0.0) {
@@ -229,6 +236,13 @@ public class TcCorePerksGameTest {
             throw new GameTestAssertException("Counterweight did not apply with a broad tool held");
         }
 
+        ToolStack broken = ToolStack.from(player.getMainHandItem());
+        broken.setDamage(broken.getStats().getInt(slimeknights.tconstruct.library.tools.stat.ToolStats.DURABILITY));
+        reconcileAttributes(player);
+        if (speed.getModifier(RunicAttributeModifiers.TC_COUNTERWEIGHT) != null) {
+            throw new GameTestAssertException("Counterweight counted a broken broad tool");
+        }
+
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         reconcileAttributes(player);
         if (speed.getModifier(RunicAttributeModifiers.TC_COUNTERWEIGHT) != null) {
@@ -267,6 +281,12 @@ public class TcCorePerksGameTest {
         if (Math.abs(modifier.getAmount() - expected) > 1.0E-6) {
             throw new GameTestAssertException("Plate Discipline granted " + modifier.getAmount()
                     + ", expected " + expected + " once for the player rather than once per piece");
+        }
+        ToolStack broken = ToolStack.from(player.getItemBySlot(EquipmentSlot.LEGS));
+        broken.setDamage(broken.getStats().getInt(slimeknights.tconstruct.library.tools.stat.ToolStats.DURABILITY));
+        reconcileAttributes(player);
+        if (resistance.getModifier(RunicAttributeModifiers.TC_PLATE_DISCIPLINE) != null) {
+            throw new GameTestAssertException("Plate Discipline counted broken armor");
         }
         helper.succeed();
     }
@@ -482,6 +502,92 @@ public class TcCorePerksGameTest {
     }
 
     // -- helpers ----------------------------------------------------------------------------------
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void adaptiveGripMiningPreparationSurvivesSpeedQueries(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.player(helper, "tc_grip_query");
+        TinkerFixtures.enablePerk(player, RegistryPerks.TC_ADAPTIVE_GRIP);
+        ItemStack hammer = TinkerFixtures.randomTool("sledge_hammer");
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, hammer);
+        // Other loaded integrations and the pack's available tool materials can change the
+        // unprepared speed. Compare the same live tool before/after, not a vanilla literal.
+        float baseline = breakSpeed(player, Blocks.STONE.defaultBlockState());
+        if (!Float.isFinite(baseline) || baseline <= 0.0F) {
+            throw new GameTestAssertException("invalid unprepared mining speed: " + baseline);
+        }
+        meleeAmount(helper, player, true);
+        var committed = new com.otectus.runicskills.common.actions.BlockBreakCommittedEvent(
+                helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)),
+                Blocks.STONE.defaultBlockState(), player, hammer);
+        MinecraftForge.EVENT_BUS.post(committed);
+        float first = breakSpeed(player, Blocks.STONE.defaultBlockState());
+        float repeated = breakSpeed(player, Blocks.STONE.defaultBlockState());
+        if (first <= baseline || Math.abs(first - repeated) > 1.0E-5) {
+            throw new GameTestAssertException("a speed query consumed Adaptive Grip preparation");
+        }
+        MinecraftForge.EVENT_BUS.post(new com.otectus.runicskills.common.actions.BlockBreakCommittedEvent(
+                helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)),
+                Blocks.STONE.defaultBlockState(), player, hammer));
+        float consumed = breakSpeed(player, Blocks.STONE.defaultBlockState());
+        if (Math.abs(consumed - baseline) > 1.0E-4) {
+            throw new GameTestAssertException("a committed mining action did not consume preparation: "
+                    + "baseline=" + baseline + ", prepared=" + first + ", consumed=" + consumed);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void actualAttackCapturesReadinessWithinItsMeleeScope(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(helper, "tc_actual_attack");
+        for (var skill : com.otectus.runicskills.registry.RegistrySkills.getCachedValues()) {
+            TinkerFixtures.capabilityOf(player).setSkillLevel(skill,
+                    HandlerCommonConfig.HANDLER.instance().skillMaxLevel);
+        }
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                new ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+        // Equipment gates need skill levels, while this assertion needs a finite vanilla-like
+        // swing delay. Remove passive speed modifiers so a half-tick cannot itself be fully ready.
+        var attackSpeed = player.getAttribute(Attributes.ATTACK_SPEED);
+        if (attackSpeed != null) {
+            for (var modifier : java.util.List.copyOf(attackSpeed.getModifiers())) {
+                attackSpeed.removeModifier(modifier);
+            }
+            attackSpeed.setBaseValue(4.0);
+        }
+        var target = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new BlockPos(2, 1, 2));
+        boolean[] observed = {false};
+        float[] beforeAttack = {0.0F};
+        Object listener = new Object() {
+            @net.minecraftforge.eventbus.api.SubscribeEvent
+            public void onHurt(LivingHurtEvent event) {
+                if (event.getEntity() != target || event.getSource().getDirectEntity() != player) return;
+                observed[0] = true;
+                // Some integrations handle the native hit before resetting vanilla's ticker.
+                // Both paths must retain the entry snapshot for the actual scoped melee event.
+                if (RunicActionContext.current().origin() != ActionOrigin.MELEE
+                        || !player.getUUID().equals(RunicActionContext.current().actor())
+                        || beforeAttack[0] < 0.9F
+                        || Math.abs(RunicActionContext.attackStrength(player.getUUID(), 0.0F) - beforeAttack[0]) > 1.0E-6) {
+                    throw new GameTestAssertException("readiness capture/reset mismatch: current="
+                            + player.getAttackStrengthScale(0.5F) + " captured="
+                            + RunicActionContext.attackStrength(player.getUUID(), 0.0F)
+                            + " frame=" + RunicActionContext.current());
+                }
+            }
+        };
+        MinecraftForge.EVENT_BUS.register(listener);
+        try {
+            ((com.otectus.runicskills.mixin.MixLivingEntityAccess) player).runicskills$setAttackStrengthTicker(100);
+            beforeAttack[0] = player.getAttackStrengthScale(0.5F);
+            player.attack(target);
+            if (!observed[0]) throw new GameTestAssertException("the actual attack reached no damage event");
+            if (RunicActionContext.depth() != 0) throw new GameTestAssertException("attack scope leaked");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(listener);
+            target.discard();
+        }
+        helper.succeed();
+    }
 
     /** Runs {@code query} inside a block-break action owned by {@code player}. */
     private static double inAction(ServerPlayer player, Supplier<Double> query) {

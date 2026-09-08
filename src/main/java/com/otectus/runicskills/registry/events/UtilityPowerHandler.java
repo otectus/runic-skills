@@ -40,6 +40,7 @@ public class UtilityPowerHandler {
 
     /** Whether each player's shield was on cooldown last tick, to spot the moment it is disabled. */
     private static final Map<UUID, Boolean> SHIELD_DISABLED = new ConcurrentHashMap<>();
+    private static final Map<UUID, Float> ABSORPTION = new ConcurrentHashMap<>();
 
     /** Stops Shared Flame's copied effects from re-entering this handler. */
     private static final ThreadLocal<Boolean> IN_SHARE = ThreadLocal.withInitial(() -> false);
@@ -49,6 +50,7 @@ public class UtilityPowerHandler {
         UUID id = event.getEntity().getUUID();
         BANKED_DEBUFF_TICKS.remove(id);
         SHIELD_DISABLED.remove(id);
+        ABSORPTION.remove(id);
     }
 
     // ── Marks ───────────────────────────────────────────────────────────────────────────────
@@ -110,8 +112,8 @@ public class UtilityPowerHandler {
 
         Power power = RegistryPowers.LINGERING_GRACE.get();
         double refund = PowerOverridesManager.valueOr(power, "cooldown_refund", 0.25);
-        int shortened = PowerRuntime.InternalCooldowns.reduceRemaining(
-                player.getUUID(),
+        int shortened = com.otectus.runicskills.common.powers.PowerCooldownDebt.reduceRemaining(
+                player,
                 WeaponCasterPowerHandler.equippedPowerNamesInSchool(player, PowerSchool.UTILITY),
                 refund, player.level().getGameTime());
         if (shortened > 0) PowerDispatch.fireProc(player, power);
@@ -136,7 +138,13 @@ public class UtilityPowerHandler {
 
         Power power = RegistryPowers.EMPOWERED_DISPEL.get();
         int window = PowerOverridesManager.intValueOr(power, "window_ticks", 100);
-        BANKED_DEBUFF_TICKS.merge(player.getUUID(), removed.getDuration(), Integer::sum);
+        long now = player.level().getGameTime();
+        if (!PowerRuntime.ProcWindows.active(player.getUUID(), power.getName(), now)) {
+            BANKED_DEBUFF_TICKS.remove(player.getUUID());
+        }
+        int ticks = removed.isInfiniteDuration() ? 1200 : Math.max(0, removed.getDuration());
+        BANKED_DEBUFF_TICKS.merge(player.getUUID(), ticks,
+                (a, b) -> (int) Math.min(1_728_000L, (long) a + b));
         PowerRuntime.ProcWindows.open(player.getUUID(), power.getName(),
                 player.level().getGameTime() + window);
     }
@@ -159,6 +167,7 @@ public class UtilityPowerHandler {
             }
         }
 
+        if (!com.otectus.runicskills.common.combat.DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player attacker)) return;
         if (!PowerDispatch.isEquipped(attacker, RegistryPowers.EMPOWERED_DISPEL)) return;
 
@@ -189,11 +198,18 @@ public class UtilityPowerHandler {
         if (event.phase != TickEvent.Phase.END) return;
         Player player = event.player;
         if (player.level().isClientSide()) return;
-        if (!PowerDispatch.isEquipped(player, RegistryPowers.SHIELD_BREAK_COUNTER)) return;
+        if (!PowerDispatch.isEquipped(player, RegistryPowers.SHIELD_BREAK_COUNTER)) {
+            SHIELD_DISABLED.remove(player.getUUID());
+            ABSORPTION.remove(player.getUUID());
+            return;
+        }
 
         boolean disabled = player.getCooldowns().isOnCooldown(Items.SHIELD);
         Boolean previously = SHIELD_DISABLED.put(player.getUUID(), disabled);
-        if (disabled && !Boolean.TRUE.equals(previously)) {
+        float absorption = player.getAbsorptionAmount();
+        Float oldAbsorption = ABSORPTION.put(player.getUUID(), absorption);
+        boolean barrierBroken = oldAbsorption != null && oldAbsorption > 0 && absorption <= 0;
+        if ((disabled && Boolean.FALSE.equals(previously)) || barrierBroken) {
             Power power = RegistryPowers.SHIELD_BREAK_COUNTER.get();
             int window = PowerOverridesManager.intValueOr(power, "window_ticks", 60);
             PowerRuntime.ProcWindows.open(player.getUUID(), power.getName(),

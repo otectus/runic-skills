@@ -80,7 +80,6 @@ public class RespecCommand {
             capability.equippedMarks.clear();
             capability.equippedSeals.clear();
             capability.equippedCrown = "";
-            capability.powerCooldowns.clear();
             capability.powerWindows.clear();
 
             // Residue that used to survive a "full reset": in-flight perk cooldowns (including the
@@ -89,6 +88,7 @@ public class RespecCommand {
             // this player (RS-128).
             capability.perkCooldowns.clear();
             com.otectus.runicskills.common.powers.PowerRuntime.clearPlayer(player.getUUID());
+            com.otectus.runicskills.common.powers.PowerCooldownDebt.restore(player);
             com.otectus.runicskills.common.util.ContainerRewardLedger.forget(player.getUUID());
 
             RegistryAttributes.modifierAttributes(player);

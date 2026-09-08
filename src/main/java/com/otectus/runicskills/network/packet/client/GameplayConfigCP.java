@@ -71,10 +71,12 @@ public class GameplayConfigCP {
 
     public static void sendToPlayer(ServerPlayer player) {
         ServerNetworking.sendToPlayer(new GameplayConfigCP(), player);
+        ServerNetworking.sendToPlayer(new IntegrationStatusCP(), player);
     }
 
     public static void sendToAllPlayers() {
         ServerNetworking.sendToAllClients(new GameplayConfigCP());
+        ServerNetworking.sendToAllClients(new IntegrationStatusCP());
     }
 
     @OnlyIn(Dist.CLIENT)

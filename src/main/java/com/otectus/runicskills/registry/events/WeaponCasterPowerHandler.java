@@ -19,6 +19,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -55,6 +56,21 @@ public class WeaponCasterPowerHandler {
         RHYTHM.remove(event.getEntity().getUUID());
     }
 
+    @SubscribeEvent
+    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        RHYTHM.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        RHYTHM.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        RHYTHM.clear();
+    }
+
     // ── Marks ───────────────────────────────────────────────────────────────────────────────
 
     /**
@@ -70,8 +86,8 @@ public class WeaponCasterPowerHandler {
         // hit this mod emits, is excluded by the shared context rather than by a private flag.
         if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         Entity direct = event.getSource().getDirectEntity();
-        if (direct instanceof Projectile) return;                 // melee only
         if (!(event.getSource().getEntity() instanceof Player player)) return;
+        if (direct != player || event.getSource().is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) return;
         if (player.level().isClientSide()) return;
 
         long now = player.level().getGameTime();
@@ -86,8 +102,8 @@ public class WeaponCasterPowerHandler {
         if (PowerDispatch.isEquipped(player, RegistryPowers.ARCANE_RIPOSTE)) {
             Power power = RegistryPowers.ARCANE_RIPOSTE.get();
             double share = PowerOverridesManager.valueOr(power, "cooldown_reduction", 0.30);
-            int shortened = PowerRuntime.InternalCooldowns.reduceRemaining(
-                    player.getUUID(), equippedPowerNamesInSchool(player, PowerSchool.WEAPON_CASTER),
+            int shortened = com.otectus.runicskills.common.powers.PowerCooldownDebt.reduceRemaining(
+                player, equippedPowerNamesInSchool(player, PowerSchool.WEAPON_CASTER),
                     share, now);
             if (shortened > 0) PowerDispatch.fireProc(player, power);
         }
@@ -191,7 +207,7 @@ public class WeaponCasterPowerHandler {
             rhythm.last = null;
         }
         if (rhythm.last != null && rhythm.last != action) {
-            rhythm.alternations++;
+            rhythm.alternations = Math.min(1024, rhythm.alternations + 1);
         } else if (rhythm.last == action) {
             rhythm.alternations = 0;
         }

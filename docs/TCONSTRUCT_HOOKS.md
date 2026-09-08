@@ -1,6 +1,6 @@
 # Tinkers' Construct 1.20.1-3.11.2.166 hook manifest
 
-Verified mixin seams for Tinkers' Construct 3.11.2.166 and Mantle 1.11.97. Each hook is confirmed to exist in the decompiled jar with the listed descriptor and match count. This is the foundation for optional Tinkers' integration in Runic Skills 2.0.7.
+Native seam inventory for Tinkers' Construct 3.11.2.166 and Mantle 1.11.97, updated for Runic Skills 2.1.0. Static descriptors, runtime handler-call verification and GameTests provide separate evidence; an optional injector being offered or merged alone does not prove that it matched.
 
 **Status:** Stage S4 implementation (Keystone Tinker perk). Hooks H1, H2, H4, H6, H8, H9, H10 have implementations (H6 is via registered modifiers, not mixins).
 
@@ -192,3 +192,12 @@ classifies it by its declaring package, and fails the build if a `remap = false`
 vanilla-declared. `tools/verify_against_pack.py` goes one step further and checks the *shipped* jar's
 refmap against the real, obfuscated jars in a live pack's `mods/` directory — see
 [`PACK_VERIFICATION.md`](PACK_VERIFICATION.md).
+
+## 2.1.0 stabilization changes
+
+- Container clicks, vanilla melee actions and native station crafts use MixinExtras `WrapMethod` scopes with `try/finally`, including same-object recursion and foreign exceptions. Attack readiness is captured before vanilla can reset the ticker.
+- The native lazy-result hooks calculate previews without arming benefits or consuming cooldowns. Accepted `onCraft` binds state to the delivered stack; per-click inventory identities locate Mantle shift-click copies. Cached native restoration supplies thresholds and script reports.
+- The existing native wear seam permits the specifically identified Jewelry Undying Lustre death cost through its bounded save-cost reducer. Ordinary Runic wear perks do not apply to that cost.
+- `TConstructMiningCP` is a clientbound, change-only snapshot of temporary mining bonuses and the selected hotbar slot. Channel protocol is 13; client state clears on disconnect. Native mining prediction and server execution share the same cap.
+- Startup probes load approved core and add-on targets without initialization. After loading returns, `MixinHookVerification` checks each injector for a call in the transformed target and reports missing handler names; merging a method with no call cannot mark the capability supported. Verification waits for MixinExtras' late-applying extensions, which run after the plugin's `postApply` callback.
+- Private quotes include native paid-repair bonuses, and equality includes the transformed output. Expiring a temporary bonus refreshes the quote without mutating station inputs or spending preparation.

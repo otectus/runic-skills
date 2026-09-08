@@ -343,13 +343,13 @@ public final class TcIntegrationsAdapter {
     /** Takes the transient modifier off once its four seconds are up, or the perk stops applying. */
     private static void reconcileSoulsteel(ServerPlayer player) {
         TcAddonState.Player state = TcAddonState.peek(player.getUUID());
-        if (state == null || state.soulsteelUntil <= 0) return;
-        boolean expired = TcAddonHooks.now(player) > state.soulsteelUntil;
+        boolean expired = state == null || state.soulsteelUntil <= 0
+                || TcAddonHooks.now(player) > state.soulsteelUntil;
         if (!expired && TcAddonHooks.active(player, RegistryPerks.TC_SOULSTEEL_RESOLVE,
                 Capability.ADDON_SOUL_STAINED)) {
             return;
         }
-        state.soulsteelUntil = 0L;
+        if (state != null) state.soulsteelUntil = 0L;
         AttributeInstance instance = player.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
         if (instance != null) instance.removeModifier(SOULSTEEL_MODIFIER);
     }

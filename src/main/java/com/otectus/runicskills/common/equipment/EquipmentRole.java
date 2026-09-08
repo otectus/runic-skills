@@ -38,5 +38,10 @@ public enum EquipmentRole {
     SHOVEL,
 
     /** A hoe specifically, for the same reason. */
-    HOE
+    HOE,
+
+    /** A native fishing rod, distinct from spell-bearing staves. */
+    FISHING_ROD,
+    SPELL_CARRIER,
+    NATIVE_ABILITY
 }

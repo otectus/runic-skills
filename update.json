@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/otectus/runic-skills",
   "promos": {
-    "1.20.1-latest": "2.1.0",
-    "1.20.1-recommended": "2.1.0"
+    "1.20.1-latest": "2.1.1",
+    "1.20.1-recommended": "2.1.1"
   },
   "1.20.1": {
     "2.0.0": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
@@ -12,6 +12,8 @@
     "2.0.4": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.5": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.6": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
-    "2.0.7": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md"
+    "2.0.7": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
+    "2.1.0": "Tinkers' Construct integration, gameplay and multiplayer stabilization, persistent Power cooldowns, and a complete runic icon refresh. Network protocol 13: update clients and servers together. See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
+    "2.1.1": "All 32 perks and 24 Powers implemented for Simply Swords, Simply More, T.O. and Tide, with verified native triggers, shared limits and dormant Power accounting. Protocol 14: update clients and servers together. See docs/FOUR_MOD_INTEGRATION_2.1.1.md for supported native paths and remaining client/provider validation."
   }
 }

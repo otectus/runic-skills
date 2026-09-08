@@ -2,6 +2,7 @@ package com.otectus.runicskills.integration.tconstruct.addons;
 
 import com.otectus.runicskills.common.util.DurationMath;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.integration.TcAddonPresence;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Capability;
 import com.otectus.runicskills.integration.tconstruct.TConstructEquipmentAdapter;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -121,11 +122,9 @@ public final class TinkersJewelryAdapter {
     /**
      * Gem Attunement's share of the one melee channel, or zero.
      *
-     * <p>Worn, not held. The rings are Curios trinkets, so the add-on's own equip path is a Curios
-     * slot — but Curios types are not on this build's classpath and a reflective walk of another
-     * mod's inventory would be a lot of machinery for a small perk. The vanilla equipment slots are
-     * asked instead, which is honest about what it covers: a piece worn in a vanilla slot counts, a
-     * piece in a Curios-only slot does not, and no case is guessed at.
+     * <p>Counts equipped Curios slots, the add-on's actual equip path, plus native equipment slots.
+     * A ring in an ordinary inventory slot contributes nothing. Curios calls live in a nested
+     * class reached only after a presence check, keeping the optional API out of the outer class.
      */
     private static double gemAttunementBonus(ServerPlayer player) {
         if (!TcAddonHooks.active(player, RegistryPerks.TC_GEM_ATTUNEMENT,
@@ -133,11 +132,42 @@ public final class TinkersJewelryAdapter {
             return 0.0;
         }
         for (EquipmentSlot slot : EquipmentSlot.values()) {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR) continue;
             if (isJewelryPiece(player.getItemBySlot(slot))) {
                 return HandlerCommonConfig.HANDLER.instance().tcGemAttunementPercent / 100.0;
             }
         }
+        if (TcAddonPresence.isLoaded(TcAddonPresence.CURIOS) && CuriosEquipment.hasJewelry(player)) {
+            return HandlerCommonConfig.HANDLER.instance().tcGemAttunementPercent / 100.0;
+        }
         return 0.0;
+    }
+
+    /** Loaded only when Curios is present. No dependency on the Jewelry add-on's own classes. */
+    private static final class CuriosEquipment {
+        private static boolean hasJewelry(ServerPlayer player) {
+            return top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(player)
+                    .map(inventory -> inventory.findFirstCurio(TinkersJewelryAdapter::isJewelryPiece).isPresent())
+                    .orElse(false);
+        }
+    }
+
+    /** Only the save-cost perk contributes outside ordinary use; other avoidance perks do not. */
+    public static int reduceDeathWear(ServerPlayer player, ItemStack stack, int amount) {
+        if (amount <= 0 || !TcAddonHooks.inDeathResolution(player) || !isJewelryPiece(stack)) return amount;
+        if (!TcAddonHooks.active(player, RegistryPerks.TC_UNDYING_LUSTRE, Capability.ADDON_JEWELRY_UNDYING)
+                || !TraitFeatureRegistry.present(ToolStack.from(stack), TraitFeatureRegistry.Feature.JEWELRY_UNDYING)) {
+            return amount;
+        }
+        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        double chance = Math.min(0.90, Math.min(config.tconstructNewWearAvoidanceCap,
+                config.tcUndyingLustrePercent / 100.0));
+        if (!Double.isFinite(chance) || chance <= 0.0) return amount;
+        // Stochastic rounding preserves small costs without a loop proportional to addon damage.
+        double expected = amount * chance;
+        int spared = (int) Math.floor(expected);
+        if (player.getRandom().nextDouble() < expected - spared) spared++;
+        return Math.max(0, amount - spared);
     }
 
     /**
@@ -165,7 +195,9 @@ public final class TinkersJewelryAdapter {
      */
     private static boolean isJewelryPiece(ItemStack stack) {
         if (!TConstructEquipmentAdapter.isNativeTool(stack)) return false;
-        MaterialNBT materials = ToolStack.from(stack).getMaterials();
+        ToolStack tool = ToolStack.from(stack);
+        if (tool.isBroken()) return false;
+        MaterialNBT materials = tool.getMaterials();
         for (MaterialVariant variant : materials) {
             if (variant == null || variant.isEmpty() || variant.isUnknown()) continue;
             MaterialVariantId id = variant.getVariant();

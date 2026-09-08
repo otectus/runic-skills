@@ -117,8 +117,14 @@ If you need a new event surface that doesn't exist yet, open an issue at [github
 
 The mod syncs gameplay state to clients via a versioned custom Forge network channel. Clients on a
 mismatched protocol version are refused at join with a clear error. The current protocol version is
-**12** (since 2.0.7); the version matrix in [`../README.md`](../README.md#version-matrix) lists
+**13** (since 2.1.0); the version matrix in [`../README.md`](../README.md#version-matrix) lists
 which releases use which protocol.
+
+### Protocol 13 (2.1.0): Mining prediction
+
+`TConstructMiningCP` sends the server's temporary mining-speed bonus and its selected hotbar slot
+to that player. The client uses the bounded snapshot for block-breaking prediction; it cannot
+request or authorize a bonus. Protocol 12 peers are refused during channel negotiation.
 
 ### Protocol 12 (2.0.7+): Workshop networking
 
@@ -143,6 +149,7 @@ The two client-bound packets carry presentation data only — quotes and focus s
 
 | Version | Added | Removed | Changed |
 |---|---|---|---|
+| 13 | `TConstructMiningCP` | — | Temporary Tinkers' mining bonuses synchronized for client prediction |
 | 12 | `WorkshopFocusSP`, `WorkshopStatusCP`, `StationQuoteCP` | — | — |
 | 11 | `PowerOverridesSyncCP`, `PowerProcCP`, `PowerEquipSP` | — | `GameplayConfigCP` payload (1,133 fields generated instead of 128 hand-listed); `PassiveLevelUpSP`/`PassiveLevelDownSP` replaced by `AdjustPassiveSP` (batched, handles bulk clicks) |
 | 10 | (see 2.0.0 release) | `CommonConfigSyncCP`, `DynamicConfigSyncCP` | `SyncSkillCapabilityCP` (resource locations are now length-bounded instead of 32,767-character strings) |

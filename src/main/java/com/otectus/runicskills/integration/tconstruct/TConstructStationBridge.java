@@ -8,6 +8,7 @@ import com.otectus.runicskills.common.crafting.CraftOperationKind;
 import com.otectus.runicskills.common.crafting.CraftResultTransformer;
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.scripting.TinkerScriptHooks;
+import com.otectus.runicskills.common.util.ContainerInteraction;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Capability;
 import com.otectus.runicskills.registry.events.CraftRewardDispatcher;
 import net.minecraft.network.chat.Component;
@@ -81,6 +82,30 @@ public final class TConstructStationBridge {
 
     /** Quote revisions, monotonic for the server session, shared by every station. */
     private static final AtomicLong NEXT_REVISION = new AtomicLong(1L);
+
+    /** Inventory identities before native delivery, scoped to one click rather than persisted. */
+    private static final class Delivery {
+        private final java.util.Set<ItemStack> before = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        private ItemStack preview = ItemStack.EMPTY;
+
+        private Delivery(ServerPlayer player) {
+            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+                before.add(player.getInventory().getItem(slot));
+            }
+        }
+
+        private ItemStack delivered(ServerPlayer player, ItemStack result) {
+            if (result != null && !result.isEmpty()) return result;
+            // Mantle moves split copies into inventory before onTake, then passes an empty
+            // leftover. Bind to the new real stack, never another identical existing tool.
+            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+                ItemStack candidate = player.getInventory().getItem(slot);
+                if (!candidate.isEmpty() && !before.contains(candidate)
+                        && ItemStack.isSameItemSameTags(candidate, preview)) return candidate;
+            }
+            return ItemStack.EMPTY;
+        }
+    }
 
     private TConstructStationBridge() {
     }
@@ -216,6 +241,7 @@ public final class TConstructStationBridge {
         if (!(player instanceof ServerPlayer actor) || player instanceof FakePlayer) return;
         if (delivered == null || delivered.isEmpty()) return;
         if (!TConstructCompatibilityStatus.current().supports(Capability.STATION_TRANSACTIONS)) return;
+        Delivery delivery = ContainerInteraction.memoize(crafter, () -> new Delivery(actor));
         CraftOperationKind kind = kindOf(crafter);
         CraftResultTransformer.transform(actor, delivered, kind);
         // The repair perks act here rather than at the commit callback for the same reason the
@@ -223,11 +249,9 @@ public final class TConstructStationBridge {
         // and it is the copy the player will actually hold. The station is still holding the tool
         // that went in, so the native restoration is readable as a difference rather than guessed.
         if (kind == CraftOperationKind.REPAIR && crafter instanceof TinkerStationBlockEntity station) {
-            TConstructPerkHandler.onStationRepair(actor, delivered, station);
+            TConstructPerkHandler.applyStationRepairBonus(actor, delivered, station);
         }
-        // Every take, not only a repair: an add-on perk may care about a first assembly, and this is
-        // the only point that sees both without the adapter naming this bridge.
-        TConstructPerkHandler.onStationDelivered(actor, delivered);
+        if (delivery != null) delivery.preview = delivered.copy();
     }
 
     /**
@@ -274,7 +298,14 @@ public final class TConstructStationBridge {
                 ? station.getLastRecipe() : null;
         CraftOperationKind operationKind = kindOf(recipe);
         List<ItemStack> consumed = consumedInputs(inputs);
-        int restored = nativeRestored(crafted, crafter, operationKind);
+        // The cached result is still the native output; a delivered copy already includes any
+        // bonus restoration and must not inflate paid-repair thresholds or script reports.
+        ItemStack nativeResult = crafter instanceof TinkerStationBlockEntity station
+                ? station.getCraftingResult().getResult() : crafted;
+        int restored = nativeRestored(nativeResult, crafter, operationKind);
+        Delivery delivery = ContainerInteraction.memoize(crafter, () -> new Delivery(actor));
+        ItemStack actual = delivery == null ? result : delivery.delivered(actor, result);
+        ContainerInteraction.forgetMemo(crafter);
 
         // §14.5's pre-commit gate. The native take has already been accepted by the station and is
         // not this mod's to refuse; what a denial stops is everything below — the payout, the
@@ -286,8 +317,21 @@ public final class TConstructStationBridge {
                 TinkerScriptHooks.summarise(consumed), restored, 0);
         TinkerScriptHooks.Veto veto = TinkerScriptHooks.postOperationCheck(actor, operation);
         if (veto.denied()) {
+            // A shift take has already moved its transformed copy. Revert that exact delivered
+            // tool to the native result so refusal cannot grant an uncharged repair bonus/stamp.
+            if (actual != null && !actual.isEmpty()
+                    && TConstructEquipmentAdapter.isNativeTool(actual)) {
+                actual.setTag(nativeResult.getTag() == null ? null : nativeResult.getTag().copy());
+            }
             actor.displayClientMessage(denial(veto), true);
             return;
+        }
+
+        if (actual != null && !actual.isEmpty()) {
+            if (operationKind == CraftOperationKind.REPAIR && crafter instanceof TinkerStationBlockEntity station) {
+                TConstructPerkHandler.onStationRepair(actor, actual, station, restored);
+            }
+            TConstructPerkHandler.onStationDelivered(actor, actual);
         }
 
         int copies;
@@ -386,6 +430,9 @@ public final class TConstructStationBridge {
         CraftOperationKind kind = kindOf(recipe);
         ItemStack preview = baseResult == null ? ItemStack.EMPTY : baseResult.copy();
         if (!preview.isEmpty()) CraftResultTransformer.transform(player, preview, kind);
+        if (kind == CraftOperationKind.REPAIR && crafter instanceof TinkerStationBlockEntity station) {
+            TConstructPerkHandler.applyStationRepairBonus(player, preview, station);
+        }
         return new StationQuote(player.getUUID(), menuId,
                 recipe == null ? null : recipe.getId(), kind,
                 fingerprint(inputs), fingerprintOf(baseResult),

@@ -1,6 +1,8 @@
 package com.otectus.runicskills.integration.tconstruct;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import java.lang.ref.WeakReference;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -60,8 +62,8 @@ final class TConstructPowerState {
         /** The station the pending tool is sitting in; {@code null} when nothing is pending. */
         BlockPos workingMemoryStation;
 
-        /** The registry id of the tool the part change was made to. */
-        String workingMemoryItem;
+        /** Snapshot of the changed tool; damage is normalised when comparing a later repair. */
+        ItemStack workingMemoryTool = ItemStack.EMPTY;
 
         /** The tick the pending change stops counting. */
         long workingMemoryUntil;
@@ -72,8 +74,8 @@ final class TConstructPowerState {
 
         // -- Temper Reserve ---------------------------------------------------------------------
 
-        /** The repaired tool the extra avoidance belongs to, by registry id. */
-        String temperReserveItem;
+        /** The actual repaired stack; an identical second tool must not inherit the benefit. */
+        WeakReference<ItemStack> temperReserveTool = new WeakReference<>(null);
 
         long temperReserveUntil;
 

@@ -14,6 +14,243 @@ import java.util.Arrays;
 import java.util.List;
 
 public class HandlerCommonConfig {
+    @SerialEntry(comment = "Native T.O. perk reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tomArtificersPoiseRequiredLevel = 24;
+    @SerialEntry(comment = "Native T.O. perk reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tomPressureReaderRequiredLevel = 22;
+    @SerialEntry(comment = "Many Forms, One Hand reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smManyFormsOneHandRequiredLevel = 22;
+    @SerialEntry(comment = "Breach Reader reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smBreachReaderRequiredLevel = 14;
+    @SerialEntry(comment = "Long Measure reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smLongMeasureRequiredLevel = 12;
+    @SerialEntry(comment = "Returning Grip reference requirement; genuine native owner returns only.")
+    @Clamp(min = -1, max = 32)
+    public int ssReturningGripRequiredLevel = 20;
+    @SerialEntry(comment = "Relic Discipline reference requirement; native advanced weapon identities only.")
+    @Clamp(min = -1, max = 32)
+    public int tomRelicDisciplineRequiredLevel = 18;
+    @SerialEntry(comment = "Gemguard reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssGemguardRequiredLevel = 16;
+    @SerialEntry(comment = "Awake and Ready reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssAwakeAndReadyRequiredLevel = 22;
+    @SerialEntry(comment = "Spellsteel Discipline reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssSpellsteelDisciplineRequiredLevel = 18;
+    @SerialEntry(comment = "Aqua Attunement reference Magic requirement; nonpositive disables; requires the T.O. companion.")
+    @Clamp(min = -1, max = 32)
+    public int tomAquaAttunementRequiredLevel = 8;
+    @SerialEntry(comment = "Aqua secondary Endurance damage coefficient per skill level; separate from generic Magic/Wisdom and Aqua Attunement. Zero disables it.")
+    @Clamp(min = 0, max = 0.01)
+    public float tomAquaSecondaryPerLevel = 0.001f;
+    @SerialEntry(comment = "Talent Composure reference requirement; native functional talent slot required.")
+    @Clamp(min = -1, max = 32)
+    public int tomTalentComposureRequiredLevel = 18;
+    @SerialEntry(comment = "Relative native Aqua spell-power bonus, applied once as an attribute multiplier.")
+    @Clamp(min = 0, max = 10)
+    public int tomAquaAttunementPercent = 5;
+    @SerialEntry(comment = "Many Waters reference Endurance requirement; nonpositive disables; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tideManyWatersRequiredLevel = 18;
+    @SerialEntry(comment = "Many Waters next-cast preparation reduction; shared new-catalog cap 25 percent.")
+    @Clamp(min = 0, max = 25)
+    public int tideManyWatersPercent = 10;
+    @SerialEntry(comment = "Patient Temper reference Tinkering requirement; nonpositive disables; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssPatientTemperRequiredLevel = 10;
+    @SerialEntry(comment = "Measured Current reference requirement; requires the verified T.O. companion.")
+    @Clamp(min = -1, max = 32)
+    public int tomMeasuredCurrentRequiredLevel = 10;
+    @SerialEntry(comment = "Measured Current percent; subject to shared integration limits.")
+    @Clamp(min = 0, max = 20)
+    public int tomMeasuredCurrentPercent = 10;
+    @SerialEntry(comment = "Changing Tides reference requirement; requires the verified T.O. companion.")
+    @Clamp(min = -1, max = 32)
+    public int tomChangingTidesRequiredLevel = 14;
+    @SerialEntry(comment = "Changing Tides percent; subject to shared integration limits.")
+    @Clamp(min = 0, max = 10)
+    public int tomChangingTidesPercent = 5;
+    @SerialEntry(comment = "Bound Companion reference requirement; requires the verified T.O. companion.")
+    @Clamp(min = -1, max = 32)
+    public int tomBoundCompanionRequiredLevel = 16;
+
+    @SerialEntry(comment = "Couched Discipline reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smCouchedDisciplineRequiredLevel = 10;
+    @SerialEntry(comment = "Couched Discipline additive knockback resistance percent; shared cap 20.")
+    @Clamp(min = 0, max = 20)
+    public int smCouchedDisciplinePercent = 15;
+    @SerialEntry(comment = "Saddleward reference requirement; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smSaddlewardRequiredLevel = 14;
+
+    @SerialEntry(comment = "Enable Simply More manual workshop benefits.")
+    public boolean simplyMoreWorkshopFeatures = true;
+    @SerialEntry(comment = "Simply Swords Relic Care reference Tinkering requirement.")
+    @Clamp(min = -1, max = 32)
+    public int ssRelicCareRequiredLevel = 24;
+    @SerialEntry(comment = "Extra manual repair percent; floored, shared maximum 10 percent.")
+    @Clamp(min = 0, max = 10)
+    public int ssRelicCarePercent = 10;
+    @SerialEntry(comment = "Simply More Relic Care reference Tinkering requirement.")
+    @Clamp(min = -1, max = 32)
+    public int smRelicCareRequiredLevel = 24;
+    @SerialEntry(comment = "Extra manual repair percent; floored, shared maximum 10 percent.")
+    @Clamp(min = 0, max = 10)
+    public int smRelicCarePercent = 10;
+
+    @SerialEntry(comment = "Measured Steel reference requirement; nonpositive disables; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssMeasuredSteelRequiredLevel = 8;
+    @SerialEntry(comment = "Measured Steel percent; subject to the shared integration limit.")
+    @Clamp(min = 0, max = 10)
+    public int ssMeasuredSteelPercent = 5;
+    @SerialEntry(comment = "Countergrip reference requirement; nonpositive disables; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smCountergripRequiredLevel = 18;
+    @SerialEntry(comment = "Measured Blows reference requirement; nonpositive disables; scales from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int smMeasuredBlowsRequiredLevel = 16;
+    @SerialEntry(comment = "Measured Blows percent; subject to the shared integration limit.")
+    @Clamp(min = 0, max = 30)
+    public int smMeasuredBlowsPercent = 10;
+
+    @SerialEntry(comment = "Patient Temper chance to spare one ordinary weapon wear point; one claim per root, aggregate new-catalog cap 30 percent.")
+    @Clamp(min = 0, max = 30)
+    public int ssPatientTemperPercent = 10;
+    @SerialEntry(comment = "Resonant Reading reference Wisdom requirement; nonpositive disables; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int ssResonantReadingRequiredLevel = 12;
+    @SerialEntry(comment = "Baitkeeper reference Fortune requirement; nonpositive disables; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tideBaitkeeperRequiredLevel = 16;
+    @SerialEntry(comment = "Chance to preserve at most one actually consumed bait unit per successful native fish cast.")
+    @Clamp(min = 0, max = 25)
+    public int tideBaitkeeperPercent = 10;
+    @SerialEntry(comment = "Measured Cast reference Dexterity level at cap 32. Nonpositive disables the perk.")
+    @Clamp(min = -1, max = 32)
+    public int tideMeasuredCastRequiredLevel = 6;
+    @SerialEntry(comment = "Sure Line reference requirement; native Tide minigame only.")
+    @Clamp(min = -1, max = 32)
+    public int tideSureLineRequiredLevel = 14;
+    @SerialEntry(comment = "Field Naturalist reference requirement; read-only native journal information.")
+    @Clamp(min = -1, max = 32)
+    public int tideFieldNaturalistRequiredLevel = 22;
+    @SerialEntry(comment = "Read the Water reference requirement; read-only native journal information.")
+    @Clamp(min = -1, max = 32)
+    public int tideReadTheWaterRequiredLevel = 10;
+    @SerialEntry(comment = "Added normal-window width in hundredths; never changes the perfect window.")
+    @Clamp(min = 0, max = 6)
+    public int tideSureLineHundredths = 2;
+    @SerialEntry(comment = "Measured Cast preparation reduction in percent, bounded by the new-catalog 25% cap.")
+    @Clamp(min = 0, max = 25)
+    public int tideMeasuredCastPercent = 10;
+    @SerialEntry(comment = "Patient Hands reference requirement; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tidePatientHandsRequiredLevel = 8;
+    @SerialEntry(comment = "Chance to spare one wear point after verified native fish delivery. Shared 35 percent cap.")
+    @Clamp(min = 0, max = 35)
+    public int tidePatientHandsPercent = 10;
+    @SerialEntry(comment = "Careful Landing reference requirement; positive levels scale from cap 32.")
+    @Clamp(min = -1, max = 32)
+    public int tideCarefulLandingRequiredLevel = 24;
+    @SerialEntry(comment = "Additional wear conservation chance after a native lava or void fish delivery. Shared 35 percent cap.")
+    @Clamp(min = 0, max = 35)
+    public int tideCarefulLandingPercent = 10;
+    // 2.1.1: flat fields use the existing atomic server snapshot and /skillsreload.
+    // Compatibility defaults preserve existing worlds: no automatic new locks.
+    @SerialEntry(comment = "Four-mod integration mode: off, auto, observe. Unknown values disable new effects.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
+    public String simplySwordsIntegrationMode = "auto";
+
+    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
+    public boolean simplySwordsAutomaticEquipmentGates = false;
+
+    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    public boolean simplySwordsNativeAbilityGates = false;
+
+    @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
+    public boolean simplySwordsPerks = true;
+
+    @SerialEntry(comment = "Requests Powers only when the native capability is verified.")
+    public boolean simplySwordsPowers = true;
+
+    @SerialEntry(comment = "Four-mod integration mode: off, auto, observe. Unknown values disable new effects.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
+    public String simplyMoreIntegrationMode = "auto";
+
+    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
+    public boolean simplyMoreAutomaticEquipmentGates = false;
+
+    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    public boolean simplyMoreNativeAbilityGates = false;
+
+    @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
+    public boolean simplyMorePerks = true;
+
+    @SerialEntry(comment = "Requests Powers only when the native capability is verified.")
+    public boolean simplyMorePowers = true;
+
+    @SerialEntry(comment = "Four-mod integration mode: off, auto, observe. Unknown values disable new effects.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
+    public String tomIntegrationMode = "auto";
+
+    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
+    public boolean tomAutomaticEquipmentGates = false;
+
+    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    public boolean tomNativeAbilityGates = false;
+
+    @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
+    public boolean tomPerks = true;
+
+    @SerialEntry(comment = "Requests Powers only when the native capability is verified.")
+    public boolean tomPowers = true;
+
+    @SerialEntry(comment = "Four-mod integration mode: off, auto, observe. Unknown values disable new effects.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
+    public String tideIntegrationMode = "auto";
+
+    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
+    public boolean tideAutomaticEquipmentGates = false;
+
+    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    public boolean tideNativeAbilityGates = false;
+
+    @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
+    public boolean tidePerks = true;
+
+    @SerialEntry(comment = "Requests Powers only when the native capability is verified.")
+    public boolean tidePowers = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean simplySwordsWorkshopFeatures = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean simplyMoreMimicryFeatures = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean tomAquaMapping = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean tomNativeActivationFeatures = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean tideJournalFeatures = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean tideMinigameAssistance = true;
+
+    @SerialEntry(comment = "Requests this feature only when its native capability is verified.")
+    public boolean tideEligibleSpeciesWeighting = true;
+
     // Server-safe: the previous YACL ConfigClassHandler is replaced by ConfigHolder, which
     // does not reference YACL types in its bytecode. The YACL annotations on individual
     // fields below remain — they are only read reflectively by the client-side
@@ -108,7 +345,7 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean hideDisabledPassives = false;
 
-    @SerialEntry(comment = "If true, powers listed in disabledPowers are hidden from the powers screen entirely instead of shown greyed-out. Does NOT change enforcement; this only controls UI visibility. Default false. Server-authoritative; synced to clients on join.")
+    @SerialEntry(comment = "If true, unequipped powers listed in disabledPowers are hidden instead of shown greyed-out. Equipped powers remain visible so their slots can be reclaimed. Does NOT change enforcement; this only controls UI visibility. Default false. Server-authoritative; synced to clients on join.")
     @AutoGen(category = "common", group = "general")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean hideDisabledPowers = false;

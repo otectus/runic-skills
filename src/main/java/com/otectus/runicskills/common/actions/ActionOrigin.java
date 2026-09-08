@@ -54,6 +54,8 @@ public enum ActionOrigin {
      * inflicts at the station is not quietly discounted by a mining perk.
      */
     STATION_CRAFT,
+    /** A confirmed native spell/weapon execution; its child hits are not manual melee. */
+    NATIVE_ACTIVATION,
 
     /**
      * No action has been identified. The reading whenever nothing opened a scope, and the one that
@@ -74,7 +76,7 @@ public enum ActionOrigin {
     public boolean isOrdinaryUse() {
         return switch (this) {
             case BLOCK_BREAK, NATIVE_AOE_CHILD, MELEE, RANGED -> true;
-            case STATION_CRAFT, UNKNOWN -> false;
+            case STATION_CRAFT, NATIVE_ACTIVATION, UNKNOWN -> false;
         };
     }
 }

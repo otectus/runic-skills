@@ -2,6 +2,8 @@ package com.otectus.runicskills.common.actions;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -63,10 +65,13 @@ public final class RunicActionContext {
      * <p>Bounded because the set lives for the whole of an action that this mod does not control
      * the length of: a native area harvest with a large iterator calls into the same root hundreds
      * of times, and an unbounded set of names supplied by whatever perk happens to be loaded is a
-     * per-swing allocation that only ever grows. Sixteen is the same ceiling §9.2 puts on the
-     * claims recorded against a projectile, for the same reason.
+     * per-swing allocation that only ever grows. The four-mod catalogue needs more root claims;
+     * projectile snapshots retain a separate serialized bound.
      */
-    public static final int MAX_CLAIMS = 16;
+    // Seven existing claim sites + all 56 planned four-mod entries = 63. Leave 33 bounded
+    // slots for adapter bookkeeping. Projectile serialization retains its independent 2 KiB cap.
+    public static final int MAX_CLAIMS = 96;
+    private static final AtomicLong EXHAUSTED_ROOTS = new AtomicLong();
 
     /** Reported when nothing is open: no action, no actor, no id, and no adjustment. */
     private static final Frame ROOT =
@@ -82,6 +87,8 @@ public final class RunicActionContext {
     private static final AtomicLong NEXT_ACTION_ID = new AtomicLong(1L);
 
     private static final ThreadLocal<ArrayDeque<Frame>> STACK = new ThreadLocal<>();
+    private static final ThreadLocal<Map<Long, Float>> ATTACK_STRENGTH = new ThreadLocal<>();
+    private static final ThreadLocal<Set<Long>> EXHAUSTED_ACTIONS = new ThreadLocal<>();
 
     private RunicActionContext() {
     }
@@ -113,7 +120,7 @@ public final class RunicActionContext {
         long id = NEXT_ACTION_ID.getAndIncrement();
         // A nested frame inherits the root's id and shares its claim set by reference: a child that
         // kept its own set could claim an effect the swing above it had already paid for.
-        Frame frame = parent == null
+        Frame frame = parent == null || !Objects.equals(parent.actor(), actor)
                 ? new Frame(origin, actor, id, id, new HashSet<>(4))
                 : new Frame(origin, actor, id, parent.rootId(), parent.claims());
         stack.push(frame);
@@ -124,8 +131,37 @@ public final class RunicActionContext {
     public static void exit() {
         ArrayDeque<Frame> stack = STACK.get();
         if (stack == null) return;
-        stack.poll();
-        if (stack.isEmpty()) STACK.remove();
+        Frame removed = stack.poll();
+        Map<Long, Float> strengths = ATTACK_STRENGTH.get();
+        if (strengths != null && removed != null) strengths.remove(removed.actionId());
+        Set<Long> exhausted = EXHAUSTED_ACTIONS.get();
+        if (exhausted != null && removed != null && removed.actionId() == removed.rootId()) exhausted.remove(removed.rootId());
+        if (stack.isEmpty()) {
+            STACK.remove();
+            ATTACK_STRENGTH.remove();
+            EXHAUSTED_ACTIONS.remove();
+        }
+    }
+
+    /** Saves readiness before vanilla resets its ticker ahead of the damage events. */
+    public static void captureAttackStrength(UUID actor, float strength) {
+        Frame frame = current();
+        if (frame.origin() != ActionOrigin.MELEE || actor == null || !actor.equals(frame.actor())) return;
+        if (!Float.isFinite(strength)) return;
+        Map<Long, Float> strengths = ATTACK_STRENGTH.get();
+        if (strengths == null) {
+            strengths = new HashMap<>();
+            ATTACK_STRENGTH.set(strengths);
+        }
+        strengths.putIfAbsent(frame.actionId(), Math.max(0.0F, Math.min(1.0F, strength)));
+    }
+
+    /** Readiness of this actor's current swing; fallback supports external synthetic action scopes. */
+    public static float attackStrength(UUID actor, float fallback) {
+        Frame frame = current();
+        Map<Long, Float> strengths = ATTACK_STRENGTH.get();
+        if (strengths == null || actor == null || !actor.equals(frame.actor())) return fallback;
+        return strengths.getOrDefault(frame.actionId(), fallback);
     }
 
     /** The innermost frame, or an {@link ActionOrigin#UNKNOWN} root when nothing is open. */
@@ -178,9 +214,16 @@ public final class RunicActionContext {
         Frame frame = current();
         if (frame.actor() == null) return false;
         Set<String> claims = frame.claims();
-        if (claims.size() >= MAX_CLAIMS) return false;
+        if (claims.size() >= MAX_CLAIMS) {
+            Set<Long> exhausted = EXHAUSTED_ACTIONS.get();
+            if (exhausted == null) { exhausted = new HashSet<>(); EXHAUSTED_ACTIONS.set(exhausted); }
+            if (exhausted.add(frame.rootId())) EXHAUSTED_ROOTS.incrementAndGet();
+            return false;
+        }
         return claims.add(effect);
     }
+
+    public static long exhaustedRoots() { return EXHAUSTED_ROOTS.get(); }
 
     /** Whether {@code effect} has already been claimed for the running action. */
     public static boolean hasClaimed(String effect) {

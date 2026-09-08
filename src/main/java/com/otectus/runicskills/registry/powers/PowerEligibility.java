@@ -2,14 +2,12 @@ package com.otectus.runicskills.registry.powers;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
-import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.RegistrySkills;
 import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.ModList;
 
 import java.util.List;
 
@@ -93,7 +91,7 @@ public final class PowerEligibility {
 
         /** Localised explanation for tooltips and command feedback. */
         public Component describe(Power power) {
-            String key = "power.runicskills.denied." + reason.name().toLowerCase();
+            String key = "power.runicskills.denied." + reason.name().toLowerCase(java.util.Locale.ROOT);
             return switch (reason) {
                 case ELIGIBLE -> Component.translatable("power.runicskills.denied.eligible");
                 case GOVERNING_SKILL_TOO_LOW, SECONDARY_SKILL_TOO_LOW, TOTAL_SKILL_TOO_LOW,
@@ -233,7 +231,7 @@ public final class PowerEligibility {
                 // Power that has never had any behaviour; it stays in its slot until the player
                 // removes it, but it must not also spend the budget that pays for working Powers
                 // (RS10-004).
-                if (!com.otectus.runicskills.registry.content.ContentStatusIndex.isSelectable(equipped)) {
+                if (!PowerAvailability.available(equipped)) {
                     continue;
                 }
                 spent += tier.pointCost;
@@ -253,25 +251,8 @@ public final class PowerEligibility {
         if (power == null) return new Result(Reason.UNKNOWN_POWER, 0, 0);
         if (player == null) return new Result(Reason.UNKNOWN_POWER, 0, 0);
 
-        if (RegistryPowers.isDisabled(power)) return new Result(Reason.DISABLED_BY_CONFIG, 0, 0);
-        if (power.requiredModId != null && !ModList.get().isLoaded(power.requiredModId)) {
-            return new Result(Reason.MISSING_DEPENDENCY, 0, 0);
-        }
-        // Checked before every skill gate, because an inert Power's requirements are beside the
-        // point: meeting them would still buy nothing. A save that already holds one keeps the id,
-        // and this is what stops it firing, costing points, or being re-equipped (RS10-004).
-        if (!com.otectus.runicskills.registry.content.ContentStatusIndex.isSelectable(power)) {
-            return new Result(Reason.INERT_CONTENT, 0, 0);
-        }
-        // An Artifice Power whose native seam is unavailable is refused here rather than left
-        // equippable and quiet (§11.1). The catalogue answers this without a slimeknights type on
-        // the stack, so the refusal is the same on a server that has never had Tinker's Construct
-        // installed as on one where a hook failed to apply — with a different stated reason.
-        TConstructPowers.Unavailable unavailable = TConstructPowers.unavailable(power);
-        if (unavailable != null) {
-            return new Result(unavailable == TConstructPowers.Unavailable.DISABLED_BY_CONFIG
-                    ? Reason.DISABLED_BY_CONFIG : Reason.MISSING_CAPABILITY, 0, 0);
-        }
+        Reason unavailable = PowerAvailability.reason(power);
+        if (unavailable != Reason.ELIGIBLE) return new Result(unavailable, 0, 0);
 
         SkillCapability capability = SkillCapability.get(player);
         if (capability == null) return new Result(Reason.UNKNOWN_POWER, 0, 0);
@@ -279,7 +260,7 @@ public final class PowerEligibility {
         PowerTier tier = power.getTier();
 
         int governingRequired = PowerOverridesManager.requiredSkillLevelOr(
-                power, governingSkillRequirement(tier));
+                power, power.requiredSkillLevel);
         int governingActual = capability.getSkillLevel(power.getGoverningSkill());
         if (governingRequired > 0 && governingActual < governingRequired) {
             return new Result(Reason.GOVERNING_SKILL_TOO_LOW, governingRequired, governingActual);
@@ -303,8 +284,24 @@ public final class PowerEligibility {
         }
 
         if (HandlerCommonConfig.HANDLER.instance().powerRequirePrerequisiteChain
-                && !hasPrerequisite(capability, power)) {
+                && !hasPrerequisite(player, capability, power)) {
             return new Result(Reason.MISSING_PREREQUISITE, 0, 0);
+        }
+
+        // Returning dependencies must not reactivate selections beyond the current point budget.
+        // Stable tier/slot order reserves capacity without deleting dormant selections or recursion.
+        if (HandlerCommonConfig.HANDLER.instance().powerEnforcePointBudget && capability.isPowerEquipped(power)) {
+            int budget = earnedPowerPoints(capability);
+            int committed = 0;
+            for (PowerTier selectedTier : PowerTier.values()) {
+                for (String id : capability.getEquippedPowers(selectedTier)) {
+                    Power selected = RegistryPowers.getPower(id);
+                    if (!PowerAvailability.available(selected)) continue;
+                    committed += selectedTier.pointCost;
+                    if (selected == power) return committed > budget
+                            ? new Result(Reason.INSUFFICIENT_POWER_POINTS, committed, budget) : Result.OK;
+                }
+            }
         }
 
         return Result.OK;
@@ -347,7 +344,7 @@ public final class PowerEligibility {
      * with no code change — the same reasoning {@code PowerSchool} already documents. A Mark has no
      * prerequisite.
      */
-    private static boolean hasPrerequisite(SkillCapability capability, Power power) {
+    private static boolean hasPrerequisite(Player player, SkillCapability capability, Power power) {
         PowerTier required = switch (power.getTier()) {
             case MARK -> null;
             case SEAL -> PowerTier.MARK;
@@ -362,7 +359,8 @@ public final class PowerEligibility {
         for (String id : candidates) {
             Power other = RegistryPowers.getPower(id);
             // An unresolvable id cannot prove a prerequisite: the school it belonged to is unknown.
-            if (other != null && school.equals(other.getSchoolId())) return true;
+            if (other != null && other.getTier() == required && school.equals(other.getSchoolId())
+                    && evaluateActive(player, other).eligible()) return true;
         }
         return false;
     }

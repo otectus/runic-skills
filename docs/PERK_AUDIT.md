@@ -4,23 +4,26 @@ This document is the human-readable companion to the machine-enforced backlog in
 [`src/test/resources/perk_no_effect_allowlist.txt`](../src/test/resources/perk_no_effect_allowlist.txt),
 checked by [`PerkEffectCoverageTest`](../src/test/java/com/otectus/runicskills/registry/PerkEffectCoverageTest.java).
 
-## What "has an effect" means
+## What source coverage proves
 
-A perk has a runtime effect iff some source file **other than** `RegistryPerks.java` references its
-constant (`RegistryPerks.<NAME>`). That reference is where a handler/integration reads
-`isEnabled(player)` / `getActiveValue(player)` and acts. A perk that is only mentioned inside its own
-registration is **inert** — registered, with config/lang/texture, but no gameplay hook.
+A perk passes the coverage test when some source file **other than** `RegistryPerks.java` references
+its constant (`RegistryPerks.<NAME>`). A gameplay consumer reads `isEnabled(player)` /
+`getActiveValue(player)` and acts. A reference is a useful regression gate, but it cannot prove that
+an upstream event fires, a trigger is correctly timed, or every mod combination works. The
+[2.1.0 content trace](CONTENT_TRACE_2.1.0.md) inventories each registration, requirement, description,
+configuration and consumer, together with shared networking/persistence routes. Behavioral
+regressions and the executed compatibility profiles complement that source review.
 
 ## Current numbers
 
 | Metric | Count |
 | --- | --- |
-| Registered perks (`RegistryObject<Perk>`) | 445 |
-| Perks with a real effect site | 445 |
-| Perks still inert | **0** |
+| Registered perk declarations (`RegistryObject<Perk>`, full optional catalogue) | 475 |
+| Perks with source references outside registration | 475 |
+| Perks without an effect reference | **0** |
 
-**The backlog is closed.** The allowlist file is empty and the test now enforces that it stays that
-way: a newly registered perk with no effect site fails the build unless somebody deliberately adds a
+**The source-reference backlog is closed.** The allowlist file is empty and the test enforces that it
+stays that way: a newly registered perk with no effect site fails the build unless somebody deliberately adds a
 line to the allowlist and says why.
 
 For scale, this backlog was 340 entries at the 1.3.8 audit and 129 when the 1.10 audit re-counted it
@@ -118,9 +121,10 @@ optional.
 The test is a *syntactic* check: it proves a perk's constant is read somewhere outside its
 registration. It does not prove the effect is correct, balanced, or reachable in a given pack. In
 particular, the perks gated on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai Dynasty,
-Locks Reforged and Siege Machines are written against those mods' APIs or registry ids, and all of
-those are `compileOnly` or detected by namespace — so this build compiles them but never executes
-them. They are covered by the same integration-matrix work that still gates the nineteen Iron's
-Spells Powers in
-[`power_no_effect_allowlist.txt`](../src/test/resources/power_no_effect_allowlist.txt), and should be
-treated as unverified until that runs.
+Locks Reforged and Siege Machines depend on those mods' APIs or registry ids. Optional runtime
+profiles now execute selected integrations, including the real Iron's Spells profile and the
+Tinkers' companion profiles. A profile only validates its recorded cases; it does not certify every
+perk in that mod or every combination. Read the executed release verification report and
+[Tinkers' test matrix](TCONSTRUCT_TEST_MATRIX.md) for the tested versions and remaining live-play
+coverage. The nineteen formerly inert Iron's Spells Powers now have runtime handlers, as described
+in [Content Status](CONTENT_STATUS.md).

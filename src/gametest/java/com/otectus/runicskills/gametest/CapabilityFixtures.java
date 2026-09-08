@@ -79,8 +79,9 @@ public final class CapabilityFixtures {
         capability.equippedCrown = "fixture_crown";
 
         capability.powerCooldowns.clear();
-        capability.powerCooldowns.put("fixture_mark_a", 12_345L);
-        capability.powerCooldowns.put("fixture_crown", 987_654L);
+        long now = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer().overworld().getGameTime();
+        capability.powerCooldowns.put("fixture_mark_a", now + 12_345L);
+        capability.powerCooldowns.put("fixture_crown", now + 987_654L);
         capability.powerWindows.clear();
         capability.powerWindows.put("fixture_seal_a", 24_680L);
     }

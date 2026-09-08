@@ -148,6 +148,21 @@ public class LevellingCoexistenceGameTest {
         helper.succeed();
     }
 
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void largeAwardNeverOverflowsOrLeavesUnboundedCarry(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.player(helper, "levelling_large");
+        ToolStack tool = ToolStack.from(TinkerFixtures.pickaxeOfTier(1));
+        TinkerFixtures.enablePerk(player, RegistryPerks.TC_SEASONED_HANDS);
+        if (award(player, tool, Integer.MAX_VALUE) != Integer.MAX_VALUE) {
+            throw new GameTestAssertException("a large positive tool award overflowed");
+        }
+        int percent = HandlerCommonConfig.HANDLER.instance().tcSeasonedHandsPercent;
+        if (award(player, tool, 1) > 2 + percent / 100) {
+            throw new GameTestAssertException("saturation left an unbounded carry");
+        }
+        helper.succeed();
+    }
+
     /** One award, inside an ordinary-use action frame owned by {@code player}. */
     private static int award(ServerPlayer player, ToolStack tool, int amount) {
         boolean opened = RunicActionContext.enter(ActionOrigin.BLOCK_BREAK, player.getUUID());

@@ -100,7 +100,8 @@ public class EnchantingLorePerkHandler {
     // ── Keeping things through death ────────────────────────────────────────────────────────
 
     /** Remembers the dying player's main-hand item, which Soul Binding is about to rescue. */
-    @SubscribeEvent
+    // Wait for resurrection handlers so a canceled death cannot leave a stale bound-item snapshot.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
     public void onPlayerDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
         if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()) return;
         if (RegistryPerks.SOUL_BINDING == null || !RegistryPerks.SOUL_BINDING.get().isEnabled(player)) {

@@ -85,10 +85,10 @@ public class PowerOverridesReloadListener extends SimpleJsonResourceReloadListen
         JsonObject obj = element.getAsJsonObject();
 
         int reqLvl = obj.has("required_skill_level")
-                ? obj.get("required_skill_level").getAsInt()
+                ? boundedInteger(obj.get("required_skill_level"), 1_000)
                 : PowerOverrides.UNSET;
         int icd = obj.has("icd_ticks")
-                ? obj.get("icd_ticks").getAsInt()
+                ? boundedInteger(obj.get("icd_ticks"), 1_728_000)
                 : PowerOverrides.UNSET;
 
         Map<String, Double> values = new LinkedHashMap<>();
@@ -103,5 +103,13 @@ public class PowerOverridesReloadListener extends SimpleJsonResourceReloadListen
         }
 
         return new PowerOverrides(id, reqLvl, icd, values);
+    }
+
+    private static int boundedInteger(JsonElement element, int maximum) {
+        double value = element.getAsDouble();
+        if (!Double.isFinite(value)) throw new IllegalArgumentException("non-finite integer override");
+        // Clamp before narrowing: getAsInt() wraps large JSON integers, potentially turning a
+        // deliberately high progression gate into a zero-level gate or the UNSET sentinel.
+        return (int) Math.max(0, Math.min(maximum, value));
     }
 }

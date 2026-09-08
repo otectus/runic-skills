@@ -19,18 +19,19 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
+import slimeknights.tconstruct.library.tools.helper.ToolDamageUtil;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.tools.stat.ToolStats;
+import top.theillusivec4.curios.api.CuriosApi;
 
 /**
  * §18.3 C08 for the four registered Tinkers' Jewelry perks.
  *
- * <p><b>What a green run here does and does not prove.</b> No {@code -PtinkersAddons} slug boots
- * this class: Modrinth's newest 1.20.1 Forge build of the add-on is 1.1.0 and the reference pack
- * runs 1.2.0, so a profile would test a jar nobody uses. {@code TConstructGameTests} still registers
- * the class whenever {@code tinkersjewelry} is loaded, which is how a pack developer who supplies
- * their own 1.2.0 gets the coverage. In the shipped profiles the jewelry guarantees rest on
- * {@code TcAddonAbsenceGameTest}'s dormancy invariants instead, which run unconditionally.
+ * <p>The {@code jewelry} runtime profile supplies the exact 1.2.0 artifact with Curios and Apothic
+ * Attributes. Fixtures use its registered materials and native builder. These cases cover real
+ * Curios equipment and the native damage-to-directDamage seam as well as the public bonus sums;
+ * the complete third-party death rescue and interactive equipment UI remain separate acceptance.
  *
  * <p>Like its Thinking sibling, every assertion goes through the public {@code TcAddonHooks} sums —
  * the values the perk handler actually composes and caps.
@@ -93,7 +94,21 @@ public class TinkersJewelryPerksGameTest {
                 throw new GameTestAssertException("no jewelry worn, yet " + unworn + " was paid");
             }
 
-            player.setItemSlot(EquipmentSlot.HEAD, ring());
+            ItemStack ring = ring();
+            player.setItemInHand(InteractionHand.MAIN_HAND, ring);
+            player.getInventory().setItem(9, ring.copy());
+            if (TcAddonHooks.meleeDamageBonus(player) != 0.0) {
+                throw new GameTestAssertException("a held or stored ring counted as equipped jewelry");
+            }
+            player.setItemInHand(InteractionHand.MAIN_HAND, TinkerFixtures.pickaxeOfTier(1));
+            var curios = CuriosApi.getCuriosInventory(player).orElseThrow(() ->
+                    new GameTestAssertException("online player has no Curios inventory"));
+            var rings = curios.getStacksHandler("ring").orElseThrow(() ->
+                    new GameTestAssertException("Jewelry profile supplies no native Curios ring slot"));
+            if (rings.getStacks().getSlots() == 0) {
+                throw new GameTestAssertException("native Curios ring slot has no capacity");
+            }
+            rings.getStacks().setStackInSlot(0, ring);
             double expected = HandlerCommonConfig.HANDLER.instance().tcGemAttunementPercent / 100.0;
             double worn = TcAddonHooks.meleeDamageBonus(player);
             if (Math.abs(worn - expected) > 1.0E-6) {
@@ -105,7 +120,50 @@ public class TinkersJewelryPerksGameTest {
             if (withoutPerk != 0.0) {
                 throw new GameTestAssertException("a non-holder was paid " + withoutPerk);
             }
-            player.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+            rings.getStacks().setStackInSlot(0, ItemStack.EMPTY);
+        } finally {
+            TinkerFixtures.logOut(player);
+        }
+        helper.succeed();
+    }
+
+    /** The H1 redirect discounts native save wear without requiring a melee/mining action frame. */
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void undyingLustreReachesNativeSaveCostWithoutOrdinaryAction(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.onlinePlayer(helper, "tc_undying_native");
+        try {
+            TinkerFixtures.enablePerk(player, RegistryPerks.TC_UNDYING_LUSTRE);
+            ItemStack original = ring();
+            ToolStack tool = ToolStack.from(original);
+            tool.addModifier(new ModifierId("tinkersjewelry", "undying"), 1);
+            tool.rebuildStats();
+            tool.setDamage(0);
+            int amount = Math.min(100, tool.getStats().getInt(ToolStats.DURABILITY) / 2);
+            ItemStack ordinary = original.copy();
+            player.getRandom().setSeed(12345L);
+            ToolDamageUtil.damage(ToolStack.from(ordinary), amount, player, ordinary);
+            int nativeSpent = ToolStack.from(ordinary).getDamage();
+            if (nativeSpent <= 0 || com.otectus.runicskills.common.actions.RunicActionContext.depth() != 0) {
+                throw new GameTestAssertException("native save-cost fixture cannot observe positive unattributed wear");
+            }
+            ItemStack protectedRing = original.copy();
+            player.getRandom().setSeed(12345L);
+            TcAddonHooks.beginDeathResolution(player);
+            try {
+                ToolDamageUtil.damage(ToolStack.from(protectedRing), amount, player, protectedRing);
+            } finally {
+                TcAddonHooks.endDeathResolution(player, true);
+            }
+            int savedSpent = ToolStack.from(protectedRing).getDamage();
+            HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+            double share = Math.min(0.90, Math.min(config.tconstructNewWearAvoidanceCap,
+                    config.tcUndyingLustrePercent / 100.0));
+            int spared = nativeSpent - savedSpent;
+            if (spared <= 0 || Math.abs(spared - nativeSpent * share) > 1.000001
+                    || com.otectus.runicskills.common.actions.RunicActionContext.depth() != 0) {
+                throw new GameTestAssertException("native Undying cost spent " + savedSpent + " versus "
+                        + nativeSpent + "; expected bounded save share " + share);
+            }
         } finally {
             TinkerFixtures.logOut(player);
         }

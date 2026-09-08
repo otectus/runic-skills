@@ -6,7 +6,7 @@ import com.otectus.runicskills.integration.TcAddonPresence;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Builder;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Capability;
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Status;
-import com.otectus.runicskills.mixin.RunicSkillsMixinPlugin;
+import com.otectus.runicskills.integration.tconstruct.TConstructHookLedger;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -263,9 +263,9 @@ public final class TcAddonRegistry {
             builder.set(capability, Status.UPSTREAM_INCOMPATIBLE, SEAM_PROBLEMS.get(seam));
             return;
         }
-        if (mixin != null && !RunicSkillsMixinPlugin.tconstructMixinApplied(mixin)) {
+        if (mixin != null && !TConstructHookLedger.applied(mixin)) {
             builder.set(capability, Status.HOOK_UNAVAILABLE, "the " + mixin + " hook did not apply: "
-                    + RunicSkillsMixinPlugin.tconstructMixinReason(mixin));
+                    + TConstructHookLedger.hookProblem(mixin));
             return;
         }
         builder.set(capability, Status.SUPPORTED, working);

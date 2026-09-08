@@ -20,6 +20,21 @@ public final class PowerOverrideLimits {
     /** Most tuning values a single override may carry. */
     public static final int MAX_VALUES_PER_OVERRIDE = 1024;
 
+    /** Shared by datapacks and packets; invalid numbers never enter gameplay arithmetic. */
+    public static boolean isValidValue(String key, Double value) {
+        return key != null && !key.isEmpty() && key.length() <= 128
+                && value != null && Double.isFinite(value);
+    }
+
+    public static double boundValue(String key, double value) {
+        if (key.equals("rewind_ticks") || key.equals("stationary_window_ticks"))
+            return Math.max(0, Math.min(1_200, value));
+        if (key.endsWith("_ticks")) return Math.max(0, Math.min(1_728_000, value));
+        if (key.endsWith("_radius_blocks") || key.equals("radius_blocks"))
+            return Math.max(0, Math.min(64, value));
+        return Math.max(-1_000_000, Math.min(1_000_000, value));
+    }
+
     private PowerOverrideLimits() {
     }
 

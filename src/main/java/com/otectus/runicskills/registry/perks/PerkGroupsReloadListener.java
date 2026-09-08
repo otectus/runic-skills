@@ -42,6 +42,10 @@ public class PerkGroupsReloadListener extends SimpleJsonResourceReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager manager, ProfilerFiller profiler) {
         Map<ResourceLocation, PerkGroup> next = new HashMap<>();
         for (Map.Entry<ResourceLocation, JsonElement> entry : map.entrySet()) {
+            if (next.size() >= PerkGroup.MAX_GROUPS) {
+                RunicSkills.getLOGGER().warn("Perk groups exceed the {} group sync limit; additional files ignored", PerkGroup.MAX_GROUPS);
+                break;
+            }
             ResourceLocation id = entry.getKey();
             try {
                 PerkGroup parsed = parse(id, entry.getValue());

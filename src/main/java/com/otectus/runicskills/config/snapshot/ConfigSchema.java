@@ -48,7 +48,8 @@ public final class ConfigSchema<T> {
         FLOAT,
         BOOLEAN,
         INT_ARRAY,
-        STRING_LIST
+        STRING_LIST,
+        STRING
     }
 
     /**
@@ -135,6 +136,7 @@ public final class ConfigSchema<T> {
     }
 
     private static FieldKind kindOf(Field field) {
+        if (field.getType() == String.class) return FieldKind.STRING;
         Class<?> raw = field.getType();
         if (raw == int.class) return FieldKind.INT;
         if (raw == float.class) return FieldKind.FLOAT;
@@ -249,6 +251,14 @@ public final class ConfigSchema<T> {
             throws IOException, ReflectiveOperationException {
         Field field = entry.field();
         switch (entry.kind()) {
+            case STRING -> {
+                String value = (String) field.get(config);
+                out.writeBoolean(value != null);
+                if (value != null) {
+                    if (value.length() > MAX_STRING_CHARS) throw new IOException("String too long: " + entry.name());
+                    out.writeUTF(value);
+                }
+            }
             case INT -> out.writeInt(field.getInt(config));
             case FLOAT -> out.writeFloat(field.getFloat(config));
             case BOOLEAN -> out.writeBoolean(field.getBoolean(config));
@@ -278,6 +288,11 @@ public final class ConfigSchema<T> {
             throws IOException, ReflectiveOperationException {
         Field field = entry.field();
         switch (entry.kind()) {
+            case STRING -> {
+                String value = in.readBoolean() ? in.readUTF() : null;
+                if (value != null && value.length() > MAX_STRING_CHARS) throw new IOException("String too long: " + entry.name());
+                field.set(target, value);
+            }
             case INT -> field.setInt(target, in.readInt());
             case FLOAT -> field.setFloat(target, in.readFloat());
             case BOOLEAN -> field.setBoolean(target, in.readBoolean());

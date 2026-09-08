@@ -29,6 +29,7 @@ public class SkillLevelCommand {
         return dispatcher.register(
                 Commands.literal("skills")
                 .then(TinkersCommand.node())
+                .then(IntegrationsCommand.node())
                 .then(Commands.argument("player", EntityArgument.player())
                         .requires(source -> source.hasPermission(2))
                         .then(
@@ -137,5 +138,4 @@ public class SkillLevelCommand {
         return Command.SINGLE_SUCCESS;
     }
 }
-
 

@@ -98,7 +98,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && PowerSchool.HOLY.equals(schoolId)) {
             Power p = RegistryPowers.FORTIFYING_BOND.get();
             int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-            if (PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(),
+            if (com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p,
                     player.level().getGameTime(), icd)) {
                 IronsSpellbooksPowerCompat.applyEffect(player, "fortify", 60, 0);
                 fireProc(player, p);
@@ -512,6 +512,7 @@ public class IronsSpellbooksPowerEventDispatcher {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onLivingDamage(LivingDamageEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
         // Crackle Arc's chain below re-enters this handler, as does every other hit the mod emits.
         if (!DamageContext.allowsStandardOutgoingModifiers()) return;
         if (!(event.getSource().getEntity() instanceof Player player)) return;
@@ -519,6 +520,19 @@ public class IronsSpellbooksPowerEventDispatcher {
         if (cap == null) return;
         LivingEntity target = event.getEntity();
         if (target == null) return;
+
+        // A fresh hit replaces the qualification captured for the previous one, including
+        // when that hit was canceled by a rescue or the victim healed within the same tick.
+        PowerRuntime.TargetTags.remove("harvest:" + player.getUUID(), target.getUUID());
+        if (isEquipped(player, RegistryPowers.HARVEST_THE_WEAK)
+                && PowerSchool.BLOOD.equals(schoolOfDamage(event.getSource()))) {
+            Power harvest = RegistryPowers.HARVEST_THE_WEAK.get();
+            double threshold = PowerOverridesManager.valueOr(harvest, "health_threshold", 0.30);
+            if (target.getHealth() <= target.getMaxHealth() * threshold) {
+                PowerRuntime.TargetTags.tag("harvest:" + player.getUUID(), target.getUUID(),
+                        target.level().getGameTime() + 1);
+            }
+        }
 
         // Poisoner's Thumb (Nature Mark) — +15% dmg vs POISON-afflicted targets.
         if (isEquipped(player, RegistryPowers.POISONERS_THUMB)
@@ -547,24 +561,19 @@ public class IronsSpellbooksPowerEventDispatcher {
             fireProc(player, p, target);
         }
 
-        // The Grove Remembers (Nature Crown) — count negative MobEffects on the target;
-        // if ≥3, +30% damage. The doc also wants -50% healing-received on the target;
-        // vanilla LivingHealEvent fires on the entity being healed without an attacker
-        // pointer, so reliably scoping the heal-reduction to "marked by this player" is
-        // hard. Damage-bonus half ships now; heal-reduction left as Phase-3 follow-up.
+        // Qualifying hits leave an attributed wound; healing checks the owner's current
+        // eligibility and the victim's remaining debuffs rather than guessing a healer's attacker.
         if (isEquipped(player, RegistryPowers.THE_GROVE_REMEMBERS)) {
-            int negCount = 0;
-            for (var inst : target.getActiveEffects()) {
-                if (inst.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
-                    negCount++;
-                    if (negCount >= 3) break;
-                }
-            }
             Power p = RegistryPowers.THE_GROVE_REMEMBERS.get();
-            int threshold = PowerOverridesManager.intValueOr(p, "debuff_count_threshold", 3);
+            int threshold = Math.max(1, PowerOverridesManager.intValueOr(p, "debuff_count_threshold", 3));
+            long negCount = target.getActiveEffects().stream().filter(inst ->
+                    inst.getEffect().getCategory() == MobEffectCategory.HARMFUL).count();
             if (negCount >= threshold) {
                 double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.30);
                 event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
+                PowerRuntime.HealingSuppression.mark(player, target, p, threshold,
+                        PowerOverridesManager.valueOr(p, "healing_reduction", 0.50),
+                        player.level().getGameTime() + PowerOverridesManager.intValueOr(p, "wound_ticks", 100));
                 fireProc(player, p, target);
             }
         }
@@ -578,7 +587,7 @@ public class IronsSpellbooksPowerEventDispatcher {
                 && IronsSpellbooksPowerCompat.hasEffect(player, "charged")) {
             Power p = RegistryPowers.CRACKLE_ARC.get();
             int icd = PowerOverridesManager.icdTicksOr(p, 10);
-            if (PowerRuntime.InternalCooldowns.checkAndStart(player.getUUID(), p.getName(),
+            if (com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(player, p,
                     player.level().getGameTime(), icd)) {
                 double radius = PowerOverridesManager.valueOr(p, "chain_radius_blocks", 4.0);
                 AABB box = target.getBoundingBox().inflate(radius);
@@ -609,6 +618,8 @@ public class IronsSpellbooksPowerEventDispatcher {
 
     @SubscribeEvent
     public void onLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
+        if (event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
         // Unraveled (Ender Crown) — when a player carrying Unraveled would die, rewind 3
         // seconds: cancel the death, teleport to a past position from PowerRuntime.PositionBuffer,
         // restore 30% HP and 50% mana, cleanse all effects. 10-min ICD.
@@ -619,9 +630,9 @@ public class IronsSpellbooksPowerEventDispatcher {
             if (PowerRuntime.InternalCooldowns.isAvailable(victim.getUUID(), unr.getName(), now)) {
                 int rewindTicks = PowerOverridesManager.intValueOr(unr, "rewind_ticks", 60);
                 var snap = PowerRuntime.PositionBuffer.pastBy(victim.getUUID(), rewindTicks, now);
-                if (snap != null) {
+                if (snap != null && safeRewind(victim, snap.pos())
+                        && com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(victim, unr, now, icd)) {
                     event.setCanceled(true);
-                    PowerRuntime.InternalCooldowns.checkAndStart(victim.getUUID(), unr.getName(), now, icd);
                     Vec3 dest = snap.pos();
                     victim.teleportTo(dest.x, dest.y, dest.z);
                     float hpFrac = (float) PowerOverridesManager.valueOr(unr, "hp_restore_fraction", 0.30);
@@ -631,11 +642,17 @@ public class IronsSpellbooksPowerEventDispatcher {
                     IronsSpellbooksPowerCompat.addMana(victim, manaRestore);
                     victim.removeAllEffects();
                     fireProc(victim, unr);
-                    return; // don't fall through to attacker-driven Powers
+                    return;
                 }
             }
         }
 
+    }
+
+    /** Award death-triggered Powers after survival handlers have had the chance to cancel. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCommittedDeath(LivingDeathEvent event) {
+        if (event.getEntity().level().isClientSide()) return;
         // Pyroclasm (Fire Crown) — any IMMOLATE-afflicted death within 16 blocks of an
         // equipped player detonates a 3-block fire AOE. Per-player rolling cap of 6
         // detonations per 2s prevents chain-collapse in horde-spawner fights.
@@ -661,26 +678,28 @@ public class IronsSpellbooksPowerEventDispatcher {
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
 
-        // Harvest the Weak (Blood Seal) — kill below 30% HP via blood damage gives +1 max
-        // HP for 60s, stacking via vanilla HEALTH_BOOST amplifier (+4 HP per amp; the doc's
-        // +1-per-stack-to-+10 scaling lives in spec text, vanilla effect levels are coarser).
-        ResourceLocation deathSchool = null;
-        try { deathSchool = IronsSpellbooksPowerCompat.schoolIdFor(
-                event.getSource().getMsgId());
-        } catch (Throwable ignored) { /* generic damage */ }
+        // Read the actual spell source, not its generic death-message id. The low-health
+        // condition was captured before damage; checking a corpse's zero HP always passed.
+        ResourceLocation deathSchool = schoolOfDamage(event.getSource());
         if (PowerSchool.BLOOD.equals(deathSchool)
                 && isEquipped(player, RegistryPowers.HARVEST_THE_WEAK)
-                && event.getEntity().getMaxHealth() > 0
-                && event.getEntity().getHealth() / event.getEntity().getMaxHealth() <= 0.30f) {
+                && PowerRuntime.TargetTags.has("harvest:" + player.getUUID(), event.getEntity().getUUID(),
+                        player.level().getGameTime())) {
             Power p = RegistryPowers.HARVEST_THE_WEAK.get();
-            int currentAmp = player.hasEffect(MobEffects.HEALTH_BOOST)
-                    ? player.getEffect(MobEffects.HEALTH_BOOST).getAmplifier() + 1 : 0;
-            int capAmp = PowerOverridesManager.intValueOr(p, "max_stacks_amplifier", 9);
+            var attribute = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+            var id = com.otectus.runicskills.registry.RunicAttributeModifiers.HARVEST_THE_WEAK;
+            var existing = attribute == null ? null : attribute.getModifier(id);
+            double current = existing == null ? 0 : existing.getAmount();
+            // Preserve the existing override name: amplifier 9 corresponds to ten stacks.
+            double maximum = Math.max(1, PowerOverridesManager.intValueOr(p, "max_stacks_amplifier", 9) + 1);
             int dur = PowerOverridesManager.intValueOr(p, "duration_ticks", 1200);
-            player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, dur,
-                    Math.min(currentAmp, capAmp), false, false, true));
+            PowerRuntime.TimedModifiers.apply(player, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
+                    id, "runicskills.harvest_the_weak", Math.min(maximum, current + 1),
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION,
+                    player.level().getGameTime() + dur);
             fireProc(player, p);
         }
+        PowerRuntime.TargetTags.remove("harvest:" + player.getUUID(), event.getEntity().getUUID());
 
         // Skybreaker (Lightning Seal) — kill resets Ascension cooldown.
         if (isEquipped(player, RegistryPowers.SKYBREAKER)
@@ -697,9 +716,6 @@ public class IronsSpellbooksPowerEventDispatcher {
             } catch (Throwable ignored) { /* ISS API drift; best-effort */ }
         }
 
-        // Pyroclasm / Blight Spread / Venomous Harvest are Phase 2/3 wiring — they need
-        // damage-source tracking (which player burned what) that the spec puts on
-        // PowerRuntime.DamageTypeMemory. Hook is in place; behavior is deferred.
     }
 
     // ── ISS SpellTeleportEvent router ──────────────────────────────────────────────
@@ -798,7 +814,7 @@ public class IronsSpellbooksPowerEventDispatcher {
 
         long now = victim.level().getGameTime();
         int icd = PowerOverridesManager.icdTicksOr(p, p.defaultIcdTicks);
-        if (!PowerRuntime.InternalCooldowns.checkAndStart(victim.getUUID(), p.getName(), now, icd)) return;
+        if (!com.otectus.runicskills.common.powers.PowerCooldownDebt.checkAndStart(victim, p, now, icd)) return;
 
         double allyRadius = PowerOverridesManager.valueOr(p, "ally_radius_blocks", 12.0);
         double foeRadius  = PowerOverridesManager.valueOr(p, "foe_radius_blocks", 12.0);
@@ -931,9 +947,16 @@ public class IronsSpellbooksPowerEventDispatcher {
 
         long now = player.level().getGameTime();
 
-        // Sample position every tick into the buffer — feeds Unraveled (Ender Crown).
-        PowerRuntime.PositionBuffer.push(player.getUUID(),
-                player.position(), player.getYRot(), now);
+        // Only the two position-dependent Powers need a history. Its size follows the effective
+        // override (at most one minute), so longer configured windows remain reachable without
+        // allocating a full minute of snapshots for every player with any Power equipped.
+        int historyTicks = -1;
+        if (isEquipped(player, RegistryPowers.UNRAVELED)) historyTicks = PowerOverridesManager.intValueOr(
+                RegistryPowers.UNRAVELED.get(), "rewind_ticks", 60);
+        if (isEquipped(player, RegistryPowers.ROOTED)) historyTicks = Math.max(historyTicks,
+                PowerOverridesManager.intValueOr(RegistryPowers.ROOTED.get(), "stationary_window_ticks", 60));
+        if (historyTicks >= 0) PowerRuntime.PositionBuffer.push(player.getUUID(),
+                player.position(), player.getYRot(), now, historyTicks);
 
         // The Long Note (Channel Crown) — clear the channel-start timestamp once the
         // continuous cast ends. The SpellDamageEvent half short-circuits on a missing
@@ -1030,8 +1053,10 @@ public class IronsSpellbooksPowerEventDispatcher {
 
         int dur = PowerOverridesManager.intValueOr(p, "regen_ticks", 80);
         player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, dur, 0, false, false, true));
-        // Use vanilla DAMAGE_RESISTANCE 0 as a soft KB-resist proxy; AttributeModifier-based
-        // KB resist would need add/remove plumbing matching how RegistryAttributes does it.
+        PowerRuntime.TimedModifiers.apply(player, net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE,
+                com.otectus.runicskills.registry.RunicAttributeModifiers.ROOTED, "runicskills.rooted",
+                PowerOverridesManager.valueOr(p, "knockback_resistance", 0.30),
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION, now + dur);
         fireProc(player, p);
     }
 
@@ -1046,6 +1071,22 @@ public class IronsSpellbooksPowerEventDispatcher {
         BARRAGE_STATE.remove(id);
         LONG_NOTE_CHANNEL_START.remove(id);
         PYROCLASM_DETONATIONS.remove(id);
+    }
+
+    private static boolean safeRewind(Player player, Vec3 position) {
+        net.minecraft.core.BlockPos block = net.minecraft.core.BlockPos.containing(position);
+        return player.level().hasChunkAt(block)
+                && position.y >= player.level().getMinBuildHeight()
+                && player.level().getWorldBorder().isWithinBounds(block)
+                && player.level().noCollision(player, player.getBoundingBox().move(position.subtract(player.position())));
+    }
+
+    private static ResourceLocation schoolOfDamage(net.minecraft.world.damagesource.DamageSource source) {
+        if (source instanceof io.redspace.ironsspellbooks.damage.SpellDamageSource spell
+                && spell.spell() != null && spell.spell().getSchoolType() != null) {
+            return spell.spell().getSchoolType().getId();
+        }
+        return null;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────

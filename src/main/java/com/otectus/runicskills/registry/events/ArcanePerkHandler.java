@@ -132,7 +132,8 @@ public class ArcanePerkHandler {
     // ── Study ───────────────────────────────────────────────────────────────────────────────
 
     /** Records what a player has killed, which is what Monster Compendium reads. */
-    @SubscribeEvent
+    // Wait for resurrection handlers; canceled deaths grant no study progress.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
     public void onKill(LivingDeathEvent event) {
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         if (player.level().isClientSide()) return;

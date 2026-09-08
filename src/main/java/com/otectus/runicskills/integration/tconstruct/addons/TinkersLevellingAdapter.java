@@ -117,8 +117,10 @@ public final class TinkersLevellingAdapter {
             state.seasonedHandsItem = tool.getItem();
         }
         double total = amount * (percent / 100.0) + state.seasonedHandsCarry;
-        int extra = (int) Math.floor(total);
+        double extra = Math.floor(total);
         state.seasonedHandsCarry = total - extra;
-        return extra <= 0 ? amount : amount + extra;
+        // The add-on accepts an int. A large legitimate award must never wrap into a negative
+        // correction, and clamping the result must not leave a multi-point rounding carry.
+        return (int) Math.min(Integer.MAX_VALUE, amount + extra);
     }
 }

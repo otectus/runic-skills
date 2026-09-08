@@ -76,8 +76,10 @@ public class RegistryAttributes {
 
     public static void modifierAttributes(ServerPlayer serverPlayer) {
         migrateLegacyModifiers(serverPlayer);
+        com.otectus.runicskills.integration.tom.TomAquaAttunement.refresh(serverPlayer);
         serverPlayer.getCapability(RegistryCapabilities.SKILL).ifPresent(skillCapability -> {
             for (Passive passive : RegistryPassives.getCachedValues()) {
+                removeInactiveDelegatedModifier(serverPlayer, passive);
                 boolean enabled = !RegistryPassives.isDisabled(passive);
                 // An empty levelsRequired array divided by zero and installed a NaN modifier,
                 // which poisons every downstream calculation on that attribute (RS-042).
@@ -98,6 +100,26 @@ public class RegistryAttributes {
                         UUID.fromString(passive.attributeUuid)).amplifyAttribute(enabled);
             }
         });
+    }
+
+    /** A reload must move the same passive UUID, never leave a bonus on both providers. */
+    private static void removeInactiveDelegatedModifier(ServerPlayer player, Passive passive) {
+        if (!ApothicAttributesIntegration.isModLoaded()) return;
+        Attribute owned;
+        Attribute delegated;
+        if (passive == RegistryPassives.BREAK_SPEED.get()) {
+            owned = BREAK_SPEED.get();
+            delegated = ApothicPassiveHelper.getMiningSpeed();
+        } else if (passive == RegistryPassives.CRITICAL_DAMAGE.get()) {
+            owned = CRITICAL_DAMAGE.get();
+            delegated = ApothicPassiveHelper.getCritDamage();
+        } else if (passive == RegistryPassives.PROJECTILE_DAMAGE.get()) {
+            owned = PROJECTILE_DAMAGE.get();
+            delegated = ApothicPassiveHelper.getArrowDamage();
+        } else return;
+        Attribute inactive = passive.attribute == owned ? delegated : owned;
+        new RegisterAttribute(player, inactive, 0, UUID.fromString(passive.attributeUuid))
+                .amplifyAttribute(false);
     }
 
     /**

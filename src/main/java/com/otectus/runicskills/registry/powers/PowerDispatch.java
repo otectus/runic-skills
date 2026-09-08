@@ -74,6 +74,10 @@ public final class PowerDispatch {
                                 boolean critical, boolean ownerOnly) {
         if (!(player instanceof ServerPlayer serverPlayer) || power == null) return;
 
+        PowerProcEvent event = new PowerProcEvent(serverPlayer, power, target, origin,
+                variant, intensity, critical, ownerOnly);
+        MinecraftForge.EVENT_BUS.post(event);
+
         // Collapse repeats of the same proc on the same target inside a short window. A Power that
         // keys off every hit fires as fast as the player can swing, and the packet now reaches
         // every client in range rather than one, so the burst is multiplied by the crowd.
@@ -83,9 +87,6 @@ public final class PowerDispatch {
             return;
         }
 
-        PowerProcEvent event = new PowerProcEvent(serverPlayer, power, target, origin,
-                variant, intensity, critical, ownerOnly);
-        MinecraftForge.EVENT_BUS.post(event);
         PowerProcCP.send(event);
     }
 
@@ -98,7 +99,7 @@ public final class PowerDispatch {
     public static boolean checkAndStartCooldown(Player player, Power power, long now) {
         if (player == null || power == null) return false;
         int icd = PowerOverridesManager.icdTicksOr(power, power.defaultIcdTicks);
-        return com.otectus.runicskills.common.powers.PowerRuntime.InternalCooldowns
-                .checkAndStart(player.getUUID(), power.getName(), now, icd);
+        return com.otectus.runicskills.common.powers.PowerCooldownDebt
+                .checkAndStart(player, power, now, icd);
     }
 }

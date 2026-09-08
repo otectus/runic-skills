@@ -88,13 +88,9 @@ public class Skill {
     }
 
     public MutableComponent getRank(int skillLevel) {
-        MutableComponent rank = Component.translatable("skill.runicskills.rank.0");
-        for (int i = 0; i < 9; i++) {
-            if (skillLevel >= (HandlerCommonConfig.HANDLER.instance().skillMaxLevel / 8) * i) {
-                rank = Component.translatable("skill.runicskills.rank." + i);
-            }
-        }
-        return rank;
+        int rank = com.otectus.runicskills.common.util.SkillLevelUpMath.rankIndex(skillLevel,
+                HandlerCommonConfig.HANDLER.instance().skillMaxLevel);
+        return Component.translatable("skill.runicskills.rank." + rank);
     }
 
     public ResourceLocation getLockedTexture(int fromLevel) {

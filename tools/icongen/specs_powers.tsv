@@ -1,0 +1,112 @@
+# power_id	glyph	secondary	badge	badge_pal	mechanic
+ember_trail	boot	wood	flameb	fire	Footfalls leave fire in the caster's wake.
+kindle	flame	crimson	up	gold	A burning target takes an empowered first hit.
+heat_haze	fist	fire	flameb	crimson	Melee releases a close fire pulse.
+scorched_earth	wall	obsidian	flameb	fire	Persistent fire fields erode armor.
+pyroclasm	burst	gold	skullb	crimson	Burning deaths detonate outward.
+brittle	heart_crack	frost	up	ice	Chilled targets take extra damage.
+frost_echo	arrow	steel	snowb	ice	A projectile leaves a frozen patch.
+shatter	burst	frost	snowb	steel	A frozen target breaks into shards.
+reforge_the_shadow	paw	bone	snowb	ice	A stronger summoned bear bursts with chill.
+glacial_sovereign	crown	frost	snowb	ice	Repeated casts sustain nearby chill.
+static_cling	link	steel	boltb	amethyst	Lightning chains leave a lingering shock.
+crackle_arc	sword	steel	boltb	amethyst	Charged melee arcs to another enemy.
+skybreaker	wing	bone	boltb	amethyst	Airborne lightning gains force.
+conduit_mark	target	gold	boltb	amethyst	A marked target conducts the next lightning hit.
+thunder_lord	bolt	gold	clockb	amethyst	Lightning strikes repeatedly during a short window.
+sanctified_strike	skull	bone	sunb	gold	Holy damage smites undead.
+fortifying_bond	link	gold	shieldb	holy	Healing an ally strengthens the caster's guard.
+guided_fate	arrow	steel	clockb	gold	Guided projectile hits refund cooldown.
+wings_of_judgment	wing	gold	sunb	holy	Angel wings empower radiant attacks.
+herald_of_dawn	sun	gold	heartb	pink	A dawn pulse heals and protects nearby allies.
+step_between	portal	obsidian	up	ender	A teleport prepares an empowered spell.
+arcane_echo	arrows3	mana	starb	ender	A projectile creates a phantom copy.
+counterspell_riposte	shield_bang	steel	up	ender	A successful counterspell prepares a stronger spell.
+black_hole_resonance	portal	void	skullb	ender	Pulled enemies sustain the black hole on death.
+unraveled	hourglass	ender	heartb	pink	Lethal damage rewinds location and restores life.
+fang_follow_through	fang	bone	leafb	nature	A fang spell prepares a rooting melee hit.
+vex_taunt	ghost	bone	eyeb	crimson	A summoned vex diverts an enemy's attention.
+creeper_cascade_mastery	skull	moss	plus	emerald	Explosive heads gain an extra chain hop.
+shield_wall	wall	steel	shieldb	emerald	A second shield panel guards another direction.
+tricksters_aria	mask	obsidian	arrowb	emerald	Invisible projectile casts prepare an ambush.
+poisoners_thumb	fang	moss	dropb	nature	Poisoned targets suffer greater damage.
+rooted	tree	wood	anchorb	steel	Standing rooted increases recovery and stability.
+blight_spread	leaf	moss	arrowsb	crimson	A death spreads blight to nearby enemies.
+venomous_harvest	skull	moss	dropb	mana	Poison kills replenish mana.
+the_grove_remembers	grove_thorns	wood	no	pink	Lit bark and green thorn tips mark multiple afflictions; the pink cross denies healing.
+crimson_tithe	drop	blood	heartb	pink	Blood damage returns life to its caster.
+marrow_sense	bone	bone	clockb	crimson	Low health hastens blood casting.
+sacrifice_cascade	burst	blood	dropb	crimson	A sacrifice spreads bleeding through nearby foes.
+harvest_the_weak	skull	bone	heartb	crimson	Finishing weakened enemies grows maximum health.
+the_hearts_toll	heart_crack	blood	up	crimson	Blood spells trade current life for greater force.
+forbidden_knowledge	tome	obsidian	coinb	gold	Eldritch knowledge doubles a kill's spoils.
+blind_witness	eye	obsidian	no	eldritch	Blinded targets take increased damage.
+kinetic_affinity	hand	steel	downb	eldritch	Telekinesis makes a held target vulnerable to falling.
+piercing_insight	eye	amethyst	arrowb	eldritch	Revealed targets lose part of their spell resistance.
+the_apocrypha_awakens	open_book	obsidian	dropb	mana	A depleted mana reserve awakens forbidden power.
+trueshot	target	crimson	arrowb	steel	A centered aim strengthens projectile hits.
+ricochet_primer	arrow	wood	plus	steel	A prepared projectile pierces another target.
+volley_memory	arrows3	wood	up	crimson	Repeated hits empower the following shot.
+gravity_well	feather	ice	downb	mana	A projectile slows an airborne target's fall.
+arcanists_barrage	arrows3	arcane	starb	mana	Repeated combat shots echo into a magical barrage.
+unbroken_focus	crystal_ball	amethyst	up	prismarine	Uninterrupted channeling steadily gains force.
+tidal_draw	anchor	water	arrowb	prismarine	A sustained channel pulls enemies toward the aim.
+harmonic_resonance	burst	water	plus	prismarine	A sustained channel widens its area.
+siphon_bond	link	blood	heartb	pink	A siphoning channel restores additional health.
+the_long_note	staff	amethyst	arrowsb	prismarine	A long channel splits damage onto a second target.
+pack_tactics	paw	bone	up	moss	Summons coordinate attacks against a shared target.
+fallen_echo	ghost	bone	up	arcane	A fallen summon empowers the caster briefly.
+soul_tether	link	bone	shieldb	moss	Nearby summons share a protective tether.
+lingering_binding	paw	bone	burstb	fire	An unsummon releases the creature's stored damage.
+the_conductor	staff	wood	pawb	moss	A conductor maintains two distinct summon batches.
+phase_recoil	arrow	ender	up	arcane	Teleporting accelerates the next projectile.
+vanishing_trail	ghost	ender	eyeb	arcane	A teleport leaves a decoy that draws attention.
+clean_exit	portal	ender	no	ice	A teleport removes movement impairments.
+blink_strike	dagger	ender	starb	arcane	The first strike after teleporting gains damage.
+folded_space	portal	ender	dropb	mana	A quick second teleport costs less mana.
+staff_strike	staff	wood	clockb	mana	Staff melee shortens the next spell's cast time.
+spell_parry	shield_bang	steel	arrowb	mana	A magic blade reflects part of blocked spell damage.
+imbued_rhythm	dual_swords	mana	arrowsb	copper	Alternating weapon and spell attacks builds damage.
+arcane_riposte	katana	mana	clockb	arcane	A magic sword's triggered spell recovers sooner.
+warmages_covenant	sword	wood	starb	mana	A critical melee hit prepares a stronger spell.
+lingering_grace	hourglass	gold	clockb	prismarine	An expiring self buff prepares a spell cooldown refund.
+shared_flame	link	gold	plus	prismarine	A personal utility spell extends to nearby allies.
+shield_break_counter	broken_armor	steel	shieldb	prismarine	A broken barrier leaves temporary damage protection.
+empowered_dispel	potion	prismarine	up	arcane	Removing debuffs prepares stronger spell damage.
+the_still_mind	crystal_ball	mana	heartb	pink	Full health and mana prepare a powerful afflicting spell.
+tc_first_heat	sword	wood	flameb	fire	Repeated Tinkers' melee strikes prepare extra damage.
+tc_plumb_line	pickaxe	steel	anchorb	copper	Grounded committed mining prepares a speed window.
+tc_quench	anvil	steel	dropb	water	A paid repair grants temporary fire protection.
+tc_working_memory	gear	steel	clockb	gold	A part change prepares a stronger paid repair on that tool.
+tc_hammer_and_tongs	warhammer	wood	shieldb	steel	A substantial shield block prepares stronger Tinkers' melee.
+tc_temper_reserve	wrench	steel	shieldb	gold	A substantial repair protects the tool against wear.
+tc_resonant_return	axe	wood	arrowsb	copper	A returned thrown tool prepares a stronger next throw.
+tc_workshop_aegis	house	stone	shieldb	copper	An attributed cast protects the crafter within the workshop.
+tc_great_work	anvil	gold	starb	holy	Assembly repair and casting together inspire the artisan.
+tc_last_temper	pickaxe	steel	heartb	crimson	A tool survives ordinary wear on its last durability.
+tc_foundry_heart	furnace	stone	heartb	fire	Owned melting operations prepare faster melting and cooling.
+tc_many_hands	hand	wood	plus	prismarine	Working with an ally grants stronger paid repairs.
+tide_stillwater_oath	tide_oath	gold	anchorb	gold	A landed fish leaves one luminous loop ready for the next cast.
+tide_unbroken_thread	tide_grip	gold	starb	water	Two knots in an unbroken line prepare one protected fish retrieval.
+tide_keeper_of_the_banks	tide_pouch	gold	anchorb	water	A bait pouch between river banks prepares one careful cast and one conserved bait unit.
+ss_mark_of_the_draw	sword	steel	clockb	gold	A deliberate first strike follows a quiet interval.
+sm_reversal	shield	amethyst	up	steel	A surviving defender turns a blow back on its attacker.
+sm_first_pass	polearm	wood	up	amethyst	A forward lance charge gives the mount a brief burst of speed.
+tom_sheltering_current	shield	amethyst	dropb	water	An Aqua cast shelters its recently wounded caster.
+tom_stillwater	fish	amethyst	clockb	gold	Distinct paid Aqua casts build a defensive rhythm.
+tom_companions_wake	paw	amethyst	shieldb	water	A newly summoned companion stands steady.
+tide_between_ember_and_star	fish	water	starb	gold	Two legal casts prepared by catches across native mediums.
+tide_anglers_almanac	book	water	starb	gold	Three known catches open expanded journal comparisons.
+tide_favor_from_the_deep	fish	water	coinb	gold	Favor one already known and eligible species.
+ss_seal_of_the_interval	sword	amethyst	clockb	gold	Seal of the Interval rewards a native weapon sequence.
+ss_awakened_arsenal	sword	amethyst	starb	gold	Awakened Arsenal rewards a native weapon sequence.
+ss_resonant_breath	gem	amethyst	clockb	gold	Resonant Breath follows a confirmed native gem proc.
+ss_seal_of_gemguard	gem	amethyst	shieldb	gold	Seal of Gemguard follows a confirmed native gem proc.
+tom_undertow	fish	water	clockb	amethyst	Undertow follows a verified originating Aqua cast.
+tom_confluence	wand	water	starb	amethyst	Confluence follows a verified originating Aqua cast.
+ss_returning_steel	sword	steel	clockb	ice	A successfully accepted owner return arms a slowing direct hit.
+sm_measured_reach	polearm	steel	shieldb	water	Two distinct outer reach hits grant resistance.
+sm_broken_guard	shield	steel	shieldb	amethyst	Broken Guard follows actual native combat outcomes.
+sm_hold_the_breach	shield	steel	heartb	amethyst	Hold the Breach follows actual native combat outcomes.
+sm_changing_arsenal	sword	steel	starb	amethyst	The Changing Arsenal follows actual native combat outcomes.
+tom_artificers_accord	chestplate	water	shieldb	amethyst	A paid armor activation and Aqua cast grant an artificer Guard.

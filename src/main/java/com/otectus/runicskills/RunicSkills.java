@@ -75,6 +75,7 @@ public class RunicSkills {
         RegistryPassives.load(eventBus);
         RegistryPerks.load(eventBus);
         RegistryPowers.load(eventBus);
+        com.otectus.runicskills.integration.common.IntegrationSlow.EFFECTS.register(eventBus);
         RegistryAttributes.load(eventBus);
         RegistrySounds.load(eventBus);
         RegistryArguments.load(eventBus);
@@ -218,14 +219,26 @@ public class RunicSkills {
      * before the first advancement file is parsed.
      */
     private void commonSetup(net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            com.otectus.runicskills.integration.common.IntegrationRuntime.inspectArtifacts();
+            com.otectus.runicskills.integration.tide.TideHookVerification.probe();
+            com.otectus.runicskills.integration.simplyswords.SwordsInspection.probe();
+            com.otectus.runicskills.integration.simplyswords.SwordsHookVerification.probe();
+            com.otectus.runicskills.common.durability.WearAvoidance.addSinglePointContributor(com.otectus.runicskills.integration.simplyswords.SwordsWear::contribution);
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.integration.tide.TideCatchBridge());
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.integration.tide.TidePowers());
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new com.otectus.runicskills.integration.tom.TomAquaAttunement());
+            for (var module : com.otectus.runicskills.integration.common.IntegrationModule.values()) {
+                if (module != com.otectus.runicskills.integration.common.IntegrationModule.TOM)
+                    com.otectus.runicskills.common.equipment.EquipmentProfileService.register(
+                            new com.otectus.runicskills.integration.common.IntegrationEquipmentAdapter(module));
+            }
+        });
         event.enqueueWork(
                 com.otectus.runicskills.common.advancements.RunicCriteriaTriggers::register);
     }
 
     private void attributeSetup(EntityAttributeModificationEvent event) {
-        boolean apothicLoaded = ApothicAttributesIntegration.isModLoaded();
-        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
-
         for (EntityType<? extends LivingEntity> type : event.getTypes()) {
             // Always register non-overlapping custom attributes
             event.add(type, RegistryAttributes.MAGIC_RESIST.get());
@@ -235,13 +248,11 @@ public class RunicSkills {
             event.add(type, RegistryAttributes.REPAIR_EFFICIENCY.get());
             event.add(type, RegistryAttributes.CRAFTING_LUCK.get());
 
-            // Only register overlapping attributes when Apothic is NOT handling them
-            if (!apothicLoaded || !config.apothicDelegateCritDamage)
-                event.add(type, RegistryAttributes.CRITICAL_DAMAGE.get());
-            if (!apothicLoaded || !config.apothicDelegateMiningSpeed)
-                event.add(type, RegistryAttributes.BREAK_SPEED.get());
-            if (!apothicLoaded || !config.apothicDelegateArrowDamage)
-                event.add(type, RegistryAttributes.PROJECTILE_DAMAGE.get());
+            // Delegation can change on /skillsreload. Keep the owned attributes available at
+            // their neutral defaults; only modifiers and effect consumers choose a provider.
+            event.add(type, RegistryAttributes.CRITICAL_DAMAGE.get());
+            event.add(type, RegistryAttributes.BREAK_SPEED.get());
+            event.add(type, RegistryAttributes.PROJECTILE_DAMAGE.get());
         }
     }
 

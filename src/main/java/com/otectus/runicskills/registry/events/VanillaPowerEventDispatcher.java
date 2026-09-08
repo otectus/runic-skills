@@ -106,6 +106,26 @@ public class VanillaPowerEventDispatcher {
         BARRAGE.remove(id);
     }
 
+    @SubscribeEvent
+    public void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
+        if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null && server.getTickCount() % 20 == 0) {
+            PowerRuntime.sweep(server.overworld().getGameTime());
+        }
+    }
+
+    @SubscribeEvent
+    public void onProjectileRemoved(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
+        if (!event.getLevel().isClientSide()) INTENDED_TARGET.remove(event.getEntity().getId());
+    }
+
+    @SubscribeEvent
+    public void onHealing(net.minecraftforge.event.entity.living.LivingHealEvent event) {
+        if (!event.getEntity().level().isClientSide()) event.setAmount(PowerRuntime.HealingSuppression.scale(
+                event.getEntity(), event.getAmount(), event.getEntity().level().getGameTime()));
+    }
+
     // ── Projectile (§5.1) ───────────────────────────────────────────────────────────────────
 
     /**
@@ -124,7 +144,7 @@ public class VanillaPowerEventDispatcher {
         // Trueshot — resolve the intended target now, while the shooter's aim still means
         // something. Recorded for every shot; only read when the Power is active, because whether
         // it is active can change between launch and impact.
-        Entity aimed = entityUnderCrosshair(player);
+        Entity aimed = PowerDispatch.isEquipped(player, RegistryPowers.TRUESHOT) ? entityUnderCrosshair(player) : null;
         if (aimed != null) {
             if (INTENDED_TARGET.size() > 4096) INTENDED_TARGET.clear();   // bound a pathological session
             INTENDED_TARGET.put(projectile.getId(), aimed.getUUID());

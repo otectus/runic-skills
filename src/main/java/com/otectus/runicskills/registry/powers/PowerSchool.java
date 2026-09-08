@@ -45,6 +45,9 @@ public final class PowerSchool {
      * school id already, and a parallel axis would fork every one of them.
      */
     public static final ResourceLocation TINKERING     = new ResourceLocation(RunicSkills.MOD_ID, "tinkering");
+    public static final ResourceLocation ANGLING       = new ResourceLocation(RunicSkills.MOD_ID, "angling");
+    public static final ResourceLocation WEAPON_MASTERY = new ResourceLocation(RunicSkills.MOD_ID, "weapon_mastery");
+    public static final ResourceLocation AQUAMANCY = new ResourceLocation(RunicSkills.MOD_ID, "aquamancy");
 
     private PowerSchool() {}
 

@@ -9,6 +9,7 @@ import com.otectus.runicskills.common.workshop.WorkshopFocusService;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.tconstruct.TConstructPowerDispatcher;
 import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
+import com.otectus.runicskills.integration.tconstruct.TConstructStationBridge;
 import com.otectus.runicskills.mixin.MixLivingEntityAccess;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
@@ -312,6 +313,13 @@ public class TcArtificePowersGameTest {
         }
 
         station = swapAPartAtStation(helper, player);
+        ItemStack changedTool = station.getItem(TinkerStationBlockEntity.TINKER_SLOT);
+        station.setItem(TinkerStationBlockEntity.TINKER_SLOT, tool);
+        if (TConstructPowerDispatcher.repairBonusShare(player, tool, station) != 0.0) {
+            throw new GameTestAssertException("Working Memory transferred to another pickaxe of the same item id");
+        }
+        station.setItem(TinkerStationBlockEntity.TINKER_SLOT, changedTool);
+        tool = changedTool;
         double share = TConstructPowerDispatcher.repairBonusShare(player, tool, station);
         double expected = TConstructPowers.value(power, "repair_percent") / 100.0;
         if (Math.abs(share - expected) > 1.0E-6) {
@@ -364,7 +372,7 @@ public class TcArtificePowersGameTest {
                     "Temper Reserve triggered without starting its cooldown");
         }
         // A different tool is a different tool: the charge belongs to the one that was repaired.
-        if (avoidanceOf(player, damagedTool2()) != 0.0) {
+        if (avoidanceOf(player, repaired.copy()) != 0.0 || avoidanceOf(player, damagedTool2()) != 0.0) {
             throw new GameTestAssertException(
                     "Temper Reserve helped an item that was never repaired");
         }
@@ -600,7 +608,8 @@ public class TcArtificePowersGameTest {
             throw new GameTestAssertException("the owner no longer holds the workshop, so an ally's"
                     + " contribution at it cannot be attributed to anyone");
         }
-        TConstructPowerDispatcher.onCastCompleted(level, controller, ally);
+        // A real allied assembly near the controller is attributed to the same workshop.
+        assembleAtStation(helper, ally);
         if (PowerCooldownDebt.remaining(owner, power, tick(owner)) <= 0L) {
             throw new GameTestAssertException("Many Hands never triggered after the owner and a"
                     + " team-mate both contributed; no cooldown was started");
@@ -628,6 +637,122 @@ public class TcArtificePowersGameTest {
     }
 
     // -- helpers -------------------------------------------------------------------------------
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void refusedShiftRepairDoesNotProcAndAcceptedRepairBindsActualStack(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(helper, "tc_shift_repair");
+        TinkerFixtures.enablePerk(player, com.otectus.runicskills.registry.RegistryPerks.TC_REPAIR_MEMORY);
+        TinkerFixtures.equipPower(player, RegistryPowers.TC_QUENCH);
+        TinkerFixtures.equipPower(player, RegistryPowers.TC_TEMPER_RESERVE);
+        TinkerStationBlockEntity station = TinkerFixtures.station(helper, STATION, 1);
+        ItemStack tool = TinkerFixtures.pickaxeOfTier(1);
+        ToolStack nativeTool = ToolStack.from(tool);
+        nativeTool.setDamage(nativeTool.getStats().getInt(
+                slimeknights.tconstruct.library.tools.stat.ToolStats.DURABILITY) - 1);
+        station.setItem(TinkerStationBlockEntity.TINKER_SLOT, tool);
+        station.setItem(TinkerStationBlockEntity.INPUT_SLOT, repairKit());
+        for (int index = 0; index < 36; index++) {
+            player.getInventory().setItem(index, new ItemStack(Items.COBBLESTONE, 64));
+        }
+        AbstractContainerMenu menu = openMenu(station, player);
+        int resultSlot = TinkerFixtures.resultSlotIndex(menu);
+        menu.clicked(resultSlot, 0, ClickType.QUICK_MOVE, player);
+        Power quench = power(TConstructPowers.QUENCH);
+        Power temper = power(TConstructPowers.TEMPER_RESERVE);
+        if (PowerCooldownDebt.remaining(player, quench, tick(player)) > 0
+                || PowerCooldownDebt.remaining(player, temper, tick(player)) > 0
+                || station.getItem(TinkerStationBlockEntity.TINKER_SLOT).isEmpty()) {
+            throw new GameTestAssertException("a full-inventory shift-click consumed or procced a repair");
+        }
+        player.getInventory().setItem(0, ItemStack.EMPTY);
+        menu.clicked(resultSlot, 0, ClickType.QUICK_MOVE, player);
+        ItemStack actual = player.getInventory().getItem(0);
+        double expected = HandlerCommonConfig.HANDLER.instance().tcRepairMemoryPercent / 100.0
+                + TConstructPowers.value(temper, "avoidance_points") / 100.0;
+        if (actual.isEmpty() || Math.abs(avoidanceOf(player, actual) - expected) > 1.0E-6) {
+            throw new GameTestAssertException("shift repair benefits did not bind to the delivered inventory stack");
+        }
+        if (avoidanceOf(player, actual.copy()) != 0.0) {
+            throw new GameTestAssertException("repair benefits transferred to an identical second stack");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void repairQuotesIncludeTemporaryBonusWithoutSpendingIt(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(helper, "tc_quote_repair");
+        TinkerStationBlockEntity station = preparedWorkingMemoryRepair(helper, player);
+        ItemStack base = station.getCraftingResult().getResult();
+        int nativeDamage = ToolStack.from(base).getDamage();
+        var quote = TConstructStationBridge.quote(player, 1, base, station, station);
+        var repeated = TConstructStationBridge.quote(player, 1, base, station, station);
+        int quotedDamage = ToolStack.from(quote.preview()).getDamage();
+        if (quotedDamage >= nativeDamage) throw new GameTestAssertException("repair quote damage="
+                + quotedDamage + " native=" + nativeDamage + " available share="
+                + TConstructPowerDispatcher.previewRepairBonusShare(player, base, station));
+        if (!quote.sameOffer(repeated)) throw new GameTestAssertException("unchanged repair quotes differ");
+        if (ToolStack.from(base).getDamage() != nativeDamage) throw new GameTestAssertException("quote mutated native cache");
+        long debt = PowerCooldownDebt.remaining(player, power(TConstructPowers.WORKING_MEMORY), tick(player));
+        if (debt > 0) throw new GameTestAssertException("quote spent Working Memory cooldown: " + debt);
+        TConstructPowerDispatcher.forget(player);
+        var expired = TConstructStationBridge.quote(player, 1, base, station, station);
+        if (quote.sameOffer(expired) || ToolStack.from(expired.preview()).getDamage() != nativeDamage) {
+            throw new GameTestAssertException("temporary repair bonus changes did not invalidate the quote");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void scriptDeniedShiftRepairDeliversOnlyNativeRestoration(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(helper, "tc_denied_repair");
+        TinkerStationBlockEntity station = preparedWorkingMemoryRepair(helper, player);
+        ItemStack nativeResult = station.getCraftingResult().getResult().copy();
+        var previous = com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationGate;
+        try {
+            com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationGate = (actor, operation) ->
+                    actor == player ? com.otectus.runicskills.common.scripting.TinkerScriptHooks.Veto.deny("fixture")
+                            : previous.test(actor, operation);
+            AbstractContainerMenu menu = openMenu(station, player);
+            menu.clicked(TinkerFixtures.resultSlotIndex(menu), 0, ClickType.QUICK_MOVE, player);
+            ItemStack delivered = ItemStack.EMPTY;
+            for (int slot = 0; slot < 36; slot++) {
+                ItemStack candidate = player.getInventory().getItem(slot);
+                if (candidate.is(nativeResult.getItem())) { delivered = candidate; break; }
+            }
+            if (delivered.isEmpty()) throw new GameTestAssertException("denied repair delivered no native tool; expected " + nativeResult);
+            if (!ItemStack.isSameItemSameTags(delivered, nativeResult)) {
+                throw new GameTestAssertException("denied repair native damage=" + ToolStack.from(nativeResult).getDamage()
+                        + " delivered=" + ToolStack.from(delivered).getDamage()
+                        + " native tag=" + nativeResult.getTag() + " delivered tag=" + delivered.getTag());
+            }
+            long debt = PowerCooldownDebt.remaining(player, power(TConstructPowers.WORKING_MEMORY), tick(player));
+            if (debt > 0) throw new GameTestAssertException("script denial spent Working Memory cooldown: " + debt);
+        } finally {
+            com.otectus.runicskills.common.scripting.TinkerScriptHooks.operationGate = previous;
+        }
+        helper.succeed();
+    }
+
+    private static TinkerStationBlockEntity preparedWorkingMemoryRepair(GameTestHelper helper, ServerPlayer player) {
+        TinkerFixtures.equipPower(player, RegistryPowers.TC_WORKING_MEMORY);
+        TinkerStationBlockEntity station = swapAPartAtStation(helper, player);
+        ItemStack tool = station.getItem(TinkerStationBlockEntity.TINKER_SLOT);
+        ToolStack nativeTool = ToolStack.from(tool);
+        nativeTool.setDamage(nativeTool.getStats().getInt(
+                slimeknights.tconstruct.library.tools.stat.ToolStats.DURABILITY) - 1);
+        station.setItem(TinkerStationBlockEntity.TINKER_SLOT, tool);
+        // The preceding part swap may have replaced the repairable head with a new material.
+        // Ask the native recipe which material kit now repairs this actual tool.
+        IMaterialItem kit = (IMaterialItem) repairKit().getItem();
+        for (var material : nativeTool.getMaterials()) {
+            station.setItem(TinkerStationBlockEntity.INPUT_SLOT, kit.withMaterial(material.getVariant()));
+            ItemStack nativeResult = station.getCraftingResult().getResult();
+            if (nativeResult.isEmpty()) continue;
+            int remaining = ToolStack.from(nativeResult).getDamage();
+            if (remaining > 0 && remaining < nativeTool.getDamage()) return station;
+        }
+        throw new GameTestAssertException("the changed tool's materials produced no positive partial native repair");
+    }
 
     private static Power power(String id) {
         Power power = RegistryPowers.getPower(id);
@@ -870,8 +995,9 @@ public class TcArtificePowersGameTest {
             if (menu.getCarried().isEmpty()) {
                 throw new GameTestAssertException("the part swap delivered nothing");
             }
+            ItemStack swapped = menu.getCarried();
             menu.setCarried(ItemStack.EMPTY);
-            station.setItem(TinkerStationBlockEntity.TINKER_SLOT, ItemStack.EMPTY);
+            station.setItem(TinkerStationBlockEntity.TINKER_SLOT, swapped);
             station.setItem(TinkerStationBlockEntity.INPUT_SLOT, ItemStack.EMPTY);
             return station;
         }

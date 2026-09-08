@@ -72,6 +72,8 @@ public final class RunicAttributeModifiers {
 
     // -- Core: applied through RegistryAttributes.RegisterAttribute and the combat handlers ----
     public static final UUID COUNTER_ATTACK = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15590");
+    public static final UUID ROOTED = UUID.fromString("af154d52-a474-43f5-bb5c-726d4594523c");
+    public static final UUID HARVEST_THE_WEAK = UUID.fromString("dc726fb4-fd8c-47ab-90f7-b29919e9ec66");
     public static final UUID ONE_HANDED     = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15555");
     public static final UUID DIAMOND_SKIN   = UUID.fromString("55550aa2-eff2-4a81-b92b-a1cb95f15556");
     public static final UUID BLADE_STORM_ATTACK_SPEED =
@@ -223,7 +225,14 @@ public final class RunicAttributeModifiers {
      */
     public static final UUID WEAPON_SMITH_DAMAGE = UUID.fromString("6b1a2f34-9c7d-4e58-8a03-5d2e7f1b4c96");
 
+    public static final UUID TOM_AQUA_ATTUNEMENT = UUID.fromString("d9dff69a-8f5a-4a19-922f-4259b93e9ba2");
+    public static final UUID INTEGRATION_SPEED = UUID.fromString("7a17c65a-bbb0-40a1-afbe-d9e53c248913");
+    public static final UUID INTEGRATION_RESISTANCE = UUID.fromString("7a17c65a-bbb0-40a1-afbe-d9e53c248914");
+
     private static final List<Owned> TABLE = List.of(
+            new Owned(INTEGRATION_SPEED, "integration:timed_speed", "minecraft:movement_speed", "MULTIPLY_TOTAL", Scope.PLAYER),
+            new Owned(INTEGRATION_RESISTANCE, "integration:timed_resistance", "minecraft:knockback_resistance", "ADDITION", Scope.PLAYER),
+            new Owned(TOM_AQUA_ATTUNEMENT, "perk:tom_aqua_attunement", "traveloptics:aqua_spell_power", "MULTIPLY_TOTAL", Scope.PLAYER),
             new Owned(COUNTER_ATTACK, "perk:counter_attack", "minecraft:attack_damage", "ADDITION", Scope.PLAYER),
             new Owned(ONE_HANDED,     "perk:one_handed",     "minecraft:attack_damage", "ADDITION", Scope.PLAYER),
             new Owned(DIAMOND_SKIN,   "perk:diamond_skin",   "minecraft:armor",         "ADDITION", Scope.PLAYER),
@@ -295,6 +304,8 @@ public final class RunicAttributeModifiers {
             new Owned(TC_PLATE_DISCIPLINE, "perk:tc_plate_discipline", "minecraft:knockback_resistance", "ADDITION",      Scope.PLAYER),
             new Owned(TC_SOULSTEEL_RESOLVE, "perk:tc_soulsteel_resolve", "minecraft:knockback_resistance", "ADDITION",     Scope.PLAYER),
 
+            new Owned(ROOTED, "power:rooted", "minecraft:knockback_resistance", "ADDITION", Scope.PLAYER),
+            new Owned(HARVEST_THE_WEAK, "power:harvest_the_weak", "minecraft:max_health", "ADDITION", Scope.PLAYER),
             new Owned(WEAPON_SMITH_DAMAGE, "perk:weapon_smith", "minecraft:attack_damage", "MULTIPLY_TOTAL", Scope.ITEM)
     );
 

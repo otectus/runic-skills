@@ -57,6 +57,31 @@ public class RegistryPowers {
     private static final java.util.Map<String, Supplier<Power>> REBUILDERS =
             new java.util.concurrent.ConcurrentHashMap<>();
 
+    public static final RegistryObject<Power> TIDE_STILLWATER_OATH = crossPower("tide_stillwater_oath", PowerTier.MARK, PowerSchool.ANGLING, RegistrySkills.DEXTERITY, 400);
+    public static final RegistryObject<Power> SS_SEAL_OF_THE_INTERVAL = crossPower("ss_seal_of_the_interval", PowerTier.SEAL, PowerSchool.WEAPON_MASTERY, RegistrySkills.DEXTERITY, 400);
+    public static final RegistryObject<Power> SS_AWAKENED_ARSENAL = crossPower("ss_awakened_arsenal", PowerTier.CROWN, PowerSchool.WEAPON_MASTERY, RegistrySkills.WISDOM, 1200);
+    public static final RegistryObject<Power> SS_RESONANT_BREATH = crossPower("ss_resonant_breath", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.MAGIC, 300);
+    public static final RegistryObject<Power> SS_SEAL_OF_GEMGUARD = crossPower("ss_seal_of_gemguard", PowerTier.SEAL, PowerSchool.WEAPON_MASTERY, RegistrySkills.CONSTITUTION, 500);
+    public static final RegistryObject<Power> TOM_ARTIFICERS_ACCORD = crossPower("tom_artificers_accord", PowerTier.SEAL, PowerSchool.AQUAMANCY, RegistrySkills.TINKERING, 600);
+    public static final RegistryObject<Power> TOM_UNDERTOW = crossPower("tom_undertow", PowerTier.MARK, PowerSchool.AQUAMANCY, RegistrySkills.MAGIC, 240);
+    public static final RegistryObject<Power> TOM_CONFLUENCE = crossPower("tom_confluence", PowerTier.CROWN, PowerSchool.AQUAMANCY, RegistrySkills.MAGIC, 1200);
+    public static final RegistryObject<Power> SS_RETURNING_STEEL = crossPower("ss_returning_steel", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.DEXTERITY, 240);
+    public static final RegistryObject<Power> SS_MARK_OF_THE_DRAW = crossPower("ss_mark_of_the_draw", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.STRENGTH, 240);
+    public static final RegistryObject<Power> SM_MEASURED_REACH = crossPower("sm_measured_reach", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.DEXTERITY, 240);
+    public static final RegistryObject<Power> SM_BROKEN_GUARD = crossPower("sm_broken_guard", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.STRENGTH, 300);
+    public static final RegistryObject<Power> SM_HOLD_THE_BREACH = crossPower("sm_hold_the_breach", PowerTier.SEAL, PowerSchool.WEAPON_MASTERY, RegistrySkills.CONSTITUTION, 600);
+    public static final RegistryObject<Power> SM_CHANGING_ARSENAL = crossPower("sm_changing_arsenal", PowerTier.CROWN, PowerSchool.WEAPON_MASTERY, RegistrySkills.WISDOM, 1200);
+    public static final RegistryObject<Power> SM_REVERSAL = crossPower("sm_reversal", PowerTier.SEAL, PowerSchool.WEAPON_MASTERY, RegistrySkills.DEXTERITY, 500);
+    public static final RegistryObject<Power> SM_FIRST_PASS = crossPower("sm_first_pass", PowerTier.MARK, PowerSchool.WEAPON_MASTERY, RegistrySkills.ENDURANCE, 300);
+    public static final RegistryObject<Power> TOM_SHELTERING_CURRENT = crossPower("tom_sheltering_current", PowerTier.MARK, PowerSchool.AQUAMANCY, RegistrySkills.ENDURANCE, 300);
+    public static final RegistryObject<Power> TOM_COMPANIONS_WAKE = crossPower("tom_companions_wake", PowerTier.MARK, PowerSchool.AQUAMANCY, RegistrySkills.CONSTITUTION, 300);
+    public static final RegistryObject<Power> TOM_STILLWATER = crossPower("tom_stillwater", PowerTier.SEAL, PowerSchool.AQUAMANCY, RegistrySkills.WISDOM, 500);
+    public static final RegistryObject<Power> TIDE_UNBROKEN_THREAD = crossPower("tide_unbroken_thread", PowerTier.MARK, PowerSchool.ANGLING, RegistrySkills.TINKERING, 600);
+    public static final RegistryObject<Power> TIDE_KEEPER_OF_THE_BANKS = crossPower("tide_keeper_of_the_banks", PowerTier.SEAL, PowerSchool.ANGLING, RegistrySkills.WISDOM, 2400);
+    public static final RegistryObject<Power> TIDE_BETWEEN_EMBER_AND_STAR = crossPower("tide_between_ember_and_star", PowerTier.CROWN, PowerSchool.ANGLING, RegistrySkills.ENDURANCE, 3600);
+    public static final RegistryObject<Power> TIDE_ANGLERS_ALMANAC = crossPower("tide_anglers_almanac", PowerTier.MARK, PowerSchool.ANGLING, RegistrySkills.WISDOM, 1800);
+    public static final RegistryObject<Power> TIDE_FAVOR_FROM_THE_DEEP = crossPower("tide_favor_from_the_deep", PowerTier.SEAL, PowerSchool.ANGLING, RegistrySkills.FORTUNE, 2400);
+
     // ── Helpers ─────────────────────────────────────────────────────────────────────
 
     private static boolean issLoaded() {
@@ -70,8 +95,7 @@ public class RegistryPowers {
                                                    Supplier<Skill> governingSkill,
                                                    int icdTicks) {
         if (!issLoaded()) return null;
-        int lvl = lvlFor(tier);
-        return registerPower(path, () -> Power.ofIss(path, tier, school, governingSkill, lvl,
+        return registerPower(path, () -> Power.ofIss(path, tier, school, governingSkill, lvlFor(tier),
                 powerIcon(path), icdTicks));
     }
 
@@ -81,8 +105,7 @@ public class RegistryPowers {
                                                      ResourceLocation category,
                                                      Supplier<Skill> governingSkill,
                                                      int icdTicks) {
-        int lvl = lvlFor(tier);
-        return registerPower(path, () -> Power.of(path, tier, category, governingSkill, lvl,
+        return registerPower(path, () -> Power.of(path, tier, category, governingSkill, lvlFor(tier),
                 powerIcon(path), icdTicks));
     }
 

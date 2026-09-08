@@ -1,0 +1,173 @@
+{
+  "scope": "Representative native server behavior per entry; this is not exhaustive client, provider, or all-item certification.",
+  "entries": {
+    "runicskills:ss_measured_steel": [
+      "nativeChargedPrimaryAndCounterRewards"
+    ],
+    "runicskills:ss_mark_of_the_draw": [
+      "nativeChargedPrimaryAndCounterRewards"
+    ],
+    "runicskills:sm_countergrip": [
+      "nativeChargedPrimaryAndCounterRewards"
+    ],
+    "runicskills:sm_measured_blows": [
+      "nativeChargedPrimaryAndCounterRewards"
+    ],
+    "runicskills:sm_reversal": [
+      "nativeChargedPrimaryAndCounterRewards"
+    ],
+    "runicskills:ss_patient_temper": [
+      "nativePatientTemperOnePointAndActionBoundaries"
+    ],
+    "runicskills:ss_resonant_reading": [
+      "nativeSwordsInspectionPreservesState"
+    ],
+    "runicskills:ss_gemguard": [
+      "nativeGemSuccessRejectionAndResonance"
+    ],
+    "runicskills:ss_resonant_breath": [
+      "nativeGemSuccessRejectionAndResonance"
+    ],
+    "runicskills:ss_seal_of_gemguard": [
+      "nativeGemSuccessRejectionAndResonance"
+    ],
+    "runicskills:ss_spellsteel_discipline": [
+      "nativeWeaponAbilityPaymentAndAwakening"
+    ],
+    "runicskills:ss_awake_and_ready": [
+      "nativeWeaponAbilityPaymentAndAwakening"
+    ],
+    "runicskills:ss_seal_of_the_interval": [
+      "nativeWeaponAbilityPaymentAndAwakening"
+    ],
+    "runicskills:ss_awakened_arsenal": [
+      "nativeWeaponAbilityPaymentAndAwakening"
+    ],
+    "runicskills:ss_returning_grip": [
+      "nativeOwnerReturnAcceptanceAndFollowup"
+    ],
+    "runicskills:ss_returning_steel": [
+      "nativeOwnerReturnAcceptanceAndFollowup"
+    ],
+    "runicskills:ss_relic_care": [
+      "nativeRelicRepairPreviewAndPaidExtraction"
+    ],
+    "runicskills:sm_relic_care": [
+      "nativeRelicRepairPreviewAndPaidExtraction"
+    ],
+    "runicskills:sm_couched_discipline": [
+      "nativeMountedLanceTravelAndOwnedBonuses"
+    ],
+    "runicskills:sm_saddleward": [
+      "nativeMountedLanceTravelAndOwnedBonuses"
+    ],
+    "runicskills:sm_first_pass": [
+      "nativeMountedLanceTravelAndOwnedBonuses"
+    ],
+    "runicskills:sm_breach_reader": [
+      "nativeMimicryContinuityAndShieldResults"
+    ],
+    "runicskills:sm_many_forms_one_hand": [
+      "nativeMimicryContinuityAndShieldResults"
+    ],
+    "runicskills:sm_broken_guard": [
+      "nativeMimicryContinuityAndShieldResults"
+    ],
+    "runicskills:sm_hold_the_breach": [
+      "nativeMimicryContinuityAndShieldResults"
+    ],
+    "runicskills:sm_changing_arsenal": [
+      "nativeMimicryContinuityAndShieldResults"
+    ],
+    "runicskills:sm_long_measure": [
+      "nativeLegalReachAndDistinctHits"
+    ],
+    "runicskills:sm_measured_reach": [
+      "nativeLegalReachAndDistinctHits"
+    ],
+    "runicskills:tom_aqua_attunement": [
+      "nativeAquaAttributeScalingAndLifecycle"
+    ],
+    "runicskills:tom_measured_current": [
+      "nativePaidAquaRotationAndFreeCastExclusion"
+    ],
+    "runicskills:tom_changing_tides": [
+      "nativePaidAquaRotationAndFreeCastExclusion"
+    ],
+    "runicskills:tom_sheltering_current": [
+      "nativePaidAquaRotationAndFreeCastExclusion"
+    ],
+    "runicskills:tom_stillwater": [
+      "nativePaidAquaRotationAndFreeCastExclusion"
+    ],
+    "runicskills:tom_bound_companion": [
+      "nativePaidSummonOwnershipAndSingleRecipient"
+    ],
+    "runicskills:tom_companions_wake": [
+      "nativePaidSummonOwnershipAndSingleRecipient"
+    ],
+    "runicskills:tom_relic_discipline": [
+      "nativeAquaProjectileBudgetAndRelicFollowup"
+    ],
+    "runicskills:tom_undertow": [
+      "nativeAquaProjectileBudgetAndRelicFollowup"
+    ],
+    "runicskills:tom_confluence": [
+      "nativeAquaProjectileBudgetAndRelicFollowup"
+    ],
+    "runicskills:tom_talent_composure": [
+      "nativeTalentSlotAndPaidCast"
+    ],
+    "runicskills:tom_pressure_reader": [
+      "nativeCounterspellCancellationAndSuccess"
+    ],
+    "runicskills:tom_artificers_poise": [
+      "nativePaidArmorPacketAndAquaFollowup"
+    ],
+    "runicskills:tom_artificers_accord": [
+      "nativePaidArmorPacketAndAquaFollowup"
+    ],
+    "runicskills:tide_measured_cast": [
+      "measuredCastNativeDurationAndToggle"
+    ],
+    "runicskills:tide_patient_hands": [
+      "nativeCatchConservationAndRejections"
+    ],
+    "runicskills:tide_careful_landing": [
+      "nativeCatchConservationAndRejections"
+    ],
+    "runicskills:tide_read_the_water": [
+      "nativeJournalKnowledgeMilestonesAndFavor"
+    ],
+    "runicskills:tide_field_naturalist": [
+      "nativeJournalKnowledgeMilestonesAndFavor"
+    ],
+    "runicskills:tide_anglers_almanac": [
+      "nativeJournalKnowledgeMilestonesAndFavor"
+    ],
+    "runicskills:tide_favor_from_the_deep": [
+      "nativeJournalKnowledgeMilestonesAndFavor"
+    ],
+    "runicskills:tide_sure_line": [
+      "nativeWindowAndTwoMediumCharges"
+    ],
+    "runicskills:tide_between_ember_and_star": [
+      "nativeWindowAndTwoMediumCharges"
+    ],
+    "runicskills:tide_baitkeeper": [
+      "baitkeeperNativeConsumption"
+    ],
+    "runicskills:tide_many_waters": [
+      "manyWatersNativeCatchPreparationAndSessionDebt"
+    ],
+    "runicskills:tide_stillwater_oath": [
+      "stillwaterNativeChargeAndCooldown"
+    ],
+    "runicskills:tide_unbroken_thread": [
+      "unbrokenThreadNativeSequence"
+    ],
+    "runicskills:tide_keeper_of_the_banks": [
+      "keeperNativeSequenceAndIndependentCharges"
+    ]
+  }
+}

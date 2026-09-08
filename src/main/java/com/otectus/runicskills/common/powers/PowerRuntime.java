@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  *   <li>{@link InternalCooldowns} — powerId → absolute game-time available.</li>
  *   <li>{@link TargetTags}      — short-lived per-entity tags ("marked", "conduit", etc.).</li>
  *   <li>{@link AllyDetector}    — party/ally resolution fallback.</li>
- *   <li>{@link PositionBuffer}  — 60-entry ring of player positions (used by Unraveled).</li>
+ *   <li>{@link PositionBuffer} — bounded position history for Unraveled and Rooted.</li>
  *   <li>{@link TimedModifiers} — self-expiring transient attribute modifiers on any entity.</li>
  *   <li>{@link Counters}       — expiring per-key integers (chain hop index, hole extensions).</li>
  * </ul>
@@ -57,6 +57,8 @@ public final class PowerRuntime {
         PositionBuffer.clear(id);
         ProcThrottle.clear(id);
         TargetTags.clear(id);
+        HealingSuppression.clear(id);
+        TimedModifiers.clear(id);
     }
 
     /**
@@ -73,6 +75,55 @@ public final class PowerRuntime {
         TargetTags.clearAll();
         TimedModifiers.clearAll();
         Counters.clearAll();
+        HealingSuppression.STORE.clear();
+    }
+
+    /** Periodic expiry also reclaims tags on mobs that are never hit or queried again. */
+    public static void sweep(long now) {
+        TargetTags.sweep(now);
+        Counters.sweep(now);
+        HealingSuppression.STORE.values().removeIf(mark -> mark.expiresAt() <= now || mark.owner().get() == null);
+        TimedModifiers.sweep(now);
+    }
+
+    /** Attribution for The Grove Remembers: a wound belongs to the player who opened it. */
+    public static final class HealingSuppression {
+        private record Mark(WeakReference<Player> owner,
+                            com.otectus.runicskills.registry.powers.Power power,
+                            int threshold, double fraction, long expiresAt) {}
+        private static final Map<UUID, Mark> STORE = new HashMap<>();
+
+        public static void mark(Player owner, LivingEntity victim,
+                                com.otectus.runicskills.registry.powers.Power power,
+                                int threshold, double fraction, long expiresAt) {
+            if (owner == null || victim == null || power == null || !Double.isFinite(fraction)) return;
+            if (STORE.size() >= 4096 && !STORE.containsKey(victim.getUUID())) return;
+            STORE.put(victim.getUUID(), new Mark(new WeakReference<>(owner), power,
+                    Math.max(1, threshold), Math.max(0, Math.min(1, fraction)), expiresAt));
+        }
+
+        public static float scale(LivingEntity target, float amount, long now) {
+            Mark mark = STORE.get(target.getUUID());
+            if (mark == null) return amount;
+            Player owner = mark.owner().get();
+            if (mark.expiresAt() <= now || owner == null || !owner.isAlive()
+                    || owner.level() != target.level() || !mark.power().isEquippedBy(owner)
+                    || !com.otectus.runicskills.registry.powers.PowerEligibility.evaluateActive(owner, mark.power()).eligible()) {
+                STORE.remove(target.getUUID());
+                return amount;
+            }
+            long debuffs = target.getActiveEffects().stream().filter(effect ->
+                    effect.getEffect().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL).count();
+            return debuffs < mark.threshold() ? amount : (float) (amount * (1 - mark.fraction()));
+        }
+
+        private static void clear(UUID id) {
+            STORE.remove(id);
+            STORE.values().removeIf(mark -> {
+                Player owner = mark.owner().get();
+                return owner == null || id.equals(owner.getUUID());
+            });
+        }
     }
 
     // ── Spell history ───────────────────────────────────────────────────────────────
@@ -119,12 +170,9 @@ public final class PowerRuntime {
     /**
      * Who last hit whom, with which school, and when.
      *
-     * <p><b>Reserved, not abandoned.</b> Nothing calls {@link #recordHit} yet: the one Power that
-     * wants it, The Grove Remembers, ships only its damage half because
-     * {@code LivingHealEvent} carries no attacker pointer, so scoping the heal-reduction half to
-     * "marked by this player" needs the attribution this class exists to provide. See the note at
-     * that Power's dispatcher case. Kept deliberately so the deferred half has somewhere to land;
-     * a sibling registry with no possible consumer was deleted rather than left here.
+     * <p>Retained as an integration API for school hit attribution. The Grove Remembers uses
+     * {@link HealingSuppression}, which additionally validates the owner and remaining debuffs
+     * at healing time, because {@code LivingHealEvent} carries no attacker pointer.
      */
     public static final class DamageTypeMemory {
         public enum School { FIRE, ICE, LIGHTNING, HOLY, ENDER, BLOOD, EVOCATION, NATURE, ELDRITCH }
@@ -233,6 +281,16 @@ public final class PowerRuntime {
             return true;
         }
 
+        /** Restores a persisted deadline without shortening a cooldown already in flight. */
+        public static synchronized void restore(UUID id, String powerName, long deadline) {
+            STORE.computeIfAbsent(id, k -> new HashMap<>()).merge(powerName, deadline, Math::max);
+        }
+
+        public static synchronized long remaining(UUID id, String powerName, long now) {
+            Map<String, Long> timers = STORE.get(id);
+            return timers == null ? 0L : Math.max(0L, timers.getOrDefault(powerName, now) - now);
+        }
+
         /**
          * Whether {@code powerName} is off cooldown, dropping the entry once it has elapsed.
          *
@@ -266,7 +324,7 @@ public final class PowerRuntime {
         public static synchronized int reduceRemaining(UUID id, java.util.Collection<String> powerNames,
                                                        double fraction, long now) {
             Map<String, Long> m = STORE.get(id);
-            if (m == null || powerNames.isEmpty() || fraction <= 0.0) return 0;
+            if (m == null || powerNames.isEmpty() || !Double.isFinite(fraction) || fraction <= 0.0) return 0;
             int shortened = 0;
             for (String powerName : powerNames) {
                 Long avail = m.get(powerName);
@@ -322,24 +380,25 @@ public final class PowerRuntime {
             STORE.values().forEach(m -> m.remove(entityId));
             STORE.values().removeIf(Map::isEmpty);
         }
+
+        static synchronized void sweep(long now) {
+            STORE.values().forEach(tags -> tags.values().removeIf(expiry -> expiry <= now));
+            STORE.values().removeIf(Map::isEmpty);
+        }
     }
 
     // ── Ally detection ──────────────────────────────────────────────────────────────
 
     public static final class AllyDetector {
         /**
-         * No party system exists in this mod yet, so the default rule is:
-         * same owner (tamed/summon chain) OR both are players on the same team OR just
-         * "non-hostile to self". Callers can relax the last clause for Herald of Dawn-style
-         * Powers that want to heal any non-enemy.
+         * Vanilla team/alliance rules and entities owned by this player (including tame pets).
+         * Neutral wildlife is not automatically friendly for combat and boon sharing.
          */
         public static boolean isAlly(Player self, LivingEntity other) {
             if (self == null || other == null || self == other) return false;
-            if (other instanceof Player op) {
-                if (self.getTeam() != null && self.getTeam() == op.getTeam()) return true;
-            }
-            // Tamed chain: if the target is owned by self (a summon, a tamed pet), treat as ally.
-            return false;
+            if (self.isAlliedTo(other)) return true;
+            return other instanceof net.minecraft.world.entity.OwnableEntity owned
+                    && self.getUUID().equals(owned.getOwnerUUID());
         }
     }
 
@@ -347,13 +406,20 @@ public final class PowerRuntime {
 
     public static final class PositionBuffer {
         public record Snapshot(Vec3 pos, float yRot, long gameTime) {}
-        private static final int CAP = 60;
+        private static final int DEFAULT_HISTORY_TICKS = 60;
+        private static final int MAX_HISTORY_TICKS = 1_200;
         private static final Map<UUID, Deque<Snapshot>> STORE = new WeakHashMap<>();
 
         public static synchronized void push(UUID id, Vec3 pos, float yRot, long gameTime) {
+            push(id, pos, yRot, gameTime, DEFAULT_HISTORY_TICKS);
+        }
+
+        public static synchronized void push(UUID id, Vec3 pos, float yRot, long gameTime, int historyTicks) {
             Deque<Snapshot> deque = STORE.computeIfAbsent(id, k -> new ArrayDeque<>());
+            if (!deque.isEmpty() && gameTime - deque.getFirst().gameTime() > 1) deque.clear();
             deque.addFirst(new Snapshot(pos, yRot, gameTime));
-            while (deque.size() > CAP) deque.removeLast();
+            int capacity = 1 + Math.max(0, Math.min(MAX_HISTORY_TICKS, historyTicks));
+            while (deque.size() > capacity) deque.removeLast();
         }
 
         /** Return the oldest snapshot within the last {@code sinceTicks}, or null. */
@@ -362,12 +428,10 @@ public final class PowerRuntime {
             Deque<Snapshot> deque = STORE.get(id);
             if (deque == null || deque.isEmpty()) return null;
             long cutoff = now - ticksAgo;
-            Snapshot best = null;
             for (Snapshot s : deque) {
                 if (s.gameTime <= cutoff) return s;
-                best = s;
             }
-            return best;
+            return null;
         }
 
         // synchronized like every other accessor on this map. These five clear() methods were
@@ -400,7 +464,7 @@ public final class PowerRuntime {
         private static final Map<String, Entry> STORE = new HashMap<>();
 
         private static String key(LivingEntity target, UUID id) {
-            return id + "@" + target.getId();
+            return id + "@" + target.getUUID();
         }
 
         /**
@@ -411,7 +475,7 @@ public final class PowerRuntime {
         public static synchronized void apply(LivingEntity target, Attribute attribute, UUID id,
                                               String name, double amount,
                                               AttributeModifier.Operation operation, long expiresAt) {
-            if (target == null || attribute == null || id == null) return;
+            if (target == null || attribute == null || id == null || !Double.isFinite(amount)) return;
             AttributeInstance instance = target.getAttribute(attribute);
             if (instance == null) return;
             AttributeModifier existing = instance.getModifier(id);
@@ -428,7 +492,13 @@ public final class PowerRuntime {
                 AttributeModifier existing = instance.getModifier(id);
                 if (existing != null) instance.removeModifier(existing);
             }
+            clampHealth(target, attribute);
             STORE.remove(key(target, id));
+        }
+
+        private static void clampHealth(LivingEntity target, Attribute attribute) {
+            if (attribute == net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH
+                    && target.getHealth() > target.getMaxHealth()) target.setHealth(target.getMaxHealth());
         }
 
         /** Drops every elapsed modifier, and every entry whose target has been collected. */
@@ -443,6 +513,19 @@ public final class PowerRuntime {
                     AttributeModifier existing = instance.getModifier(entry.id());
                     if (existing != null) instance.removeModifier(existing);
                 }
+                clampHealth(target, entry.attribute());
+                return true;
+            });
+        }
+
+        static synchronized void clear(UUID targetId) {
+            STORE.values().removeIf(entry -> {
+                LivingEntity target = entry.target().get();
+                if (target == null) return true;
+                if (!targetId.equals(target.getUUID())) return false;
+                AttributeInstance instance = target.getAttribute(entry.attribute());
+                if (instance != null) instance.removeModifier(entry.id());
+                clampHealth(target, entry.attribute());
                 return true;
             });
         }
@@ -455,6 +538,7 @@ public final class PowerRuntime {
                 if (instance == null) continue;
                 AttributeModifier existing = instance.getModifier(entry.id());
                 if (existing != null) instance.removeModifier(existing);
+                clampHealth(target, entry.attribute());
             }
             STORE.clear();
         }
@@ -493,6 +577,10 @@ public final class PowerRuntime {
         }
 
         public static synchronized void reset(String key) { STORE.remove(key); }
+
+        static synchronized void sweep(long now) {
+            STORE.values().removeIf(count -> count.expiresAt() <= now);
+        }
 
         static synchronized void clearAll() { STORE.clear(); }
     }

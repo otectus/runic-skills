@@ -1,5 +1,7 @@
 package com.otectus.runicskills.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.otectus.runicskills.common.actions.ActionOrigin;
 import com.otectus.runicskills.common.actions.RunicActionContext;
 import com.otectus.runicskills.common.capability.SkillCapability;
@@ -12,7 +14,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
@@ -91,10 +92,6 @@ public abstract class MixPlayerAction {
                 (int) (this.getCurrentItemAttackStrengthDelay() * share));
     }
 
-    /** Whether the melee scope opened at HEAD actually pushed, so RETURN pops exactly as often. */
-    @Unique
-    private boolean runicskills$meleeActionOpen;
-
     /**
      * Names the whole of a melee swing as {@link ActionOrigin#MELEE}, for the wear stage.
      *
@@ -108,17 +105,12 @@ public abstract class MixPlayerAction {
      * <p>A Forge event could not do this: {@code AttackEntityEvent} fires and returns long before
      * the durability is spent, and a scope that is not open across the spend identifies nothing.
      */
-    @Inject(method = "attack", at = @At("HEAD"))
-    private void runicskills$openMeleeAction(Entity target, CallbackInfo ci) {
+    @WrapMethod(method = "attack")
+    private void runicskills$meleeAction(Entity target, Operation<Void> original) {
         Player self = (Player) (Object) this;
-        this.runicskills$meleeActionOpen =
-                RunicActionContext.enter(ActionOrigin.MELEE, self.getUUID());
-    }
-
-    @Inject(method = "attack", at = @At("RETURN"))
-    private void runicskills$closeMeleeAction(Entity target, CallbackInfo ci) {
-        if (!this.runicskills$meleeActionOpen) return;
-        this.runicskills$meleeActionOpen = false;
-        RunicActionContext.exit();
+        try (RunicActionContext.Scope ignored = RunicActionContext.push(ActionOrigin.MELEE, self.getUUID())) {
+            RunicActionContext.captureAttackStrength(self.getUUID(), self.getAttackStrengthScale(0.5F));
+            original.call(target);
+        }
     }
 }

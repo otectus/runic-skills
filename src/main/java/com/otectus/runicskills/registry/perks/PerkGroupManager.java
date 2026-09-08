@@ -26,6 +26,9 @@ public final class PerkGroupManager {
     }
 
     public static void replaceAll(Map<ResourceLocation, PerkGroup> next) {
+        if (next.size() > PerkGroup.MAX_GROUPS) {
+            throw new IllegalArgumentException("Too many perk groups to synchronize: " + next.size());
+        }
         groups = Map.copyOf(next);
     }
 
@@ -39,11 +42,12 @@ public final class PerkGroupManager {
     public static int countEnabledInGroup(SkillCapability capability, PerkGroup group) {
         if (capability == null || group == null) return 0;
         int count = 0;
+        java.util.Set<String> counted = new java.util.HashSet<>();
         for (String entry : group.perks()) {
             if (entry == null) continue;
             String path = entry.contains(":") ? entry.substring(entry.indexOf(':') + 1) : entry;
             var perk = RegistryPerks.getPerk(path);
-            if (perk != null && capability.isPerkActive(perk)) count++;
+            if (perk != null && counted.add(perk.getMod() + ":" + perk.getName()) && capability.isPerkActive(perk)) count++;
         }
         return count;
     }

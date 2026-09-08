@@ -13,8 +13,9 @@
 >   when the perks behind them were reinterpreted, so a description here may describe behaviour the
 >   perk no longer has. [`PERK_AUDIT.md`](PERK_AUDIT.md) is authoritative.
 >
-> The current counts are 445 perks and 38 passives. The audit's own recommendation — regenerate this
-> from `tools/icongen/specs.tsv` rather than maintaining it by hand — still stands.
+> The current catalogue has 475 perks and 38 passives. The [2.1.0 content trace](CONTENT_TRACE_2.1.0.md)
+> records current mechanics, and the [art guide](../tools/icongen/README.md) describes the current
+> generators and authored specifications. The rows below remain a historical record.
 
 Every registered perk icon was replaced with an original, generated 16x16 pixel-art
 texture in a consistent Runic Skills visual style (shared outline color, 3-tone cel

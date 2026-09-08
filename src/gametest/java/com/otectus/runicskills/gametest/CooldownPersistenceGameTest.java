@@ -94,7 +94,7 @@ public class CooldownPersistenceGameTest {
      * every key would let an addon grow player NBT without a bound.
      */
     @GameTest(template = EMPTY)
-    public static void onlyArtificeCooldownsArePersisted(GameTestHelper helper) {
+    public static void ordinaryAndArtificeDebtKeepTheirCompatibleStorageMaps(GameTestHelper helper) {
         ServerPlayer player = newPlayer(helper, "debt_scope");
         Power crossPower = RegistryPowers.getPower("trueshot");
         if (crossPower == null) {
@@ -103,9 +103,15 @@ public class CooldownPersistenceGameTest {
         long now = tick(player);
         PowerCooldownDebt.checkAndStart(player, crossPower, now, LONG_COOLDOWN);
 
-        if (PowerCooldownDebt.remaining(player, crossPower, now) != 0L) {
-            throw new GameTestAssertException("a non-Artifice Power recorded persistent debt;"
-                    + " section 11.5 bounds the saved set to the twelve");
+        if (PowerCooldownDebt.remaining(player, crossPower, now) != LONG_COOLDOWN
+                || !capabilityOf(player).powerCooldowns.containsKey(crossPower.getName())
+                || capabilityOf(player).tcPowerCooldowns.containsKey(crossPower.getName())) {
+            throw new GameTestAssertException("ordinary Power debt must use the generic map without changing Artifice storage");
+        }
+        Power nativePower = artifice(TConstructPowers.FIRST_HEAT);
+        PowerCooldownDebt.checkAndStart(player, nativePower, now, LONG_COOLDOWN);
+        if (!capabilityOf(player).tcPowerCooldowns.containsKey(nativePower.getName())) {
+            throw new GameTestAssertException("Artifice debt no longer uses its existing save map");
         }
         if (PowerRuntime.InternalCooldowns.isAvailable(player.getUUID(), crossPower.getName(), now)) {
             throw new GameTestAssertException("the runtime cooldown was not started either;"

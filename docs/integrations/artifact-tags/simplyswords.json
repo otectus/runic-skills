@@ -1,0 +1,3112 @@
+{
+  "data/simplyswords/tags/items/adamantite_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/aquarium_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/banglum_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/bronze_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/celestium_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/conditional_uniques_type_1.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:watcher_claymore",
+      "simplyswords:brimstone_claymore",
+      "simplyswords:storms_edge",
+      "simplyswords:stormscale",
+      "simplyswords:stormbringer",
+      "simplyswords:bramblethorn",
+      "simplyswords:watching_warglaive",
+      "simplyswords:toxic_longsword",
+      "simplyswords:emberblade",
+      "simplyswords:frostfall",
+      "simplyswords:soulpyre",
+      "simplyswords:molten_edge",
+      "simplyswords:livyatan",
+      "simplyswords:icewhisper",
+      "simplyswords:arcanethyst",
+      "simplyswords:thunderbrand",
+      "simplyswords:hearthflame",
+      "simplyswords:twisted_blade",
+      "simplyswords:soulrender",
+      "simplyswords:soulkeeper",
+      "simplyswords:soulstealer",
+      "simplyswords:mjolnir",
+      "simplyswords:slumbering_lichblade",
+      "simplyswords:shadowsting",
+      "simplyswords:whisperwind",
+      "simplyswords:emberlash",
+      "simplyswords:waxweaver",
+      "simplyswords:hiveheart",
+      "simplyswords:stars_edge",
+      "simplyswords:wickpiercer",
+      "simplyswords:tempest",
+      "simplyswords:flamewind",
+      "simplyswords:ribboncleaver",
+      "simplyswords:riftmane",
+      "simplyswords:dawnquiver",
+      "simplyswords:caelestis",
+      "simplyswords:wraithfang",
+      "simplyswords:bloodwake"
+    ]
+  },
+  "data/simplyswords/tags/items/conditional_uniques_type_2.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:decaying_relic",
+      "simplyswords:dormant_relic",
+      "simplyswords:enigma"
+    ]
+  },
+  "data/simplyswords/tags/items/copper_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/copper/copper_longsword",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/diamond_gear.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:diamond_chakram",
+      "simplyswords:diamond_scythe",
+      "simplyswords:diamond_rapier",
+      "simplyswords:diamond_glaive",
+      "simplyswords:diamond_warglaive",
+      "simplyswords:diamond_spear",
+      "simplyswords:diamond_sai",
+      "simplyswords:diamond_katana",
+      "simplyswords:diamond_cutlass",
+      "simplyswords:diamond_longsword",
+      "simplyswords:diamond_claymore",
+      "simplyswords:diamond_twinblade",
+      "simplyswords:diamond_greathammer",
+      "simplyswords:diamond_greataxe",
+      "simplyswords:diamond_halberd"
+    ]
+  },
+  "data/simplyswords/tags/items/durasteel_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/durasteel/durasteel_greathammer",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/gems.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:runefused_gem",
+      "simplyswords:netherfused_gem"
+    ]
+  },
+  "data/simplyswords/tags/items/gold_gear.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:gold_chakram",
+      "simplyswords:gold_scythe",
+      "simplyswords:gold_rapier",
+      "simplyswords:gold_glaive",
+      "simplyswords:gold_warglaive",
+      "simplyswords:gold_spear",
+      "simplyswords:gold_sai",
+      "simplyswords:gold_katana",
+      "simplyswords:gold_cutlass",
+      "simplyswords:gold_longsword",
+      "simplyswords:gold_claymore",
+      "simplyswords:gold_twinblade",
+      "simplyswords:gold_greathammer",
+      "simplyswords:gold_greataxe",
+      "simplyswords:gold_halberd"
+    ]
+  },
+  "data/simplyswords/tags/items/heavy_weapons.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:iron_scythe",
+      "simplyswords:gold_scythe",
+      "simplyswords:diamond_scythe",
+      "simplyswords:netherite_scythe",
+      "simplyswords:iron_glaive",
+      "simplyswords:gold_glaive",
+      "simplyswords:diamond_glaive",
+      "simplyswords:netherite_glaive",
+      "simplyswords:iron_halberd",
+      "simplyswords:gold_halberd",
+      "simplyswords:diamond_halberd",
+      "simplyswords:netherite_halberd",
+      "simplyswords:netherite_claymore",
+      "simplyswords:diamond_claymore",
+      "simplyswords:gold_claymore",
+      "simplyswords:iron_claymore",
+      "simplyswords:netherite_greathammer",
+      "simplyswords:diamond_greathammer",
+      "simplyswords:gold_greathammer",
+      "simplyswords:iron_greathammer",
+      "simplyswords:netherite_greataxe",
+      "simplyswords:diamond_greataxe",
+      "simplyswords:gold_greataxe",
+      "simplyswords:iron_greataxe",
+      "simplyswords:brimstone_claymore",
+      "simplyswords:watcher_claymore",
+      "simplyswords:the_devourer",
+      "simplyswords:runic_claymore",
+      "simplyswords:runic_scythe",
+      "simplyswords:runic_glaive",
+      "simplyswords:runic_halberd",
+      "simplyswords:runic_greathammer",
+      "simplyswords:runic_greataxe"
+    ]
+  },
+  "data/simplyswords/tags/items/implicit/chakram.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/claymore.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/cutlass.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/dagger.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/glaive.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/greataxe.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/greathammer.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/halberd.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/hammer.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/katana.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/longsword.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/rapier.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/sai.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/scythe.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/spear.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/twinblade.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/implicit/warglaive.json": {
+    "replace": false,
+    "values": []
+  },
+  "data/simplyswords/tags/items/iron_gear.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:iron_chakram",
+      "simplyswords:iron_scythe",
+      "simplyswords:iron_rapier",
+      "simplyswords:iron_glaive",
+      "simplyswords:iron_warglaive",
+      "simplyswords:iron_spear",
+      "simplyswords:iron_sai",
+      "simplyswords:iron_katana",
+      "simplyswords:iron_cutlass",
+      "simplyswords:iron_longsword",
+      "simplyswords:iron_claymore",
+      "simplyswords:iron_twinblade",
+      "simplyswords:iron_greathammer",
+      "simplyswords:iron_greataxe",
+      "simplyswords:iron_halberd"
+    ]
+  },
+  "data/simplyswords/tags/items/kyber_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/light_weapons.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:netherite_rapier",
+      "simplyswords:diamond_rapier",
+      "simplyswords:gold_rapier",
+      "simplyswords:iron_rapier",
+      "simplyswords:iron_chakram",
+      "simplyswords:gold_chakram",
+      "simplyswords:diamond_chakram",
+      "simplyswords:netherite_chakram",
+      "simplyswords:iron_sai",
+      "simplyswords:gold_sai",
+      "simplyswords:diamond_sai",
+      "simplyswords:netherite_sai",
+      "simplyswords:iron_cutlass",
+      "simplyswords:gold_cutlass",
+      "simplyswords:diamond_cutlass",
+      "simplyswords:netherite_cutlass",
+      "simplyswords:runic_cutlass",
+      "simplyswords:runic_katana",
+      "simplyswords:runic_sai",
+      "simplyswords:runic_rapier",
+      "simplyswords:runic_chakram"
+    ]
+  },
+  "data/simplyswords/tags/items/lootable_uniques.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:watcher_claymore",
+      "simplyswords:brimstone_claymore",
+      "simplyswords:storms_edge",
+      "simplyswords:stormscale",
+      "simplyswords:stormbringer",
+      "simplyswords:bramblethorn",
+      "simplyswords:watching_warglaive",
+      "simplyswords:toxic_longsword",
+      "simplyswords:emberblade",
+      "simplyswords:frostfall",
+      "simplyswords:soulpyre",
+      "simplyswords:molten_edge",
+      "simplyswords:livyatan",
+      "simplyswords:icewhisper",
+      "simplyswords:arcanethyst",
+      "simplyswords:thunderbrand",
+      "simplyswords:hearthflame",
+      "simplyswords:twisted_blade",
+      "simplyswords:soulrender",
+      "simplyswords:soulkeeper",
+      "simplyswords:soulstealer",
+      "simplyswords:mjolnir",
+      "simplyswords:slumbering_lichblade",
+      "simplyswords:shadowsting",
+      "simplyswords:dormant_relic",
+      "simplyswords:whisperwind",
+      "simplyswords:emberlash",
+      "simplyswords:waxweaver",
+      "simplyswords:hiveheart",
+      "simplyswords:stars_edge",
+      "simplyswords:wickpiercer",
+      "simplyswords:tempest",
+      "simplyswords:flamewind",
+      "simplyswords:ribboncleaver",
+      "simplyswords:riftmane",
+      "simplyswords:dawnquiver",
+      "simplyswords:caelestis",
+      "simplyswords:wraithfang",
+      "simplyswords:bloodwake",
+      "simplyswords:chompolotl"
+    ]
+  },
+  "data/simplyswords/tags/items/medium_weapons.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:iron_katana",
+      "simplyswords:gold_katana",
+      "simplyswords:diamond_katana",
+      "simplyswords:netherite_katana",
+      "simplyswords:iron_longsword",
+      "simplyswords:gold_longsword",
+      "simplyswords:diamond_longsword",
+      "simplyswords:netherite_longsword",
+      "simplyswords:iron_warglaive",
+      "simplyswords:gold_warglaive",
+      "simplyswords:diamond_warglaive",
+      "simplyswords:netherite_warglaive",
+      "simplyswords:iron_spear",
+      "simplyswords:gold_spear",
+      "simplyswords:diamond_spear",
+      "simplyswords:netherite_spear",
+      "simplyswords:iron_twinblade",
+      "simplyswords:gold_twinblade",
+      "simplyswords:diamond_twinblade",
+      "simplyswords:netherite_twinblade",
+      "simplyswords:runic_twinblade",
+      "simplyswords:runic_katana",
+      "simplyswords:runic_spear",
+      "simplyswords:runic_warglaive",
+      "simplyswords:runic_longsword"
+    ]
+  },
+  "data/simplyswords/tags/items/metallurgium_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/mythril_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/netherite_gear.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:netherite_chakram",
+      "simplyswords:netherite_scythe",
+      "simplyswords:netherite_rapier",
+      "simplyswords:netherite_glaive",
+      "simplyswords:netherite_warglaive",
+      "simplyswords:netherite_spear",
+      "simplyswords:netherite_sai",
+      "simplyswords:netherite_katana",
+      "simplyswords:netherite_cutlass",
+      "simplyswords:netherite_longsword",
+      "simplyswords:netherite_claymore",
+      "simplyswords:netherite_twinblade",
+      "simplyswords:netherite_greathammer",
+      "simplyswords:netherite_greataxe",
+      "simplyswords:netherite_halberd"
+    ]
+  },
+  "data/simplyswords/tags/items/orichalcum_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/osmium_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/palladium_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/quadrillum_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/runic_gear.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:runic_chakram",
+      "simplyswords:runic_scythe",
+      "simplyswords:runic_rapier",
+      "simplyswords:runic_glaive",
+      "simplyswords:runic_warglaive",
+      "simplyswords:runic_spear",
+      "simplyswords:runic_sai",
+      "simplyswords:runic_katana",
+      "simplyswords:runic_cutlass",
+      "simplyswords:runic_longsword",
+      "simplyswords:runic_claymore",
+      "simplyswords:runic_twinblade",
+      "simplyswords:runic_greathammer",
+      "simplyswords:runic_greataxe",
+      "simplyswords:runic_halberd"
+    ]
+  },
+  "data/simplyswords/tags/items/runic_weapons.json": {
+    "values": [
+      "simplyswords:runic_twinblade",
+      "simplyswords:runic_claymore",
+      "simplyswords:runic_cutlass",
+      "simplyswords:runic_katana",
+      "simplyswords:runic_sai",
+      "simplyswords:runic_spear",
+      "simplyswords:runic_chakram",
+      "simplyswords:watching_warglaive",
+      "simplyswords:runic_glaive",
+      "simplyswords:runic_longsword",
+      "simplyswords:runic_greathammer",
+      "simplyswords:runic_greataxe",
+      "simplyswords:runic_rapier",
+      "simplyswords:runic_scythe",
+      "simplyswords:runic_halberd",
+      "simplyswords:runic_warglaive"
+    ]
+  },
+  "data/simplyswords/tags/items/runite_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/spears.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:iron_spear",
+      "simplyswords:gold_spear",
+      "simplyswords:diamond_spear",
+      "simplyswords:netherite_spear",
+      "simplyswords:runic_spear",
+      "simplyswords:sword_on_a_stick"
+    ]
+  },
+  "data/simplyswords/tags/items/star_platinum_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/steel_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/stormyx_tools.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/swords.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:netherite_rapier",
+      "simplyswords:diamond_rapier",
+      "simplyswords:iron_chakram",
+      "simplyswords:gold_chakram",
+      "simplyswords:diamond_chakram",
+      "simplyswords:netherite_chakram",
+      "simplyswords:iron_scythe",
+      "simplyswords:gold_scythe",
+      "simplyswords:diamond_scythe",
+      "simplyswords:netherite_scythe",
+      "simplyswords:gold_rapier",
+      "simplyswords:iron_rapier",
+      "simplyswords:iron_glaive",
+      "simplyswords:gold_glaive",
+      "simplyswords:diamond_glaive",
+      "simplyswords:netherite_glaive",
+      "simplyswords:iron_warglaive",
+      "simplyswords:gold_warglaive",
+      "simplyswords:diamond_warglaive",
+      "simplyswords:netherite_warglaive",
+      "simplyswords:iron_spear",
+      "simplyswords:gold_spear",
+      "simplyswords:diamond_spear",
+      "simplyswords:netherite_spear",
+      "simplyswords:iron_sai",
+      "simplyswords:gold_sai",
+      "simplyswords:diamond_sai",
+      "simplyswords:netherite_sai",
+      "simplyswords:iron_katana",
+      "simplyswords:gold_katana",
+      "simplyswords:diamond_katana",
+      "simplyswords:netherite_katana",
+      "simplyswords:iron_cutlass",
+      "simplyswords:gold_cutlass",
+      "simplyswords:diamond_cutlass",
+      "simplyswords:netherite_cutlass",
+      "simplyswords:iron_longsword",
+      "simplyswords:gold_longsword",
+      "simplyswords:diamond_longsword",
+      "simplyswords:netherite_longsword",
+      "simplyswords:netherite_claymore",
+      "simplyswords:diamond_claymore",
+      "simplyswords:gold_claymore",
+      "simplyswords:iron_claymore",
+      "simplyswords:iron_twinblade",
+      "simplyswords:gold_twinblade",
+      "simplyswords:diamond_twinblade",
+      "simplyswords:netherite_twinblade",
+      "simplyswords:netherite_greathammer",
+      "simplyswords:diamond_greathammer",
+      "simplyswords:gold_greathammer",
+      "simplyswords:iron_greathammer",
+      "simplyswords:netherite_greataxe",
+      "simplyswords:diamond_greataxe",
+      "simplyswords:gold_greataxe",
+      "simplyswords:iron_greataxe",
+      "simplyswords:iron_halberd",
+      "simplyswords:gold_halberd",
+      "simplyswords:diamond_halberd",
+      "simplyswords:netherite_halberd",
+      "simplyswords:watcher_claymore",
+      "simplyswords:the_devourer",
+      "simplyswords:brimstone_claymore",
+      "simplyswords:storms_edge",
+      "simplyswords:stormscale",
+      "simplyswords:ionbound_stormscale",
+      "simplyswords:stormbringer",
+      "simplyswords:sword_on_a_stick",
+      "simplyswords:bramblethorn",
+      "simplyswords:runic_twinblade",
+      "simplyswords:runic_claymore",
+      "simplyswords:runic_cutlass",
+      "simplyswords:runic_katana",
+      "simplyswords:runic_sai",
+      "simplyswords:runic_spear",
+      "simplyswords:runic_chakram",
+      "simplyswords:watching_warglaive",
+      "simplyswords:runic_glaive",
+      "simplyswords:runic_longsword",
+      "simplyswords:runic_greathammer",
+      "simplyswords:runic_greataxe",
+      "simplyswords:runic_rapier",
+      "simplyswords:runic_scythe",
+      "simplyswords:runic_halberd",
+      "simplyswords:runic_warglaive",
+      "simplyswords:toxic_longsword",
+      "simplyswords:emberblade",
+      "simplyswords:frostfall",
+      "simplyswords:soulpyre",
+      "simplyswords:molten_edge",
+      "simplyswords:livyatan",
+      "simplyswords:icewhisper",
+      "simplyswords:arcanethyst",
+      "simplyswords:thunderbrand",
+      "simplyswords:hearthflame",
+      "simplyswords:twisted_blade",
+      "simplyswords:soulrender",
+      "simplyswords:soulstalker",
+      "simplyswords:soulkeeper",
+      "simplyswords:soulstealer",
+      "simplyswords:mjolnir",
+      "simplyswords:slumbering_lichblade",
+      "simplyswords:waking_lichblade",
+      "simplyswords:awakened_lichblade",
+      "simplyswords:shadowsting",
+      "simplyswords:dormant_relic",
+      "simplyswords:tainted_relic",
+      "simplyswords:righteous_relic",
+      "simplyswords:sunfire",
+      "simplyswords:harbinger",
+      "simplyswords:whisperwind",
+      "simplyswords:dreadwhisper",
+      "simplyswords:emberlash",
+      "simplyswords:waxweaver",
+      "simplyswords:hiveheart",
+      "simplyswords:stars_edge",
+      "simplyswords:wickpiercer",
+      "simplyswords:gloampiercer",
+      "simplyswords:tempest",
+      "simplyswords:flamewind",
+      "simplyswords:ribboncleaver",
+      "simplyswords:riftmane",
+      "simplyswords:dawnquiver",
+      "simplyswords:decaying_relic",
+      "simplyswords:magiscythe",
+      "simplyswords:magiblade",
+      "simplyswords:magispear",
+      "simplyswords:enigma",
+      "simplyswords:caelestis",
+      "simplyswords:wraithfang",
+      "simplyswords:wraithmaw",
+      "simplyswords:bloodwake",
+      "simplyswords:chompolotl",
+      {
+        "id": "simplyswords:dreadtide",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber/gobber_halberd",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_nether/gobber_nether_halberd",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:gobber_compat/gobber_end/gobber_end_halberd",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/adamantite",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/aquarium",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/banglum",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/bronze",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/carmot",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/celestium",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/copper",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/durasteel",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/kyber",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/metallurgium",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/mythril",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/orichalcum",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/osmium",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/palladium",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/prometheum",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/quadrillum",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/runite",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/star_platinum",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/steel",
+        "required": false
+      },
+      {
+        "id": "#simplyswords:tools/stormyx",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/adamantite.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/adamantite/adamantite_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/aquarium.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/aquarium/aquarium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/banglum.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/banglum/banglum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/bronze.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/bronze/bronze_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/carmot.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/carmot/carmot_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/celestium.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/celestium/celestium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/copper.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/copper/copper_longsword",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/durasteel.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/durasteel/durasteel_greathammer",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/kyber.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/kyber/kyber_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/metallurgium.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/metallurgium/metallurgium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/mythril.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/mythril/mythril_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/orichalcum.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/orichalcum/orichalcum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/osmium.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/osmium/osmium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/palladium.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/palladium/palladium_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/prometheum.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/prometheum/prometheum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/quadrillum.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/quadrillum/quadrillum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/runite.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/runite/runite_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/star_platinum.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/star_platinum/star_platinum_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/steel.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/steel/steel_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/tools/stormyx.json": {
+    "replace": false,
+    "values": [
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_claymore",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_cutlass",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_glaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_katana",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_longsword",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_rapier",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_sai",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_spear",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_twinblade",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_warglaive",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_greathammer",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_greataxe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_chakram",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_scythe",
+        "required": false
+      },
+      {
+        "id": "simplyswords:mythicmetals_compat/stormyx/stormyx_halberd",
+        "required": false
+      }
+    ]
+  },
+  "data/simplyswords/tags/items/uniques.json": {
+    "replace": false,
+    "values": [
+      "simplyswords:watcher_claymore",
+      "simplyswords:the_devourer",
+      "simplyswords:brimstone_claymore",
+      "simplyswords:storms_edge",
+      "simplyswords:stormscale",
+      "simplyswords:ionbound_stormscale",
+      "simplyswords:stormbringer",
+      "simplyswords:bramblethorn",
+      "simplyswords:watching_warglaive",
+      "simplyswords:toxic_longsword",
+      "simplyswords:emberblade",
+      "simplyswords:frostfall",
+      "simplyswords:soulpyre",
+      "simplyswords:molten_edge",
+      "simplyswords:livyatan",
+      "simplyswords:icewhisper",
+      "simplyswords:arcanethyst",
+      "simplyswords:thunderbrand",
+      "simplyswords:hearthflame",
+      "simplyswords:twisted_blade",
+      "simplyswords:soulrender",
+      "simplyswords:soulstalker",
+      "simplyswords:soulkeeper",
+      "simplyswords:soulstealer",
+      "simplyswords:mjolnir",
+      "simplyswords:slumbering_lichblade",
+      "simplyswords:waking_lichblade",
+      "simplyswords:awakened_lichblade",
+      "simplyswords:shadowsting",
+      "simplyswords:dormant_relic",
+      "simplyswords:tainted_relic",
+      "simplyswords:righteous_relic",
+      "simplyswords:sunfire",
+      "simplyswords:harbinger",
+      "simplyswords:whisperwind",
+      "simplyswords:dreadwhisper",
+      "simplyswords:emberlash",
+      "simplyswords:waxweaver",
+      "simplyswords:hiveheart",
+      "simplyswords:stars_edge",
+      "simplyswords:wickpiercer",
+      "simplyswords:gloampiercer",
+      "simplyswords:tempest",
+      "simplyswords:flamewind",
+      "simplyswords:ribboncleaver",
+      "simplyswords:riftmane",
+      "simplyswords:dawnquiver",
+      "simplyswords:decaying_relic",
+      "simplyswords:magiscythe",
+      "simplyswords:magiblade",
+      "simplyswords:magispear",
+      "simplyswords:enigma",
+      "simplyswords:caelestis",
+      "simplyswords:wraithfang",
+      "simplyswords:wraithmaw",
+      "simplyswords:bloodwake",
+      "simplyswords:chompolotl",
+      {
+        "id": "simplyswords:dreadtide",
+        "required": false
+      }
+    ]
+  }
+}

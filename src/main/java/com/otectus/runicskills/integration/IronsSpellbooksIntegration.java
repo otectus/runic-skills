@@ -64,18 +64,6 @@ public class IronsSpellbooksIntegration {
     }
 
 
-    // School-to-secondary-skill mapping for school-specific bonuses
-    private static final Map<String, RegistryObject<Skill>> SCHOOL_SKILL_MAP = Map.of(
-            "fire", RegistrySkills.STRENGTH,
-            "ice", RegistrySkills.ENDURANCE,
-            "lightning", RegistrySkills.DEXTERITY,
-            "holy", RegistrySkills.WISDOM,
-            "nature", RegistrySkills.CONSTITUTION,
-            "blood", RegistrySkills.CONSTITUTION,
-            "ender", RegistrySkills.INTELLIGENCE,
-            "evocation", RegistrySkills.WISDOM
-    );
-
     public static boolean isModLoaded() {
         return ModList.get().isLoaded("irons_spellbooks");
     }
@@ -206,10 +194,19 @@ public class IronsSpellbooksIntegration {
                         SchoolType school = spellDs.spell().getSchoolType();
                         if (school != null) {
                             ResourceLocation schoolId = school.getId();
-                            RegistryObject<Skill> secondarySkillObj = SCHOOL_SKILL_MAP.get(schoolId.getPath());
-                            if (secondarySkillObj != null) {
-                                int secondaryLevel = casterCap.getSkillLevel(secondarySkillObj.get());
-                                float schoolBonus = secondaryLevel * HandlerCommonConfig.HANDLER.instance().ironsSchoolBonusPerLevel;
+                            Skill secondarySkill = com.otectus.runicskills.integration.common.SchoolDescriptors
+                                    .find(schoolId.toString()).map(descriptor -> RegistrySkills.getSkill(descriptor.secondarySkill()))
+                                    .orElse(null);
+                            if (secondarySkill != null) {
+                                int secondaryLevel = casterCap.getSkillLevel(secondarySkill);
+                                boolean aqua = com.otectus.runicskills.integration.tom.TomAquaAttunement.SCHOOL.equals(schoolId);
+                                float coefficient = aqua ? (com.otectus.runicskills.integration.common.IntegrationRuntime.check(
+                                        com.otectus.runicskills.integration.common.IntegrationModule.TOM,
+                                        com.otectus.runicskills.integration.common.IntegrationAvailability.Feature.AQUA,
+                                        com.otectus.runicskills.integration.common.IntegrationAvailability.Capability.AQUA_ATTRIBUTE).available()
+                                        ? HandlerCommonConfig.HANDLER.instance().tomAquaSecondaryPerLevel : 0)
+                                        : HandlerCommonConfig.HANDLER.instance().ironsSchoolBonusPerLevel;
+                                float schoolBonus = secondaryLevel * coefficient;
                                 if (schoolBonus > 0) {
                                     event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0f + schoolBonus)));
                                 }
@@ -816,6 +813,7 @@ public class IronsSpellbooksIntegration {
         if (caster == null || caster.isCreative()) return;
         SchoolType school = event.getSchoolType();
         if (school == null) return;
+        if (!"irons_spellbooks".equals(school.getId().getNamespace())) return;
         String schoolName = school.getId().getPath();
 
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();
@@ -852,6 +850,7 @@ public class IronsSpellbooksIntegration {
         if (spellDs == null || spellDs.spell() == null) return;
         SchoolType school = spellDs.spell().getSchoolType();
         if (school == null) return;
+        if (!"irons_spellbooks".equals(school.getId().getNamespace())) return;
         String schoolName = school.getId().getPath();
 
         HandlerCommonConfig c = HandlerCommonConfig.HANDLER.instance();

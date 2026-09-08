@@ -61,7 +61,7 @@ public final class TConstructWorkshopBridge {
     private static final int PUSH_INTERVAL_TICKS = 10;
 
     /** What each player was last quoted, so an unchanged station sends nothing. */
-    private static final Map<UUID, Integer> LAST_QUOTE = new ConcurrentHashMap<>();
+    private static final Map<UUID, StationQuote> LAST_QUOTE = new ConcurrentHashMap<>();
 
     /**
      * Installs the three answers the common focus service cannot have on its own.
@@ -225,8 +225,8 @@ public final class TConstructWorkshopBridge {
      *
      * <p>A quote is per-player and derived from a copy — see {@code TConstructStationBridge.quote}
      * — so two players at one station get two answers and neither is the block entity's cached
-     * result. It is re-sent only when the inputs or the native result move, which is §14.2's
-     * staleness rule expressed as the thing that actually decides it.
+     * result. It is re-sent when inputs, recipe, native result or the player's transformed result
+     * change, including expiration of a temporary repair bonus with unchanged station inputs.
      */
     private void sendQuote(ServerPlayer player, TinkerStationContainerMenu menu) {
         TinkerStationBlockEntity station = menu.getTile();
@@ -237,11 +237,9 @@ public final class TConstructWorkshopBridge {
         ItemStack base = station.getCraftingResult().getResult();
         StationQuote quote = TConstructStationBridge.quote(
                 player, menu.containerId, base, station, station);
-        int key = quote.menuId() * 961 + quote.inputFingerprint() * 31 + quote.baseFingerprint();
-        Integer previous = LAST_QUOTE.get(player.getUUID());
-        if (previous != null && previous == key) return;
+        if (quote.sameOffer(LAST_QUOTE.get(player.getUUID()))) return;
         if (!PacketRateLimiter.allow(player, "tc_station_quote", PUSH_INTERVAL_TICKS)) return;
-        LAST_QUOTE.put(player.getUUID(), key);
+        LAST_QUOTE.put(player.getUUID(), quote);
         StationQuoteCP.send(player, quote.menuId(), quote.revision(), quote.kind().name(),
                 quote.recipeId() == null ? "" : quote.recipeId().toString(), quote.preview());
     }

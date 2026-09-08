@@ -1,13 +1,11 @@
 package com.otectus.runicskills.mixin.tconstruct;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.otectus.runicskills.integration.tconstruct.TConstructStationBridge;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntity;
 
 /**
@@ -31,25 +29,18 @@ import slimeknights.tconstruct.tables.block.entity.table.TinkerStationBlockEntit
         remap = false)
 public class MixTinkerStationBlockEntity {
 
-    /** Whether the station action opened at HEAD actually pushed, so RETURN pops exactly as often. */
-    @Unique
-    private boolean runicskills$stationActionOpen;
-
-    @Inject(method = "onCraft", at = @At("HEAD"), remap = false,
+    /** One local scope per invocation; nested crafts and exceptions cannot strand the frame. */
+    @WrapMethod(method = "onCraft", remap = false,
             require = 0, expect = 1)
-    private void runicskills$openStationCraft(Player player, ItemStack result, int amount,
-                                              CallbackInfo ci) {
+    private void runicskills$stationCraft(Player player, ItemStack result, int amount,
+                                          Operation<Void> original) {
         TinkerStationBlockEntity station = (TinkerStationBlockEntity) (Object) this;
-        this.runicskills$stationActionOpen = TConstructStationBridge.beginCraft(player);
-        TConstructStationBridge.onStationCraft(player, result, station, station);
-    }
-
-    @Inject(method = "onCraft", at = @At("RETURN"), remap = false,
-            require = 0, expect = 1)
-    private void runicskills$closeStationCraft(Player player, ItemStack result, int amount,
-                                               CallbackInfo ci) {
-        if (!this.runicskills$stationActionOpen) return;
-        this.runicskills$stationActionOpen = false;
-        TConstructStationBridge.endCraft(true);
+        boolean opened = TConstructStationBridge.beginCraft(player);
+        try {
+            TConstructStationBridge.onStationCraft(player, result, station, station);
+            original.call(player, result, amount);
+        } finally {
+            TConstructStationBridge.endCraft(opened);
+        }
     }
 }

@@ -164,9 +164,11 @@ class ContentStatusTest {
     void theStatusTableIsActuallyEnforced() throws IOException {
         String eligibility =
                 read("src/main/java/com/otectus/runicskills/registry/powers/PowerEligibility.java");
-        assertTrue(eligibility.contains("ContentStatusIndex.isSelectable"),
-                "PowerEligibility no longer consults the content status, so an inert Power could be "
-                        + "equipped and would fire");
+        String availability = read("src/main/java/com/otectus/runicskills/registry/powers/PowerAvailability.java");
+        assertTrue(eligibility.contains("PowerAvailability.reason(power)")
+                        && eligibility.contains("PowerAvailability.available(equipped)")
+                        && availability.contains("ContentStatusIndex.isSelectable(power)"),
+                "Execution and point accounting must share the content-status predicate");
         assertTrue(eligibility.contains("INERT_CONTENT"),
                 "PowerEligibility no longer reports an inert denial reason");
 

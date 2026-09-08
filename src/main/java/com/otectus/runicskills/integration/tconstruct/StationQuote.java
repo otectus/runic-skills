@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
+import java.util.Objects;
 
 /**
  * What one player would get from a native station right now, and what it was computed from.
@@ -15,10 +16,9 @@ import java.util.UUID;
  * cache is never touched — a quote is a private answer to "what would <em>you</em> get", derived
  * from the shared base and thrown away.
  *
- * <p>The fingerprints and the revision are what make a quote checkable rather than merely
- * displayable. A client that asks to take the result names the revision it was shown; if the inputs
- * changed underneath it, the fingerprints no longer match and the server has an honest reason to
- * refuse rather than to deliver something the player never saw.
+ * <p>The fingerprints and revision identify display updates. Taking remains a native menu action:
+ * the server re-evaluates the current operation rather than trusting a previously displayed quote.
+ * The client does not submit this revision as authorization for a take.
  *
  * @param player            who the quote is for; a quote is never valid for anybody else
  * @param menuId            the container id it was issued against
@@ -36,5 +36,13 @@ public record StationQuote(UUID player, int menuId, ResourceLocation recipeId,
     /** Whether this quote still describes the station it was taken from. */
     public boolean matches(int currentInputFingerprint, int currentBaseFingerprint) {
         return inputFingerprint == currentInputFingerprint && baseFingerprint == currentBaseFingerprint;
+    }
+
+    /** A quote refresh includes player-specific bonuses and recipe changes, excluding revision. */
+    public boolean sameOffer(StationQuote other) {
+        return other != null && player.equals(other.player) && menuId == other.menuId
+                && Objects.equals(recipeId, other.recipeId) && kind == other.kind
+                && inputFingerprint == other.inputFingerprint && baseFingerprint == other.baseFingerprint
+                && ItemStack.matches(preview, other.preview);
     }
 }

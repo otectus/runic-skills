@@ -50,7 +50,7 @@ public final class TConstructBootstrap {
     /**
      * The station service's recipe serializer.
      *
-     * <p>Static, and registered whether or not the integration is enabled, unlike the modifiers.
+     * <p>Static, and registered whether or not the integration is enabled, like the modifiers.
      * A recipe serializer is a data-loading concern: {@code data/runicskills/recipes/keystone.json}
      * is read on every world load, and an unregistered {@code type} is a parse error logged once
      * per load rather than a quiet no-op. Registering it always means the file resolves and the
@@ -71,6 +71,11 @@ public final class TConstructBootstrap {
         boolean enabled = config.enableTConstructIntegration;
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         RECIPE_SERIALIZERS.register(modBus);
+        // Registry identity is part of saved tools. Keep previously paid workmanship/keystones
+        // readable even when the operator disables new integration effects for this session.
+        modifiers.register("workmanship", WorkmanshipModifier::new);
+        modifiers.register("keystone", KeystoneModifier::new);
+        modifiers.register(modBus);
 
         if (enabled) {
             // Ahead of the vanilla adapter, which would otherwise call a Tinkers' pickaxe "not a
@@ -116,10 +121,6 @@ public final class TConstructBootstrap {
             // Tinkers' from resolving anything in this package.
             TcAddonRegistry.install();
 
-            modifiers.register("workmanship", WorkmanshipModifier::new);
-            modifiers.register("keystone", KeystoneModifier::new);
-            modBus.register(this);
-            modifiers.register(modBus);
         }
 
         // Force every approved Tinkers' target to load, so the hook ledger is complete before the
@@ -128,9 +129,11 @@ public final class TConstructBootstrap {
         TConstructHookLedger.probe();
 
         TConstructCompatibilityStatus.publish(status(profile, version, enabled, config));
-        RunicSkills.getLOGGER().info("[Runic Skills] {}",
-                TConstructCompatibilityStatus.current().describe());
-        RunicSkills.getLOGGER().info("[Runic Skills] {}", compatSummary());
+        if (config.tconstructCompatibilityDiagnostics) {
+            RunicSkills.getLOGGER().info("[Runic Skills] {}",
+                    TConstructCompatibilityStatus.current().describe());
+            RunicSkills.getLOGGER().info("[Runic Skills] {}", compatSummary());
+        }
     }
 
     /**

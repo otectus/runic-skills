@@ -1,6 +1,10 @@
 package com.otectus.runicskills.common.util;
 
 import net.minecraft.world.entity.player.Player;
+import java.util.ArrayDeque;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Who is currently interacting with a container.
@@ -26,6 +30,7 @@ public final class ContainerInteraction {
     private ContainerInteraction() {}
 
     private static final ThreadLocal<Player> CURRENT = new ThreadLocal<>();
+    private static final ThreadLocal<ArrayDeque<Map<Object, Object>>> MEMOS = new ThreadLocal<>();
 
     /** The player whose container click is being processed, or {@code null} outside one. */
     public static Player currentPlayer() {
@@ -40,15 +45,40 @@ public final class ContainerInteraction {
     public static Player begin(Player player) {
         Player previous = CURRENT.get();
         CURRENT.set(player);
+        ArrayDeque<Map<Object, Object>> scopes = MEMOS.get();
+        if (scopes == null) {
+            scopes = new ArrayDeque<>();
+            MEMOS.set(scopes);
+        }
+        scopes.push(new IdentityHashMap<>());
         return previous;
     }
 
     /** Restores the value {@link #begin} returned. Removes the entry entirely when that was null. */
     public static void end(Player previous) {
+        ArrayDeque<Map<Object, Object>> scopes = MEMOS.get();
+        if (scopes != null) {
+            scopes.poll();
+            if (scopes.isEmpty()) MEMOS.remove();
+        }
         if (previous == null) {
             CURRENT.remove();
         } else {
             CURRENT.set(previous);
         }
+    }
+
+    /** Per-click scratch state, discarded on return/exception and isolated from nested clicks. */
+    @SuppressWarnings("unchecked")
+    public static <T> T memoize(Object owner, Supplier<T> factory) {
+        ArrayDeque<Map<Object, Object>> scopes = MEMOS.get();
+        if (scopes == null || scopes.isEmpty()) return null;
+        return (T) scopes.peek().computeIfAbsent(owner, key -> factory.get());
+    }
+
+    /** Ends one committed transaction; a repeated shift-craft in the same click starts fresh. */
+    public static void forgetMemo(Object owner) {
+        ArrayDeque<Map<Object, Object>> scopes = MEMOS.get();
+        if (scopes != null && !scopes.isEmpty()) scopes.peek().remove(owner);
     }
 }

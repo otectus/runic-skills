@@ -39,7 +39,7 @@ class ConfigSchemaCoverageTest {
 
     /** Mirrors ConfigSchema.kindOf. Keep the two in step — this test is the reason to notice. */
     private static final Set<String> SUPPORTED_TYPES = Set.of(
-            "int", "float", "boolean", "int[]", "List<String>");
+            "int", "float", "boolean", "int[]", "List<String>", "String");
 
     private static final Pattern SCOPE_ANNOTATION =
             Pattern.compile("@Scope\\s*\\(\\s*(?:ConfigScope\\s*\\.\\s*)?([A-Z_]+)\\s*\\)");

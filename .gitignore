@@ -175,3 +175,7 @@ RUNIC-SKILLS-REVIEW.md
 # every search result had to be checked for which copy it came from. Ignore the path so a stray
 # `git clone` inside the working tree cannot quietly repeat it.
 /runic-skills/
+
+# Python authoring and validation caches
+__pycache__/
+*.py[cod]

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-05T00:00:00Z",
+  "generated": "2026-09-06T00:00:00Z",
   "runicskills": "2.1.0",
   "profiles": {
     "stable": {
@@ -16,18 +16,31 @@
         "sha256": "d7a4d7c5d7ed9358e7edf624987fa2616f3502b018262b4562850281add67d9b"
       }
     },
+    "jewelry_runtime": {
+      "selection": "Any runtime profile whose tinkersAddons includes jewelry",
+      "mantle": {
+        "version": "1.20.1-1.11.113",
+        "sha256": "c059d5dcaca940383d9c4ff31bc79473b30ac267ccc5922d0d6b0fe7d93c6f7c",
+        "property": "mantle_jewelry_version"
+      },
+      "compile_api": "Mantle 1.20.1-1.11.97 remains the minimum compile API; the stable runtime without Jewelry also retains 1.11.97",
+      "status": "Recommended runtime selection; executed results are recorded in STABILIZATION_2.1.0.md",
+      "startup_issue": "A captured Mantle 1.11.97 startup hang has TConstruct and Jewelry constructor threads waiting on each other's class initialization of ResourceLocationLoadable and Loadables. Neither blocked stack contains Runic code. Mantle 1.11.113 bytecode removes ResourceLocationLoadable.DEFAULT's static read of Loadables, breaking this cycle.",
+      "evidence": "build/reports/jewelry-startup-threads.txt and inspected Mantle 1.20.1-1.11.113 production bytecode",
+      "older_pack_workaround": "If Mantle 1.11.97 must be retained, set maxThreads = 1 in Forge config/fml.toml and restart to serialize mod loading. The JVM -Dfml.maxThreads argument does not configure this setting."
+    },
     "beta": {
       "tconstruct": {
         "version": "1.20.1-3.12.0.220",
-        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+        "status": "API/conservative-mode GameTests passed in 2.1.0; stable-only bytecode capabilities remain unavailable"
       },
       "mantle": {
         "version": "1.20.1-1.11.113",
-        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+        "status": "API/conservative-mode GameTests passed in 2.1.0; stable-only bytecode capabilities remain unavailable"
       },
       "jei": {
         "version": "15.56.0.204",
-        "status": "unverified, conservative-mode only, not supported for 2.1.0"
+        "status": "API/conservative-mode GameTests passed in 2.1.0; stable-only bytecode capabilities remain unavailable"
       }
     }
   },
@@ -626,12 +639,12 @@
   ],
   "pending": [],
   "notes": {
-    "stable_profile": "Tinkers' Construct 3.11.2.166 and Mantle 1.11.97 are the lowest supported API. Stage S0 pins compilation to stable; runtime execution is -PtinkersProfile=stable.",
-    "beta_profile": "3.12.0.220 is unverified as of 2.0.7. It exists for forward compatibility but the mod runs in conservative mode without Tinkers'-specific mixins when beta is selected. No perks or powers are active for Tinkers' when beta profile is in use.",
+    "stable_profile": "Tinkers' Construct 3.11.2.166 and Mantle 1.11.97 are the lowest supported API. Stage S0 pins compilation to stable; runtime execution is -PtinkersProfile=stable. Runtime selections including the jewelry add-on use Mantle 1.11.113 to avoid the observed upstream parallel class-initialization deadlock; compilation and stable runtimes without Jewelry retain 1.11.97.",
+    "beta_profile": "3.12.0.220 with Mantle 1.11.113 passed the 2.1.0 API/conservative GameTest profile. Stable-only bytecode seams remain unavailable; refer to TCONSTRUCT_TEST_MATRIX.md and STABILIZATION_2.1.0.md for the exact executed coverage, not full beta gameplay certification.",
     "hooks_h6_h9_h11": "H6 (workmanship rebuild) is implemented in S4 with KeystoneModifier VOLATILE_DATA addSlots and WorkmanshipModifier TOOL_STATS; H9 (ranged) is implemented in S3a; H10 (melting/casting) is implemented in S3b; H11 (repair kit) remains unresolved pending later implementation. All seams have been located and confirmed to exist in the jar.",
     "jei_dependency": "JEI is pinned alongside Tinkers' because Tinkers' 1.20.1 ships JEI plugins and bumped its version between the stable and beta profiles.",
     "addon_perks_s5": "Seven add-on perks added in S5: four from TCIntegrations (requiring Botania, Ars Nouveau, Create, or Malum as companions), one from Tinkers' Levelling Addon, one from Tinkers' Delight (requiring Farmer's Delight), one from Tinkers' Advanced (requiring EtSTLib). Each capability also has a corresponding entry in the Capability enum (ADDON_BOTANIA_REPAIR_CHARGE through ADDON_MEDALLION). The reserved eighth perk (tc_medallion_concord) is unregistered because Tinkers' Ingenuity publishes no 1.20.1 artifact.",
-    "addon_live_testing": "Levelling and Delight perks have live GameTest coverage in M4 profile. Charged Craft has live coverage in M5 (when Tinkers' Advanced server boots). Tinkers' Thinking gained live coverage in 2.1.0 via -PtinkersAddons=thinking, against the exact build the reference pack runs (0.1.6.6.3). Botania and Ars Nouveau are no longer dormancy-only either: -PtinkersAddons=tcintegrations,botania,ars puts Botania 1.20.1-455-forge and Ars Nouveau 4.12.7 - the reference pack's versions - on the runtime classpath, so ADDON_BOTANIA_REPAIR_CHARGE and ADDON_ARS_ARMOR_REPAIR can finally be exercised rather than only asserted absent. Create and Malum remain dormancy-only; ADDON_OFFHAND_MELEE and ADDON_SOUL_STAINED are verified as ABSENT-companion. Tinkers' Jewelry is dormancy-only BY CHOICE and not for want of an artifact: Modrinth's newest 1.20.1 Forge build is 1.1.0 while the reference pack runs 1.2.0, so a live profile would produce a green run about a jar nobody uses. TinkersJewelryPerksGameTest is registered whenever tinkersjewelry is loaded, so a pack developer who supplies 1.2.0 themselves gets the coverage.",
-    "addon_perks_2_1_0": "Seven further add-on perks in 2.1.0: three from Tinkers' Thinking (tinkers_thinking, no companion mod) and four from Tinkers' Jewelry (tinkersjewelry, Curios as the companion for the two that need a worn piece). Neither add-on is a compile dependency and neither contributes a mixin: everything is addressed by ResourceLocation - modifier ids, material namespace, mob effect ids - through TraitFeatureRegistry and ForgeRegistries, and both triggers are reached from FORGE events TConstructPerkHandler already subscribes. CLAUDE.md's Mixin Targets list and the count of 42 are therefore unchanged. TcAddonHooks gained two channels for this work, addWearAvoidanceContributor and addExperienceContributor, each summed and clamped once in TConstructPerkHandler by tconstructNewWearAvoidanceCap and tconstructNewExperienceBonusCap respectively - deliberately rather than folding a wear or experience effect into the melee sum because a channel was missing. A third addition, addRepairBonusContributor, is not a new channel: it joins the existing paid-repair share under the existing tconstructRepairBonusCap. Tinkers' Katanas gets no adapter, no capability flag and no perk (see H16), and tc_subspace_reserve is reserved and unregistered."
+    "addon_live_testing": "Executable add-on profiles and their exact artifacts are listed in TCONSTRUCT_TEST_MATRIX.md; executed outcomes are recorded in STABILIZATION_2.1.0.md. Levelling/Delight, Advanced Core, Thinking, and TCIntegrations companion combinations have dedicated runtime selections. The jewelry selection now pins the publisher's exact Forge 1.20.1 Jewelry 1.2.0 artifact (curse.maven:tinkers-jewelry-1191965:6328912), with Mantle 1.11.113, required Apothic Attributes and Placebo and the existing Curios runtime. Jewelry coverage includes real Curios equipment and the native Undying save-cost seam. Create/Malum and unselected low-code/add-on combinations remain limited to the recorded source/absence coverage. A successful selected profile does not certify every upstream mechanic or pack combination.",
+    "addon_perks_2_1_0": "Seven further add-on perks in 2.1.0: three from Tinkers' Thinking (tinkers_thinking, no companion mod) and four from Tinkers' Jewelry (tinkersjewelry, Curios as the companion for the two that need a worn piece). Neither add-on is a compile dependency and neither contributes a mixin: everything is addressed by ResourceLocation - modifier ids, material namespace, mob effect ids - through TraitFeatureRegistry and ForgeRegistries, and both triggers are reached from FORGE events TConstructPerkHandler already subscribes. TcAddonHooks gained two channels for this work, addWearAvoidanceContributor and addExperienceContributor, each summed and clamped once in TConstructPerkHandler by tconstructNewWearAvoidanceCap and tconstructNewExperienceBonusCap respectively - deliberately rather than folding a wear or experience effect into the melee sum because a channel was missing. A third addition, addRepairBonusContributor, is not a new channel: it joins the existing paid-repair share under the existing tconstructRepairBonusCap. Tinkers' Katanas gets no adapter, no capability flag and no perk (see H16), and tc_subspace_reserve is reserved and unregistered."
   }
 }

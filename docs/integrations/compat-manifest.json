@@ -1,0 +1,639 @@
+{
+  "schema_version": 1,
+  "minecraft": "1.20.1",
+  "loader": "forge",
+  "profiles": [
+    {
+      "mod_id": "simplyswords",
+      "profile": "ss_170_forge1201",
+      "file_id": 8746028,
+      "sha256": "642e385ffda914f1b9411f0a457fe5fb5e05aa160dc44392dec9a549c2bcec21",
+      "mods": [
+        {
+          "modId": "simplyswords",
+          "version": "1.70.2-1.20.1",
+          "displayName": "Simply Swords",
+          "authors": "Sweenus",
+          "credits": "Hootea (Art), Konsyliarz42 (Art), KreloX (Contributor), Fzzyhmstrs (Contributor), RosemaryThyme (Contributor), DestrSpirit (Contributor)",
+          "description": "A variety of unique weapons to add to your minecraft repertoire\n",
+          "logoFile": "icon.png",
+          "modProperties": {
+            "fzzy_config": "simplyswords:loot"
+          }
+        }
+      ],
+      "dependencies": [
+        {
+          "modId": "forge",
+          "mandatory": true,
+          "versionRange": "[47,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "minecraft",
+          "mandatory": true,
+          "versionRange": "[1.20.1, 1.20.2)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "architectury",
+          "mandatory": true,
+          "versionRange": "[9.2.14,)",
+          "ordering": "AFTER",
+          "side": "BOTH"
+        },
+        {
+          "modId": "fzzy_config",
+          "mandatory": true,
+          "versionRange": "[0.6.6,)",
+          "ordering": "AFTER",
+          "side": "BOTH"
+        },
+        {
+          "modId": "simplytooltips",
+          "mandatory": true,
+          "versionRange": "[0.1,)",
+          "ordering": "NONE",
+          "side": "CLIENT"
+        }
+      ],
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards",
+        "nativeGemSuccessRejectionAndResonance",
+        "nativeOwnerReturnAcceptanceAndFollowup",
+        "nativePatientTemperOnePointAndActionBoundaries",
+        "nativeRelicRepairPreviewAndPaidExtraction",
+        "nativeSwordsInspectionPreservesState",
+        "nativeWeaponAbilityPaymentAndAwakening"
+      ],
+      "production_server": "PASS: 40 targeted checks in pinned all-four profile; all 14 entries have representative native evidence. See report for supported paths and untested release matrix.",
+      "client": "not_run",
+      "read_only_members": [
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.AwakeningApi",
+          "member": "usesAwakeningProgression",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.AwakeningApi",
+          "member": "getLevel",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)I",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.AwakeningApi",
+          "member": "getAbilityUnlockLevel",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)I",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.AwakeningApi",
+          "member": "isAbilityUnlocked",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.AwakeningApi",
+          "member": "areGemPowersActive",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.item.component.StackComponentKey",
+          "member": "contains",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.item.component.StackComponentKey",
+          "member": "get",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Ljava/lang/Object;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "hasRunicPower",
+          "descriptor": "()Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "hasNetherPower",
+          "descriptor": "()Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "hasRunicSlotFilled",
+          "descriptor": "()Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "hasNetherSlotFilled",
+          "descriptor": "()Z",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "runicPower",
+          "descriptor": "()Lnet/minecraft/resources/ResourceLocation;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "netherPower",
+          "descriptor": "()Lnet/minecraft/resources/ResourceLocation;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.api.WeaponImplicitRegistry",
+          "member": "peekWeaponImplicit",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Optional;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.item.component.WeaponImplicitComponent",
+          "member": "implicitId",
+          "descriptor": "()Lnet/minecraft/resources/ResourceLocation;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.item.component.WeaponImplicitComponent",
+          "member": "weaponType",
+          "descriptor": "()Lnet/minecraft/resources/ResourceLocation;",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "read_only_tooltip",
+          "class": "net.sweenus.simplyswords.item.component.WeaponImplicitComponent",
+          "member": "value",
+          "descriptor": "()I",
+          "side": "both",
+          "remap": false,
+          "purpose": "Read existing native state without initialization; verified against the pinned Forge jar."
+        },
+        {
+          "capability": "ORDINARY_WEAR",
+          "class": "net.sweenus.simplyswords.api.SimplySwordsAPI",
+          "member": "getDelegatedWeaponHitContext",
+          "descriptor": "()Lnet/sweenus/simplyswords/api/DelegatedWeaponHitContext;",
+          "remap": false,
+          "side": "server",
+          "purpose": "Reject native delegated hit durability costs."
+        }
+      ],
+      "read_only_fields": [
+        {
+          "class": "net.sweenus.simplyswords.registry.ComponentTypeRegistry",
+          "field": "GEM_POWER",
+          "type": "net.sweenus.simplyswords.item.component.StackComponentKey"
+        },
+        {
+          "class": "net.sweenus.simplyswords.power.GemPower",
+          "field": "EMPTY_ID",
+          "type": "net.minecraft.resources.ResourceLocation"
+        }
+      ],
+      "hooks": [
+        {
+          "capability": "ORDINARY_WEAR",
+          "class": "net.sweenus.simplyswords.power.GemPowerComponent",
+          "member": "postHit",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/LivingEntity;)V",
+          "remap": false,
+          "purpose": "Exclude all gem execution from ordinary weapon wear."
+        }
+      ],
+      "minecraft_hooks": [
+        {
+          "mixin": "MixPlayerWeaponWear",
+          "owner": "net.minecraft.world.entity.player.Player",
+          "method": "attack",
+          "call": "ItemStack.hurtEnemy(LivingEntity,Player)V"
+        },
+        {
+          "mixin": "MixSwordOrdinaryWear",
+          "owner": "net.minecraft.world.item.SwordItem",
+          "method": "hurtEnemy/mineBlock",
+          "call": "ItemStack.hurtAndBreak(int,LivingEntity,Consumer)V"
+        }
+      ]
+    },
+    {
+      "mod_id": "simplymore",
+      "profile": "sm_114_ss170_forge1201",
+      "file_id": 8736447,
+      "sha256": "50a14bf8d1aad4a38843d5fa88db71a8a2aecf03c65a558bf4a56ce71a828e17",
+      "mods": [
+        {
+          "modId": "simplymore",
+          "version": "1.1.4",
+          "displayName": "Simply More",
+          "authors": "RosemaryThyme",
+          "credits": "NotSaneAshley & Scootifyz (Art) | Chronosacaria (Code Review)",
+          "description": "An addon to Simply Swords which adds even more weapons variety and new uniques!\n",
+          "logoFile": "assets/simplymore/icon.png"
+        }
+      ],
+      "dependencies": [
+        {
+          "modId": "forge",
+          "mandatory": true,
+          "versionRange": "[47,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "minecraft",
+          "mandatory": true,
+          "versionRange": "[1.20.1,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "architectury",
+          "mandatory": true,
+          "versionRange": "[9.2.14,)",
+          "ordering": "AFTER",
+          "side": "BOTH"
+        },
+        {
+          "modId": "simplyswords",
+          "mandatory": true,
+          "versionRange": "[1.55.0,)",
+          "ordering": "AFTER",
+          "side": "BOTH"
+        },
+        {
+          "modId": "cloth_config",
+          "mandatory": true,
+          "versionRange": "[0,)",
+          "ordering": "AFTER",
+          "side": "BOTH"
+        }
+      ],
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards",
+        "nativeLegalReachAndDistinctHits",
+        "nativeMimicryContinuityAndShieldResults",
+        "nativeMountedLanceTravelAndOwnedBonuses",
+        "nativeRelicRepairPreviewAndPaidExtraction"
+      ],
+      "production_server": "PASS: 40 targeted checks in pinned all-four profile; all 14 entries have representative native evidence. See report for supported paths and untested release matrix.",
+      "client": "not_run"
+    },
+    {
+      "mod_id": "traveloptics",
+      "profile": "tom_630_forge1201",
+      "file_id": 7424522,
+      "sha256": "878a0fb5a2057de530698fd63091b9fa1c23af0139054af108e9d566840a0fa9",
+      "mods": [
+        {
+          "modId": "traveloptics",
+          "version": "6.3.0-1.20.1",
+          "displayName": "T.O Magic 'n Extras",
+          "displayURL": "https://www.curseforge.com/minecraft/mc-mods/to-tweaks-irons-spells",
+          "credits": "Many writing ideas are from KumaV1ne; Base Better Combat compatibility is made by Kayn; Base for Abyssal blast, Death laser, Solar flare is provided by MrSlyFoxJr; Thanks Han_tokei, Saga, Mr.Sup, Lepolite, Haereu, KillerIT for your translations; Thanks Min for debugging stuff when I get lost; Thanks Amadhe for providing Talent and Call Forth The Dead King icon; Thanks Miguel Forge for contributing some arts to the mod; Thanks Kayn & ION for Void Cathedral and Echo Shrine builds; Thanks AESir and Stolen Valour for concept arts; Thanks WarPhan for Galena Shatter icon.",
+          "logoFile": "icon.png",
+          "authors": "GameTechBC",
+          "description": "T.O Magic 'n Extras contains custom & immersive never before seen spells, weapons, armors, unique curios, spellbooks, staves, skilltree gems... You name it, you have it!!\n  ",
+          "displayTest": "MATCH_VERSION"
+        }
+      ],
+      "dependencies": [
+        {
+          "modId": "minecraft",
+          "mandatory": true,
+          "versionRange": "[1.20.1]",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "irons_spellbooks",
+          "mandatory": true,
+          "versionRange": "[1.20.1-3.15.0,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "cataclysm",
+          "mandatory": true,
+          "versionRange": "[2.57.,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "alexscaves",
+          "mandatory": true,
+          "versionRange": "[2.0.0,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        },
+        {
+          "modId": "attributeslib",
+          "mandatory": true,
+          "versionRange": "[1.3.7,)",
+          "ordering": "NONE",
+          "side": "BOTH"
+        }
+      ],
+      "native_tests": [
+        "nativeAquaAttributeScalingAndLifecycle",
+        "nativeAquaProjectileBudgetAndRelicFollowup",
+        "nativeCounterspellCancellationAndSuccess",
+        "nativePaidAquaRotationAndFreeCastExclusion",
+        "nativePaidArmorPacketAndAquaFollowup",
+        "nativePaidSummonOwnershipAndSingleRecipient",
+        "nativeTalentSlotAndPaidCast"
+      ],
+      "production_server": "PASS: 40 targeted checks in pinned all-four profile; all 14 entries have representative native evidence. See report for supported paths and untested release matrix.",
+      "client": "not_run",
+      "read_only_members": [
+        {
+          "class": "com.gametechbc.traveloptics.api.init.TravelopticsSchools",
+          "member": "AQUA_RESOURCE",
+          "descriptor": "Lnet/minecraft/resources/ResourceLocation;"
+        },
+        {
+          "class": "com.gametechbc.traveloptics.api.init.TravelopticsSchools",
+          "member": "AQUA",
+          "descriptor": "Lnet/minecraftforge/registries/RegistryObject;"
+        },
+        {
+          "class": "com.gametechbc.traveloptics.api.init.TravelopticsAttributes",
+          "member": "AQUA_SPELL_POWER",
+          "descriptor": "Lnet/minecraftforge/registries/RegistryObject;"
+        },
+        {
+          "class": "com.gametechbc.traveloptics.api.init.TravelopticsAttributes",
+          "member": "AQUA_MAGIC_RESIST",
+          "descriptor": "Lnet/minecraftforge/registries/RegistryObject;"
+        }
+      ],
+      "companion": "runicskills-tom-compat: separate opt-in jar; native Aqua attribute only",
+      "aqua_units": "Neutral native power 1; one Runic MULTIPLY_TOTAL modifier of 0.05 by default; native SchoolType.getPowerFor reads the attribute directly. No matching damage-event multiplier."
+    },
+    {
+      "mod_id": "tide",
+      "profile": "tide2_211_hotfix_forge1201",
+      "file_id": 8571673,
+      "sha256": "cac8ec3ee8772686ac8d3c35b86869399cede9ce1cc194cea925dc8d3b498a22",
+      "mods": [
+        {
+          "logoFile": "tide.png",
+          "displayName": "Tide",
+          "description": "Expands the fishing system and adds 100+ new fish.",
+          "version": "2.1.1",
+          "modId": "tide",
+          "authors": "Lightning64"
+        }
+      ],
+      "dependencies": [
+        {
+          "versionRange": "[47,)",
+          "side": "BOTH",
+          "ordering": "NONE",
+          "mandatory": true,
+          "modId": "forge"
+        },
+        {
+          "versionRange": "1.20.1",
+          "side": "BOTH",
+          "ordering": "NONE",
+          "mandatory": true,
+          "modId": "minecraft"
+        },
+        {
+          "versionRange": "[11,)",
+          "side": "BOTH",
+          "ordering": "NONE",
+          "mandatory": true,
+          "modId": "cloth_config"
+        }
+      ],
+      "native_tests": [
+        "baitkeeperNativeConsumption",
+        "keeperNativeSequenceAndIndependentCharges",
+        "manyWatersNativeCatchPreparationAndSessionDebt",
+        "measuredCastNativeDurationAndToggle",
+        "nativeCatchConservationAndRejections",
+        "nativeJournalKnowledgeMilestonesAndFavor",
+        "nativeWindowAndTwoMediumCharges",
+        "stillwaterNativeChargeAndCooldown",
+        "unbrokenThreadNativeSequence"
+      ],
+      "production_server": "PASS: 40 targeted checks in pinned all-four profile; all 14 entries have representative native evidence. See report for supported paths and untested release matrix.",
+      "client": "not_run",
+      "hooks": [
+        {
+          "capability": "CAST_PREPARATION",
+          "class": "com.li64.tide.registries.items.TideFishingRodItem",
+          "member": "getChargeDuration",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)I",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Read-only duration return; preserves native casting, cost and cleanup.",
+          "verification": "Static production signature checked; transformed handler call checked during common setup.",
+          "failure": "Measured Cast is unavailable; original duration returned."
+        },
+        {
+          "capability": "CATCH_COMMIT",
+          "class": "com.li64.tide.registries.items.TideFishingRodItem",
+          "member": "castHook",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;F)V",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Exception-safe scope; observe one owned cast and accepted delivery, preserve native calls and cleanup.",
+          "verification": "Pinned binary signature plus transformed handler call sites and production GameTests.",
+          "failure": "Catch wear perks unavailable; native outputs, costs and cleanup retained."
+        },
+        {
+          "capability": "CATCH_COMMIT",
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "retrieve",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/player/Player;)I",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Exception-safe scope; observe one owned cast and accepted delivery, preserve native calls and cleanup.",
+          "verification": "Pinned binary signature plus transformed handler call sites and production GameTests.",
+          "failure": "Catch wear perks unavailable; native outputs, costs and cleanup retained."
+        },
+        {
+          "capability": "CATCH_COMMIT",
+          "class": "com.li64.tide.util.TideUtils",
+          "member": "tryLogCatch",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/server/level/ServerPlayer;)Z",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Exception-safe scope; observe one owned cast and accepted delivery, preserve native calls and cleanup.",
+          "verification": "Pinned binary signature plus transformed handler call sites and production GameTests.",
+          "failure": "Catch wear perks unavailable; native outputs, costs and cleanup retained."
+        },
+        {
+          "class": "com.li64.tide.data.rods.BaitContents$Mutable",
+          "member": "shrinkAll",
+          "descriptor": "()V",
+          "capability": "BAIT_CONSUMPTION",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Bind the native retrieve shrinkAll operation; intercept at most one actual shrinkStack unit, without a refund or copied replacement.",
+          "verification": "Pinned descriptor and transformed handler call required; native conservation scenarios required before release.",
+          "failure": "Baitkeeper unavailable; other verified catch features retain their independent capabilities."
+        },
+        {
+          "class": "com.li64.tide.data.rods.BaitContents$Mutable",
+          "member": "shrinkStack",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)V",
+          "capability": "BAIT_CONSUMPTION",
+          "remap": false,
+          "declaring_owner": "tide",
+          "expected_injections": 1,
+          "injection_requirement": 0,
+          "lifecycle": "Bind the native retrieve shrinkAll operation; intercept at most one actual shrinkStack unit, without a refund or copied replacement.",
+          "verification": "Pinned descriptor and transformed handler call required; native conservation scenarios required before release.",
+          "failure": "Baitkeeper unavailable; other verified catch features retain their independent capabilities."
+        }
+      ],
+      "vanilla_invocations": [
+        {
+          "owner": "net.minecraft.world.level.Level",
+          "member": "addFreshEntity",
+          "remap": true,
+          "descriptor": "(Lnet/minecraft/world/entity/Entity;)Z",
+          "expected_injections": 3,
+          "observation": "Only accepted ItemEntity delivery contributes fish evidence. XP entities are ignored; all boolean results preserved."
+        },
+        {
+          "class": "net.minecraft.world.item.ItemStack",
+          "member": "shrink",
+          "descriptor": "(I)V",
+          "production_member": "m_41774_",
+          "remap": true,
+          "expected_injections": 1
+        }
+      ],
+      "read_only_members": [
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "rod",
+          "descriptor": "()Lnet/minecraft/world/item/ItemStack;"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "getCatchType",
+          "descriptor": "()Lcom/li64/tide/registries/entities/misc/fishing/TideFishingHook$CatchType;"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "getHookedIn",
+          "descriptor": "()Lnet/minecraft/world/entity/Entity;"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "medium",
+          "descriptor": "Lcom/li64/tide/data/fishing/mediums/FishingMedium;"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "canFishInLava",
+          "descriptor": "()Z"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.TideFishingHook",
+          "member": "canFishInVoid",
+          "descriptor": "()Z"
+        },
+        {
+          "class": "com.li64.tide.registries.entities.misc.fishing.HookAccessor",
+          "member": "getHook",
+          "descriptor": "(Lnet/minecraft/world/entity/player/Player;)Lcom/li64/tide/registries/entities/misc/fishing/TideFishingHook;"
+        },
+        {
+          "class": "com.li64.tide.data.fishing.FishData",
+          "member": "get",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Optional;"
+        },
+        {
+          "class": "com.li64.tide.data.fishing.FishData",
+          "member": "fishKey",
+          "descriptor": "()Lnet/minecraft/resources/ResourceKey;"
+        },
+        {
+          "class": "com.li64.tide.data.fishing.mediums.FishingMedium",
+          "member": "id",
+          "descriptor": "()Lnet/minecraft/resources/ResourceLocation;"
+        },
+        {
+          "class": "com.li64.tide.util.BaitUtils",
+          "member": "isBait",
+          "descriptor": "(Lnet/minecraft/world/item/ItemStack;)Z",
+          "purpose": "Native bait eligibility"
+        }
+      ],
+      "external_delivery": "Catch-wear benefits unavailable with Fishing Real or Hybrid Aquatic until their handoff acknowledgments are verified. Native handoffs unchanged."
+    }
+  ],
+  "validation_report": "validation-2.1.1.json"
+}

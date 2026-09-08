@@ -1,11 +1,17 @@
 package com.otectus.runicskills.client.screen;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.client.gui.PowerSelectionSnapshot;
+import com.otectus.runicskills.client.gui.PowerTuningText;
+import com.otectus.runicskills.client.tooltip.TooltipWrap;
 import com.otectus.runicskills.network.ServerNetworking;
 import com.otectus.runicskills.network.packet.common.PowerEquipSP;
 import com.otectus.runicskills.registry.RegistryPowers;
 import com.otectus.runicskills.registry.powers.Power;
 import com.otectus.runicskills.registry.powers.PowerEligibility;
+import com.otectus.runicskills.registry.powers.PowerOverrides;
+import com.otectus.runicskills.registry.powers.PowerOverridesManager;
 import com.otectus.runicskills.client.vfx.ProcPulse;
 import com.otectus.runicskills.integration.tconstruct.TConstructPowers;
 import com.otectus.runicskills.registry.powers.PowerSchool;
@@ -14,6 +20,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -25,9 +32,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Minimum-viable Powers panel. Three tier columns (Marks / Seals / Crown), each listing every
+ * Powers panel. Three tier columns (Marks / Seals / Crown), each listing every
  * registered Power with an Equip/Unequip button and a tooltip description on hover. Triggered
  * by the {@code key.runicskills.open_powers} keybind, which ships <b>unbound</b>: no default key
  * can be chosen safely without testing it against a real pack's control scheme, and a silent
@@ -35,9 +43,10 @@ import java.util.List;
  * previously claimed a default of {@code U}, which was never what
  * {@link com.otectus.runicskills.RunicSkillsClient} registered.
  *
- * <p>Deliberately plain: no texture-blit chrome (the existing skill_panel_*.png assets target
- * a 176×194 layout that doesn't fit a three-column Powers panel), no drag-and-drop, no school
- * color-coded glow. The doc's §3.2 polish is a follow-up; this is the gameplay loop unlock.
+ * <p>The main Skills overview also opens this panel through its icon-only Powers control.
+ * Entries use native-resolution mechanic emblems, school colours and a local proc pulse.
+ * A panel opened from Skills returns there on Escape; the no-argument keybind entry closes
+ * directly to gameplay. Missing-addon slots can be reclaimed through the footer control.
  *
  * <p>State changes round-trip through {@link PowerEquipSP}; the server is authoritative on
  * skill-level / slot-cap / disabled gates. After a successful equip the server fires
@@ -48,7 +57,7 @@ import java.util.List;
 public class PowersScreen extends Screen {
 
     private static final int TITLE_BAND_HEIGHT = 32;
-    private static final int FOOTER_BAND_HEIGHT = 14;
+    private static final int FOOTER_BAND_HEIGHT = 24;
     private static final int COL_HEADER_HEIGHT = 14;
     private static final int LIST_TOP_Y = TITLE_BAND_HEIGHT + 4 + COL_HEADER_HEIGHT;
     private static final int LIST_ROW_HEIGHT = 22;
@@ -61,9 +70,17 @@ public class PowersScreen extends Screen {
     private List<Power> markPool;
     private List<Power> sealPool;
     private List<Power> crownPool;
+    private final Screen parent;
+    private PowerSelectionSnapshot displayedSelection;
+    private List<String> missingEquipped = List.of();
 
     public PowersScreen() {
+        this(null);
+    }
+
+    public PowersScreen(Screen parent) {
         super(Component.translatable("screen.runicskills.powers.title"));
+        this.parent = parent;
     }
 
     @Override
@@ -79,28 +96,46 @@ public class PowersScreen extends Screen {
         crownPool = sortByName(filterHidden(RegistryPowers.getByTier(PowerTier.CROWN)));
     }
 
-    // Omit disabled powers entirely when hideDisabledPowers is on. The button pass and the render
-    // pass both read the resulting pool fields, so their scroll/index math stays consistent.
+    // Hide disabled unequipped powers. Equipped entries remain removable regardless of the hide
+    // setting. Buttons and rendering share these pools, keeping scroll/index math consistent.
     private static List<Power> filterHidden(List<Power> in) {
         List<Power> out = new ArrayList<>(in);
-        out.removeIf(RegistryPowers::isHiddenFromUi);
+        SkillCapability cap = SkillCapability.getLocal();
+        out.removeIf(power -> RegistryPowers.isHiddenFromUi(power)
+                && (cap == null || !cap.isPowerEquipped(power)));
         return out;
     }
 
     private static List<Power> sortByName(List<Power> in) {
         List<Power> out = new ArrayList<>(in);
-        out.sort(Comparator.comparing(Power::getName));
+        out.sort(Comparator.comparing(power -> Component.translatable(power.getKey()).getString(),
+                String.CASE_INSENSITIVE_ORDER));
         return out;
     }
 
     private void rebuildButtons() {
         clearWidgets();
         SkillCapability cap = SkillCapability.getLocal();
-        if (cap == null) return;
+        if (cap == null) {
+            this.displayedSelection = null;
+            return;
+        }
+        this.displayedSelection = new PowerSelectionSnapshot(cap.equippedMarks, cap.equippedSeals, cap.equippedCrown,
+                HandlerCommonConfig.HANDLER.instance().disabledPowers, HandlerCommonConfig.HANDLER.instance().hideDisabledPowers);
+        this.missingEquipped = this.displayedSelection.missingIds(id -> RegistryPowers.getPower(id) != null);
         int colWidth = (this.width - 4 * COL_PAD) / 3;
         addColumnButtons(cap, markPool,  PowerTier.MARK,  COL_PAD, colWidth, scroll[0]);
         addColumnButtons(cap, sealPool,  PowerTier.SEAL,  COL_PAD * 2 + colWidth, colWidth, scroll[1]);
         addColumnButtons(cap, crownPool, PowerTier.CROWN, COL_PAD * 3 + 2 * colWidth, colWidth, scroll[2]);
+        if (!this.missingEquipped.isEmpty()) {
+            String missingId = this.missingEquipped.get(0);
+            this.addRenderableWidget(Button.builder(Component.translatable(
+                            "screen.runicskills.powers.remove_missing", this.missingEquipped.size()),
+                            button -> ServerNetworking.sendToServer(PowerEquipSP.unequipUnknown(missingId)))
+                    .bounds(COL_PAD, this.height - FOOTER_BAND_HEIGHT + 4, 112, BTN_H)
+                    .tooltip(Tooltip.create(Component.translatable("screen.runicskills.powers.remove_missing.tooltip", missingId)))
+                    .build());
+        }
     }
 
     private void addColumnButtons(SkillCapability cap, List<Power> pool, PowerTier tier,
@@ -115,7 +150,10 @@ public class PowersScreen extends Screen {
             Component label = equipped
                     ? Component.translatable("screen.runicskills.powers.unequip")
                     : Component.translatable("screen.runicskills.powers.equip");
-            Button btn = Button.builder(label, b -> sendEquip(p, !equipped))
+            Button btn = Button.builder(label, b -> {
+                        SkillCapability current = SkillCapability.getLocal();
+                        if (current != null) sendEquip(p, !current.isPowerEquipped(p));
+                    })
                     .bounds(x + colWidth - BTN_W - 2, rowY + 2, BTN_W, BTN_H)
                     .build();
             btn.active = !disabled || equipped; // can always unequip even a disabled Power
@@ -125,10 +163,8 @@ public class PowersScreen extends Screen {
 
     private void sendEquip(Power power, boolean equip) {
         ServerNetworking.sendToServer(new PowerEquipSP(power, equip));
-        // The server will respond with SyncSkillCapabilityCP, refreshing our capability cache;
-        // re-init on the next frame so the buttons reflect the new state. Doing it inline here
-        // would race against the packet round-trip.
-        Minecraft.getInstance().tell(this::rebuildButtons);
+        // Refresh only after authoritative state changes, not on a queued task that can execute
+        // before the network round-trip and leave a permanently stale Equip button.
     }
 
     @Override
@@ -137,11 +173,25 @@ public class PowersScreen extends Screen {
 
         SkillCapability cap = SkillCapability.getLocal();
         if (cap == null) {
+            if (this.displayedSelection != null) {
+                clearWidgets();
+                this.displayedSelection = null;
+            }
             g.drawCenteredString(this.font,
                     Component.translatable("screen.runicskills.powers.no_capability"),
                     this.width / 2, this.height / 2, 0xFF5555);
             super.render(g, mouseX, mouseY, partialTicks);
             return;
+        }
+
+        if (this.displayedSelection == null || !this.displayedSelection.matches(
+                cap.equippedMarks, cap.equippedSeals, cap.equippedCrown,
+                HandlerCommonConfig.HANDLER.instance().disabledPowers, HandlerCommonConfig.HANDLER.instance().hideDisabledPowers)) {
+            // Keep keyboard focus in the same visible row after an equip/unequip acknowledgement.
+            int focusIndex = children().indexOf(getFocused());
+            rebuildPools();
+            rebuildButtons();
+            if (focusIndex >= 0 && focusIndex < children().size()) setFocused(children().get(focusIndex));
         }
 
         // Title strip — runestone-slab approximation: dark band with subtle gradient,
@@ -183,14 +233,16 @@ public class PowersScreen extends Screen {
                 COL_PAD * 3 + 2 * colWidth, colWidth, scroll[2], mouseX, mouseY);
         if (crownHover != null) hoveredPower = crownHover;
 
-        super.render(g, mouseX, mouseY, partialTicks);
-
         // Footer hint band
-        g.fill(0, this.height - 14, this.width, this.height, 0xC8000000);
-        g.fill(0, this.height - 14, this.width, this.height - 13, 0xFFD9A03A);
+        g.fill(0, this.height - FOOTER_BAND_HEIGHT, this.width, this.height, 0xC8000000);
+        g.fill(0, this.height - FOOTER_BAND_HEIGHT, this.width, this.height - FOOTER_BAND_HEIGHT + 1, 0xFFD9A03A);
         Component hint = Component.translatable("screen.runicskills.powers.hint")
                 .withStyle(ChatFormatting.GRAY);
-        g.drawCenteredString(this.font, hint, this.width / 2, this.height - 11, 0x999999);
+        int hintStart = this.missingEquipped.isEmpty() ? COL_PAD : COL_PAD + 120;
+        g.drawString(this.font, this.font.plainSubstrByWidth(hint.getString(), Math.max(0, this.width - hintStart - COL_PAD)),
+                hintStart, this.height - 15, 0x999999);
+
+        super.render(g, mouseX, mouseY, partialTicks);
 
         if (hoveredPower != null) {
             renderPowerTooltip(g, hoveredPower, mouseX, mouseY);
@@ -280,7 +332,11 @@ public class PowersScreen extends Screen {
                     .needsUiLabel()) {
                 label.append(Component.literal(" *").withStyle(ChatFormatting.YELLOW));
             }
+            // Reserve the equip button, including at the minimum GUI width. Scissoring preserves
+            // component styles and native glyph pixels; the tooltip always carries the full name.
+            g.enableScissor(iconX + 20, rowY, Math.max(iconX + 20, x + colWidth - BTN_W - 4), rowY + LIST_ROW_HEIGHT);
             g.drawString(this.font, label, iconX + 20, rowY + 6, nameColor);
+            g.disableScissor();
         }
 
         return hovered;
@@ -301,18 +357,45 @@ public class PowersScreen extends Screen {
                     ChatFormatting.AQUA));
         }
         lines.add(Component.literal(""));
+        PowerOverrides overrides = PowerOverridesManager.forPower(p);
+        boolean tuned = overrides != null && (!overrides.values().isEmpty() || overrides.hasIcdTicks());
+        if (tuned && !PowerSchool.TINKERING.equals(school) && !PowerSchool.ANGLING.equals(school)) {
+            lines.add(Component.translatable("screen.runicskills.powers.tuning.defaults")
+                    .withStyle(ChatFormatting.YELLOW));
+        }
         // Through TConstructPowers rather than translatable(key) directly: an Artifice description
         // is formatted from the very numbers its dispatcher executes, override included, so a pack
         // that halves a magnitude in JSON cannot leave the tooltip advertising the old one (13.1).
         // Every other Power takes the same plain translation it always did.
-        lines.add(TConstructPowers.description(p).copy().withStyle(ChatFormatting.GRAY));
-        if (p.requiredSkillLevel > 0 && p.getGoverningSkill() != null) {
+        lines.add((com.otectus.runicskills.integration.tide.TidePowers.owns(p)
+                ? com.otectus.runicskills.integration.tide.TidePowers.description(p)
+                : TConstructPowers.description(p)).copy().withStyle(ChatFormatting.GRAY));
+        if (tuned) {
+            lines.add(Component.translatable("screen.runicskills.powers.tuning.title")
+                    .withStyle(ChatFormatting.GOLD));
+            if (overrides.hasIcdTicks()) {
+                addTuningLine(lines, "cooldown_ticks", overrides.icdTicks());
+            }
+            int shown = 0;
+            int limit = Math.min(6, Math.max(1, (this.height - 140) / 12));
+            for (Map.Entry<String, Double> entry : overrides.values().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey()).limit(limit).toList()) {
+                addTuningLine(lines, entry.getKey(), entry.getValue());
+                shown++;
+            }
+            if (overrides.values().size() > shown) {
+                lines.add(Component.translatable("screen.runicskills.powers.tuning.more", overrides.values().size() - shown)
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
+        }
+        int requiredLevel = PowerOverridesManager.requiredSkillLevelOr(p, p.requiredSkillLevel);
+        if (requiredLevel > 0 && p.getGoverningSkill() != null) {
             lines.add(Component.literal(""));
             // Was `"Requires " + skill.getName() + " " + level` -- English, and built from the
             // registry path rather than the skill's own translated name.
             lines.add(Component.translatable("screen.runicskills.powers.requires",
                             Component.translatable(p.getGoverningSkill().getKey()),
-                            p.requiredSkillLevel)
+                            requiredLevel)
                     .withStyle(ChatFormatting.YELLOW));
         }
         if (RegistryPowers.isDisabled(p)) {
@@ -348,7 +431,14 @@ public class PowersScreen extends Screen {
                 lines.add(Component.translatable(explanation).copy().withStyle(ChatFormatting.DARK_GRAY));
             }
         }
-        g.renderComponentTooltip(this.font, lines, mouseX, mouseY);
+        g.renderComponentTooltip(this.font, TooltipWrap.wrap(lines, Math.max(80, Math.min(280, this.width - 20))), mouseX, mouseY);
+    }
+
+    private static void addTuningLine(List<Component> lines, String key, double value) {
+        PowerTuningText.Line text = PowerTuningText.format(key, value);
+        lines.add(Component.translatable("screen.runicskills.powers.tuning.entry", text.label(),
+                        Component.translatable(text.unitKey(), text.number()))
+                .withStyle(ChatFormatting.AQUA));
     }
 
     /** Cheap mapping of school ResourceLocation → tooltip color. */
@@ -364,6 +454,7 @@ public class PowersScreen extends Screen {
         if (PowerSchool.NATURE.equals(school))    return 0x99DD66;
         if (PowerSchool.ELDRITCH.equals(school))  return 0x99FFCC;
         if (PowerSchool.TINKERING.equals(school)) return 0xD98A3F;
+        if (PowerSchool.ANGLING.equals(school)) return 0x48C9C5;
         return 0xCCCCCC;
     }
 
@@ -391,6 +482,11 @@ public class PowersScreen extends Screen {
         scroll[colIdx] = next;
         rebuildButtons();
         return true;
+    }
+
+    @Override
+    public void onClose() {
+        this.minecraft.setScreen(this.parent);
     }
 
     @Override

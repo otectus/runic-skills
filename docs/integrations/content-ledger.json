@@ -1,0 +1,733 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "runicskills:ss_measured_steel",
+      "name": "Measured Steel",
+      "progression": "Strength 8",
+      "behavior": "A charged direct hit with a heavy weapon adds 5% to that primary physical hit",
+      "limits": "Charge ≥90%; once per attack root; no ability, implicit, projectile or sweep-child replication; shared damage cap",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_patient_temper",
+      "name": "Patient Temper",
+      "progression": "Tinkering 10",
+      "behavior": "10% chance to prevent one point of ordinary weapon wear",
+      "limits": "Actual wear seam; no ability-payment durability, passive repair, or workshop costs; shared wear budget",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "nativePatientTemperOnePointAndActionBoundaries"
+      ]
+    },
+    {
+      "id": "runicskills:ss_resonant_reading",
+      "name": "Resonant Reading",
+      "progression": "Wisdom 12",
+      "behavior": "Expanded tooltip explains native awakening, occupied sockets, active powers and unmet Runic requirements",
+      "limits": "Read-only; show unknown facts as unavailable; never initialize a component or roll an implicit",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "nativeSwordsInspectionPreservesState"
+      ]
+    },
+    {
+      "id": "runicskills:ss_gemguard",
+      "name": "Gemguard",
+      "progression": "Constitution 16",
+      "behavior": "A successful native gem effect grants Guard 1 for 3 seconds",
+      "limits": "One claim per native activation; 8-second cooldown; gem must be natively active",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeGemSuccessRejectionAndResonance"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_spellsteel_discipline",
+      "name": "Spellsteel Discipline",
+      "progression": "Magic 18",
+      "behavior": "After a paid native weapon ability, the next direct hit within 5 seconds grants 10% movement speed for 2 seconds",
+      "limits": "One pending charge; 10-second cooldown; no free-cast, passive tick, or reflected-damage trigger",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWeaponAbilityPaymentAndAwakening"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_returning_grip",
+      "name": "Returning Grip",
+      "progression": "Dexterity 20",
+      "behavior": "A genuinely returned thrown weapon that hit an eligible target grants 15% knockback resistance for 2 seconds",
+      "limits": "Requires return/owner provenance; pickups of dropped weapons do not qualify; 8-second cooldown",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeOwnerReturnAcceptanceAndFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_awake_and_ready",
+      "name": "Awake and Ready",
+      "progression": "Endurance 22",
+      "behavior": "Completing an unlocked awakening-dependent ability grants 10% movement speed for 3 seconds",
+      "limits": "Native unlock required; once per completed activation; 12-second cooldown; no native level gains",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWeaponAbilityPaymentAndAwakening"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_relic_care",
+      "name": "Relic Care",
+      "progression": "Tinkering 24",
+      "behavior": "A supported manual repair of a unique weapon restores up to 10% additional durability",
+      "limits": "Floor additional points; never exceed max durability; no additional material, gem, tablet, XP or output; unsupported repair routes remain unchanged",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeRelicRepairPreviewAndPaidExtraction"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_mark_of_the_draw",
+      "name": "Mark of the Draw",
+      "progression": "Mark / Strength",
+      "behavior": "First charged direct hit after 8 seconds without outgoing combat damage grants Guard 2 for 3 seconds",
+      "limits": "12 seconds; one attack claim",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_returning_steel",
+      "name": "Returning Steel",
+      "progression": "Mark / Dexterity",
+      "behavior": "Successful owner return arms the next direct hit within 5 seconds to apply 10% Slowness for 2 seconds",
+      "limits": "12 seconds; one charge; respect target immunity",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeOwnerReturnAcceptanceAndFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_resonant_breath",
+      "name": "Resonant Breath",
+      "progression": "Mark / Magic",
+      "behavior": "A successful native gem effect arms one subsequent manual weapon ability to grant Guard 2 for 3 seconds on completion",
+      "limits": "15 seconds; arm expires after 8 seconds; no additional gem execution",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeGemSuccessRejectionAndResonance"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_seal_of_the_interval",
+      "name": "Seal of the Interval",
+      "progression": "Seal / Dexterity",
+      "behavior": "Complete a paid native ability and then a charged direct hit within 6 seconds to gain 15% movement speed for 3 seconds",
+      "limits": "20 seconds; ordered distinct actions",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWeaponAbilityPaymentAndAwakening"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_seal_of_gemguard",
+      "name": "Seal of Gemguard",
+      "progression": "Seal / Constitution",
+      "behavior": "A valid native gem proc after taking hostile damage within 4 seconds grants Guard 3 for 4 seconds",
+      "limits": "25 seconds; damage must actually have landed",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeGemSuccessRejectionAndResonance"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:ss_awakened_arsenal",
+      "name": "Crown of the Awakened Arsenal",
+      "progression": "Crown / Wisdom",
+      "behavior": "Complete direct hit → unlocked native ability → direct hit within 12 seconds; gain Guard 4 and 15% knockback resistance for 6 seconds",
+      "limits": "60 seconds; one real weapon family; no forced awakening, cooldown reset or repeated native attack",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWeaponAbilityPaymentAndAwakening"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_couched_discipline",
+      "name": "Couched Discipline",
+      "progression": "Strength 10",
+      "behavior": "A qualifying mounted lance hit after 6 blocks of real forward travel grants 15% knockback resistance for 3 seconds",
+      "limits": "Native mount/offhand predicate; no additional mounted damage multiplier; 8-second cooldown",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMountedLanceTravelAndOwnedBonuses"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_saddleward",
+      "name": "Saddleward",
+      "progression": "Constitution 14",
+      "behavior": "A qualifying mounted lance hit grants the ridden living mount Guard 2 for 4 seconds",
+      "limits": "Only the ridden, player-authorized mount; one mount per player; 12-second cooldown",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMountedLanceTravelAndOwnedBonuses"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_breach_reader",
+      "name": "Breach Reader",
+      "progression": "Wisdom 14",
+      "behavior": "After a native grandsword shield disable, the next direct hit within 5 seconds grants Guard 2 for 3 seconds",
+      "limits": "12 seconds; does not extend the native shield disable",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMimicryContinuityAndShieldResults"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_long_measure",
+      "name": "Long Measure",
+      "progression": "Dexterity 12",
+      "behavior": "A great-spear or great-katana hit in the outer quarter of verified legal reach grants 10% movement speed for 2 seconds",
+      "limits": "6-second cooldown; never extend reach; disable distance-sensitive bonus if the combat adapter cannot resolve reach",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeLegalReachAndDistinctHits"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_countergrip",
+      "name": "Countergrip",
+      "progression": "Dexterity 18",
+      "behavior": "A backhand-blade/deer-horn counter-hit within 3 seconds of surviving hostile melee damage grants Guard 2 for 3 seconds",
+      "limits": "12 seconds; self, reflected and friendly damage excluded",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_measured_blows",
+      "name": "Measured Blows",
+      "progression": "Tinkering 16",
+      "behavior": "10% chance to spare one point of ordinary pernach/quarterstaff wear on a charged direct hit",
+      "limits": "Shared wear accounting; no separate repair loop",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_many_forms_one_hand",
+      "name": "Many Forms, One Hand",
+      "progression": "Wisdom 22",
+      "behavior": "First direct hit after an automatic combat-driven Mimicry transition grants 12% movement speed for 3 seconds",
+      "limits": "10 seconds across the whole family; manual inventory transformations excluded",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMimicryContinuityAndShieldResults"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_relic_care",
+      "name": "Relic Care: More",
+      "progression": "Tinkering 24",
+      "behavior": "Supported manual repairs gain up to 10% additional restored durability",
+      "limits": "Same conservation rules as Simply Swords Relic Care; one repair-efficiency owner per stack, so superclass overlap cannot pay twice",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeRelicRepairPreviewAndPaidExtraction"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_first_pass",
+      "name": "First Pass",
+      "progression": "Mark / Endurance",
+      "behavior": "A valid mounted lance charge hit grants 15% movement speed to the mount for 3 seconds",
+      "limits": "15 seconds; one charge; clear on dismount",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMountedLanceTravelAndOwnedBonuses"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_broken_guard",
+      "name": "Broken Guard",
+      "progression": "Mark / Strength",
+      "behavior": "A confirmed grandsword shield disable grants Guard 2 for 4 seconds",
+      "limits": "15 seconds; native result only",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMimicryContinuityAndShieldResults"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_measured_reach",
+      "name": "Measured Reach",
+      "progression": "Mark / Dexterity",
+      "behavior": "Two distinct successful great-spear or quarterstaff attacks at legal outer reach within 6 seconds grant 15% knockback resistance for 3 seconds",
+      "limits": "12 seconds; no sweep-child counting",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeLegalReachAndDistinctHits"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_reversal",
+      "name": "Reversal of Fortune",
+      "progression": "Seal / Dexterity",
+      "behavior": "Survive hostile melee damage, then counter-hit with backhand blades or deer horns within 3 seconds; gain Guard 3 for 4 seconds",
+      "limits": "25 seconds; one pending attacker record",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeChargedPrimaryAndCounterRewards"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_hold_the_breach",
+      "name": "Hold the Breach",
+      "progression": "Seal / Constitution",
+      "behavior": "A confirmed grandsword shield disable grants Guard 2 for 4 seconds to the user and up to two eligible allies within 4 blocks",
+      "limits": "30 seconds; no NPCs by default; team/ownership policy; never damage the area",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMimicryContinuityAndShieldResults"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:sm_changing_arsenal",
+      "name": "The Changing Arsenal",
+      "progression": "Crown / Wisdom",
+      "behavior": "Land direct attacks in three distinct natively available Mimicry forms within 20 seconds; gain Guard 4 and 15% movement speed for 6 seconds",
+      "limits": "60 seconds; family-wide cooldown; no forced forms or native cooldown resets",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeMimicryContinuityAndShieldResults"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_aqua_attunement",
+      "name": "Aqua Attunement",
+      "progression": "Magic 8",
+      "behavior": "A small native Aqua spell-power modifier, initially targeting a 5% relative increase",
+      "limits": "One native attribute modifier; confirm native units; do not also add a matching damage-event multiplier",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "nativeAquaAttributeScalingAndLifecycle"
+      ]
+    },
+    {
+      "id": "runicskills:tom_measured_current",
+      "name": "Measured Current",
+      "progression": "Endurance 10",
+      "behavior": "Completing a normal paid Aqua cast grants 10% movement speed for 3 seconds",
+      "limits": "Once per cast root; 8-second cooldown; no channel-pulse or free-proc triggers",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidAquaRotationAndFreeCastExclusion"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_changing_tides",
+      "name": "Changing Tides",
+      "progression": "Wisdom 14",
+      "behavior": "Complete Aqua and then a different manual spell school within 8 seconds; the next eligible Aqua cast costs 5% less",
+      "limits": "One charge for 8 seconds; 15-second cooldown; safe paid-cast allowlist and aggregate discount cap",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidAquaRotationAndFreeCastExclusion"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_bound_companion",
+      "name": "Bound Companion",
+      "progression": "Constitution 16",
+      "behavior": "A paid summon cast grants Guard 2 for 8 seconds to one newly created owner-verified summon",
+      "limits": "One recipient per root cast; no duplication across summon swarms; no target/owner rewriting",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidSummonOwnershipAndSingleRecipient"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_relic_discipline",
+      "name": "Relic Discipline",
+      "progression": "Strength 18",
+      "behavior": "A direct hit with a natively advanced T.O. weapon grants 15% knockback resistance for 3 seconds",
+      "limits": "Verified native tier read; 10-second cooldown; does not grant a tier or multiply ability damage",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeAquaProjectileBudgetAndRelicFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_talent_composure",
+      "name": "Talent Composure",
+      "progression": "Intelligence 18",
+      "behavior": "Completing a normal paid T.O. cast while a valid talent is legally equipped grants Guard 1 for 3 seconds",
+      "limits": "10-second cooldown; Curios/native slot validity; no extra slots or duplicated talent application",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeTalentSlotAndPaidCast"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_pressure_reader",
+      "name": "Pressure Reader",
+      "progression": "Wisdom 22",
+      "behavior": "A successful player-performed native counterspell grants Guard 3 for 4 seconds",
+      "limits": "25-second cooldown; unavailable until a trustworthy success hook is established; never auto-counterspell",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeCounterspellCancellationAndSuccess"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_artificers_poise",
+      "name": "Artificer’s Poise",
+      "progression": "Tinkering 24",
+      "behavior": "A completed paid native armor activation prepares the next eligible Aqua cast within 6 seconds to grant 15% knockback resistance for 3 seconds",
+      "limits": "20-second cooldown; requires verified activation commit; does not alter native armor state or costs",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidArmorPacketAndAquaFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_undertow",
+      "name": "Undertow",
+      "progression": "Mark / Magic",
+      "behavior": "First eligible Aqua hit marks one hostile target for 5 seconds; a subsequent direct melee hit applies 10% Slowness for 2 seconds",
+      "limits": "12 seconds; one target record; no extra damage instance",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeAquaProjectileBudgetAndRelicFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_sheltering_current",
+      "name": "Sheltering Current",
+      "progression": "Mark / Endurance",
+      "behavior": "Complete a normal paid Aqua cast after taking hostile damage within 4 seconds; gain Guard 2 for 4 seconds",
+      "limits": "15 seconds; no native damage-cap changes",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidAquaRotationAndFreeCastExclusion"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_companions_wake",
+      "name": "Companion’s Wake",
+      "progression": "Mark / Constitution",
+      "behavior": "One newly summoned, verified owned ally from a paid cast gains 15% knockback resistance for 6 seconds",
+      "limits": "15 seconds; once per cast; no free resummoning",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidSummonOwnershipAndSingleRecipient"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_stillwater",
+      "name": "Stillwater",
+      "progression": "Seal / Wisdom",
+      "behavior": "Complete two distinct eligible Aqua spell IDs within 10 seconds; gain Guard 3 and 10% movement speed for 4 seconds",
+      "limits": "25 seconds; channel/recast repetitions do not satisfy “distinct”",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidAquaRotationAndFreeCastExclusion"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_artificers_accord",
+      "name": "Artificer’s Accord",
+      "progression": "Seal / Tinkering",
+      "behavior": "Complete a paid native equipment activation, then a normal paid Aqua cast within 6 seconds; gain Guard 3 for 5 seconds",
+      "limits": "30 seconds; unavailable without the native activation-commit capability",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativePaidArmorPacketAndAquaFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tom_confluence",
+      "name": "Confluence",
+      "progression": "Crown / Magic",
+      "behavior": "Complete Aqua → another school → a third distinct spell ID within 15 seconds; next eligible Aqua cast within 8 seconds gains a 10% primary damage budget",
+      "limits": "60 seconds; total added damage ≤4 health points per cast; shared across all targets/pulses; no additional projectile or repeated spell",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeAquaProjectileBudgetAndRelicFollowup"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_measured_cast",
+      "name": "Measured Cast",
+      "progression": "Dexterity 6",
+      "behavior": "Reduce cast preparation duration by 10%",
+      "limits": "Native charge-duration seam; final duration ≥6 ticks; no bite-time or instant-catch effect",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "measuredCastNativeDurationAndToggle"
+      ]
+    },
+    {
+      "id": "runicskills:tide_patient_hands",
+      "name": "Patient Hands",
+      "progression": "Tinkering 8",
+      "behavior": "10% chance to spare one point of wear on a successful fish retrieval",
+      "limits": "Commit-specific wear accounting; pulled entities and failed retrieves excluded",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "nativeCatchConservationAndRejections"
+      ]
+    },
+    {
+      "id": "runicskills:tide_read_the_water",
+      "name": "Read the Water",
+      "progression": "Wisdom 10",
+      "behavior": "With the journal or Fish Finder available, explain failed native habitat conditions for a selected known fish",
+      "limits": "No undiscovered names, global scans, or condition bypass",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeJournalKnowledgeMilestonesAndFavor"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_sure_line",
+      "name": "Sure Line",
+      "progression": "Dexterity 14",
+      "behavior": "Add 0.02 of normalized track width to Tide’s normal success window",
+      "limits": "Do not expand perfect window; shared Runic window cap 0.06; provider-specific capability",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWindowAndTwoMediumCharges"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_baitkeeper",
+      "name": "Baitkeeper",
+      "progression": "Fortune 16",
+      "behavior": "10% chance to preserve one eligible bait unit during a successful fish cast",
+      "limits": "One occupied slot/unit per cast; intercept native consumption; do not refund a copied stack",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "baitkeeperNativeConsumption"
+      ]
+    },
+    {
+      "id": "runicskills:tide_many_waters",
+      "name": "Many Waters",
+      "progression": "Endurance 18",
+      "behavior": "First successful catch in a new biome family during a 10-minute session prepares the next cast 10% faster",
+      "limits": "One pending charge; four habitat rewards per session; boundary oscillation cannot rearm",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "manyWatersNativeCatchPreparationAndSessionDebt"
+      ]
+    },
+    {
+      "id": "runicskills:tide_field_naturalist",
+      "name": "Field Naturalist",
+      "progression": "Wisdom 22",
+      "behavior": "At 10/25/50 known caught species, unlock richer journal filters and comparisons of known habitat requirements",
+      "limits": "Information benefit; no bonus fish, native unlock writes or skill XP",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeJournalKnowledgeMilestonesAndFavor"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_careful_landing",
+      "name": "Careful Landing",
+      "progression": "Endurance 24",
+      "behavior": "A successful legal lava/void fish catch gets a further 10% chance to spare one ordinary wear point",
+      "limits": "Shared wear cap; no medium access, fire immunity or void immunity",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "nativeCatchConservationAndRejections"
+      ]
+    },
+    {
+      "id": "runicskills:tide_stillwater_oath",
+      "name": "The Stillwater Oath",
+      "progression": "Mark / Dexterity",
+      "behavior": "A successful fish catch prepares the next cast 15% faster",
+      "limits": "20 seconds; one charge lasting 60 seconds; shared preparation cap",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "stillwaterNativeChargeAndCooldown"
+      ]
+    },
+    {
+      "id": "runicskills:tide_unbroken_thread",
+      "name": "Unbroken Thread",
+      "progression": "Mark / Tinkering",
+      "behavior": "Two successful fish catches with distinct cast IDs arm the next successful fish retrieval with a 20% chance to spare one wear point",
+      "limits": "30 seconds; charge lasts 90 seconds; shared wear cap",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "unbrokenThreadNativeSequence"
+      ]
+    },
+    {
+      "id": "runicskills:tide_anglers_almanac",
+      "name": "The Angler’s Almanac",
+      "progression": "Mark / Wisdom",
+      "behavior": "Three distinct caught species within 5 minutes enable 60 seconds of expanded habitat comparisons for already known fish",
+      "limits": "90 seconds; uses the native journal/Finder; no secret discovery",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeJournalKnowledgeMilestonesAndFavor"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_favor_from_the_deep",
+      "name": "A Favor from the Deep",
+      "progression": "Seal / Fortune",
+      "behavior": "Five distinct species caught within 10 minutes prepare one fish roll with ×1.10 weight for one journal-selected, already caught species that is currently eligible",
+      "limits": "120 seconds; one cast; category roll unchanged; optional weighting capability",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeJournalKnowledgeMilestonesAndFavor"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    },
+    {
+      "id": "runicskills:tide_keeper_of_the_banks",
+      "name": "Keeper of the Banks",
+      "progression": "Seal / Wisdom",
+      "behavior": "Catch three distinct species across two biome families within 5 minutes; arm one 20% bait-preservation roll and one cast-preparation benefit of 15%",
+      "limits": "120 seconds; charges expire after 90 seconds; maximum one conserved bait unit",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run.",
+      "native_tests": [
+        "keeperNativeSequenceAndIndependentCharges"
+      ]
+    },
+    {
+      "id": "runicskills:tide_between_ember_and_star",
+      "name": "Between Ember and Star",
+      "progression": "Crown / Endurance",
+      "behavior": "Successful fish catches in two distinct native mediums within 10 minutes arm the next two legal casts with 20% faster preparation and +0.02 normal success-window width",
+      "limits": "180 seconds; charges last 120 seconds; native access required; no forced species, medium or perfect result",
+      "implementation": "implemented_native_server_validated",
+      "player_registration": true,
+      "native_tests": [
+        "nativeWindowAndTwoMediumCharges"
+      ],
+      "validation": "Representative native positive and rejection/lifecycle checks in the pinned all-four server profile; see content-native-tests.json and validation-2.1.1.json. Client and exhaustive per-item/provider matrix not run."
+    }
+  ]
+}

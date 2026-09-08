@@ -58,6 +58,7 @@ public class RunicSkillsClient {
         @SubscribeEvent
         public static void onLoggingOut(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
             com.otectus.runicskills.config.snapshot.GameplayConfigSnapshot.clear();
+            com.otectus.runicskills.integration.common.IntegrationRuntime.disconnect();
             // Proc presentation is per-session too: coalescing keys reference entity ids from the
             // world being left, and a HUD card outliving its world would name a Power the next
             // world may not even register.
@@ -180,6 +181,7 @@ public class RunicSkillsClient {
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "title_overlay", OverlayTitleGui.INSTANCE);
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "notice_overlay", OverlayNoticeGui.INSTANCE);
             event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "power_proc_overlay", OverlayPowerProcGui.INSTANCE);
+            event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "guard_overlay", com.otectus.runicskills.client.gui.OverlayGuardGui.INSTANCE);
         }
 
         @SubscribeEvent

@@ -39,4 +39,10 @@ public final class SkillLevelUpMath {
     public static boolean canAfford(boolean creative, int spendableXp, int requiredPoints) {
         return creative || requiredPoints <= spendableXp;
     }
+
+    /** Eight proportional rank bands, with the final rank reserved for reaching the cap. */
+    public static int rankIndex(int level, int maxLevel) {
+        if (level <= 0 || maxLevel <= 0) return 0;
+        return (int) Math.min(8L, (long) level * 8L / maxLevel);
+    }
 }

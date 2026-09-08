@@ -119,6 +119,15 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
         int dot = mixinClassName.lastIndexOf('.');
         String simple = dot >= 0 ? mixinClassName.substring(dot + 1) : mixinClassName;
         return switch (simple) {
+            case "MixCounterspellCommit", "MixArmorKeyInput", "MixPaidArmorCommit" -> verifiedTomCompanion();
+            case "MixMimicryTransition", "MixMimicryTimeline", "MixNativeShieldDisable" -> verifiedMore();
+            case "MixPaidSpellActions" -> verifiedTomCompanion();
+            case "MixPaidProjectileTick" -> verifiedTomCompanion();
+            case "MixPrimaryWeaponHit" -> verifiedSwords() || verifiedTomCompanion();
+            case "MixPlayerWeaponWear", "MixSwordOrdinaryWear", "MixGemWearContext",
+                 "MixManualWeaponInput", "MixWeaponKeyInput", "MixWeaponActivation", "MixWeaponManaPayment", "MixNativeGemEffect", "MixReleasedWeapon", "MixReturnedWeaponPickup",
+                 "MixNativeGemSummon", "MixNativeGemHealing", "MixPassiveGemEffect", "MixManualGemEffect", "MixGemMomentum" -> verifiedSwords();
+            case "MixTideFishingRodItem", "MixTideCastLifecycle", "MixTideFishingHook", "MixTideBaitLifecycle", "MixTideBaitContents", "MixTideNormalWindow", "MixTideSpeciesRoll", "MixTideSpeciesWeight" -> verifiedTide();
             case "MixTargetFinder"           -> isModPresent("bettercombat");
             case "MixGunItem"                -> isModPresent("pointblank");
             case "MixTrueInvisibilityEffect", "MixAbstractMagicProjectile",
@@ -189,17 +198,51 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 
-    /**
-     * The only place that knows a mixin was really applied, rather than merely offered.
-     *
-     * <p>Mixin calls this after a successful application and never otherwise, so recording the name
-     * here gives {@link TConstructHookLedger} a fact where {@link #TCONSTRUCT_DECISIONS} holds an
-     * intention. The two are different answers since RS207 put {@code require = 0} on every
-     * Tinkers' injector: a selector that matches nothing now warns instead of crashing, and without
-     * this record it would also be invisible.
-     */
+    /** Record target nodes for verification after MixinExtras' late-applying extensions finish. */
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        TConstructHookLedger.recordApplied(mixinClassName);
+        if (mixinClassName.endsWith(".MixPaidSpellActions"))
+            com.otectus.runicskills.integration.tom.TomHookVerification.record(mixinInfo.getClassNode(0), targetClass);
+        if (mixinClassName.endsWith(".MixPrimaryWeaponHit") || mixinClassName.endsWith(".MixPaidProjectileTick")
+                || mixinClassName.endsWith(".MixCounterspellCommit") || mixinClassName.endsWith(".MixArmorKeyInput") || mixinClassName.endsWith(".MixPaidArmorCommit"))
+            com.otectus.runicskills.integration.tom.TomHookVerification.combat(mixinClassName,mixinInfo.getClassNode(0),targetClass);
+        if (mixinClassName.contains(".mixin.simplyswords.") || mixinClassName.endsWith(".MixAnvilMenu")) {
+            com.otectus.runicskills.integration.simplyswords.SwordsHookVerification.record(mixinClassName, mixinInfo.getClassNode(0), targetClass);
+        }
+        if (mixinClassName.contains(".mixin.tide.")) {
+            com.otectus.runicskills.integration.tide.TideHookVerification.record(mixinClassName, mixinInfo.getClassNode(0), targetClass);
+        }
+        if (mixinClassName.contains(".mixin.tconstruct.")) {
+            TConstructHookLedger.recordTarget(mixinClassName, mixinInfo.getClassNode(0), targetClass);
+        }
+    }
+
+    private static boolean verifiedTide() {
+        if (!isModPresent("tide")) return false;
+        var file = LoadingModList.get().getModFileById("tide");
+        var module = com.otectus.runicskills.integration.common.IntegrationModule.TIDE;
+        return file.getMods().stream().anyMatch(mod -> "tide".equals(mod.getModId()) && module.version.equals(mod.getVersion().toString()))
+                && module.sha256.equals(com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(file.getFile().getFilePath()));
+    }
+    private static boolean verifiedTomCompanion() {
+        if (!isModPresent("runicskills_tom_compat") || !isModPresent("traveloptics") || !isModPresent("irons_spellbooks")) return false;
+        var list = LoadingModList.get();
+        return com.otectus.runicskills.integration.common.IntegrationModule.TOM.sha256.equals(
+                com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(list.getModFileById("traveloptics").getFile().getFilePath()))
+                && "92c046383b4960c655f840d8846732a481edcf7c5ed89028b3d7b2cc2910b224".equals(
+                com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(list.getModFileById("irons_spellbooks").getFile().getFilePath()));
+    }
+    private static boolean verifiedMore() {
+        if(!verifiedSwords() || !isModPresent("simplymore"))return false;
+        var module=com.otectus.runicskills.integration.common.IntegrationModule.SIMPLY_MORE;
+        var file=LoadingModList.get().getModFileById("simplymore");
+        return module.sha256.equals(com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(file.getFile().getFilePath()));
+    }
+    private static boolean verifiedSwords() {
+        if (!isModPresent("simplyswords")) return false;
+        var file = LoadingModList.get().getModFileById("simplyswords");
+        var module = com.otectus.runicskills.integration.common.IntegrationModule.SIMPLY_SWORDS;
+        return file.getMods().stream().anyMatch(mod -> "simplyswords".equals(mod.getModId()) && module.version.equals(mod.getVersion().toString()))
+                && module.sha256.equals(com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(file.getFile().getFilePath()));
     }
 }

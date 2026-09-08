@@ -241,7 +241,15 @@ public final class TcAddonHooks {
 
     /** Forgets one player's bracket, on logout or server stop. */
     public static void forget(java.util.UUID player) {
-        if (player != null) RESOLVING_DEATH.remove(player);
+        if (player != null) {
+            RESOLVING_DEATH.remove(player);
+            TcAddonState.clear(player);
+        }
+    }
+
+    public static void forgetAll() {
+        RESOLVING_DEATH.clear();
+        TcAddonState.clearAll();
     }
 
     /**

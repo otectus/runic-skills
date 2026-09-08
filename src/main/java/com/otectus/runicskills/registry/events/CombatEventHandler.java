@@ -31,6 +31,7 @@ import net.minecraftforge.event.entity.EntityTeleportEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -182,12 +183,21 @@ public class CombatEventHandler {
                 }
             }
 
-            if (provider != null && provider.getCounterAttack() && player instanceof ServerPlayer serverPlayerAttacker) {
-                // The retaliation is spent on the first swing back.
-                provider.clearCounterAttack();
-                new RegistryAttributes.RegisterAttribute(serverPlayerAttacker, Attributes.ATTACK_DAMAGE, 0.0F, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(false);
-                SyncSkillCapabilityCP.send(serverPlayerAttacker);
-            }
+        }
+    }
+
+    /** Spend retaliation only after vanilla has read the boosted attribute and resolved a hit. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCounterAttackLanded(LivingDamageEvent event) {
+        if (event.getAmount() <= 0 || !DamageContext.allowsStandardOutgoingModifiers()) return;
+        if (!(event.getSource().getDirectEntity() instanceof ServerPlayer player)
+                || event.getSource().getEntity() != player || player instanceof FakePlayer) return;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap != null && cap.getCounterAttack()) {
+            cap.clearCounterAttack();
+            new RegistryAttributes.RegisterAttribute(player, Attributes.ATTACK_DAMAGE, 0.0,
+                    RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(false);
+            SyncSkillCapabilityCP.send(player);
         }
     }
 
@@ -253,21 +263,17 @@ public class CombatEventHandler {
                 : com.otectus.runicskills.common.util.BreakSpeedMath.delta(event.getOriginalSpeed(),
                         player.getAttributeValue(RegistryAttributes.BREAK_SPEED.get()));
 
-        if (player.getMainHandItem().is(itemHolder -> itemHolder.get() instanceof net.minecraft.world.item.PickaxeItem)) {
-            if (event.getState().is(RegistryTags.Blocks.OBSIDIAN)) {
-                if (RegistryPerks.OBSIDIAN_SMASHER != null && RegistryPerks.OBSIDIAN_SMASHER.get().isEnabled(player)) {
-                    event.setNewSpeed((float) (event.getNewSpeed() * RegistryPerks.OBSIDIAN_SMASHER.get().getActiveValue(player)[0]) + modifier);
-                } else {
-                    event.setNewSpeed(event.getNewSpeed());
-                }
-            } else {
-                event.setNewSpeed(event.getNewSpeed() + modifier);
-            }
+        // The passive belongs to the player, so modded harvest tools, hoes, shears and obsidian
+        // without Obsidian Smasher must receive it too. One contribution avoids class-hierarchy
+        // gaps and lets native tool penalties remain part of the original break speed.
+        if (event.getState().is(RegistryTags.Blocks.OBSIDIAN)
+                && player.getMainHandItem().isCorrectToolForDrops(event.getState())
+                && RegistryPerks.OBSIDIAN_SMASHER != null
+                && RegistryPerks.OBSIDIAN_SMASHER.get().isEnabled(player)) {
+            event.setNewSpeed((float) (event.getNewSpeed()
+                    * RegistryPerks.OBSIDIAN_SMASHER.get().getActiveValue(player)[0]));
         }
-        if (player.getMainHandItem().is(itemHolder -> itemHolder.get() instanceof net.minecraft.world.item.ShovelItem))
-            event.setNewSpeed(event.getNewSpeed() + modifier);
-        if (player.getMainHandItem().is(itemHolder -> itemHolder.get() instanceof net.minecraft.world.item.AxeItem))
-            event.setNewSpeed(event.getNewSpeed() + modifier);
+        event.setNewSpeed(event.getNewSpeed() + modifier);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -275,6 +281,24 @@ public class CombatEventHandler {
         Player player = event.getEntity();
         if (player != null) {
             if (player instanceof FakePlayer) return;
+            if (event.getResult() == Event.Result.DENY) return;
+            // Forge starts a non-critical swing at 1x. Merely setting ALLOW produces critical
+            // particles with ordinary damage; establish its 1.5x base before adding crit stats.
+            boolean forcedCritical = !event.isVanillaCritical()
+                    && event.getResult() != Event.Result.ALLOW
+                    && ((RegistryPerks.BERSERKER != null
+                            && RegistryPerks.BERSERKER.get().isEnabled(player)
+                            && player.getHealth() <= player.getMaxHealth()
+                                    * RegistryPerks.BERSERKER.get().getActiveValue(player)[0] / 100.0
+                            && (player.onGround() || player.isInWater()))
+                        || (RegistryPerks.CRITICAL_MASTERY != null
+                            && RegistryPerks.CRITICAL_MASTERY.get().isEnabled(player)
+                            && player.getRandom().nextDouble()
+                                    < HandlerCommonConfig.HANDLER.instance().criticalMasteryPercent / 100.0));
+            if (forcedCritical) {
+                event.setResult(Event.Result.ALLOW);
+                event.setDamageModifier(Math.max(1.5f, event.getDamageModifier()));
+            }
             float damage = event.getDamageModifier();
 
             boolean apothicHandlesCritDamage = ApothicAttributesIntegration.isModLoaded()
@@ -282,16 +306,6 @@ public class CombatEventHandler {
             if (!apothicHandlesCritDamage) {
                 float attribute = (float) event.getEntity().getAttributeValue(RegistryAttributes.CRITICAL_DAMAGE.get());
                 event.setDamageModifier(damage + attribute);
-            }
-
-            if (RegistryPerks.BERSERKER != null && RegistryPerks.BERSERKER.isPresent()) {
-                if (RegistryPerks.BERSERKER.get().isEnabled(player) && player.getHealth() <= player.getMaxHealth() * (float) (RegistryPerks.BERSERKER.get().getActiveValue(player)[0] / 100.0D)) {
-                    float newDamage = event.getDamageModifier();
-                    if (player.onGround() || player.isInWater()) {
-                        event.setResult(Event.Result.ALLOW);
-                        event.setDamageModifier(newDamage * 1.5F);
-                    }
-                }
             }
 
             // R3 — POWER_ATTACK: critical hits deal an additional % damage on top of vanilla
@@ -305,7 +319,7 @@ public class CombatEventHandler {
             if (player instanceof ServerPlayer serverPlayer) {
                 if (RegistryPerks.CRITICAL_ROLL != null && RegistryPerks.CRITICAL_ROLL.isPresent()) {
                     if (RegistryPerks.CRITICAL_ROLL.get().isEnabled(serverPlayer)) {
-                        if (event.isVanillaCritical() || (RegistryPerks.BERSERKER != null && RegistryPerks.BERSERKER.isPresent() && RegistryPerks.BERSERKER.get().isEnabled(player) && player.getHealth() <= player.getMaxHealth() * (float) (RegistryPerks.BERSERKER.get().getActiveValue(player)[0] / 100.0D))) {
+                        if (event.isVanillaCritical() || event.getResult() == Event.Result.ALLOW) {
                             float newDamage = event.getDamageModifier();
                             int dice = ThreadLocalRandom.current().nextInt(6) + 1;
                             if (dice == 1) {
@@ -323,34 +337,22 @@ public class CombatEventHandler {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onAttackEntity(LivingHurtEvent event) {
-        if (event.getSource() != null) {
-            Entity source = event.getSource().getEntity();
-            if (source instanceof LivingEntity livingEntity) {
-                if (livingEntity.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
-                    float sourceDamage = (float) livingEntity.getAttributeValue(Attributes.ATTACK_DAMAGE);
-                    LivingEntity livingEntity1 = event.getEntity();
-                    if (livingEntity1 instanceof FakePlayer) return;
-                    if (livingEntity1 instanceof ServerPlayer player) {
-                        SkillCapability provider = SkillCapability.get(player);
-
-                        if (provider != null && !event.isCanceled() && RegistryPerks.COUNTER_ATTACK != null && RegistryPerks.COUNTER_ATTACK.get().isEnabled(player)) {
-                            float modifier = (float) (sourceDamage * RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[1] / 100.0D);
-                            // Open a real, self-expiring window. value[0] is the window in seconds,
-                            // and the tooltip prints it in seconds, so it converts at 20 ticks per
-                            // second like every other duration; the historical *40 made a configured
-                            // 3s last 6s (MEDIUM-08).
-                            int windowTicks = com.otectus.runicskills.common.util.DurationMath.secondsToTicks(
-                                    RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player)[0]);
-                            provider.setCounterAttack(windowTicks);
-                            new RegistryAttributes.RegisterAttribute(player, Attributes.ATTACK_DAMAGE, modifier, RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(true);
-                            SyncSkillCapabilityCP.send(player);
-                        }
-                    }
-                }
-            }
-        }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCounterAttackReceived(LivingDamageEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer
+                || event.getAmount() <= 0 || !(event.getSource().getEntity() instanceof LivingEntity attacker)
+                || attacker == player || RegistryPerks.COUNTER_ATTACK == null
+                || !RegistryPerks.COUNTER_ATTACK.get().isEnabled(player)) return;
+        SkillCapability provider = SkillCapability.get(player);
+        if (provider == null) return;
+        // Retaliation reflects damage actually received, including projectiles and modded
+        // attacks whose owner has no ATTACK_DAMAGE attribute. Armor/absorption already applied.
+        double[] values = RegistryPerks.COUNTER_ATTACK.get().getActiveValue(player);
+        double modifier = event.getAmount() * values[1] / 100.0;
+        provider.setCounterAttack(com.otectus.runicskills.common.util.DurationMath.secondsToTicks(values[0]));
+        new RegistryAttributes.RegisterAttribute(player, Attributes.ATTACK_DAMAGE, modifier,
+                RegistryAttributes.COUNTER_ATTACK_UUID).amplifyAttribute(provider.getCounterAttack());
+        SyncSkillCapabilityCP.send(player);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
@@ -680,9 +682,8 @@ public class CombatEventHandler {
     }
 
     // ── R3 batch 2 victim-side handler ─────────────────────────────────────────
-    // Runs at LOWEST priority so vanilla armor / resistance / Apotheosis ward
-    // effects are baked into event.getAmount() before we observe it. Powers the
-    // VENGEANCE attacker-memo and the LAST_STAND save-from-fatal clamp.
+    // Records vengeance before damage is committed. Last Stand uses LivingDamageEvent below,
+    // since LivingHurtEvent runs before vanilla armor, resistance and absorption.
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onLivingHurtStrengthVictim(LivingHurtEvent event) {
@@ -701,11 +702,26 @@ public class CombatEventHandler {
             }
         }
 
+    }
+
+    /** Resolve survival after armor, resistance and absorption, rather than spending it on a
+     * pre-mitigation hit that never threatened the player's health. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onLastStandDamage(LivingDamageEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)
+                || player.isCreative() || player instanceof FakePlayer || event.getAmount() <= 0
+                || event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
+        long now = player.level().getGameTime();
         // LAST_STAND — clamp a fatal hit so the player survives at 1 HP, open a 40-tick
         // bonus-damage window, and set the 60-second perk cooldown. Reads cooldown via
         // the S6 helper. Only triggers if the hit would actually kill (otherwise pass
         // through unchanged — partial-damage hits at any HP are not in scope).
         if (RegistryPerks.LAST_STAND != null && RegistryPerks.LAST_STAND.get().isEnabled(player)) {
+            Long activeUntil = LAST_STAND_ACTIVE_UNTIL.get(player.getUUID());
+            if (activeUntil != null && now < activeUntil) {
+                event.setAmount(0.0f);
+                return;
+            }
             SkillCapability cap = SkillCapability.get(player);
             if (cap != null && cap.getCooldown(RegistryPerks.LAST_STAND.get()) <= 0) {
                 float incoming = event.getAmount();
@@ -716,9 +732,7 @@ public class CombatEventHandler {
                     event.setAmount(DamageMath.safeAmount(event.getAmount(), clamped));
                     LAST_STAND_ACTIVE_UNTIL.put(player.getUUID(), now + 40L);
                     cap.setCooldown(RegistryPerks.LAST_STAND.get(), 1200);
-                    if (player instanceof ServerPlayer sp) {
-                        SyncSkillCapabilityCP.send(sp);
-                    }
+                    SyncSkillCapabilityCP.send(player);
                 }
             }
         }
@@ -883,10 +897,18 @@ public class CombatEventHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerShootArrow(ProjectileImpactEvent event) {
+        if (event.getProjectile().level().isClientSide()
+                || event.getRayTraceResult().getType() != HitResult.Type.ENTITY) return;
         Projectile projectile = event.getProjectile();
-        if (projectile instanceof Arrow arrow) {
+        if (projectile instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow
+                && !(arrow instanceof net.minecraft.world.entity.projectile.ThrownTrident)) {
             Entity entity = projectile.getOwner();
-            if (entity instanceof Player player) {
+            if (entity instanceof Player player && !(player instanceof FakePlayer)
+                    && !arrow.getPersistentData().getBoolean("rs_arrow_damage_applied")) {
+                // Piercing arrows report each impact separately. Their base damage is mutable,
+                // so applying another fraction to it per victim used to compound without bound.
+                // Save the once-only marker with the projectile, including across chunk reloads.
+                arrow.getPersistentData().putBoolean("rs_arrow_damage_applied", true);
                 double baseDamage = arrow.getBaseDamage();
                 boolean apothicHandlesArrowDamage = ApothicAttributesIntegration.isModLoaded()
                         && HandlerCommonConfig.HANDLER.instance().apothicDelegateArrowDamage;

@@ -1,0 +1,100 @@
+{
+  "scope": "Pinned dependencies for isolated four-mod Forge production validation; not bundled into Runic Skills.",
+  "dependencies": [
+    {
+      "version": "9.2.14+forge",
+      "filename": "architectury-9.2.14-forge.jar",
+      "publisher_download": "https://cdn.modrinth.com/data/lhGA9TYQ/versions/1MKTLiiG/architectury-9.2.14-forge.jar",
+      "sha512": "cf67f2050cafa00f0bee42e6d7bef77fdb808ac4f71742f7b4d6d5c1e6ffb49561a5a252f332d2b78a9767bdb5faa284611790dba303fbdc736ae36d794f61c7",
+      "sha256": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af"
+    },
+    {
+      "version": "0.7.6+1.20.1+forge",
+      "filename": "fzzy_config-0.7.6+1.20.1+forge.jar",
+      "publisher_download": "https://cdn.modrinth.com/data/hYykXjDp/versions/7MmXhjWs/fzzy_config-0.7.6%2B1.20.1%2Bforge.jar",
+      "sha512": "dff242c555006ddab4ffca5ca005b4186cfec3e9f5a9409dc15e91bf1e4eadb33508e458709d0b154b372e214ceb6d8cd343f1e718eb426db4570a292b0e4b0c",
+      "sha256": "d39cd5d6b23b86468937e306776dc70faba900072c7e359ce9348d8a3c26982e"
+    },
+    {
+      "version": "4.12.0",
+      "filename": "kotlinforforge-4.12.0-all.jar",
+      "publisher_download": "https://cdn.modrinth.com/data/ordsPcFz/versions/Zsh14XeQ/kotlinforforge-4.12.0-all.jar",
+      "sha512": "767f40030ed4b370a3838fa65ae1b79974f31979342fff7cc834a0d5f39eb28612642519352ff2a1dd5226ce1f745f8b3156ee3625ffde01219137d064c1ee40",
+      "sha256": "6a66c6a68ec09f8717cdbf06883394f0ee24d7cd826b7134a0f81839e8e720ae"
+    },
+    {
+      "version": "2.0.2",
+      "filename": "alexscaves.jar",
+      "sha256": "131e205ce3eed384d701b336d8a0d4a671108ed56b6eff6014f0e407db2997f0",
+      "mod_id": "alexscaves",
+      "publisher_download": "https://cdn.modrinth.com/data/U6GY0xp0/versions/lC8HHXOF/alexscaves-2.0.2.jar",
+      "sha512": "d23092cf507f4cf66ead45d7b393393ea83a9002056962ee6c341e91323ae39e10f2aefbbbc9f5e54409eb3ee522ad0c2dd5661077b09f1e37d034cfdd4333a0"
+    },
+    {
+      "version": "2.6.3",
+      "filename": "citadel.jar",
+      "sha256": "56c7ab87348a5292583aac787b6cf11b5193e77f02af1d17ea75a96f8640b3ce",
+      "mod_id": "citadel",
+      "publisher_download": "https://cdn.modrinth.com/data/jJfV67b1/versions/lTAAe4sZ/citadel-2.6.3-1.20.1.jar",
+      "sha512": "42e3fa0ddefb1ebdbba4242d81caede834cd0bbd96e4e90b12b2157a5b07c68b625f64046de1f9e1ad4d6056d3536e17207be5f4b24960582052d713b13f22c0"
+    },
+    {
+      "version": "3.16",
+      "filename": "cataclysm.jar",
+      "sha256": "ac1028f4bfaa2629d80ce3c1f26e28ceec2e6f2aaaac3bb03dd8957856d2e7ca",
+      "mod_id": "cataclysm",
+      "url": "https://www.cursemaven.com/curse/maven/lendercataclysm-551586/6906993/lendercataclysm-551586-6906993.jar",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/lendercataclysm/files/6906993"
+    },
+    {
+      "version": "2.7",
+      "filename": "lionfish-api.jar",
+      "sha256": "aa3191415ca5263a86b7baedead2aeaffaa94f093dcd42381e4b258e450130e3",
+      "mod_id": "lionfishapi",
+      "url": "https://www.cursemaven.com/curse/maven/lionfish-api-1001614/7923140/lionfish-api-1001614-7923140.jar",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/lionfish-api/files/7923140"
+    },
+    {
+      "version": "1.20.1-3.15.0",
+      "filename": "irons-spellbooks.jar",
+      "sha256": "92c046383b4960c655f840d8846732a481edcf7c5ed89028b3d7b2cc2910b224",
+      "mod_id": "irons_spellbooks",
+      "coordinate": "curse.maven/irons-spells-n-spellbooks-855414/7402504"
+    },
+    {
+      "version": "1.3.7",
+      "filename": "apothic-attributes.jar",
+      "sha256": "68487b11c0d4e2f67a85f2b04bf65e99ac15294f2923f4391f83e9542293187a",
+      "mod_id": "attributeslib",
+      "coordinate": "curse.maven/apothic-attributes-898963/5634071"
+    },
+    {
+      "version": "8.6.3",
+      "filename": "placebo.jar",
+      "sha256": "1cdf906cfbcbb5e5be2ef1bb721f79a24b01bd2ac559c8cdbfb7693f62421571",
+      "mod_id": "placebo",
+      "coordinate": "curse.maven/placebo-283644/6274231"
+    },
+    {
+      "version": "1.0.2-rc1+1.20",
+      "filename": "player-animator.jar",
+      "sha256": "4a624602ba90d305a4cdcfbde07c893466ddbc0a1210b559bf607bf715626cb0",
+      "mod_id": "playeranimator",
+      "coordinate": "dev.kosmx.player-anim/player-animation-lib-forge/1.0.2-rc1+1.20"
+    },
+    {
+      "version": "4.8.3",
+      "filename": "geckolib.jar",
+      "sha256": "8fada49c19464069316b94203cffeeafc06e0af3d572443e7020c62cd0f20300",
+      "mod_id": "geckolib",
+      "coordinate": "software.bernie.geckolib/geckolib-forge-1.20.1/4.8.3"
+    },
+    {
+      "version": "5.14.1+1.20.1",
+      "filename": "curios.jar",
+      "sha256": "6d77ae8ad532fdf303390f404b0081b3b4ac4f61e7f1f4b4d4a9077e132dae4f",
+      "mod_id": "curios",
+      "coordinate": "top.theillusivec4.curios/curios-forge/5.14.1+1.20.1"
+    }
+  ]
+}

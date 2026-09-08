@@ -1,7 +1,9 @@
 package com.otectus.runicskills.registry.events;
 
 import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
-import com.otectus.runicskills.common.util.GameTimeWindow;
+import com.otectus.runicskills.common.crafting.CraftOperationContext;
+import com.otectus.runicskills.common.crafting.CraftOperationKind;
+import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.perks.Perk;
@@ -17,12 +19,11 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Fortune-tree perks that pay out on an action rather than through the Luck attribute, all
@@ -34,15 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * one is about what a crafting grid gives back, and the other is about doing anything at all.
  */
 public class FortunePerkHandler {
-
-    /**
-     * Game time at which each player's Chaos Roll last fired.
-     *
-     * <p>{@code level.getGameTime()}, not {@code Player.tickCount}: tickCount restarts at zero on
-     * respawn and on every dimension change, so a cooldown stamped in it came back ready the
-     * moment the player died or stepped through a portal.
-     */
-    private static final Map<UUID, Long> CHAOS_READY_AT = new ConcurrentHashMap<>();
 
     /**
      * How long Chaos Roll waits between blessings.
@@ -65,18 +57,14 @@ public class FortunePerkHandler {
     };
 
     /**
-     * Frees one player's Chaos Roll cooldown.
-     *
-     * <p>Deliberately not called on death: a cooldown that death reset would make dying the
-     * cheapest way to re-roll a blessing.
+     * Retained lifecycle API. Chaos Roll now uses the persisted perk cooldown and has no
+     * session state to discard. In particular, logout must not ready another blessing.
      */
     public static void clearPlayer(UUID id) {
-        if (id != null) CHAOS_READY_AT.remove(id);
     }
 
     /** Drops every player's cooldown, so a single-player world does not leak into the next one. */
     public static void clearAll() {
-        CHAOS_READY_AT.clear();
     }
 
     @SubscribeEvent
@@ -102,9 +90,17 @@ public class FortunePerkHandler {
         // ItemCraftedEvent fires on both sides and this hands back an item, so the handler starts
         // from ServerPlayer; FakePlayer extends ServerPlayer and is rejected on its own clause.
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (event.getCrafting().isEmpty() || CraftRewardDispatcher.yieldsToIntegration(event.getInventory())) return;
         if (!enabled(RegistryPerks.JEWELERS_EYE, player)) return;
         // A gem handed back is a Runic reward, not a craft that earns another one.
         if (CraftingExecutionGuard.isReentrant()) return;
+
+        // A diamond -> block -> diamond cycle spends no gems. Paying one back on compression
+        // therefore manufactures gems forever. Refund only a recognized, mixed-material craft;
+        // special recipes, foreign stations and remainder-bearing recipes have no safe refund.
+        CraftOperationContext craft = CraftOperationContext.fromVanillaCraftEvent(player, event);
+        if (craft.kind() != CraftOperationKind.MANUFACTURE || craft.distinctInputItems() < 2
+                || !craft.containerItems().isEmpty()) return;
 
         double chance = HandlerCommonConfig.HANDLER.instance().jewelersEyePercent / 100.0;
         if (chance <= 0 || player.getRandom().nextDouble() >= chance) return;
@@ -152,7 +148,8 @@ public class FortunePerkHandler {
         rollForBlessing(event.getEntity());
     }
 
-    @SubscribeEvent
+    // Wait for resurrection handlers; a rescued victim cannot trigger a kill blessing.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
     public void onKill(LivingDeathEvent event) {
         if (event.getSource().getEntity() instanceof Player killer) rollForBlessing(killer);
     }
@@ -161,13 +158,13 @@ public class FortunePerkHandler {
         if (player == null || player.level().isClientSide() || player instanceof FakePlayer) return;
         if (!enabled(RegistryPerks.CHAOS_ROLL, player)) return;
 
-        long now = player.level().getGameTime();
-        if (!GameTimeWindow.ready(now, CHAOS_READY_AT.get(player.getUUID()), CHAOS_COOLDOWN_TICKS)) return;
+        SkillCapability cap = SkillCapability.get(player);
+        if (cap == null || cap.getCooldown(RegistryPerks.CHAOS_ROLL.get()) > 0) return;
 
         double chance = HandlerCommonConfig.HANDLER.instance().chaosRollPercent / 100.0;
         if (chance <= 0 || player.getRandom().nextDouble() >= chance) return;
 
-        CHAOS_READY_AT.put(player.getUUID(), now);
+        cap.setCooldown(RegistryPerks.CHAOS_ROLL.get(), CHAOS_COOLDOWN_TICKS);
         MobEffect blessing = BLESSINGS[player.getRandom().nextInt(BLESSINGS.length)];
         player.addEffect(new MobEffectInstance(blessing, CHAOS_DURATION_TICKS, 0, true, true));
     }

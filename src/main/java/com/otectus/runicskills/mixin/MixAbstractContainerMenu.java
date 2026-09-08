@@ -1,14 +1,12 @@
 package com.otectus.runicskills.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.otectus.runicskills.common.util.ContainerInteraction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
  * Publishes the player performing a container click, for the duration of that click.
@@ -18,30 +16,21 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
  * they are fired from. Recording it once here serves every such event, instead of a mixin into each
  * container's anonymous result slot — which would be one fragile, version-coupled target per perk.
  *
- * <p>Deliberately does not change behaviour: it only observes. The paired {@code RETURN} injection
- * restores whatever was set before, so a nested click cannot leave the wrong player published, and
- * the value never outlives the call.
+ * <p>The local try/finally restores the outer interaction even when the same menu is re-entered
+ * or native code throws. The published player and scratch state never outlive the call.
  */
 @Mixin(AbstractContainerMenu.class)
 public abstract class MixAbstractContainerMenu {
 
-    /**
-     * Held across the method so the RETURN injection can restore it. An instance field is safe
-     * here: {@code clicked} runs to completion on one thread for one menu, and re-entry through a
-     * different menu instance keeps its own copy.
-     */
-    private Player runicskills$previousInteractor;
-
-    @Inject(method = "clicked", at = @At("HEAD"))
-    private void runicskills$beginInteraction(int slotId, int button, ClickType clickType,
-                                              Player player, CallbackInfo ci) {
-        this.runicskills$previousInteractor = ContainerInteraction.begin(player);
-    }
-
-    @Inject(method = "clicked", at = @At("RETURN"))
-    private void runicskills$endInteraction(int slotId, int button, ClickType clickType,
-                                            Player player, CallbackInfo ci) {
-        ContainerInteraction.end(this.runicskills$previousInteractor);
-        this.runicskills$previousInteractor = null;
+    /** One local previous value per invocation, including nested clicks on the same menu. */
+    @WrapMethod(method = "clicked")
+    private void runicskills$interaction(int slotId, int button, ClickType clickType,
+                                         Player player, Operation<Void> original) {
+        Player previous = ContainerInteraction.begin(player);
+        try {
+            original.call(slotId, button, clickType, player);
+        } finally {
+            ContainerInteraction.end(previous);
+        }
     }
 }

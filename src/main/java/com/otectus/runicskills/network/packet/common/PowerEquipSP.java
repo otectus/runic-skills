@@ -33,8 +33,20 @@ public class PowerEquipSP {
     private final String powerName;
 
     public PowerEquipSP(Power power, boolean equip) {
-        this.powerName = power.getName();
+        this(power.getName(), equip);
+    }
+
+    private PowerEquipSP(String powerName, boolean equip) {
+        if (!PacketBounds.isContentIdValid(powerName)) {
+            throw new IllegalArgumentException("Malformed Power id");
+        }
+        this.powerName = powerName;
         this.equip = equip;
+    }
+
+    /** A missing addon cannot supply a Power instance, but its saved slot must remain removable. */
+    public static PowerEquipSP unequipUnknown(String powerName) {
+        return new PowerEquipSP(powerName, false);
     }
 
     public PowerEquipSP(FriendlyByteBuf buffer) {

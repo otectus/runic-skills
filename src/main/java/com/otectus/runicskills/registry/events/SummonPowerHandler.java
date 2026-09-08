@@ -16,6 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -44,14 +46,19 @@ public class SummonPowerHandler {
     /** Recent attacks by each player's summons, for Pack Tactics' focus-fire window. */
     private static final Map<UUID, Deque<SummonBlow>> RECENT_BLOWS = new ConcurrentHashMap<>();
 
-    /** Damage each summon has dealt, released as a burst when it dies (Lingering Binding). */
-    private static final Map<UUID, Float> STORED_DAMAGE = new ConcurrentHashMap<>();
+    /** The bank follows the summon through chunk/server reloads, rather than leaking in a static map. */
+    private static final String STORED_DAMAGE = "runicskills:lingering_binding_damage";
 
     private static final int MAX_TRACKED_BLOWS = 32;
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         RECENT_BLOWS.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        RECENT_BLOWS.clear();
     }
 
     /** The player this entity belongs to, or null if it belongs to nobody. */
@@ -91,9 +98,22 @@ public class SummonPowerHandler {
             recordBlow(owner, victim, attacker.getUUID(), now, window);
         }
 
-        if (PowerDispatch.isEquipped(owner, RegistryPowers.LINGERING_BINDING)) {
-            STORED_DAMAGE.merge(attacker.getUUID(), event.getAmount(), Float::sum);
-        }
+    }
+
+    /** Bank actual health damage, bounded per summon; blocked and absorbed hits earn nothing. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onSummonDamageCommitted(LivingDamageEvent event) {
+        if (!DamageContext.allowsStandardOutgoingModifiers() || event.getAmount() <= 0) return;
+        Entity attacker = event.getSource().getEntity();
+        Player owner = ownerOf(attacker);
+        if (owner == null || owner.level().isClientSide()
+                || !PowerDispatch.isEquipped(owner, RegistryPowers.LINGERING_BINDING)) return;
+        double cap = Math.max(0, PowerOverridesManager.valueOr(
+                RegistryPowers.LINGERING_BINDING.get(), "stored_damage_cap", 100.0));
+        float previous = attacker.getPersistentData().getFloat(STORED_DAMAGE);
+        if (!Float.isFinite(previous) || previous < 0) previous = 0;
+        double actual = Math.min(event.getAmount(), Math.max(0, event.getEntity().getHealth()));
+        attacker.getPersistentData().putFloat(STORED_DAMAGE, (float) Math.min(cap, previous + actual));
     }
 
     // ── Damage taken by summons ─────────────────────────────────────────────────────────────
@@ -127,7 +147,8 @@ public class SummonPowerHandler {
     // ── Death of a summon ───────────────────────────────────────────────────────────────────
 
     /** Fallen Echo rewards the loss; Lingering Binding releases what the summon had banked. */
-    @SubscribeEvent
+    // Wait for resurrection handlers before consuming the bank or rewarding a summon's loss.
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = false)
     public void onSummonDied(LivingDeathEvent event) {
         LivingEntity summon = event.getEntity();
         Player owner = ownerOf(summon);
@@ -141,9 +162,12 @@ public class SummonPowerHandler {
             PowerDispatch.fireProc(owner, power);
         }
 
-        Float banked = STORED_DAMAGE.remove(summon.getUUID());
-        if (banked != null && banked > 0
+        float banked = summon.getPersistentData().getFloat(STORED_DAMAGE);
+        summon.getPersistentData().remove(STORED_DAMAGE);
+        if (Float.isFinite(banked) && banked > 0
                 && PowerDispatch.isEquipped(owner, RegistryPowers.LINGERING_BINDING)) {
+            banked = Math.min(banked, (float) Math.max(0, PowerOverridesManager.valueOr(
+                    RegistryPowers.LINGERING_BINDING.get(), "stored_damage_cap", 100.0)));
             releaseBinding(owner, summon, banked);
         }
     }

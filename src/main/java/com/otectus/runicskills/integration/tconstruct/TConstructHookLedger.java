@@ -2,6 +2,8 @@ package com.otectus.runicskills.integration.tconstruct;
 
 import com.otectus.runicskills.integration.tconstruct.TConstructCompatibilityStatus.Capability;
 import com.otectus.runicskills.mixin.RunicSkillsMixinPlugin;
+import com.otectus.runicskills.common.util.MixinHookVerification;
+import org.objectweb.asm.tree.ClassNode;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -21,9 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * never worth refusing to boot — but it turns a broken hook into a silent one unless something
  * watches. This is that something.
  *
- * <p><b>{@code postApply} is the authoritative signal.</b> Mixin calls it only after a mixin has
- * been successfully applied to its target, so a name in {@link #APPLIED} cannot be an intention. The
- * plugin writes into it during class transformation; everything else reads it much later.
+ * <p>After class loading completes, the ledger verifies a call site for every injector. A merged
+ * handler without a call is not a working hook: {@code require = 0} allows that merge to succeed.
+ * The plugin records target nodes during transformation; verification waits until MixinExtras'
+ * late-applying extensions have finished modifying those same nodes.
  *
  * <p><b>The probe is what makes the reading meaningful at startup.</b> Class transformation is lazy:
  * {@code ModifiableBowItem} is not loaded until somebody fires a bow, so asking this ledger during
@@ -39,6 +42,9 @@ public final class TConstructHookLedger {
 
     /** Simple names of the mixins Mixin reported as applied. Written from the transforming thread. */
     private static final Set<String> APPLIED = ConcurrentHashMap.newKeySet();
+    private static final Map<String, List<String>> UNMATCHED = new ConcurrentHashMap<>();
+    private record Pending(ClassNode mixin, ClassNode target) {}
+    private static final Map<String, Pending> PENDING = new ConcurrentHashMap<>();
 
     /**
      * Every core Tinkers'-targeting mixin and the class it injects into.
@@ -49,6 +55,12 @@ public final class TConstructHookLedger {
      * report in a stable sequence.
      */
     private static final Map<String, String> TARGETS = new LinkedHashMap<>();
+    private static final Map<String, String> ADDON_TARGETS = Map.of(
+            "MixManaModifier", "tcintegrations.items.modifiers.traits.ManaModifier",
+            "MixArsNouveauBaseModifier", "tcintegrations.items.modifiers.ArsNouveauBaseModifier",
+            "MixToolAttackUtil", "slimeknights.tconstruct.library.tools.helper.ToolAttackUtil",
+            "MixToolLevellingUtil", "pyre.tinkerslevellingaddon.util.ToolLevellingUtil",
+            "MixToolEnergyUtil", "com.c2h6s.etstlib.util.ToolEnergyUtil");
 
     /**
      * Which mixins each capability actually needs.
@@ -95,13 +107,31 @@ public final class TConstructHookLedger {
     }
 
     /**
+     * Holds the actual mutable target through the remainder of its transformation. Plugin
+     * postApply precedes MixinExtras' extension postApply: WrapMethod/WrapOperation calls do not
+     * exist yet at that point. References are released once the startup probe finishes loading it.
+     */
+    public static void recordTarget(String mixinClassName, ClassNode mixin, ClassNode target) {
+        if (mixinClassName != null && mixin != null && target != null) {
+            PENDING.put(mixinClassName, new Pending(mixin, target));
+        }
+    }
+
+    /**
      * Records that {@code mixinClassName} was applied. Called from the mixin plugin's
      * {@code postApply}, and from nowhere else.
      */
-    public static void recordApplied(String mixinClassName) {
+    public static void recordApplied(String mixinClassName, List<String> missingHandlers) {
         if (mixinClassName == null) return;
         int dot = mixinClassName.lastIndexOf('.');
-        APPLIED.add(dot >= 0 ? mixinClassName.substring(dot + 1) : mixinClassName);
+        String name = dot >= 0 ? mixinClassName.substring(dot + 1) : mixinClassName;
+        if (missingHandlers.isEmpty()) {
+            APPLIED.add(name);
+            UNMATCHED.remove(name);
+        } else {
+            APPLIED.remove(name);
+            UNMATCHED.put(name, List.copyOf(missingHandlers));
+        }
     }
 
     /** Whether Mixin reported the named mixin as applied. */
@@ -119,17 +149,38 @@ public final class TConstructHookLedger {
      * diagnostic then reports, and throwing here would turn a missing perk into a failed mod load.
      */
     public static void probe() {
+        probe(TARGETS);
+        probe(ADDON_TARGETS);
+        PENDING.forEach((name, pending) -> {
+            recordApplied(name, MixinHookVerification.missingHandlers(pending.mixin, pending.target));
+            PENDING.remove(name, pending);
+        });
+    }
+
+    private static void probe(Map<String, String> targets) {
         ClassLoader loader = TConstructHookLedger.class.getClassLoader();
-        for (Map.Entry<String, String> hook : TARGETS.entrySet()) {
+        for (Map.Entry<String, String> hook : targets.entrySet()) {
             if (!RunicSkillsMixinPlugin.tconstructMixinApplied(hook.getKey())) continue;
             try {
                 // Three-argument form with initialize = false: load and transform, do not run
                 // Tinkers' static initialisers from inside this mod's construction.
                 Class.forName(hook.getValue(), false, loader);
             } catch (ClassNotFoundException | RuntimeException | LinkageError ignored) {
-                // Deliberately quiet; the missing name in the ledger is the report.
+                // A partially transformed class that could not load is never a working hook.
+                PENDING.keySet().removeIf(name -> name.equals(hook.getKey())
+                        || name.endsWith("." + hook.getKey()));
+                recordApplied(hook.getKey(), List.of("target class could not be loaded"));
             }
         }
+    }
+
+    /** Describes an optional add-on injector's verified failure, if any. */
+    public static String hookProblem(String mixin) {
+        if (applied(mixin)) return null;
+        if (UNMATCHED.containsKey(mixin)) return "no target call for " + String.join(", ", UNMATCHED.get(mixin));
+        return RunicSkillsMixinPlugin.tconstructMixinApplied(mixin)
+                ? "the target did not transform successfully"
+                : RunicSkillsMixinPlugin.tconstructMixinReason(mixin);
     }
 
     /**
@@ -148,9 +199,13 @@ public final class TConstructHookLedger {
             if (applied(mixin)) continue;
             if (problems.length() > 0) problems.append("; ");
             problems.append("the ").append(mixin).append(" hook did not apply: ");
-            problems.append(RunicSkillsMixinPlugin.tconstructMixinApplied(mixin)
-                    ? "it was offered to " + TARGETS.get(mixin) + " but matched nothing"
-                    : RunicSkillsMixinPlugin.tconstructMixinReason(mixin));
+            if (UNMATCHED.containsKey(mixin)) {
+                problems.append("no target call for ").append(String.join(", ", UNMATCHED.get(mixin)));
+            } else {
+                problems.append(RunicSkillsMixinPlugin.tconstructMixinApplied(mixin)
+                        ? "it was offered to " + TARGETS.get(mixin) + " but did not transform successfully"
+                        : RunicSkillsMixinPlugin.tconstructMixinReason(mixin));
+            }
         }
         return problems.length() == 0 ? null : problems.toString();
     }

@@ -12,6 +12,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +30,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.ArrayList;
@@ -94,6 +96,16 @@ public class DamageContextGameTest {
     @GameTest(template = EMPTY)
     public static void limitBreakerAddsExactlyOneBlow(GameTestHelper helper) {
         ServerPlayer player = newPlayer(helper, "damage_context_limit_breaker", false);
+        // Apothic supplies a default random critical chance even without an earned passive.
+        // Disable that unrelated roll on this disposable fixture so both blows have exact damage.
+        // Registry lookup keeps the same test executable with the optional mod absent.
+        var critChance = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation("attributeslib", "crit_chance"));
+        if (critChance != null && player.getAttribute(critChance) != null) {
+            player.getAttribute(critChance).setBaseValue(0);
+            if (player.getAttributeValue(critChance) != 0) {
+                throw new GameTestAssertException("Limit Breaker fixture must have no random critical chance");
+            }
+        }
         LivingEntity golem = spawn(helper, EntityType.IRON_GOLEM, player);
         HurtLog log = new HurtLog(golem);
 

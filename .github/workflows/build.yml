@@ -325,17 +325,24 @@ jobs:
           path: gametest.log
           retention-days: 7
 
-  # The same GameTestServer run with Tinker's Construct actually present (M1).
-  #
-  # The M0 job above proves the mod works when Tinkers' is absent; this one proves the optional
-  # integration does not break the suite when it is there. `-PtinkersProfile=stable` is the only
-  # difference: it puts the pinned Tinkers'/Mantle/JEI trio on the runtime classpath (see the
-  # comment block in build.gradle), so the tests under gametest/tconstruct/ register and run.
-  # Kept as a separate job rather than a matrix entry on gametest-server so an M1-only failure
-  # is legible at a glance in the checks list.
+  # The absence job stays independent. Named optional profiles keep stable, conservative beta,
+  # spell-school, and combined companion regressions visible even when another profile fails.
   gametest-server-tinkers:
+    name: Tinkers GameTests (${{ matrix.profile }})
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: stable
+            gradle-args: -PtinkersProfile=stable
+          - profile: beta
+            gradle-args: -PtinkersProfile=beta
+          - profile: stable-irons
+            gradle-args: -PtinkersProfile=stable -PironsProfile=true
+          - profile: stable-irons-all-addons
+            gradle-args: -PtinkersProfile=stable -PironsProfile=true -PtinkersAddons=levelling,delight,thinking,innovation,advanced,tcintegrations,botania,ars,jewelry
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -366,20 +373,23 @@ jobs:
       # though runGameTestServer itself never produces a distributable. It is the shipped artifact
       # (the one carrying MixinExtras); `jar` alone would publish the slim jar.
       - name: Run GameTests with Tinkers' Construct present
-        run: ./gradlew --no-daemon jarJar runGameTestServer -PtinkersProfile=stable 2>&1 | tee gametest-tinkers.log
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon jarJar runGameTestServer ${{ matrix.gradle-args }} 2>&1 | tee "gametest-tinkers-${{ matrix.profile }}.log"
 
       - name: Upload GameTest log
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: gametest-tinkers-log
-          path: gametest-tinkers.log
+          name: gametest-tinkers-${{ matrix.profile }}-log
+          path: gametest-tinkers-${{ matrix.profile }}.log
           retention-days: 7
 
       - name: Upload jar
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: runicskills-jar-tinkers
+          name: runicskills-jar-tinkers-${{ matrix.profile }}
           path: build/libs/*.jar
           retention-days: 7
