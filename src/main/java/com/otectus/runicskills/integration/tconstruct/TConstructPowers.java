@@ -180,6 +180,11 @@ public final class TConstructPowers {
         return (int) Math.max(0.0, Math.floor(value(power, key)));
     }
 
+    /** Owner plus allies, bounded by the cooperative mechanic and its memory budget. */
+    public static int contributorLimit(Power power) {
+        return Math.max(2, Math.min(4, intValue(power, "max_contributors")));
+    }
+
     /** A tunable expressed in seconds, as ticks. */
     public static int ticks(Power power, String key) {
         return DurationMath.secondsToTicks(value(power, key));

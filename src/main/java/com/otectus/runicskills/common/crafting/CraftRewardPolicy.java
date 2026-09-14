@@ -44,20 +44,7 @@ public final class CraftRewardPolicy {
         ItemStack result = context.result();
         if (result.isEmpty()) return 0;
 
-        // A pack's outright refusal, before anything else gets a say. Denied beats allowed.
-        if (result.is(RegistryTags.Items.CRAFT_REWARD_DENIED)) return 0;
-
-        // A pack rule about this exact result. Only a refusal is honoured here: §13.3 step 5 says
-        // an allow rule may not override the mandatory exclusions below, so a rule that permits an
-        // extra output leaves every one of them standing and simply declines to add a refusal of
-        // its own. The lookup is skipped entirely when no pack has written a reward rule.
-        if (PackRuleIndex.get().hasCraftRewardPolicies()) {
-            String provider = EquipmentProfileService.profile(result)
-                    .map(EquipmentProfile::providerId).orElse(null);
-            Optional<PackRule> rule = PackRuleIndex.get()
-                    .craftRewardPolicy(provider, ForgeRegistries.ITEMS.getKey(result.getItem()));
-            if (rule.isPresent() && !rule.get().allowExtraOutput()) return 0;
-        }
+        if (deniedByPack(result)) return 0;
 
         // Only a manufacture. CONVERSION is compression and decompression; REPAIR, PART_SWAP,
         // MODIFY, RENAME and RECYCLE all return an item that already existed; UNKNOWN is a craft
@@ -96,5 +83,17 @@ public final class CraftRewardPolicy {
         if (!context.containerItems().isEmpty()) return 0;
 
         return cap;
+    }
+
+    /** Pack-authored exclusions apply to every extra-output path, including stonecutting. */
+    public static boolean deniedByPack(ItemStack result) {
+        if (result == null || result.isEmpty() || result.is(RegistryTags.Items.CRAFT_REWARD_DENIED)) return true;
+        // Allow rules cannot override a caller's mandatory equipment/conversion exclusions.
+        if (!PackRuleIndex.get().hasCraftRewardPolicies()) return false;
+        String provider = EquipmentProfileService.profile(result)
+                .map(EquipmentProfile::providerId).orElse(null);
+        Optional<PackRule> rule = PackRuleIndex.get()
+                .craftRewardPolicy(provider, ForgeRegistries.ITEMS.getKey(result.getItem()));
+        return rule.isPresent() && !rule.get().allowExtraOutput();
     }
 }

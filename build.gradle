@@ -67,8 +67,10 @@ java {
 // either, so the same stub-source-set treatment applies — compile classpath only, never shipped,
 // with a reflective probe at runtime turning any upstream drift into a fallback rather than a crash.
 sourceSets {
+    l2tabsApi
     legendarytabsApi
     customnpcsApi
+    jeiApi
     tideApi
     tomCompat {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
@@ -89,7 +91,9 @@ sourceSets {
 configurations {
     // Give the stub the Minecraft/Forge classes its signatures reference.
     legendarytabsApiCompileOnly.extendsFrom(minecraft)
+    l2tabsApiCompileOnly.extendsFrom(minecraft)
     customnpcsApiCompileOnly.extendsFrom(minecraft)
+    jeiApiCompileOnly.extendsFrom(minecraft)
 }
 
 minecraft {
@@ -144,6 +148,21 @@ minecraft {
         }
 
         client {
+            if (project.findProperty('progressionClientValidation') == 'true') {
+                workingDirectory project.file(project.findProperty('progressionClientDirectory') ?: 'build/update-220-client')
+                property 'runicskills.progressionClientValidation', 'true'
+                property 'runicskills.progressionClientPhase', project.findProperty('progressionClientPhase') ?: 'edit'
+                mods { runicskills_validation { source sourceSets.validation } }
+                if (project.findProperty('progressionMultiplayerValidation') == 'true') {
+                    property 'runicskills.multiplayerValidation', 'true'
+                    args '--username', project.findProperty('progressionClientName') ?: 'R220Rank3'
+                }
+                if (project.findProperty('progressionClientRemote') != null)
+                    args '--quickPlayMultiplayer', project.findProperty('progressionClientRemote')
+                else args '--quickPlaySingleplayer', 'validation-220'
+                if (project.findProperty('progressionClientPhase') == 'scales') args '--width', '1920', '--height', '1080'
+                else args '--width', '1280', '--height', '800'
+            }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
             property 'mixin.env.remapRefMap', 'true'
@@ -151,6 +170,13 @@ minecraft {
         }
 
         server {
+            if (project.findProperty('progressionRemoteValidation') == 'true') {
+                workingDirectory project.file('build/update-220-remote')
+                if (project.findProperty('progressionMultiplayerValidation') == 'true') {
+                    property 'runicskills.multiplayerValidation', 'true'
+                    mods { runicskills_validation { source sourceSets.validation } }
+                }
+            }
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'
             property 'mixin.env.remapRefMap', 'true'
@@ -311,7 +337,9 @@ dependencies {
 
     // L2 (L2Library via Modrinth Maven, L2Tabs from local libs/)
     compileOnly fg.deobf("maven.modrinth:l2library:2.4.28")
-    compileOnly fg.deobf("dev.xkmc.l2tabs:l2tabs:0.3.3")
+    // Verified against L2Library 2.5.3's embedded L2 Tabs 0.3.3. The old local stub
+    // incorrectly placed TabFactory in TabRegistry and declared a void return.
+    compileOnly sourceSets.l2tabsApi.output
 
     // Legendary Tabs (Sfiomn) — compiled against the in-repo API stub declared above, not a
     // local jar, so a fresh clone builds. 2.0 is a breaking API change from 1.x: TabBase gained
@@ -324,6 +352,8 @@ dependencies {
     // theirs, so the dependency cannot be reflected away at compile time. Runtime linkage is
     // guarded by the probe in CustomNpcsIntegration.
     compileOnly sourceSets.customnpcsApi.output
+    // Optional GUI exclusion plugin; public JEI 15 API signatures only, never packaged.
+    compileOnly sourceSets.jeiApi.output
     // Signature-only types required by the exact WrapMethod descriptor; never packaged.
     compileOnly sourceSets.tideApi.output
 
@@ -1986,6 +2016,11 @@ if (gradle.startParameter.taskNames.any { it.tokenize(':').last() in ['tomCompat
     tasks.named('tomCompatJar').configure { finalizedBy 'reobfTomCompatJar' }
 }
 
+tasks.named('processValidationResources', ProcessResources) {
+    inputs.property 'mod_version', project.mod_version
+    filesMatching('META-INF/mods.toml') { expand(mod_version: project.mod_version) }
+}
+
 tasks.register('productionValidationJar', Jar) {
     dependsOn 'compileGametestJava', 'validationClasses'
     archiveBaseName = 'runicskills-production-validation'
@@ -1994,6 +2029,14 @@ tasks.register('productionValidationJar', Jar) {
     from(sourceSets.validation.output)
     from(sourceSets.gametest.output) {
         include 'com/otectus/runicskills/gametest/FourModIntegrationGameTest.class'
+        include 'com/otectus/runicskills/gametest/RecentEquipmentLocksGameTest*.class'
+        include 'com/otectus/runicskills/gametest/PackMuleGameTest*.class'
+        include 'com/otectus/runicskills/gametest/IncomingEffects220GameTest*.class'
+        include 'com/otectus/runicskills/gametest/ResolvedLocks220GameTest*.class'
+        include 'com/otectus/runicskills/gametest/Progression220GameTest*.class'
+        include 'com/otectus/runicskills/gametest/tconstruct/StackRequirementGameTest*.class'
+        include 'com/otectus/runicskills/gametest/tconstruct/TinkerFixtures*.class'
+        include 'com/otectus/runicskills/gametest/MockPlayers*.class'
         include 'com/otectus/runicskills/gametest/TideCatchGameTest*.class'
         include 'com/otectus/runicskills/gametest/GuardGameTest*.class'
         include 'com/otectus/runicskills/gametest/SwordsInspectionGameTest.class'

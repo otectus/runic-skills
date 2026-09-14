@@ -19,7 +19,7 @@ Tinkers options are in the server-authoritative `runicskills-common.json5`. Game
 | `enableTConstructIntegration` | true | Master integration switch; restart required for adapter/mixin installation. |
 | `enableTConstructPerks` | true | Enable core and add-on Tinkers perks. |
 | `enableTConstructPowers` | true | Enable Artifice Powers, checked on every proc. |
-| `enableTConstructLockItems` | false | Opt into generated material-tier requirements; explicit pack rules still work when off. |
+| `enableTConstructLockItems` | true | Generate material-tier requirements for Tinkers and addon equipment; disable to opt out. Explicit pack rules still work when off. |
 | `tconstructCompatibilityDiagnostics` | true | Print startup capability and machine-readable hook summaries. Commands remain available when logging is off. |
 | `tconstructRepairBonusCap` | 0.50 | Maximum extra paid-repair restoration as a share of native restoration. |
 | `tconstructMaterialCostDiscountMode` | false | Reserved compatibility field; no material-discount implementation. |
@@ -99,6 +99,12 @@ Use Mantle 1.11.113 with Jewelry 1.2.0. A captured startup hang on Mantle 1.11.9
 
 ## Requirements, scripts and verification
 
-Automatic locks are off by default to preserve existing worlds. Precedence is explicit definition/material/action pack rule, configured item-ID override, optional automatic material-tier profile, then allow. Unknown materials do not create maximum-level locks. Tier 0 asks nothing; tiers 1–4 scale the stock Tinkering thresholds 1/8/16/24 and functional thresholds 1/4/8/16 to the configured skill cap. Tier 5+ needs an explicit rule. Functional requirements follow the action and primary native tags. Storage/removal is not denied by the automatic stack provider.
+Automatic locks are enabled by default. Existing saved `false` values remain opt-outs; set `enableTConstructLockItems` to `true` to enable progression in an older configuration. Precedence is explicit definition/material/action pack rule, configured item-ID override, automatic material-tier profile, then allow. Unknown materials do not create maximum-level locks. Tier 0 asks nothing; tiers 1–6 scale the stock Tinkering thresholds 1/8/16/24/28/32 and functional thresholds 1/4/8/16/20/24 to the configured skill cap. Known tiers above 6 use the tier-6 requirements. Functional requirements follow the action and primary native tags. Storage/removal and crafting are not denied by the automatic stack provider.
+
+The same resolver covers finished addon equipment tagged `tconstruct:modifiable`, including
+TCIntegrations, Tinkers' Delight, Advanced, Thinking, Innovation, Katanas, Tinker Things and
+Jewelry. Materials supplied by addons contribute their real tiers; Levelling continues to use
+the underlying tool's materials. Parts, casts and patterns are not equipment. Armor and Curios
+equip checks, right-click use, mining and melee attacks consult the stack-aware resolver.
 
 See [pack rules](TCONSTRUCT_PACK_RULES.md) for datapack formats and scripting hooks, [hook ledger](TCONSTRUCT_HOOKS.md) for injection targets, and [test matrix](TCONSTRUCT_TEST_MATRIX.md) for profiles and limitations. Production SRG remapping is checked statically; a Mojang-mapped GameTest alone cannot prove a production client hook. The Jewelry profile selects the exact Forge 1.20.1 Jewelry 1.2.0 artifact from CurseForge, with Mantle 1.11.113 and its required Apothic Attributes and Placebo dependencies. Executed results are recorded in the verification report; client behavior and unsupported add-on combinations still require live acceptance testing.

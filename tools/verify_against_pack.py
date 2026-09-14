@@ -270,6 +270,11 @@ def parse_mixin(path):
     head = src[open_idx + 1:match_paren(src, open_idx)]
     class_remap = (attr(head, "remap") or "true").strip() == "true"
     targets = [t.replace(".", "/") for t in selectors(attr(head, "targets"), consts)]
+    if not targets:
+        imports = dict((m.group(1).rsplit('.', 1)[-1], m.group(1))
+                       for m in re.finditer(r'import\s+([\w.]+);', src))
+        for name in re.findall(r'([\w.]+)\.class', head):
+            targets.append(imports.get(name, name).replace('.', '/'))
 
     refs = []
     for m in re.finditer(r"@(" + INJECTORS + r")\b", src):
@@ -313,6 +318,8 @@ def main():
     ap.add_argument("--jar", help="the shipped runicskills jar (default: newest in build/libs)")
     ap.add_argument("--mods", default=DEFAULT_MODS,
                     help="the pack's mods/ directory (default: $RUNIC_PACK_MODS)")
+    ap.add_argument("--all-mod-mixins", action="store_true",
+                    help="check all third-party mixin packages, not only Tinkers'")
     args = ap.parse_args()
 
     if not args.mods:
@@ -339,7 +346,7 @@ def main():
     print()
 
     failures, total = [], 0
-    tconstruct_root = os.path.join(MIXIN_ROOT, "tconstruct")
+    tconstruct_root = MIXIN_ROOT if args.all_mod_mixins else os.path.join(MIXIN_ROOT, "tconstruct")
     for dirpath, _, files in os.walk(tconstruct_root):
         for name in sorted(files):
             if not name.endswith(".java"):
@@ -349,6 +356,8 @@ def main():
             if parsed is None:
                 continue
             targets, refs = parsed
+            if not targets or all(t.startswith('net/minecraft/') for t in targets):
+                continue
             rel = os.path.relpath(path, MIXIN_ROOT).replace(os.sep, "/")
             mixin_class = "com/otectus/runicskills/mixin/" + rel[:-len(".java")]
             entries = refmap.get(mixin_class, {})
@@ -377,6 +386,15 @@ def main():
                     print("  OK    %-6s %-20s -> %-12s in %s%s" % (kind, sel.split("(")[0], member, hit[0], where))
                 elif pool.load(owners[0]) is None:
                     print("  SKIP  %-6s %-20s -> %s: %s not in this pack" % (kind, sel.split("(")[0], member, owners[0]))
+                elif kind == 'method' and not member.startswith('m_') and any(
+                        sibling_kind == 'method' and sibling_line == line
+                        and split_ref(sibling)[1].startswith('m_')
+                        and split_ref(sibling)[2] == desc
+                        and any(pool.declares(o, split_ref(sibling)[1], desc) for o in targets)
+                        for sibling_kind, sibling_line, sibling, _ in refs):
+                    # Existing injectors explicitly list development + production selectors.
+                    # Record the unmatched alias, while requiring its production sibling to exist.
+                    print("  ALIAS %-6s %-20s -> production sibling on this injector resolves" % (kind, sel.split('(')[0]))
                 else:
                     print("  FAIL  %-6s %-20s -> %s (%s) NOT FOUND in %s" % (kind, sel.split("(")[0], member, source, owners[0]))
                     failures.append("%s:%d %s '%s' -> %s%s not declared by %s"

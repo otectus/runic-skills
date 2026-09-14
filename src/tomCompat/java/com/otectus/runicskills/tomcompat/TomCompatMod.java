@@ -18,7 +18,6 @@ import net.minecraftforge.registries.RegistryObject;
 /** Separately packaged, optional companion. Reads native public fields without redistributing T.O. */
 @Mod("runicskills_tom_compat")
 public final class TomCompatMod {
-    private static final String ISS_SHA256 = "92c046383b4960c655f840d8846732a481edcf7c5ed89028b3d7b2cc2910b224";
     public TomCompatMod() { FMLJavaModLoadingContext.get().getModEventBus().addListener(this::loaded); }
     private void loaded(FMLLoadCompleteEvent event) { event.enqueueWork(TomCompatMod::bind); }
     private static void bind() {
@@ -27,7 +26,8 @@ public final class TomCompatMod {
                 || !IntegrationModule.TOM.sha256.equals(evidence.sha256())) return;
         try {
             var iss = ModList.get().getModContainerById("irons_spellbooks").orElseThrow();
-            if (!ISS_SHA256.equals(IntegrationRuntime.sha256(iss.getModInfo().getOwningFile().getFile().getFilePath())))
+            if (!com.otectus.runicskills.integration.tom.TomIronsProfiles.supports(iss.getModInfo().getVersion().toString(),
+                    IntegrationRuntime.sha256(iss.getModInfo().getOwningFile().getFile().getFilePath())))
                 throw new IllegalStateException("Aqua scaling is unverified for this Iron's Spellbooks artifact");
             Class<?> schools = Class.forName("com.gametechbc.traveloptics.api.init.TravelopticsSchools");
             Class<?> attributes = Class.forName("com.gametechbc.traveloptics.api.init.TravelopticsAttributes");

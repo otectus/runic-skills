@@ -24,135 +24,152 @@ Machine-generated map of this mod. Read this first when picking the project up.
 com.otectus.runicskills                              2 files
 com.otectus.runicskills.api.client                   1 file
 com.otectus.runicskills.client.capability            1 file
-com.otectus.runicskills.client.config                3 files
-com.otectus.runicskills.client.core                  7 files
+com.otectus.runicskills.client.config                4 files
+com.otectus.runicskills.client.core                  8 files
 com.otectus.runicskills.client.event                 3 files
-com.otectus.runicskills.client.gui                   9 files
-com.otectus.runicskills.client.integration           3 files
-com.otectus.runicskills.client.integration.tconstruct 1 file
+com.otectus.runicskills.client.gui                   13 files
+com.otectus.runicskills.client.integration           6 files
+com.otectus.runicskills.client.integration.jei       1 file
+com.otectus.runicskills.client.integration.simplyswords 1 file
+com.otectus.runicskills.client.integration.tconstruct 2 files
+com.otectus.runicskills.client.integration.tide      1 file
 com.otectus.runicskills.client.screen                2 files
-com.otectus.runicskills.client.tooltip               3 files
+com.otectus.runicskills.client.tooltip               4 files
 com.otectus.runicskills.client.vfx                   6 files
 com.otectus.runicskills.common.actions               4 files
 com.otectus.runicskills.common.advancements          2 files
 com.otectus.runicskills.common.capability            3 files
 com.otectus.runicskills.common.combat                3 files
-com.otectus.runicskills.common.command               10 files
+com.otectus.runicskills.common.command               13 files
 com.otectus.runicskills.common.command.arguments     2 files
-com.otectus.runicskills.common.crafting              11 files
+com.otectus.runicskills.common.crafting              13 files
 com.otectus.runicskills.common.durability            7 files
-com.otectus.runicskills.common.effects               1 file
+com.otectus.runicskills.common.effects               2 files
 com.otectus.runicskills.common.equipment             6 files
+com.otectus.runicskills.common.inventory             4 files
 com.otectus.runicskills.common.model                 1 file
 com.otectus.runicskills.common.perk                  1 file
 com.otectus.runicskills.common.powers                6 files
-com.otectus.runicskills.common.progression           2 files
+com.otectus.runicskills.common.progression           3 files
 com.otectus.runicskills.common.rules                 3 files
 com.otectus.runicskills.common.scripting             1 file
-com.otectus.runicskills.common.util                  23 files
+com.otectus.runicskills.common.util                  26 files
 com.otectus.runicskills.common.workshop              2 files
 com.otectus.runicskills.config                       4 files
 com.otectus.runicskills.config.conditions            16 files
 com.otectus.runicskills.config.controller            4 files
 com.otectus.runicskills.config.models                3 files
 com.otectus.runicskills.config.snapshot              4 files
-com.otectus.runicskills.config.storage               3 files
+com.otectus.runicskills.config.storage               4 files
 com.otectus.runicskills.event                        5 files
 com.otectus.runicskills.handler                      9 files
-com.otectus.runicskills.integration                  39 files
-com.otectus.runicskills.integration.lock             11 files
+com.otectus.runicskills.integration                  43 files
+com.otectus.runicskills.integration.common           17 files
+com.otectus.runicskills.integration.lock             16 files
 com.otectus.runicskills.integration.quests           3 files
 com.otectus.runicskills.integration.quests.tasks     7 files
-com.otectus.runicskills.integration.tconstruct       22 files
-com.otectus.runicskills.integration.tconstruct.addons 9 files
+com.otectus.runicskills.integration.simplyswords     11 files
+com.otectus.runicskills.integration.tconstruct       25 files
+com.otectus.runicskills.integration.tconstruct.addons 11 files
+com.otectus.runicskills.integration.tide             19 files
+com.otectus.runicskills.integration.tom              14 files
 com.otectus.runicskills.kubejs                       2 files
 com.otectus.runicskills.kubejs.events                6 files
-com.otectus.runicskills.mixin                        38 files
+com.otectus.runicskills.mixin                        47 files
+com.otectus.runicskills.mixin.simplyswords           19 files
 com.otectus.runicskills.mixin.tconstruct             10 files
 com.otectus.runicskills.mixin.tconstruct.addons      5 files
+com.otectus.runicskills.mixin.tide                   8 files
+com.otectus.runicskills.mixin.tom                    5 files
 com.otectus.runicskills.network                      2 files
-com.otectus.runicskills.network.packet.client        12 files
-com.otectus.runicskills.network.packet.common        7 files
+com.otectus.runicskills.network.packet.client        18 files
+com.otectus.runicskills.network.packet.common        9 files
 com.otectus.runicskills.registry                     15 files
 com.otectus.runicskills.registry.content             2 files
 com.otectus.runicskills.registry.events              25 files
 com.otectus.runicskills.registry.loot                1 file
 com.otectus.runicskills.registry.passive             1 file
 com.otectus.runicskills.registry.perks               6 files
-com.otectus.runicskills.registry.powers              8 files
-com.otectus.runicskills.registry.skill               3 files
+com.otectus.runicskills.registry.powers              9 files
+com.otectus.runicskills.registry.skill               5 files
 com.otectus.runicskills.registry.title               1 file
 ```
 
-## Registered content (28 entries)
+## Registered content (29 entries)
 
 ### Items (1)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `leveling_book` | `LEVELING_BOOK` | `Item` | src\main\java\com\otectus\runicskills\registry\RegistryItems.java |
+| `leveling_book` | `LEVELING_BOOK` | `Item` | src/main/java/com/otectus/runicskills/registry/RegistryItems.java |
 
 ### Sounds (2)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `gain_title` | `GAIN_TITLE` | `SoundEvent` | src\main\java\com\otectus\runicskills\registry\RegistrySounds.java |
-| `mortal_strike` | `LIMIT_BREAKER` | `SoundEvent` | src\main\java\com\otectus\runicskills\registry\RegistrySounds.java |
+| `gain_title` | `GAIN_TITLE` | `SoundEvent` | src/main/java/com/otectus/runicskills/registry/RegistrySounds.java |
+| `mortal_strike` | `LIMIT_BREAKER` | `SoundEvent` | src/main/java/com/otectus/runicskills/registry/RegistrySounds.java |
+
+### Mob effects (1)
+
+| id | field | type | declared in |
+|---|---|---|---|
+| `integration_slow` | `SLOW` | `MobEffect` | src/main/java/com/otectus/runicskills/integration/common/IntegrationSlow.java |
 
 ### Recipe serializers (1)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `keystone` | `KEYSTONE_RECIPE` | `RecipeSerializer<?>` | src\main\java\com\otectus\runicskills\integration\tconstruct\TConstructBootstrap.java |
+| `keystone` | `KEYSTONE_RECIPE` | `RecipeSerializer<?>` | src/main/java/com/otectus/runicskills/integration/tconstruct/TConstructBootstrap.java |
 
 ### Global loot modifiers (1)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `runic_loot` | `—` | `—` | src\main\java\com\otectus\runicskills\registry\RegistryLootModifiers.java |
+| `runic_loot` | `—` | `—` | src/main/java/com/otectus/runicskills/registry/RegistryLootModifiers.java |
 
 ### Attributes (9)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `beneficial_effect` | `BENEFICIAL_EFFECT` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `break_speed` | `BREAK_SPEED` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `crafting_luck` | `CRAFTING_LUCK` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `critical_damage` | `CRITICAL_DAMAGE` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `enchanting_power` | `ENCHANTING_POWER` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `magic_resist` | `MAGIC_RESIST` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `projectile_damage` | `PROJECTILE_DAMAGE` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `repair_efficiency` | `REPAIR_EFFICIENCY` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
-| `xp_bonus` | `XP_BONUS` | `Attribute` | src\main\java\com\otectus\runicskills\registry\RegistryAttributes.java |
+| `beneficial_effect` | `BENEFICIAL_EFFECT` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `break_speed` | `BREAK_SPEED` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `crafting_luck` | `CRAFTING_LUCK` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `critical_damage` | `CRITICAL_DAMAGE` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `enchanting_power` | `ENCHANTING_POWER` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `magic_resist` | `MAGIC_RESIST` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `projectile_damage` | `PROJECTILE_DAMAGE` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `repair_efficiency` | `REPAIR_EFFICIENCY` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
+| `xp_bonus` | `XP_BONUS` | `Attribute` | src/main/java/com/otectus/runicskills/registry/RegistryAttributes.java |
 
 ### Command Argument Type (2)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `skill` | `SKILL_ARGUMENT` | `SingletonArgumentInfo<SkillArgument>` | src\main\java\com\otectus\runicskills\registry\RegistryArguments.java |
-| `title` | `TITLE_ARGUMENT` | `SingletonArgumentInfo<TitleArgument>` | src\main\java\com\otectus\runicskills\registry\RegistryArguments.java |
+| `skill` | `SKILL_ARGUMENT` | `SingletonArgumentInfo<SkillArgument>` | src/main/java/com/otectus/runicskills/registry/RegistryArguments.java |
+| `title` | `TITLE_ARGUMENT` | `SingletonArgumentInfo<TitleArgument>` | src/main/java/com/otectus/runicskills/registry/RegistryArguments.java |
 
 ### Skills Key (10)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `building` | `BUILDING` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `constitution` | `CONSTITUTION` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `dexterity` | `DEXTERITY` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `endurance` | `ENDURANCE` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `fortune` | `FORTUNE` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `intelligence` | `INTELLIGENCE` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `magic` | `MAGIC` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `strength` | `STRENGTH` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `tinkering` | `TINKERING` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
-| `wisdom` | `WISDOM` | `Skill` | src\main\java\com\otectus\runicskills\registry\RegistrySkills.java |
+| `building` | `BUILDING` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `constitution` | `CONSTITUTION` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `dexterity` | `DEXTERITY` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `endurance` | `ENDURANCE` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `fortune` | `FORTUNE` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `intelligence` | `INTELLIGENCE` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `magic` | `MAGIC` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `strength` | `STRENGTH` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `tinkering` | `TINKERING` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
+| `wisdom` | `WISDOM` | `Skill` | src/main/java/com/otectus/runicskills/registry/RegistrySkills.java |
 
 ### Titles Key (2)
 
 | id | field | type | declared in |
 |---|---|---|---|
-| `administrator` | `ADMIN` | `Title` | src\main\java\com\otectus\runicskills\registry\RegistryTitles.java |
-| `titleless` | `TITLELESS` | `Title` | src\main\java\com\otectus\runicskills\registry\RegistryTitles.java |
+| `administrator` | `ADMIN` | `Title` | src/main/java/com/otectus/runicskills/registry/RegistryTitles.java |
+| `titleless` | `TITLELESS` | `Title` | src/main/java/com/otectus/runicskills/registry/RegistryTitles.java |
 
 ## Data generation
 
@@ -179,6 +196,10 @@ Also: `sounds.json` present.
 Run `check_mod.py` for a full consistency check (missing models, lang keys, textures).
 
 <!-- MODMAP:AUTO:END — everything below is hand-maintained and preserved -->
+
+
+
+
 
 
 ## Current focus

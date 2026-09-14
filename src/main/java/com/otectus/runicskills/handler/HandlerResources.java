@@ -125,6 +125,7 @@ public class HandlerResources {
     public static final ResourceLocation NULL_PERK = create("textures/skill/null_skill.png");
 
     // ========== STRENGTH Perks ==========
+    public static final ResourceLocation PACK_MULE_PERK = create("textures/skill/strength/pack_mule.png");
     public static final ResourceLocation ONE_HANDED_PERK = create("textures/skill/strength/one_handed.png");
     public static final ResourceLocation FIGHTING_SPIRIT_PERK = create("textures/skill/strength/fighting_spirit.png");
     public static final ResourceLocation BERSERKER_PERK = create("textures/skill/strength/berserker.png");

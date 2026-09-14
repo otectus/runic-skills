@@ -259,6 +259,53 @@ public class FocusGameTest {
         helper.succeed();
     }
 
+    /** The first sweep must run even though its previous timestamp is the absent sentinel. */
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void theFirstSweepAndHeartbeatRejectExpiredFocus(GameTestHelper helper) {
+        BlockPos controller = melter(helper);
+        ServerPlayer player = holder(helper, "w03-first-sweep", controller);
+        HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
+        int previous = config.tconstructWorkshopFocusSeconds;
+        try {
+            // A synchronous expiry boundary avoids changing the global config during a delayed test.
+            config.tconstructWorkshopFocusSeconds = 0;
+            WorkshopFocusService.focus(player, controller, 0L);
+            WorkshopFocusService.maybeRevalidate(helper.getLevel().getServer());
+            if (WorkshopFocusService.focusAt(helper.getLevel(), controller) != null) {
+                throw new GameTestAssertException("the first expiry sweep overflowed its absent timestamp");
+            }
+            WorkshopFocusService.focus(player, controller, 0L);
+            if (WorkshopFocusService.heartbeat(player) != null) {
+                throw new GameTestAssertException("heartbeat revived a focus whose lifetime ended");
+            }
+        } finally {
+            config.tconstructWorkshopFocusSeconds = previous;
+            WorkshopFocusService.clear(player.getUUID());
+        }
+        helper.succeed();
+    }
+
+    /** Removing a casting table frees its association and requires a fresh explicit association. */
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void dismantledCastingBlocksReleaseTheirAssociation(GameTestHelper helper) {
+        BlockPos controller = melter(helper);
+        BlockPos table = helper.absolutePos(TABLE);
+        helper.getLevel().setBlockAndUpdate(table, TinkerSmeltery.searedTable.get().defaultBlockState());
+        ServerPlayer player = holder(helper, "w04-dismantle", controller);
+        WorkshopFocusService.focus(player, controller, 0L);
+        WorkshopFocusService.associate(player, table, WorkshopFocusService.revisionOf(player.getUUID()));
+        long token = WorkshopFocusService.revisionOf(player.getUUID());
+        helper.getLevel().setBlockAndUpdate(table, Blocks.AIR.defaultBlockState());
+        Focus refreshed = WorkshopFocusService.heartbeat(player);
+        if (refreshed == null || !refreshed.associations().isEmpty()
+                || WorkshopFocusService.holderOf(helper.getLevel(), table) != null
+                || WorkshopFocusService.revisionOf(player.getUUID()) == token) {
+            throw new GameTestAssertException("dismantling a casting block did not release its indexed association");
+        }
+        WorkshopFocusService.clear(player.getUUID());
+        helper.succeed();
+    }
+
     /** Places a melter in the test structure and hands back its absolute position. */
     private static BlockPos melter(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();

@@ -1,10 +1,11 @@
 {
   "homepage": "https://github.com/otectus/runic-skills",
   "promos": {
-    "1.20.1-latest": "2.1.1",
-    "1.20.1-recommended": "2.1.1"
+    "1.20.1-latest": "2.2.0",
+    "1.20.1-recommended": "2.2.0"
   },
   "1.20.1": {
+    "2.1.2": "Gameplay and customization audit: closes crafting and mana refund exploits, repairs progression and Power lifecycle behavior, restores multiplayer skill artwork, and hardens configuration/datapack reloads. Protocol 15: update clients and servers together; progression IDs and existing saves are retained. See docs/AUDIT_RESULTS_2026_09.md and docs/MIGRATING_TO_2.1.2.md.",
     "2.0.0": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.1": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.2": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
@@ -14,6 +15,7 @@
     "2.0.6": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.0.7": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.1.0": "Tinkers' Construct integration, gameplay and multiplayer stabilization, persistent Power cooldowns, and a complete runic icon refresh. Network protocol 13: update clients and servers together. See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
-    "2.1.1": "All 32 perks and 24 Powers implemented for Simply Swords, Simply More, T.O. and Tide, with verified native triggers, shared limits and dormant Power accounting. Protocol 14: update clients and servers together. See docs/FOUR_MOD_INTEGRATION_2.1.1.md for supported native paths and remaining client/provider validation."
+    "2.1.1": "All 32 perks and 24 Powers implemented for Simply Swords, Simply More, T.O. and Tide, with verified native triggers, shared limits and dormant Power accounting. Protocol 14: update clients and servers together. See docs/FOUR_MOD_INTEGRATION_2.1.1.md for supported native paths and remaining client/provider validation.",
+    "2.2.0": "Pack Mule inventory stacks up to 256; consistent progression, effect recursion fixes, transactional configuration and automatic level budgets. Protocol 16 requires matching builds. Normalize extended stacks before downgrade/removal. See docs/IMPLEMENTATION_2.2.0.md."
   }
 }

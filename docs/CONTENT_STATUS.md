@@ -204,8 +204,9 @@ See [`PERK_AUDIT.md`](PERK_AUDIT.md) for the original audit of older content.
 
 ## 2.1.0 behavioral coverage
 
-The [complete source trace](CONTENT_TRACE_2.1.0.md) includes all 10 Skills, 475 Perks, 38 Passives
-and 87 Powers in the optional catalogue. `GameplayStabilizationGameTest` protects Counter Attack
+The [current source trace](CONTENT_TRACE.md) includes all 10 Skills, 508 Perks, 38 Passives
+and 111 Powers in the optional catalogue. The 2.1.0 snapshot predates the four-mod additions.
+`GameplayStabilizationGameTest` protects Counter Attack
 timing, forced critical damage, general mining passives, Last Stand's post-mitigation protection,
 saved survival and Chaos Roll cooldowns, Phoenix Rising fatal-hit recovery, one-time piercing-arrow
 bonuses, manufactured-gem refunds without compression loops, Blood Fury healing from committed

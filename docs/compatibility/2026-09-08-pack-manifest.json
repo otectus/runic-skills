@@ -1,0 +1,2380 @@
+{
+  "checked_at": "2026-09-08T20:30:31.029005+00:00",
+  "scope": "Original instance artifacts; final installation receipts identify rebuilt Runic artifacts and added upstream bridge.",
+  "mods": [
+    {
+      "file": "[1.20.1-forge]-Epic-Knights-Ice-and-Fire-1.1.jar",
+      "sha256": "2c1c89c8c4d7bb077c5f235e763471e0b4204ffd59aafb950c33e37c90c87c80",
+      "mods": [
+        {
+          "id": "epic_knights_ice_and_fire",
+          "version": "1.0",
+          "name": "Epic Knights: Ice and Fire"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/epic-knights-ice-and-fire",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "[1.20.1-forge]-Epic-Knights-Japanese-Armory-1.6.2.jar",
+      "sha256": "d95ba4a712d9fc3e681e29c912a5ae98d2ff1b6f73a1be57b8aa43312996866b",
+      "mods": [
+        {
+          "id": "epic_knights__japanese_armory",
+          "version": "1.6.2",
+          "name": "Epic Knights : Japanese Armory"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/epic-knights-japanese-armory",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "alexscaves-2.0.2.jar",
+      "sha256": "131e205ce3eed384d701b336d8a0d4a671108ed56b6eff6014f0e407db2997f0",
+      "mods": [
+        {
+          "id": "alexscaves",
+          "version": "2.0.2",
+          "name": "Alex's Caves"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/U6GY0xp0/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "lC8HHXOF",
+        "version": "2.0.2",
+        "type": "release",
+        "date": "2024-10-26T17:20:17.825067Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "apotheosis-313970-6461960.jar",
+      "sha256": "5ed8c17cf62837bb649d1054e3e4fe93c4d9bdec98fe9f332e2637a260da30da",
+      "mods": [
+        {
+          "id": "apotheosis",
+          "version": "7.4.8",
+          "name": "Apotheosis"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/rqFWfVlz/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "tT3CLYvK",
+        "version": "7.4.8",
+        "type": "release",
+        "date": "2026-06-19T01:40:39.699511Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "apothic-attributes-898963-5634071.jar",
+      "sha256": "68487b11c0d4e2f67a85f2b04bf65e99ac15294f2923f4391f83e9542293187a",
+      "mods": [
+        {
+          "id": "attributeslib",
+          "version": "1.3.7",
+          "name": "Apothic Attributes"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/DGaH8Rh0/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "fwL9CWGd",
+        "version": "1.3.7",
+        "type": "release",
+        "date": "2026-06-19T01:41:34.129141Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "Aquaculture-1.20.1-2.5.7.jar",
+      "sha256": "4c96cf0dd3363a8e15f9ef6b6bfc00ac7d4791e8e9eeebe19b8092c59e800f8f",
+      "mods": [
+        {
+          "id": "aquaculture",
+          "version": "2.5.7",
+          "name": "Aquaculture 2"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/Vl1uNAuy/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "wNiFoROs",
+        "version": "2.5.7",
+        "type": "release",
+        "date": "2025-12-14T05:38:19.298887Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "architectury-9.2.14-forge.jar",
+      "sha256": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af",
+      "mods": [
+        {
+          "id": "architectury",
+          "version": "9.2.14",
+          "name": "Architectury"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/lhGA9TYQ/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "1MKTLiiG",
+        "version": "9.2.14+forge",
+        "type": "release",
+        "date": "2024-02-26T13:19:00.816154Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "ars-nouveau-4.12.7.jar",
+      "sha256": "1f1debc282a0c379c1141f2840ea294eede6f6b544c589663f40bbe17b59a1af",
+      "mods": [
+        {
+          "id": "ars_nouveau",
+          "version": "4.12.7",
+          "name": "Ars Nouveau"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/TKB6INcv/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Hw2aD01e",
+        "version": "4.12.7",
+        "type": "release",
+        "date": "2025-06-23T21:54:13.991992Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "azurelib-neo-1.20.1-3.1.12.jar",
+      "sha256": "482d12cdcba5c029e8c22fd34c4913edc22b0ba1f5c5121613f0974192323fb7",
+      "mods": [
+        {
+          "id": "azurelib",
+          "version": "3.1.12",
+          "name": "AzureLib"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/7zlUOZvb/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Q73c8YKY",
+        "version": "3.1.12",
+        "type": "release",
+        "date": "2026-07-04T05:14:36.212307Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "bettercombat-forge-1.9.0+1.20.1.jar",
+      "sha256": "49c69dccf2c641246b4e3deca81ebac21f0ee119e81fc713b838b8e33569eea1",
+      "mods": [
+        {
+          "id": "bettercombat",
+          "version": "1.9.0+1.20.1",
+          "name": "Better Combat"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/5sy6g3kz/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "rnhiaw3t",
+        "version": "1.9.0+1.20.1-forge",
+        "type": "release",
+        "date": "2025-12-02T21:48:41.489880Z"
+      },
+      "finding": "1.9.0 APIs/mixins checked; client animations and multi-target combat need playtesting."
+    },
+    {
+      "file": "biolith-forge-1.0.1-beta.1.jar",
+      "sha256": "e329f05c2e7d179a42efd352548e1053a4dd08dd6f18eb6aca853a00bc8e9bff",
+      "mods": [
+        {
+          "id": "biolith",
+          "version": "1.0.1-beta.1",
+          "name": "Biolith"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/iGEl6Crx/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "3wmaz5qg",
+        "version": "1.0.1-beta.1",
+        "type": "beta",
+        "date": "2026-06-16T00:09:23.139120Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "blockui-1.20.1-1.0.193.jar",
+      "sha256": "0658aea747cfaea37171ea0794e420c4ac40e638b1d7dec50d196086b80a4cb7",
+      "mods": [
+        {
+          "id": "blockui",
+          "version": "1.20.1-1.0.193",
+          "name": "UI Library Mod"
+        }
+      ],
+      "publisher_status": "Stable 1.0.193; newer snapshot available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/blockui",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "BOMD-Forge-1.20.1-1.1.1.jar",
+      "sha256": "4530411d4cd1004f3a6ad248c6bda667c364ee4fd345ceb7a20c947ef093e3be",
+      "mods": [
+        {
+          "id": "bosses_of_mass_destruction",
+          "version": "1.1.1",
+          "name": "Bosses of Mass Destruction"
+        }
+      ],
+      "publisher_status": "Stable 1.1.1; beta 1.1.2 available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/bosses-of-mass-destruction-forge",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "botania-1.20.1-455-forge.jar",
+      "sha256": "b33a7cf5ac2cf859d78f13daf9bc45678ffd32a85e91661304cdec5dfd296700",
+      "mods": [
+        {
+          "id": "botania",
+          "version": "1.20.1-455-FORGE",
+          "name": "Botania"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/pfjLUfGv/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "BpFDhV66",
+        "version": "1.20.1-455-forge",
+        "type": "release",
+        "date": "2026-08-21T18:43:03.083604Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "BrewinAndChewin-1.20.1-3.2.1.jar",
+      "sha256": "d06edc7a145e8808903b7bd06e0639458a817fbc4ee589be239c0af77a6367db",
+      "mods": [
+        {
+          "id": "brewinandchewin",
+          "version": "1.20.1-3.2.1",
+          "name": "Brewin' And Chewin'"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/hIu9KJTT/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "9myDFPCD",
+        "version": "1.20.1-3.2.1",
+        "type": "release",
+        "date": "2025-02-26T03:57:44.733956Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "call_of_yucutan-1.0.13-forge-1.20.1.jar",
+      "sha256": "063be00ddec8cd799b59db056157ac9b0ebbd177de2401c3f5d22ae4efc47bcc",
+      "mods": [
+        {
+          "id": "call_of_yucutan",
+          "version": "1.0.13",
+          "name": "Call of Yucat\u00e1n"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/RV4ezinu/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "s49dr29b",
+        "version": "1.0.13",
+        "type": "release",
+        "date": "2024-10-09T21:23:46.204827Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "CerbonsApi-Forge-1.20.1-1.0.0.jar",
+      "sha256": "b764f411ddcf4612b27774166d227d3bc92741e1a89ac0590aa3dbba432ab249",
+      "mods": [
+        {
+          "id": "cerbons_api",
+          "version": "1.0.0",
+          "name": "CerbonsApi"
+        }
+      ],
+      "publisher_status": "Stable 1.0.0; beta 1.1.0 available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/cerbons-api",
+      "latest_available": null,
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "CGM-Unofficial-1.4.20+Forge+1.20.1.jar",
+      "sha256": "e9374b1c0e3fa2dad4a862dc289aef03e47546ca15c14ce716255af1904dea24",
+      "mods": [
+        {
+          "id": "cgm",
+          "version": "1.4.20",
+          "name": "MrCrayfish's Gun Mod"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/mrcrayfishs-gun-mod-unofficial",
+      "latest_available": null,
+      "finding": "Unofficial 1.4.20 retains the API used by Runic. Client firing/reload validation remains necessary."
+    },
+    {
+      "file": "citadel-2.6.3-1.20.1.jar",
+      "sha256": "56c7ab87348a5292583aac787b6cf11b5193e77f02af1d17ea75a96f8640b3ce",
+      "mods": [
+        {
+          "id": "citadel",
+          "version": "2.6.3",
+          "name": "Citadel"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/jJfV67b1/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "lTAAe4sZ",
+        "version": "2.6.3",
+        "type": "release",
+        "date": "2026-01-17T18:17:35.005213Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "cloth-config-11.1.136-forge.jar",
+      "sha256": "1e895e85cf5b1e1905ef3178ec155c8badfe22a1577b92c09143a5aa1f4ce0f2",
+      "mods": [
+        {
+          "id": "cloth_config",
+          "version": "11.1.136",
+          "name": "Cloth Config v10 API"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/9s6osm5g/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "t8TXrZvZ",
+        "version": "11.1.136+forge",
+        "type": "release",
+        "date": "2024-09-16T17:13:50.725690Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "create-1.20.1-6.0.8.jar",
+      "sha256": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0",
+      "mods": [
+        {
+          "id": "create",
+          "version": "6.0.8",
+          "name": "Create"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/LNytGWDc/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "8amzvn9x",
+        "version": "mc1.20.1-6.0.8",
+        "type": "release",
+        "date": "2025-11-02T16:10:25.364809Z"
+      },
+      "finding": "6.0.8 API references checked; two obsolete Galosphere silver recipes guarded. Scorched Guns Create recipes need upstream data repairs."
+    },
+    {
+      "file": "curios-5.14.1+1.20.1.jar",
+      "sha256": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f",
+      "mods": [
+        {
+          "id": "curios",
+          "version": "5.14.1+1.20.1",
+          "name": "Curios API"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/vvuO3ImH/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "IPQlZkz1",
+        "version": "5.14.1+1.20.1",
+        "type": "release",
+        "date": "2025-04-13T13:09:28.168539Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "CustomNPCs-1.20.1-GBPort-Unofficial-1.20.1.20260711.jar",
+      "sha256": "604916a1cd0949fd426cab5fad8f839037d7e6f74d9f18a9afbeaa7731edfc38",
+      "mods": [
+        {
+          "id": "customnpcs",
+          "version": "1.20.1.20260711",
+          "name": "Custom NPCs"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/customnpcs-unofficial",
+      "latest_available": null,
+      "finding": "Current July 11 build inventoried; native NPC scripting/combat behavior is not covered by the Runic static checker."
+    },
+    {
+      "file": "deeperdarker-forge-1.20.1-1.3.3.jar",
+      "sha256": "d07dc6155e0b751c7d1ec26dabb7284a41798c85e48b0d809fd1254e489ed455",
+      "mods": [
+        {
+          "id": "deeperdarker",
+          "version": "1.3.3",
+          "name": "Deeper and Darker"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/fnAffV0n/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "e2oirgc2",
+        "version": "1.3.3-forge+1.20.1",
+        "type": "release",
+        "date": "2024-11-16T11:56:50.787713Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "domum_ornamentum-1.20.1-1.0.296-universal.jar",
+      "sha256": "a5a46c0bcadbcaa36a69b8be32f6eeec0c655b2990f6f6c0c8c61ddb569e809f",
+      "mods": [
+        {
+          "id": "domum_ornamentum",
+          "version": "1.20.1-1.0.296",
+          "name": "Domum Ornamentum"
+        }
+      ],
+      "publisher_status": "Stable 1.0.296; newer snapshot available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/domum-ornamentum",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "dragonsteel-0.81.jar",
+      "sha256": "3fe90037d651276967301d763dcf5ce0173561312da9f33cd3a56a95f61efd0e",
+      "mods": [
+        {
+          "id": "dragonsteel",
+          "version": "0.81",
+          "name": "Ice and Fire: Dragonsteel"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ice-and-fire-dragonsteel",
+      "latest_available": null,
+      "finding": "0.81 supplies 182 invalid minecraft:false conditions across other namespaces, plus missing optional ingredients; repair conditions upstream."
+    },
+    {
+      "file": "epic-knights-1.20.1-forge-10.11.jar",
+      "sha256": "6043fdc77ea9651b1293e8602c8e858c728628f6f6b6e9efa247e4281f4ca733",
+      "mods": [
+        {
+          "id": "magistuarmory",
+          "version": "10.11",
+          "name": "Epic-Knights: Shields, Armor and Weapons"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/L6jvzao4/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "2kK9qUpx",
+        "version": "10.11",
+        "type": "release",
+        "date": "2026-03-14T14:49:00.690082Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "epic-knights-addon-1.20.x-forge-2.6.jar",
+      "sha256": "cbaf743ce72199d2007fc9d9199be28d2f805a81a837230cf0d6e8ce828cd193",
+      "mods": [
+        {
+          "id": "magistuarmoryaddon",
+          "version": "2.6",
+          "name": "Epic Knights: Addon"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/txMuoRai/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "xnYQSIH7",
+        "version": "2.6",
+        "type": "release",
+        "date": "2026-02-23T14:06:36.893770Z"
+      },
+      "finding": "Two legacy minecraft:smithing recipes require a 1.20.1 schema migration with an explicit template policy."
+    },
+    {
+      "file": "epic-knights-antique-legacy-1.20.x-forge-1.13.jar",
+      "sha256": "06bf57a754d93816382fd60a4b2030a84854518918a0553b3f7b38aae33f5def",
+      "mods": [
+        {
+          "id": "antiquelegacy",
+          "version": "1.13",
+          "name": "Epic Knights: Antique Legacy"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/xODj7fc3/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "4DhbZFhg",
+        "version": "1.13",
+        "type": "release",
+        "date": "2026-02-22T23:21:14.465841Z"
+      },
+      "finding": "Four recipes reference removed armor items; upstream content/recipe reconciliation required."
+    },
+    {
+      "file": "epic-knights-dark-ages-1.20.x-forge-1.1.jar",
+      "sha256": "227279de86f19e44be7a05f4ea187dd3b083d17e321179d3b8da224ed545c6ae",
+      "mods": [
+        {
+          "id": "darkagesarmory",
+          "version": "1.1",
+          "name": "Epic Knights: Dark Ages"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/epic-knights-dark-ages-addon",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "etstlib-3.0.0-beta.20.jar",
+      "sha256": "3bafc16fbdfe870ca9423aa93273dc008a622b8074e429e112bcf005a5c3e95c",
+      "mods": [
+        {
+          "id": "etstlib",
+          "version": "3.0.0-beta.20",
+          "name": "EtSTLib"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/H9Ib63lK/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "W2PiDcLk",
+        "version": "3.0.0-beta.20",
+        "type": "beta",
+        "date": "2026-04-10T13:48:01.774281Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "fantasy_armor-forge-1.2.4-1.20.1.jar",
+      "sha256": "60723448eb979d29da51bd6fe71e6ef1b695decd3d91da76f1e970664bf80693",
+      "mods": [
+        {
+          "id": "fantasy_armor",
+          "version": "1.2.4-1.20.1",
+          "name": "Fantasy Armor"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/oVmpjYQ5/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "U65HntTA",
+        "version": "1.2.4-1.20.1",
+        "type": "release",
+        "date": "2026-03-31T13:55:45.200589Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "farmers-delight-1.20.1-1.3.4.jar",
+      "sha256": "34f03eb671ea1ca579b00c98e4541404cb96d1a292014aed9cc5eb45ad8afbce",
+      "mods": [
+        {
+          "id": "farmersdelight",
+          "version": "1.20.1-1.3.4",
+          "name": "Farmer's Delight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/R2OftAxM/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "SiIpcZzM",
+        "version": "1.20.1-1.3.4",
+        "type": "release",
+        "date": "2026-08-29T23:19:47.678159Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "fishingreal-forge-1.20.1-1.9.1-backport.jar",
+      "sha256": "cd7839a5499bdb182f37880deaaafa1715844c3f2b51941e6acad401da70914d",
+      "mods": [
+        {
+          "id": "fishingreal",
+          "version": "1.9.1-backport",
+          "name": "FishingReal"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/MIdaKqt7/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "RLxe3JhW",
+        "version": "1.9.1-backport",
+        "type": "release",
+        "date": "2025-04-29T02:11:50.500063Z"
+      },
+      "finding": "Changes fishing item delivery. Tide bonuses needing a delivery receipt remain conservative until a native bridge is verified."
+    },
+    {
+      "file": "forge-dungeonsdelight-1.20.1-1.3.0.jar",
+      "sha256": "7766b90dbd4404db917f675bdd84dcacfb72ce6c3f89ddd0154433821b6b2b68",
+      "mods": [
+        {
+          "id": "dungeonsdelight",
+          "version": "1.3.0",
+          "name": "Dungeon's Delight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/qPfNr476/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Ick1jUCc",
+        "version": "1.3.0",
+        "type": "release",
+        "date": "2026-05-26T19:56:21.765869Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "forge-runiclib-1.20.1-4.3.11.jar",
+      "sha256": "5e4c5d299b2beb746e7aa48add747654f617bd78da1e38996b29695d7698b260",
+      "mods": [
+        {
+          "id": "runiclib",
+          "version": "4.3.11",
+          "name": "RunicLib"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/mk0Htq87/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "DyyjKTPx",
+        "version": "4.3.11",
+        "type": "release",
+        "date": "2026-08-08T21:46:10.696419Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "framework-forge-1.20.1-0.8.0.jar",
+      "sha256": "37c267f46d8b8dfa81bae8c9fa9fa6467e456cadecae10722ee91b43437f25a0",
+      "mods": [
+        {
+          "id": "framework",
+          "version": "0.8.0",
+          "name": "Framework"
+        }
+      ],
+      "publisher_status": "Current available beta 0.8.0",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/framework",
+      "latest_available": null,
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "fruitsdelight-1.1.3.jar",
+      "sha256": "ad136ea910d1b09bab90425168f64d841ea4f57d49f8a616da9882c7d6d8aec1",
+      "mods": [
+        {
+          "id": "fruitsdelight",
+          "version": "1.1.3",
+          "name": "Fruits Delight"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/fruits-delight",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "ftb-library-forge-2001.2.13.jar",
+      "sha256": "41810281b65336265cae2c88412022d02f2f0a3f28c66a06173d86f98acf14a7",
+      "mods": [
+        {
+          "id": "ftblibrary",
+          "version": "2001.2.13",
+          "name": "FTB Library"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ftb-library-forge",
+      "latest_available": null,
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "ftb-quests-forge-2001.4.22.jar",
+      "sha256": "9ea9d159a78a2724cfe0457b024680fdb52a2126eff9cfa5280a30578f647a68",
+      "mods": [
+        {
+          "id": "ftbquests",
+          "version": "2001.4.22",
+          "name": "FTB Quests"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ftb-quests-forge",
+      "latest_available": null,
+      "finding": "Native quest bridge API checked; this does not add optional FTB XMod Compat functionality for KubeJS/JEI."
+    },
+    {
+      "file": "ftb-teams-forge-2001.3.2.jar",
+      "sha256": "b1cb4d82ea9f137a87e12a7aaf3329619294b56f7d70337dfd557a76e10b6e07",
+      "mods": [
+        {
+          "id": "ftbteams",
+          "version": "2001.3.2",
+          "name": "FTB Teams"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ftb-teams-forge",
+      "latest_available": null,
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "fzzy_config-0.7.6+1.20.1+forge.jar",
+      "sha256": "d39cd5d6b23b86468937e306776dc70faba900072c7e359ce9348d8a3c26982e",
+      "mods": [
+        {
+          "id": "fzzy_config",
+          "version": "0.7.6+1.20.1+forge",
+          "name": "Fzzy Config"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/hYykXjDp/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "7MmXhjWs",
+        "version": "0.7.6+1.20.1+forge",
+        "type": "release",
+        "date": "2026-02-03T01:48:46.478341Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "Galosphere-1.20.1-1.5.2-Forge.jar",
+      "sha256": "b9a749b0dff0c8e306f9395f7f757d05f1530cd18dcb2d984be5f46180e623f1",
+      "mods": [
+        {
+          "id": "galosphere",
+          "version": "1.5.2",
+          "name": "Galosphere"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/Kn7xyQ1v/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "dO2SHzWh",
+        "version": "1.20.1-1.5.2",
+        "type": "release",
+        "date": "2026-06-07T14:49:26.691905Z"
+      },
+      "finding": "1.5.2 removed silver_ingot. Guarded obsolete Create/Overgeared output recipes; upstream block_comparator recipe remains invalid."
+    },
+    {
+      "file": "geckolib-aC5KMoNg.jar",
+      "sha256": "4518779a31b6c2abb92c98b5ad17ef3d60177df68626bfc86c44de2764913c2b",
+      "mods": [
+        {
+          "id": "geckolib",
+          "version": "4.8.4",
+          "name": "GeckoLib 4"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/8BmcQJ2H/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "aC5KMoNg",
+        "version": "4.8.4",
+        "type": "release",
+        "date": "2026-06-20T11:07:31.386330Z"
+      },
+      "finding": "Official Modrinth aC5KMoNg hash verified independently despite misleading cached CurseForge project metadata. Keep this sole GeckoLib copy."
+    },
+    {
+      "file": "geckolib-forge-1.20.1-4.8.4.jar",
+      "sha256": "c04abba4fd354dd8c0e8a732f1f05f4dca893d2e1d962b2ab128bbd411478747",
+      "mods": [
+        {
+          "id": "geckolib",
+          "version": "4.8.4",
+          "name": "GeckoLib 4"
+        }
+      ],
+      "publisher_status": "Duplicate 4.8.4",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/geckolib",
+      "latest_available": null,
+      "finding": "Duplicate mod ID; quarantine this copy and keep the independently hash-verified official geckolib-aC5KMoNg.jar."
+    },
+    {
+      "file": "hapi-forge-1.20.1-1.0.0.jar",
+      "sha256": "a0e877657ec202c381bdcb0e1566b88425745a574f9bec2fc717cd58ee00b9ca",
+      "mods": [
+        {
+          "id": "hapi",
+          "version": "1.0.0",
+          "name": "Hybrid API"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/yv9f5EAG/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "TFSGeI7j",
+        "version": "mc1.20.1-forge-1.0.0",
+        "type": "release",
+        "date": "2026-08-26T15:18:11.476349Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "hybrid_aquatic-forge-1.20.1-1.7.0.jar",
+      "sha256": "1e48c81c6f6a7a6ca08abdc8927eb05b339378e89934dc6d3206713b4a4187fa",
+      "mods": [
+        {
+          "id": "hybrid_aquatic",
+          "version": "1.7.0",
+          "name": "Hybrid Aquatic"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/hybrid-aquatic",
+      "latest_available": null,
+      "finding": "1.7.0 changes fishing delivery; same Tide receipt limitation as Fishing Real."
+    },
+    {
+      "file": "iceandfire-2.1.13-1.20.1-beta-5.jar",
+      "sha256": "2b80245fc9b7d6fdc61d71f9892f4c6114eb7f303f65634845aaab25f84d1e82",
+      "mods": [
+        {
+          "id": "iceandfire",
+          "version": "2.1.13-1.20.1",
+          "name": "Ice and Fire"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/LVnvHVBp/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "EzN8KQYF",
+        "version": "2.1.13-1.20.1-beta-5",
+        "type": "beta",
+        "date": "2024-08-15T23:30:14.876035Z"
+      },
+      "finding": "2.1.13 beta-5 is the current available 1.20.1 line; weapon hooks retained. Dragonsteel overrides produce invalid disabled-recipe warnings."
+    },
+    {
+      "file": "irons_lib-1.20.1-2.1.0.jar",
+      "sha256": "db4c7cc853c0ffb1d36a0f19af22c224a8608b2a55c747adc70fb44455baf097",
+      "mods": [
+        {
+          "id": "irons_lib",
+          "version": "1.20.1-2.1.0",
+          "name": "Iron's Lib"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/9nfaJPtX/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "DbpRfa2k",
+        "version": "1.20.1-2.1.0",
+        "type": "release",
+        "date": "2026-07-04T21:36:03.586045Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "irons_spellbooks-1.20.1-3.16.3.jar",
+      "sha256": "54b5aaa52887c38f570fbd820288171234d8541c17a5e953f9271189fdd480fb",
+      "mods": [
+        {
+          "id": "irons_spellbooks",
+          "version": "1.20.1-3.16.3",
+          "name": "Iron's Spells 'n Spellbooks"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/s4OWxYQQ/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "hZaEegS9",
+        "version": "1.20.1-3.16.3",
+        "type": "release",
+        "date": "2026-08-18T20:34:56.404558Z"
+      },
+      "finding": "3.16.3 is accepted by the updated companion; base API references checked. Test with T.O. and its upstream bridge together."
+    },
+    {
+      "file": "jei-1.20.1-forge-15.56.0.205.jar",
+      "sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c",
+      "mods": [
+        {
+          "id": "jei",
+          "version": "15.56.0.205",
+          "name": "Just Enough Items"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/u6dRKJwZ/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "1L7W8nyE",
+        "version": "15.58.0.209",
+        "type": "beta",
+        "date": "2026-09-06T08:30:56.463334Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "jet_and_elias_armors-1.4-1.20.1-CF.jar",
+      "sha256": "b5a80b949b86f473c3b06ce90b0fdc98e0c7f1069254f544eb7e73e777617f22",
+      "mods": [
+        {
+          "id": "jet_and_elias_armors",
+          "version": "1.0.0",
+          "name": "Jet and Elia's Armors"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/jet-and-elias-armors",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "Jewelry-1.7.0.jar",
+      "sha256": "c4527f42913fd95865447431b751fa402d61dc115c532ebf91186db68d4ebdc4",
+      "mods": [
+        {
+          "id": "jewelcraft",
+          "version": "1.7.0",
+          "name": "Jewelcraft"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/k2HyfPfj/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "UQpA0WjG",
+        "version": "1.7.0",
+        "type": "release",
+        "date": "2024-08-19T00:38:51.918818Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "JsonThings-1.20.1-0.9.13.jar",
+      "sha256": "fed77277bc5acb79c9b3dc72b5d4fae2cea654cb71605fd7910118a750da0e3c",
+      "mods": [
+        {
+          "id": "jsonthings",
+          "version": "0.9.13",
+          "name": "Json Things"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/json-things",
+      "latest_available": null,
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "kotlinforforge-4.12.0-all.jar",
+      "sha256": "6a66c6a68ec09f8717cdbf06883394f0ee24d7cd826b7134a0f81839e8e720ae",
+      "mods": [],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/ordsPcFz/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Zsh14XeQ",
+        "version": "4.12.0",
+        "type": "release",
+        "date": "2025-12-03T19:48:01.561702Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "kubejs-forge-2001.6.5-build.26.jar",
+      "sha256": "1769312192fbf9d72f45054ba61130523bfb471b5f480a4bff8c210ec09400bb",
+      "mods": [
+        {
+          "id": "kubejs",
+          "version": "2001.6.5-build.26",
+          "name": "KubeJS"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/umyGl7zF/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "hVR2xUSr",
+        "version": "2001.6.5-build.26+forge",
+        "type": "release",
+        "date": "2026-05-01T10:43:18.671562Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "l2complements-2.6.1.jar",
+      "sha256": "2aae9d5fc4286f2952939f9edda636ad85d6a9451c960d1c2ece6732b8862e43",
+      "mods": [
+        {
+          "id": "l2complements",
+          "version": "2.6.1",
+          "name": "L2 Complements"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/l2-complements",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "l2library-2.5.3.jar",
+      "sha256": "c36a9c5c93b6114c15aea11d084600a8ed230f179f1b70d6222633a50f77fc18",
+      "mods": [
+        {
+          "id": "l2library",
+          "version": "2.5.3",
+          "name": "L2 Library"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/l2library",
+      "latest_available": null,
+      "finding": "L2 Tabs 0.3.3 nested API fixed: TabToken.TabFactory and registerTab return type."
+    },
+    {
+      "file": "L_Enders_Cataclysm-3.31.jar",
+      "sha256": "c29dcf940168208517b72f2d9965828b106a6b94cbea55d5001558c69a27b362",
+      "mods": [
+        {
+          "id": "cataclysm",
+          "version": "3.31",
+          "name": "cataclysm"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/46KJle7n/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "C3H0azzB",
+        "version": "3.31",
+        "type": "release",
+        "date": "2026-06-14T07:44:06.024911Z"
+      },
+      "finding": "3.31 relocates DungeonEyeItem, particles and other APIs. T.O. requires the published bridge."
+    },
+    {
+      "file": "legendarytabs-1.20.1-2.0.jar",
+      "sha256": "4f06b218e5228513a3fb173a498d819795c80dce67e7f2b26ddabda16e2d4b4a",
+      "mods": [
+        {
+          "id": "legendarytabs",
+          "version": "1.20.1-2.0",
+          "name": "Legendary Tabs"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/RFvSp8uj/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "8HM37BpJ",
+        "version": "1.20.1-2.0",
+        "type": "release",
+        "date": "2026-08-07T19:12:56.038972Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "letsdo-API-forge-1.2.15-forge.jar",
+      "sha256": "d08b99df112cfffb46e289635c79d4ac8397223320abd6469b47e202e23fa28c",
+      "mods": [
+        {
+          "id": "doapi",
+          "version": "1.2.15",
+          "name": "[Let's Do] API"
+        },
+        {
+          "id": "terraform",
+          "version": "7.0.1",
+          "name": "Terraform Wood Api Reforged"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/4XJZeZbM/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "uEaTMht9",
+        "version": "1.2.15",
+        "type": "release",
+        "date": "2024-06-24T15:23:37.248167Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "letsdo-bakery-forge-2.0.6.jar",
+      "sha256": "feb70544c3b8409122c26b9a80d86691c8e36508b95e24fe7bd89e3a973a947e",
+      "mods": [
+        {
+          "id": "bakery",
+          "version": "2.0.6",
+          "name": "[Let's Do] Bakery"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/oNB5jhlA/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Bz6DYFDT",
+        "version": "2.0.6",
+        "type": "release",
+        "date": "2025-08-04T18:53:41.143795Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "letsdo-beachparty-forge-2.0.3.jar",
+      "sha256": "cd31dab1eb6d88e70697ee0342ebb79f22d9b9f0cb09d4a0b1562ed809178aef",
+      "mods": [
+        {
+          "id": "beachparty",
+          "version": "2.0.3",
+          "name": "[Let's Do] Beachparty"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/GyKzAh3l/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "b3xwehb1",
+        "version": "2.0.3",
+        "type": "release",
+        "date": "2025-08-05T08:32:24.757121Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "letsdo-brewery-forge-2.0.6.jar",
+      "sha256": "c8ae46cac66ab2a054cac6f9353512855c2cebaf5eb2eacc38503a50f05c56ea",
+      "mods": [
+        {
+          "id": "brewery",
+          "version": "2.0.6",
+          "name": "[Let's Do] Brewery"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/b7NV2plI/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "CC0M409e",
+        "version": "2.0.6",
+        "type": "release",
+        "date": "2025-08-04T18:12:18.211179Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "letsdo-candlelight-forge-2.0.5.jar",
+      "sha256": "6c384737ebc26a0efb50a0688e4ff38f59bce9db30c4b61dcbb1118095b34688",
+      "mods": [
+        {
+          "id": "candlelight",
+          "version": "2.0.5",
+          "name": "[Let's Do] Candlelight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/qwbArkQk/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "MAbMsxdU",
+        "version": "2.0.5",
+        "type": "release",
+        "date": "2025-08-05T10:54:29.594923Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "letsdo-farm_and_charm-forge-1.0.14.jar",
+      "sha256": "2311790589a58678640cb788de13bebd40efe3ed92f03e82a8fa871850a382eb",
+      "mods": [
+        {
+          "id": "farm_and_charm",
+          "version": "1.0.14",
+          "name": "[Let's Do] Farm & Charm"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/HJetCzWo/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "9fzY3YV6",
+        "version": "1.0.14",
+        "type": "release",
+        "date": "2025-10-09T19:59:11.179167Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "letsdo-herbalbrews-forge-1.0.12.jar",
+      "sha256": "8cf03776a4a876810a2af9c9f18f73eb5a20f041b0791b6c8b8150b5441b83c1",
+      "mods": [
+        {
+          "id": "herbalbrews",
+          "version": "1.0.12",
+          "name": "[Let's Do] HerbalBrews"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/Eh11TaTm/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "qKfEj2BA",
+        "version": "1.0.12",
+        "type": "release",
+        "date": "2025-04-24T09:28:42.150259Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "letsdo-meadow-forge-1.3.25.jar",
+      "sha256": "e96a241cc2b991d158bedb6e9239ce77656a9858c76345c7dc7b6eadeaa6ddcf",
+      "mods": [
+        {
+          "id": "meadow",
+          "version": "1.3.25",
+          "name": "[Let's Do] Meadow"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/ra7o6Sl7/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "phZQOZzG",
+        "version": "1.3.25",
+        "type": "release",
+        "date": "2025-04-26T17:23:07.945955Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "letsdo-vinery-forge-1.4.41.jar",
+      "sha256": "5d7e11f6e2218562ce75d60788fdcfc9ccf59e4532757c18bf37759d5fc739ee",
+      "mods": [
+        {
+          "id": "vinery",
+          "version": "1.4.41",
+          "name": "[Let's Do] Vinery"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/1DWmBJVA/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "2I4cH49O",
+        "version": "1.4.41",
+        "type": "release",
+        "date": "2025-09-05T13:01:11.576058Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "LibX-1.20.1-5.0.12.jar",
+      "sha256": "2de52bac5d699e6a2cbf74e94b0b3e6afdcb2e3b939dc2449fc1c6dfb8c9a96c",
+      "mods": [
+        {
+          "id": "libx",
+          "version": "1.20.1-5.0.12",
+          "name": "LibX"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/qEH6GYul/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "YHTMDq85",
+        "version": "1.20.1-5.0.14",
+        "type": "alpha",
+        "date": "2024-03-24T12:29:37.592055Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "lionfishapi-3.0.jar",
+      "sha256": "d2fdaf7e9bc53fde7da4a86ab17018a3ed6c16fc2d46de5054e5a83e2bef7871",
+      "mods": [
+        {
+          "id": "lionfishapi",
+          "version": "3.0",
+          "name": "LionfishAPI"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/FoVacERa/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "CPftDBcY",
+        "version": "3.0",
+        "type": "release",
+        "date": "2026-06-11T08:09:56.313734Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "lithostitched-forge-1.20.1-1.4.11.jar",
+      "sha256": "c19a5a36c0e6cb3782cf7ca5b9648fb1bce5fc41fd737bed423a1f4971bccf75",
+      "mods": [
+        {
+          "id": "lithostitched",
+          "version": "1.4.11",
+          "name": "Lithostitched"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/XaDC71GB/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "srPoHKt8",
+        "version": "1.4.11-forge-1.20",
+        "type": "release",
+        "date": "2025-07-07T23:21:46.041450Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "locks_reforged-1.7.5.jar",
+      "sha256": "d7ca3b957e98575a3c8d715a3efa26ac98d7b7e60fd321141fef4fb2b3fdbfbc",
+      "mods": [
+        {
+          "id": "locks",
+          "version": "1.7.5",
+          "name": "Locks"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/locks-reforged",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "lodestone-616457-6213794.jar",
+      "sha256": "e9f8b7bc70ba99d97005f2acee2061b149785fbae3c1e37db08c79197bcc7c2d",
+      "mods": [
+        {
+          "id": "lodestone",
+          "version": "1.20.1-1.6.4.1",
+          "name": "Lodestone"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/bN3xUWdo/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "dRIycWqx",
+        "version": "1.20.1-1.6.4.1",
+        "type": "release",
+        "date": "2025-02-20T16:05:31.211605Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "malum-1.20.1-1.6.7.jar",
+      "sha256": "ceda6ce4cc19de21ff6c21a732d8f9270ecc83cdae69027b13aaa24b536307f8",
+      "mods": [
+        {
+          "id": "malum",
+          "version": "1.20.1-1.6.7",
+          "name": "Malum"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/jgzwYsAN/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "U88VbrNU",
+        "version": "1.20.1-1.6.7",
+        "type": "release",
+        "date": "2025-06-13T06:58:46.282050Z"
+      },
+      "finding": "Optional JEED serializers and two missing syrup items cause skipped recipes; use mod/item-exists conditions."
+    },
+    {
+      "file": "Mantle-1.20.1-1.11.113.jar",
+      "sha256": "c059d5dcaca940383d9c4ff31bc79473b30ac267ccc5922d0d6b0fe7d93c6f7c",
+      "mods": [
+        {
+          "id": "mantle",
+          "version": "1.11.113",
+          "name": "Mantle"
+        }
+      ],
+      "publisher_status": "113 retained; stable 104 / beta 117 available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/mantle",
+      "latest_available": null,
+      "finding": "Installed 1.11.113 fixes the older Jewelry initialization deadlock. Latest stable is 1.11.104; newer beta 1.11.117 is not this tested profile."
+    },
+    {
+      "file": "mcareputation-0.4.1.jar",
+      "sha256": "f9a8590fc11700cbf9f72332aeb14c4cf16e5fed7f911e925ddebe717574495b",
+      "mods": [
+        {
+          "id": "mcareputation",
+          "version": "0.4.1",
+          "name": "MCA: Reputation"
+        }
+      ],
+      "publisher_status": "Local/unpublished artifact; no latest-release claim",
+      "source": null,
+      "latest_available": null,
+      "finding": "Local 0.4.1; no public release provenance. Runic reflection adapter; actual villager gameplay needs client validation."
+    },
+    {
+      "file": "minecolonies-1.20.1-1.1.1276.jar",
+      "sha256": "d1a1cb3f6a93ae9301c4c96568c11d98dc8a99ecec9abcba3e8f7455a022ddfa",
+      "mods": [
+        {
+          "id": "minecolonies",
+          "version": "1.20.1-1.1.1276",
+          "name": "MineColonies"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/minecolonies",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "minecraft-comes-alive-7.6.26+1.20.1-universal.jar",
+      "sha256": "5dc3ee1f2f74221b3b7b73456451bf9a3f0cc87c8378a64233680f051dbc3d19",
+      "mods": [
+        {
+          "id": "mca",
+          "version": "7.6.26+1.20.1",
+          "name": "Minecraft Comes Alive"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/1W98a849/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "nSZHRkCv",
+        "version": "7.7.1-alpha.3+1.20.1",
+        "type": "alpha",
+        "date": "2026-08-25T23:28:43.917067Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "MoreVanillaArmor-1.20.1-5.1.2.jar",
+      "sha256": "ab7bace652c479138f29cab9b830c3e4b9322209f350147591b6c6d22a1c3d1e",
+      "mods": [
+        {
+          "id": "morevanillaarmor",
+          "version": "1.20.1-5.1.2",
+          "name": "MoreVanillaArmor"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/7N4JJ4JD/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "lfA4tAo8",
+        "version": "1.20.1-5.1.2",
+        "type": "release",
+        "date": "2023-08-29T15:35:00.358428Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "MoreVanillaTools-1.20.1-6.0.0.jar",
+      "sha256": "a1e4363c823d3c4d09c8ded5c1a7ef8cccae485f4f146bd4e31ea93720416e8c",
+      "mods": [
+        {
+          "id": "morevanillatools",
+          "version": "1.20.1-6.0.0",
+          "name": "MoreVanillaTools"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/HJphSXip/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "V2QdQXl0",
+        "version": "1.20.1-6.0.0",
+        "type": "release",
+        "date": "2023-06-14T15:26:15.249475Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "mowziesmobs-1.8.2.jar",
+      "sha256": "e8ce1768cda6f1e1fadd2321c92921b473bd0cee45ba4b8387fb30f8326cb31c",
+      "mods": [
+        {
+          "id": "mowziesmobs",
+          "version": "1.8.2",
+          "name": "Mowzie's Mobs"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/BFbX9xcm/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "acYEfsJa",
+        "version": "1.8.2",
+        "type": "release",
+        "date": "2026-04-02T23:26:57.380986Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "multipiston-1.20-1.2.43-RELEASE.jar",
+      "sha256": "3102eb9915591296d14e22992d0a7baa526161b6e92058c017425c0bff19efb6",
+      "mods": [
+        {
+          "id": "multipiston",
+          "version": "1.20-1.2.43-RELEASE",
+          "name": "Multi-Piston"
+        }
+      ],
+      "publisher_status": "Stable 1.2.43; newer snapshot available",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/multi-piston",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "NaturesAura-39.4.jar",
+      "sha256": "df1c4dffce5d02695031c674e6fd7b34b8a67cece88400c48e942bb27b8fff6d",
+      "mods": [
+        {
+          "id": "naturesaura",
+          "version": "39.4",
+          "name": "NaturesAura"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/4cJkN3aF/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "8UiPp0gC",
+        "version": "39.4",
+        "type": "release",
+        "date": "2023-12-17T17:17:57.431815Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "nichirin-dynasty-1.3-1.20.1.jar",
+      "sha256": "ae27f355777e45cd3ff590f44491024080f18d224f31928cd8a10009a3ba6aaf",
+      "mods": [
+        {
+          "id": "nichirin_dynasty",
+          "version": "1.0",
+          "name": "Nichirin Dynasty"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/RT1tIVU9/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "VBQf5PDG",
+        "version": "1.3",
+        "type": "release",
+        "date": "2025-10-29T22:24:57.086033Z"
+      },
+      "finding": "Outdated epicsamurai item namespace and pre-1.20 smithing recipes; requires explicit ingredient aliases and smithing schema migration."
+    },
+    {
+      "file": "overgeared-1.20.1-1.6.33.jar",
+      "sha256": "02dca6174df33f99272af5d57d1b7fbaacd328d20531d3fd202cbd95d3e096c4",
+      "mods": [
+        {
+          "id": "overgeared",
+          "version": "1.20.1-1.6.33",
+          "name": "Overgeared: A Blacksmith Mod"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/SQL3X2Ky/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "X34HZ290",
+        "version": "1.20.1-1.6.33",
+        "type": "release",
+        "date": "2026-08-27T10:06:00.983026Z"
+      },
+      "finding": "Removed Galosphere silver output guarded; recipes for absent Oreganized/Caverns & Chasms still need item-exists conditions."
+    },
+    {
+      "file": "patchouli-1.20.1-85-forge.jar",
+      "sha256": "05f7b5d52f6b8f0fd7f8b4822fa07a192d1394d83a264309c9d221d6d4fd21c5",
+      "mods": [
+        {
+          "id": "patchouli",
+          "version": "1.20.1-85-FORGE",
+          "name": "Patchouli"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/nU0bVIaL/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "94dtOLgZ",
+        "version": "1.20.1-85-forge",
+        "type": "release",
+        "date": "2026-03-08T21:08:41.512166Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "placebo-283644-6274231.jar",
+      "sha256": "1cdf906cfbcbb5e5be2ef1bb721f79a24b01bd2ac559c8cdbfb7693f62421571",
+      "mods": [
+        {
+          "id": "placebo",
+          "version": "8.6.3",
+          "name": "Placebo"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/tCkE8p2N/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "6SkuAGoz",
+        "version": "8.6.3",
+        "type": "release",
+        "date": "2026-06-14T08:31:50.827163Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "playeranimator-xe2EVE6q.jar",
+      "sha256": "90d9965cb9efdbda29fdc5610be3914cf7008bf5c392ff34f7ab25f96a852691",
+      "mods": [
+        {
+          "id": "playeranimator",
+          "version": "1.0.2-rc1+1.20",
+          "name": "Player Animator"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/gedNE4y2/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "xe2EVE6q",
+        "version": "1.0.2-rc1+1.20-forge",
+        "type": "beta",
+        "date": "2023-06-14T20:01:58.026800Z"
+      },
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    },
+    {
+      "file": "pointblank-forge-1.20.1-1.12.1.jar",
+      "sha256": "67d757a93ac2e7b67323640c458486753c32c9f5a1b2f70f00b8acebaec91402",
+      "mods": [
+        {
+          "id": "pointblank",
+          "version": "1.12.1",
+          "name": "Point Blank"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/og4KPYmA/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "PCCdUQHj",
+        "version": "1.12.1",
+        "type": "release",
+        "date": "2026-09-04T05:52:26.816408Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "quality_equipment-1.6-forge_neoforge-1.20.1.jar",
+      "sha256": "b4220fa0fb84def3140968ed1acac166358bbbfda611088999fdd4829a59e7a2",
+      "mods": [
+        {
+          "id": "quality_equipment",
+          "version": "1.6",
+          "name": "Quality Equipment"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/mAvAL1oG/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "qiT7PUyO",
+        "version": "1.6",
+        "type": "release",
+        "date": "2024-07-11T19:17:46.128384Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "rhino-forge-2001.2.3-build.10.jar",
+      "sha256": "fed2211429301bf043864183cab9ab8e92d4cc4dbb9e488ce6c75217c54584a6",
+      "mods": [
+        {
+          "id": "rhino",
+          "version": "2001.2.3-build.10",
+          "name": "Rhino"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/sk9knFPE/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "uNALdylI",
+        "version": "2001.2.3-build.10+forge",
+        "type": "release",
+        "date": "2025-02-12T21:26:49.669723Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "runicskills-2.1.2.jar",
+      "sha256": "e69123ba1b42fbf7d91e26f9836e85b63345dc11b031f74b5f5f58036f0010f7",
+      "mods": [
+        {
+          "id": "runicskills",
+          "version": "2.1.2",
+          "name": "Runic Skills"
+        }
+      ],
+      "publisher_status": "Local/unpublished artifact; no latest-release claim",
+      "source": null,
+      "latest_available": null,
+      "finding": "Rebuilt 2.1.2 development artifact; fixes described in the report."
+    },
+    {
+      "file": "runicskills-tom-compat-2.1.2.jar",
+      "sha256": "5bd0e43f89247019f3b628d61a02ab6463471704ef9e436cba2a61aefd868bfa",
+      "mods": [
+        {
+          "id": "runicskills_tom_compat",
+          "version": "2.1.2",
+          "name": "Runic Skills \u2014 T.O. Companion"
+        }
+      ],
+      "publisher_status": "Local/unpublished artifact; no latest-release claim",
+      "source": null,
+      "latest_available": null,
+      "finding": "Rebuilt; verifies exact ISS 3.15.0 or 3.16.3 version/hash pair."
+    },
+    {
+      "file": "rusticdelight-forge-1.20.1-1.7.0.jar",
+      "sha256": "43786263003824cb8d042037edcd7639b44e30819a5f585c42de294d3d7da80b",
+      "mods": [
+        {
+          "id": "rusticdelight",
+          "version": "1.7.0",
+          "name": "Rustic Delight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/foa4fGIH/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "z29Gd3ec",
+        "version": "1.7.0",
+        "type": "release",
+        "date": "2026-08-04T19:15:54.858105Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "saintsdragons-0.9.52+forge-1.20.1.jar",
+      "sha256": "bb29b07c16fac7372acef036d175e94ac5957d2867cdb07a909f9e2f1a51d4d1",
+      "mods": [
+        {
+          "id": "saintsdragons",
+          "version": "0.9.52",
+          "name": "Saint's Dragons"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/rjcsjwEU/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "jcHcmFkM",
+        "version": "0.9.52",
+        "type": "release",
+        "date": "2026-09-03T06:42:54.456031Z"
+      },
+      "finding": "Moop fish schema migrated. Dialogue loader also reads MCA dialogue resources and rejects their schema; needs namespace filtering upstream."
+    },
+    {
+      "file": "samurai_dynasty-0.0.51-1.20.1-forge.jar",
+      "sha256": "be95a714c1d5b2e577cf2d05c6158782cc484951d08ef0ea17b3c31b80f544df",
+      "mods": [
+        {
+          "id": "samurai_dynasty",
+          "version": "0.0.51-1.20.1-forge",
+          "name": "Samurai Dynasty"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/lMWJDrbO/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "KzZfg6EC",
+        "version": "0.0.51-1.20.1-forge",
+        "type": "release",
+        "date": "2025-12-29T22:37:22.010857Z"
+      },
+      "finding": "Four recipes reference removed mask items. Repair upstream IDs or document replacement equipment."
+    },
+    {
+      "file": "ScorchedGuns-0.5.5-1.20.1.jar",
+      "sha256": "f339dd8444eaf4623449cd11db092beb1f02f14f5d03045a0394070b0ea50170",
+      "mods": [
+        {
+          "id": "scguns",
+          "version": "0.5.5",
+          "name": "Scorched Guns"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/lDzXAiqs/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "A57yER99",
+        "version": "0.5.5",
+        "type": "release",
+        "date": "2025-11-17T10:42:37.871424Z"
+      },
+      "finding": "0.5.5 gun API/mixins checked. Two Create conditions, one unused shaped symbol and optional experience fluid still need recipe repairs."
+    },
+    {
+      "file": "siege-machines-1.20.1-forge-1.39.jar",
+      "sha256": "6a24c20ff92a9b804656bdb3dc1d06b601bc258d0c5b6fb644ccfc680555d6a1",
+      "mods": [
+        {
+          "id": "siegemachines",
+          "version": "1.39",
+          "name": "Adds medieval siege machines"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/ctnEXZ5V/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "SKVsjLd8",
+        "version": "1.39",
+        "type": "release",
+        "date": "2026-01-15T20:10:14.534767Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "simplymore-1.1.4.jar",
+      "sha256": "50a14bf8d1aad4a38843d5fa88db71a8a2aecf03c65a558bf4a56ce71a828e17",
+      "mods": [
+        {
+          "id": "simplymore",
+          "version": "1.1.4",
+          "name": "Simply More"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/zhpyD8Y0/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "u4dfPRHB",
+        "version": "1.1.4",
+        "type": "release",
+        "date": "2026-08-26T04:10:37.541853Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "simplyswords-1.70.2-1.20.1.jar",
+      "sha256": "642e385ffda914f1b9411f0a457fe5fb5e05aa160dc44392dec9a549c2bcec21",
+      "mods": [
+        {
+          "id": "simplyswords",
+          "version": "1.70.2-1.20.1",
+          "name": "Simply Swords"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/bK3Ubu9p/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Na6e94J1",
+        "version": "1.70.2-1.20.1",
+        "type": "release",
+        "date": "2026-08-27T11:57:05.309708Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "SimplyTooltips-forge-0.1.5-1.20.1.jar",
+      "sha256": "a50357b4982132522f48afc6fa625c453359390f8180e4c72f6288ecd46dee3c",
+      "mods": [
+        {
+          "id": "simplytooltips",
+          "version": "0.1.5-1.20.1",
+          "name": "Simply Tooltips"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/6avVoBVB/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "s87jNabF",
+        "version": "0.1.5-1.20.1",
+        "type": "release",
+        "date": "2026-08-23T14:07:20.026104Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "spartancataclysm-1.1.2+1.20.1+forge.jar",
+      "sha256": "cafb5d4b09421d4852e578d9c205b0b87f64330cecccb700f9d255cfa7837b32",
+      "mods": [
+        {
+          "id": "spartancataclysm",
+          "version": "1.1.2+1.20.1+forge",
+          "name": "Spartan Weaponry: Cataclysm"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/wKopCLTN/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "yuMfxdHs",
+        "version": "1.1.2",
+        "type": "release",
+        "date": "2025-11-12T20:05:02.462550Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "spartanfire-1.20.1-2.1.0.jar",
+      "sha256": "be4413b59cd2619fee2529164b68936c86ac010de43665afdb8fffb43c51fc66",
+      "mods": [
+        {
+          "id": "spartanfire",
+          "version": "2.1.0",
+          "name": "Spartan Weaponry: Ice and Fire"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/JQ8ejbmx/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "vIHI69Ae",
+        "version": "1.20.1-2.1.0",
+        "type": "release",
+        "date": "2024-09-15T18:58:40.980186Z"
+      },
+      "finding": "Standard weapon integration. Most recipe errors in this namespace originate in Dragonsteel overrides, not SpartanFire source recipes."
+    },
+    {
+      "file": "SpartanShields-1.20.1-forge-3.1.1.jar",
+      "sha256": "920368908e26e1a75186e06affd03274d0fe93770d5c5d12c177f53d7aa1deac",
+      "mods": [
+        {
+          "id": "spartanshields",
+          "version": "3.1.1",
+          "name": "Spartan Shields"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/W5rjEyqs/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "kDAJWHFl",
+        "version": "1.20.1-3.1.1",
+        "type": "release",
+        "date": "2024-06-18T10:31:12.890350Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "spartantoolkit-1.20.1-1.6.1.jar",
+      "sha256": "e33951b88742d7547c898e1594511bc22329b5638469120ce04e96f806613ca7",
+      "mods": [
+        {
+          "id": "spartantoolkit",
+          "version": "1.20.1-1.6.1",
+          "name": "Spartan Weaponry Addon Toolkit"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/7R2BqYPs/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "dUvEozRY",
+        "version": "1.20.1-1.6.1",
+        "type": "release",
+        "date": "2025-08-08T13:54:09.472065Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "SpartanWeaponry-1.20.1-forge-3.2.1-all.jar",
+      "sha256": "2736ac2dd52a7b3a188df454e61a4154cd36e273fa770f3ab89dcf6e732e88ad",
+      "mods": [
+        {
+          "id": "spartanweaponry",
+          "version": "3.2.1",
+          "name": "Spartan Weaponry"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/icU5P2Mk/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "4U6gwadt",
+        "version": "1.20.1-3.2.1",
+        "type": "release",
+        "date": "2025-08-03T11:54:38.246581Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "stalwart-dungeons-1.20.1-1.2.8.jar",
+      "sha256": "c0b967220e751629da248151a30d8d21f9cf3afc6c92da0aa8bd838a05f8fd7a",
+      "mods": [
+        {
+          "id": "stalwart_dungeons",
+          "version": "1.2.8",
+          "name": "Stalwart Dungeons"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/BCLngNKp/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "vgD645b7",
+        "version": "1.2.8",
+        "type": "release",
+        "date": "2023-08-19T14:50:28.880612Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "starcatcher-3.1.4.1-FORGE-1.20.1.jar",
+      "sha256": "0371f7036d8c0596a4a814f36b230f8a690a27e705fd0fe83e9f0a4149b3fa90",
+      "mods": [
+        {
+          "id": "starcatcher",
+          "version": "3.1.4.1-FORGE-1.20.1",
+          "name": "starcatcher"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/h2jXvxNR/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "DDcW7Eto",
+        "version": "3.1.4.1-FORGE-1.20.1",
+        "type": "release",
+        "date": "2026-09-06T01:25:21.027153Z"
+      },
+      "finding": "3.1.4.1 treasure adapter updated; two cross-mod fish schemas migrated. Native minigame, bait and foreign-namespace catches are outside existing Runic perks."
+    },
+    {
+      "file": "structurize-1.20.1-1.0.818.jar",
+      "sha256": "42524cf5ebb2152ee07d412e9c9e10e311fee9768d0dabbaedb093304d7bbb9c",
+      "mods": [
+        {
+          "id": "structurize",
+          "version": "1.20.1-1.0.818",
+          "name": "Structurize"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/structurize",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "tacz-1.20.1-1.1.8-hotfix.jar",
+      "sha256": "9ed8ada1283ed7a793a70cc1b51c4a340f367ce84707e1a7b8cf21ee3d288d77",
+      "mods": [
+        {
+          "id": "tacz",
+          "version": "1.1.8-hotfix",
+          "name": "Timeless & Classics Guns: Zero"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/SzzJttH8/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "yOVIzIJR",
+        "version": "1.1.8-hotfix",
+        "type": "release",
+        "date": "2026-05-25T01:39:24.425785Z"
+      },
+      "finding": "1.1.8 gun API and mixin targets checked; actual gun-pack firing/reload animations still need a client pass."
+    },
+    {
+      "file": "tcintegrations-1.20.1-2.0.25.19.jar",
+      "sha256": "c9dd76334c1a8ab3477a0d57cf470329c5f581c322c552f63a9b5bcb6b7b8891",
+      "mods": [
+        {
+          "id": "tcintegrations",
+          "version": "2.0.25.19",
+          "name": "TCIntegrations"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/jNa5P8yc/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "X3bGRXCj",
+        "version": "1.20.1-2.0.25.19",
+        "type": "release",
+        "date": "2026-03-25T15:27:12.407111Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "TConstruct-1.20.1-3.11.2.166.jar",
+      "sha256": "653b49d73481a1325ba78adc7273dee6c765a51bafdf264a7510576d6ef91c43",
+      "mods": [
+        {
+          "id": "tconstruct",
+          "version": "3.11.2.166",
+          "name": "Tinkers' Construct"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/rxIIYO6c/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "kfptyb1D",
+        "version": "3.12.0.220",
+        "type": "beta",
+        "date": "2026-09-04T22:26:13.237786Z"
+      },
+      "finding": "3.11.2.166 stable profile retained. Beta 3.12 is a separate conservative profile; do not promote its hooks without a complete regression suite."
+    },
+    {
+      "file": "The_Undergarden-1.20.1-0.8.14.jar",
+      "sha256": "43029e388ab455f8c9bcfc8653b9a57a3eb1ff6b435cf6e58722d2d4c50d2444",
+      "mods": [
+        {
+          "id": "undergarden",
+          "version": "0.8.14",
+          "name": "The Undergarden"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/Ejfl5qDL/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "pXfmvzA9",
+        "version": "0.8.14",
+        "type": "beta",
+        "date": "2024-03-14T18:45:30.598573Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "tide-2.1.1.jar",
+      "sha256": "cac8ec3ee8772686ac8d3c35b86869399cede9ce1cc194cea925dc8d3b498a22",
+      "mods": [
+        {
+          "id": "tide",
+          "version": "2.1.1",
+          "name": "Tide"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/die1AF7i/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "umdDq2ok",
+        "version": "2.1.1-hotfix",
+        "type": "release",
+        "date": "2026-08-03T20:31:25.945247Z"
+      },
+      "finding": "2.1.1 hooks retained. Full pack disables unverified catch-commit/wear bonuses with Fishing Real or Hybrid Aquatic; normal-window changes also yield to Starcatcher."
+    },
+    {
+      "file": "Tinker-Things-1.20.1-1.3.3.jar",
+      "sha256": "4010a7c98b1df2ab4be2c720cdbbacdeee0b813c7e0885d646428963543b69b4",
+      "mods": [
+        {
+          "id": "tinkers_things",
+          "version": "1.3.3",
+          "name": "Tinkers' Things"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/fNJfw6Ix/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "XdV0Jtbr",
+        "version": "1.3.3",
+        "type": "release",
+        "date": "2025-12-25T04:24:54.356662Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "tinkers-advanced-core-3.0.0-beta.5.jar",
+      "sha256": "384903a602685c4ecc18f93ae31b8e386f07c2147f8a150999f4658cb1fe8db1",
+      "mods": [
+        {
+          "id": "tinkers_advanced",
+          "version": "3.0.0-beta.5",
+          "name": "Tinkers' Advanced"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/74PR1ZtO/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "6DfcmffU",
+        "version": "3.0.0-beta.5",
+        "type": "beta",
+        "date": "2026-01-12T05:39:12.096189Z"
+      },
+      "finding": "Core/materials split is present; recipes still reference removed items and absent Mekanism serializers. Guard optional recipes and migrate removed IDs."
+    },
+    {
+      "file": "tinkers-delight-2.0.3.jar",
+      "sha256": "b8df6d974ac3cc52a0303035e0db2a3ec048fe63035a18d7aa61f94742c39815",
+      "mods": [
+        {
+          "id": "tinkers_delight",
+          "version": "2.0.2",
+          "name": "Tinkers' Delight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/Y4vhKn2h/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "iLTKQrxu",
+        "version": "2.0.3",
+        "type": "release",
+        "date": "2025-12-20T02:49:49.993696Z"
+      },
+      "finding": "Two obsolete slime/ichor ingredient IDs remain; requires a data update matched to the selected Tinkers profile."
+    },
+    {
+      "file": "tinkers-jewelry-1191965-6328912.jar",
+      "sha256": "f80f5f426ab6362f28b72a31b6ea903942a74f4882cdff5a955a825f3d76171c",
+      "mods": [
+        {
+          "id": "tinkersjewelry",
+          "version": "1.2.0",
+          "name": "Tinkers' Jewelry"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/tinkers-jewelry",
+      "latest_available": null,
+      "finding": "1.2.0 current release. Requires the working Mantle initialization profile; Runic capability probe retained."
+    },
+    {
+      "file": "tinkers-levelling-addon-1.4.3.jar",
+      "sha256": "2e343c330b9f4a97f1b32867ed0ec74c629ecd08cd91c15824b1b8c238f008a0",
+      "mods": [
+        {
+          "id": "tinkerslevellingaddon",
+          "version": "1.4.3",
+          "name": "Tinkers' Levelling Addon"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/OOUmRYso/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "5uazY97Q",
+        "version": "1.4.3",
+        "type": "release",
+        "date": "2025-06-07T20:35:57.113330Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "tinkers-thinking-0.1.6.6.3.jar",
+      "sha256": "660816d2272fa501f8093050e573fce13d77cb22be05de1a7bf382f4f2fe0ce3",
+      "mods": [
+        {
+          "id": "tinkers_thinking",
+          "version": "0.1.6.6.3",
+          "name": "Tinkers' Thinking"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/yMtiecO6/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "W5LJ5QIs",
+        "version": "0.1.6.6.3",
+        "type": "release",
+        "date": "2026-05-10T08:43:25.110019Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "tinkers_advanced_materials-3.0.0-beta.3.jar",
+      "sha256": "92fed750a79ebb5f34e57d3db8daa97b0b78396aa7dc0f71a88e019275651750",
+      "mods": [
+        {
+          "id": "tinkers_advanced_materials",
+          "version": "3.0.0-beta.3",
+          "name": "Tinkers' Advanced-Materials"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/kzojwHIn/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "Ed3uXa5l",
+        "version": "3.0.0-beta.3",
+        "type": "beta",
+        "date": "2026-01-14T01:54:43.784127Z"
+      },
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "tinkersinnovation-1.20.1-3.0.0.jar",
+      "sha256": "61122ade819d6d9cc3c33c8c68edad7e88ea81bc04aef249de6f53e6a82240f9",
+      "mods": [
+        {
+          "id": "tinkersinnovation",
+          "version": "1.20.1-3.0.0",
+          "name": "Tinkers Innovation"
+        }
+      ],
+      "publisher_status": "Current available prerelease (hash matched)",
+      "source": "https://modrinth.com/mod/995PF1GT/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "VmKsccWB",
+        "version": "1.20.1-3.0.0",
+        "type": "beta",
+        "date": "2025-07-31T04:24:11.001572Z"
+      },
+      "finding": "Runic adapter/API or shared tag/crafting integration retained; static references checked and complete server loaded. Feature-specific client playtest remains."
+    },
+    {
+      "file": "TinkersKatanas-1.20.1-1.4.5.jar",
+      "sha256": "01af06cee6b13ec09b6631a246dc55bbe2c0814e99cae30dbcea3a2cab1adaf4",
+      "mods": [
+        {
+          "id": "tinkers_katanas",
+          "version": "1.4.3",
+          "name": "Tinkers' Katanas"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/tinkers-katanas",
+      "latest_available": null,
+      "finding": "Coexists through Forge items, entities, attributes, tags or data. Complete server loaded; no dedicated Runic integration or exhaustive gameplay certification."
+    },
+    {
+      "file": "traveloptics-6.3.0-1.20.1.jar",
+      "sha256": "878a0fb5a2057de530698fd63091b9fa1c23af0139054af108e9d566840a0fa9",
+      "mods": [
+        {
+          "id": "traveloptics",
+          "version": "6.3.0-1.20.1",
+          "name": "T.O Magic 'n Extras"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/to-tweaks-irons-spells",
+      "latest_available": null,
+      "finding": "6.3.0 cannot link latest Cataclysm/ISS alone. Published BielGG 1.4-hotfix required in validated pack; native Runic Aqua binding verified."
+    },
+    {
+      "file": "vintagedelight-0.1.6.jar",
+      "sha256": "f3645fcf42546edb5fe09bee833f2e7524dd93b9b5380ecae3d3aa2847a4c9db",
+      "mods": [
+        {
+          "id": "vintagedelight",
+          "version": "0.1.6",
+          "name": "Vintage Delight"
+        }
+      ],
+      "publisher_status": "Current stable release (hash matched)",
+      "source": "https://modrinth.com/mod/T7XZLHGD/versions?g=1.20.1&l=forge",
+      "latest_available": {
+        "id": "q8Ght7Bo",
+        "version": "0.1.6",
+        "type": "release",
+        "date": "2024-10-26T14:54:52.507994Z"
+      },
+      "finding": "Rotten-tomato recipe uses the nonexistent minecraft:rotten_tomato; correct its ingredient namespace upstream."
+    },
+    {
+      "file": "yet-another-config-lib-3.6.6+1.20.1-forge.jar",
+      "sha256": "57bc01c404da864cce52d92edc40ec92447133b91bd8a547f4e6ae51eb4b9fe8",
+      "mods": [
+        {
+          "id": "yet_another_config_lib_v3",
+          "version": "3.6.6+1.20.1-forge",
+          "name": "YetAnotherConfigLib"
+        }
+      ],
+      "publisher_status": "Current publisher file reviewed",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/yacl",
+      "latest_available": null,
+      "finding": "Dependency/library: loaded in the complete server profile; no separate Runic perk API required."
+    }
+  ]
+}

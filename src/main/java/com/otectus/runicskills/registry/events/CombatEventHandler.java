@@ -130,6 +130,8 @@ public class CombatEventHandler {
         AttributeInstance attackSpeed = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attackSpeed == null) return;
         AttributeModifier old = attackSpeed.getModifier(BLADE_STORM_ATTACK_SPEED_UUID);
+        if (old != null && old.getAmount() == pct / 100.0
+                && old.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE) return;
         if (old != null) attackSpeed.removeModifier(old);
         attackSpeed.addTransientModifier(new AttributeModifier(
                 BLADE_STORM_ATTACK_SPEED_UUID, "blade_storm", pct / 100.0, AttributeModifier.Operation.MULTIPLY_BASE));
@@ -142,6 +144,42 @@ public class CombatEventHandler {
         if (old != null) attackSpeed.removeModifier(old);
     }
 
+    private static void clearCombatHistory(Player player) {
+        UUID id = player.getUUID();
+        RECENT_HITS.remove(id);
+        LAST_ATTACKER.remove(id);
+        LAST_STAND_ACTIVE_UNTIL.remove(id);
+        BLADE_STORM_ACTIVE_UNTIL.remove(id);
+        clearBladeStormSpeed(player);
+    }
+
+    @SubscribeEvent
+    public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        clearCombatHistory(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        clearCombatHistory(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        clearCombatHistory(event.getEntity());
+    }
+
+    /** Attribute expiry is gameplay, so it cannot wait for the five-second memory sweep. */
+    @SubscribeEvent
+    public void onBladeStormTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide()) return;
+        Long until = BLADE_STORM_ACTIVE_UNTIL.get(event.player.getUUID());
+        if (until != null && (event.player.level().getGameTime() >= until
+                || RegistryPerks.BLADE_STORM == null || !RegistryPerks.BLADE_STORM.get().isEnabled(event.player))) {
+            BLADE_STORM_ACTIVE_UNTIL.remove(event.player.getUUID());
+            clearBladeStormSpeed(event.player);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onPlayerAttackEntity(AttackEntityEvent event) {
         Entity target = event.getTarget();
@@ -152,7 +190,7 @@ public class CombatEventHandler {
             if (!player.isCreative() && provider != null) {
                 ItemStack item = player.getMainHandItem();
 
-                if (!provider.canUseItem(player, item)) {
+                if (!provider.canUseItem(player, item, com.otectus.runicskills.integration.lock.LockAction.ATTACK)) {
                     event.setCanceled(true);
                 }
             }
@@ -218,7 +256,10 @@ public class CombatEventHandler {
         if (player.isCreative() || player instanceof FakePlayer) return;
         if (player.level().isClientSide()) return;
         SkillCapability provider = SkillCapability.get(player);
-        if (provider != null && !provider.canUseItemSilent(player, player.getMainHandItem())) {
+        if (provider != null && !provider.canUseItemSilent(player, player.getMainHandItem(),
+                event.getSource().getDirectEntity() == player
+                        ? com.otectus.runicskills.integration.lock.LockAction.ATTACK
+                        : com.otectus.runicskills.integration.lock.LockAction.USE)) {
             event.setCanceled(true);
         }
     }

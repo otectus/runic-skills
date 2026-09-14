@@ -50,7 +50,9 @@ public class ServerNetworking {
     // checks together"). The mod version and this number are separate values and always have been.
     // 2.1.0: temporary Tinkers' mining state adds a clientbound prediction packet.
     // 2.1.1: four-mod configuration fields, capability evidence and owned Guard presentation.
-    private static final String PROTOCOL_VERSION = "14";
+    // 2.1.2: bounded, authoritative skill artwork snapshots for multiplayer clients.
+    // 2.2.0: integer stack counts, atomic resolved-lock/config chunks and stack inspection.
+    private static final String PROTOCOL_VERSION = "16";
     public static SimpleChannel instance;
 
     /**
@@ -87,6 +89,8 @@ public class ServerNetworking {
         instance = NetworkRegistry.ChannelBuilder.named(new ResourceLocation(RunicSkills.MOD_ID, "network")).networkProtocolVersion(() -> PROTOCOL_VERSION).clientAcceptedVersions(ServerNetworking::acceptsVersion).serverAcceptedVersions(ServerNetworking::acceptsVersion).simpleChannel();
 
         instance.registerMessage(packetId++, ConfigSyncCP.class, ConfigSyncCP::toBytes, ConfigSyncCP::new, ConfigSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, com.otectus.runicskills.network.packet.common.InspectStackSP.class, com.otectus.runicskills.network.packet.common.InspectStackSP::toBytes, com.otectus.runicskills.network.packet.common.InspectStackSP::new, com.otectus.runicskills.network.packet.common.InspectStackSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        instance.registerMessage(packetId++, StackRequirementsCP.class, StackRequirementsCP::toBytes, StackRequirementsCP::new, StackRequirementsCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         // One generated payload replaces CommonConfigSyncCP + DynamicConfigSyncCP, which together
         // hand-listed 128 of the config's 1,133 fields and left the rest resolved from whatever
         // file the CLIENT happened to have (RS10-005).
@@ -126,6 +130,7 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, GuardStateCP.class, GuardStateCP::toBytes, GuardStateCP::new, GuardStateCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, TideJournalSP.class, TideJournalSP::toBytes, TideJournalSP::new, TideJournalSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         instance.registerMessage(packetId++, TideJournalCP.class, TideJournalCP::toBytes, TideJournalCP::new, TideJournalCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        instance.registerMessage(packetId++, SkillVisualsSyncCP.class, SkillVisualsSyncCP::toBytes, SkillVisualsSyncCP::new, SkillVisualsSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void sendToServer(Object message) {

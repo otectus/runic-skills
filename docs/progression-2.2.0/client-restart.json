@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "checks": [
+    "restarted_player_count_and_configuration"
+  ],
+  "failure": ""
+}

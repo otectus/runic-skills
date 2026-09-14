@@ -4,51 +4,139 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.config.Configuration;
 import com.otectus.runicskills.config.models.LockItem;
-import com.otectus.runicskills.integration.*;
-import com.otectus.runicskills.integration.lock.LockItemProvider;
-import com.otectus.runicskills.integration.lock.LockProviderRegistry;
+import com.otectus.runicskills.config.models.ESkill;
+import com.otectus.runicskills.config.snapshot.GameplayConfigSnapshot;
+import com.otectus.runicskills.integration.lock.*;
 import com.otectus.runicskills.registry.perks.ConvergencePerk;
 import com.otectus.runicskills.registry.perks.TreasureHunterPerk;
 import com.otectus.runicskills.registry.RegistrySkills;
-import com.otectus.runicskills.registry.skill.Skill;
-
 import java.util.*;
 
 public class HandlerSkill {
-    private static volatile Map<String, List<com.otectus.runicskills.common.model.Skills>> Skills;
-
-    public static void UpdateLockItems(List<LockItem> lockItems) {
-        Map<String, List<Skills>> skillMap = new HashMap<>();
-
-        for (LockItem lockItem : lockItems) {
-            List<Skills> skillsList = buildSkillsList(lockItem, false);
-            if (!skillsList.isEmpty()) {
-                skillMap.put(lockItem.Item, skillsList);
-            }
+    public record Snapshot(long revision, Map<String, List<Skills>> rules, Map<String, String> sources,
+                           List<LockResolution> audit, byte[] configuration) {
+        public Snapshot {
+            Map<String, List<Skills>> frozen = new TreeMap<>();
+            rules.forEach((id, values) -> frozen.put(id, List.copyOf(values)));
+            rules = Collections.unmodifiableMap(frozen);
+            sources = Map.copyOf(sources); audit = List.copyOf(audit); configuration = configuration.clone();
         }
+        @Override public byte[] configuration() { return configuration.clone(); }
+        /** Detached wire/config models: callers cannot mutate the installed snapshot. */
+        public List<LockItem> items() {
+            return rules.entrySet().stream().map(entry -> {
+                LockItem rule = entry.getValue().isEmpty() ? LockItem.unrestricted(entry.getKey())
+                    : new LockItem(entry.getKey(), entry.getValue().stream()
+                        .map(v -> new LockItem.Skill(v.getKey(), v.getSkillLvl())).toArray(LockItem.Skill[]::new));
+                rule.Source = sources.get(entry.getKey()); return rule;
+            }).toList();
+        }
+    }
+    private static volatile Snapshot serverSnapshot;
+    private static volatile Map<String, List<Skills>> clientSkills;
+    private static long nextRevision;
+    public static Snapshot snapshot() { if (serverSnapshot == null) getSkill(); return serverSnapshot; }
+    public static long revision() { return snapshot().revision(); }
+    public static byte[] configuration() { return snapshot().configuration(); }
+    public static List<LockItem> resolved() { return snapshot().items(); }
+    public static void clearClient() { clientSkills = null; }
 
-        injectIntegrationItems(skillMap);
-
-        // Replace the old skills map so client lock items doesn't affect while playing on server.
-        Skills = skillMap;
+    /** Installs the server's resolved table without consulting the client's integrations/config. */
+    public static void UpdateLockItems(List<LockItem> items) {
+        Map<String, List<Skills>> map = new LinkedHashMap<>();
+        for (LockItem item : items) {
+            List<Skills> requirements = buildSkillsList(item);
+            if (item.Allow || !requirements.isEmpty()) map.put(item.Item, List.copyOf(requirements));
+        }
+        clientSkills = Map.copyOf(map);
+    }
+    public static List<Skills> clientValue(String key) { return clientSkills == null ? null : clientSkills.get(key); }
+    public static List<Skills> getValue(String key) {
+        if (clientSkills != null && (RunicSkills.server == null || !RunicSkills.server.isSameThread()))
+            return clientSkills.get(key);
+        return snapshot().rules().get(key);
     }
 
-    public static Map<String, List<Skills>> getSkill() {
-        Map<String, List<Skills>> skillMap = new HashMap<>();
-        List<LockItem> lockItemList = HandlerLockItemsConfig.HANDLER.instance().lockItemList;
-
-        for (LockItem lockItem : lockItemList) {
-            List<Skills> skillsList = buildSkillsList(lockItem, true);
-            if (skillsList.isEmpty()) {
-                RunicSkills.getLOGGER().warn("Item {} with no skills (ITEM WITH NO SKILLS), Skipping...", lockItem.Item);
-                continue;
+    /** Build privately, then publish the rule table and matching config with one volatile write. */
+    public static synchronized Map<String, List<Skills>> getSkill() {
+        Map<String, List<Skills>> rules = new LinkedHashMap<>();
+        Map<String, String> sources = new HashMap<>();
+        List<LockResolution> audit = new ArrayList<>();
+        Map<String, Integer> manualAuditIndexes = new HashMap<>();
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+        List<LockItem> manual = HandlerLockItemsConfig.HANDLER.instance().lockItemList;
+        Map<String, LockItem> defaults = new HashMap<>();
+        new HandlerLockItemsConfig().lockItemList.forEach(r -> defaults.put(r.Item, r));
+        if (manual != null) for (LockItem rule : manual) {
+            if (rule == null || rule.Item == null) continue;
+            List<Skills> values = buildSkillsList(rule);
+            if (values.isEmpty() && !rule.Allow) continue; // Legacy empty rules were invalid, not allows.
+            String source = rule.sourceOrManual();
+            LockItem builtin = defaults.get(rule.Item);
+            if (source.equals("manual") && builtin != null && !rule.Allow
+                    && LockResolution.vector(values).equals(LockResolution.vector(buildSkillsList(builtin))))
+                source = "built_in_default"; // Exact-value match; imported identical rules are indistinguishable.
+            sources.put(rule.Item, source);
+            rules.put(rule.Item, values);
+            Integer replaced = manualAuditIndexes.put(rule.Item, audit.size());
+            if (replaced != null) {
+                var previous = audit.get(replaced);
+                audit.set(replaced, new LockResolution(previous.item(), previous.provider(), previous.source(),
+                        previous.outcome(), previous.referenceRequirements(), previous.requirements(), previous.scaling(), previous.multiplier(), false));
             }
-            skillMap.put(lockItem.Item, skillsList);
+            audit.add(new LockResolution(rule.Item, "manual", source, rule.Allow ? "UNRESTRICTED" : "REQUIREMENTS",
+                    LockResolution.vector(values), LockResolution.vector(values), "absolute", 1, true));
         }
+        if (cfg.enableItemLocks) for (LockItemProvider provider : LockProviderRegistry.providers()) {
+            if (!provider.isActive(cfg)) continue;
+            for (LockItem rule : provider.generateLockItems()) {
+                if (rule == null || rule.Item == null) continue;
+                if (rule.Source == null || rule.Source.isBlank()) rule.Source = provider.id();
+                List<Skills> reference = buildSkillsList(rule), values = reference;
+                if (reference.isEmpty() && !rule.Allow) continue;
+                boolean scale = cfg.scaleGeneratedLockRequirements && !provider.scalesWithSkillCap();
+                if (scale) values = reference.stream().map(v -> new Skills(v.getKey(), v.getResource(), v.isDroppable(),
+                        v.getSkill(), (int) Math.min(Integer.MAX_VALUE, Math.max(1, Math.ceil(v.getSkillLvl()
+                        * (double) cfg.skillMaxLevel / 32))), v.getSource())).toList();
+                boolean selected = !rules.containsKey(rule.Item);
+                if (selected) { rules.put(rule.Item, values); sources.put(rule.Item, rule.sourceOrManual()); }
+                audit.add(new LockResolution(rule.Item, provider.id(), rule.sourceOrManual(), rule.Allow ? "UNRESTRICTED"
+                        : rule.sourceOrManual().endsWith(":undetermined") ? "UNDETERMINED" : "REQUIREMENTS",
+                        LockResolution.vector(reference), LockResolution.vector(values), provider.scalesWithSkillCap()
+                        ? "native_cap_relative" : scale ? "reference_32_scaled" : "absolute", multiplier(provider.id(), cfg), selected));
+            }
+        }
+        Snapshot result = new Snapshot(++nextRevision, rules, sources, audit, GameplayConfigSnapshot.encodeForClients());
+        serverSnapshot = result;
+        return result.rules();
+    }
 
-        injectIntegrationItems(skillMap);
+    private static double multiplier(String provider, HandlerCommonConfig cfg) {
+        return switch (provider) {
+            case "spartan" -> cfg.spartanLevelMultiplier;
+            case "iceandfire" -> cfg.iceFireLevelMultiplier;
+            case "locks" -> cfg.locksLevelMultiplier;
+            case "samurai_dynasty" -> cfg.samuraiLevelMultiplier;
+            case "more_vanilla" -> cfg.moreVanillaLevelMultiplier;
+            case "jewelcraft" -> cfg.jewelcraftLevelMultiplier;
+            case "irons_spellbooks" -> cfg.ironsLevelMultiplier;
+            case "simply_swords", "simply_more", "tom", "tide" -> 1;
+            default -> cfg.discoveredLockLevelMultiplier;
+        };
+    }
 
-        return skillMap;
+    private static List<Skills> buildSkillsList(LockItem rule) {
+        if (rule == null || rule.Allow || rule.Skills == null) return List.of();
+        Map<ESkill, Integer> unique = new EnumMap<>(ESkill.class);
+        for (LockItem.Skill requirement : rule.Skills)
+            if (requirement != null && requirement.Skill != null && requirement.Level > 0)
+                unique.merge(requirement.Skill, requirement.Level, Math::max);
+        List<Skills> result = new ArrayList<>();
+        unique.forEach((skill, level) -> {
+            var registered = RegistrySkills.getSkill(skill.toString());
+            if (registered != null) result.add(new Skills(skill.toString(), rule.Item, false, registered, level, rule.sourceOrManual()));
+        });
+        return result;
     }
 
     public static void ForceRefresh(){
@@ -69,78 +157,9 @@ public class HandlerSkill {
         com.otectus.runicskills.registry.RegistryPerks.refreshFromConfig();
         com.otectus.runicskills.registry.RegistryPassives.refreshFromConfig();
         com.otectus.runicskills.registry.RegistryPowers.refreshFromConfig();
-        Skills = getSkill();
+        getSkill();
         ConvergencePerk.items = null;
         TreasureHunterPerk.invalidateCache();
-    }
-
-    public static List<Skills> getValue(String key) {
-        if (Skills == null) {
-            Skills = getSkill(); // Cache the items with their respective skills, so it doesn't try to read the items every time (:
-        }
-
-        return Skills.get(key);
-    }
-
-    private static List<Skills> buildSkillsList(LockItem lockItem, boolean logWarnings) {
-        List<Skills> skillsList = new ArrayList<>();
-        for (LockItem.Skill skill : lockItem.Skills) {
-            if (skill.Skill == null) {
-                if (logWarnings) {
-                    RunicSkills.getLOGGER().warn("Item {} with wrong skill (SKILL NOT FOUND), Skipping...", lockItem.Item);
-                }
-                continue;
-            }
-            Skill skillName = RegistrySkills.getSkill(skill.Skill.toString());
-            if (skillName == null) {
-                if (logWarnings) {
-                    RunicSkills.getLOGGER().warn("Item {} with wrong skill (SKILL \"{}\" NOT FOUND), Skipping...", lockItem.Item, skill.Skill.toString());
-                }
-                continue;
-            }
-
-            skillsList.add(new Skills(skill.Skill.toString(), lockItem.Item, false, skillName, skill.Level, lockItem.sourceOrManual()));
-        }
-        return skillsList;
-    }
-
-    private static void injectIntegrationItems(Map<String, List<Skills>> skillMap) {
-        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
-
-        // Master item-lock switch. When the whole feature is off, generate NO integration locks
-        // at all (satisfies "integrations stop generating locks" — not just "locks are ignored
-        // at enforcement time"). canUse() also short-circuits on this flag, so the static
-        // lockItemList is already inert; this avoids the wasted generation work + debug spam.
-        if (!cfg.enableItemLocks) return;
-
-        // Centralised provider registry (since 1.3.8). Each LockItemProvider folds the mod-loaded
-        // and master-toggle checks that used to live inline here; the build's checkLockProviders task
-        // and LockProviderRegistryTest fail if an integration with generateLockItems() is not wired
-        // into LockProviderRegistry. Iteration order preserves the historical putIfAbsent precedence,
-        // and the finer per-integration enable<Name>LockItems toggles still gate inside each
-        // provider's generateLockItems(). Manual config locks still win via putIfAbsent below.
-        for (LockItemProvider provider : LockProviderRegistry.providers()) {
-            if (!provider.isActive(cfg)) continue;
-            List<LockItem> generated = provider.generateLockItems();
-            if (generated == null || generated.isEmpty()) continue;
-            injectGeneratedItems(skillMap, generated, provider.id());
-            RunicSkills.getLOGGER().debug("Lock provider '{}' contributed {} generated lock item(s)",
-                    provider.id(), generated.size());
-        }
-    }
-
-    private static void injectGeneratedItems(Map<String, List<Skills>> skillMap, List<LockItem> lockItems, String providerId) {
-        for (LockItem lockItem : lockItems) {
-            // Stamp the generating provider as the lock source unless the provider already set one,
-            // so item-lock tooltips and audits can attribute the entry (manual vs which integration).
-            if (lockItem.Source == null || lockItem.Source.isBlank()) {
-                lockItem.Source = providerId;
-            }
-            List<Skills> skillsList = buildSkillsList(lockItem, false);
-            if (!skillsList.isEmpty()) {
-                skillMap.putIfAbsent(lockItem.Item, skillsList);
-            }
-        }
     }
 
     public static List<String> defaultLockItemList = List.of(

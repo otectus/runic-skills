@@ -48,6 +48,22 @@ import java.util.Map;
 import java.util.UUID;
 
 public class IronsSpellbooksIntegration {
+    private static final ThreadLocal<Boolean> EXPLICIT_MANA_GRANT = ThreadLocal.withInitial(() -> false);
+
+    /** A priced refund is not natural regeneration; do not add the level-scaled flat regen bonus. */
+    public static void grantMana(Player player, float amount) {
+        if (!isActive() || !Float.isFinite(amount) || amount <= 0) return;
+        MagicData magic = MagicData.getPlayerMagicData(player);
+        if (magic == null) return;
+        boolean previous = EXPLICIT_MANA_GRANT.get();
+        EXPLICIT_MANA_GRANT.set(true);
+        try {
+            magic.addMana(amount);
+        } finally {
+            if (previous) EXPLICIT_MANA_GRANT.set(true);
+            else EXPLICIT_MANA_GRANT.remove();
+        }
+    }
 
     /**
      * Whether this integration should do anything right now: Iron's Spells 'n Spellbooks is installed
@@ -339,7 +355,7 @@ public class IronsSpellbooksIntegration {
         float preNew = event.getNewMana();
 
         // ── Mana going up: the level-scaled regeneration bonuses ──
-        if (preNew > oldMana) {
+        if (preNew > oldMana && !EXPLICIT_MANA_GRANT.get()) {
             if (HandlerCommonConfig.HANDLER.instance().ironsEnableManaRegen) {
                 int magicLevel = cap.getSkillLevel(RegistrySkills.MAGIC.get());
                 float bonus = magicLevel * HandlerCommonConfig.HANDLER.instance().ironsManaRegenPerMagicLevel;

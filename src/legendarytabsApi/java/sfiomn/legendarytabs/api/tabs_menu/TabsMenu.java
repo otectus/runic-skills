@@ -46,6 +46,10 @@ public class TabsMenu {
         throw new AssertionError("Legendary Tabs API stub — the real implementation loads at runtime");
     }
 
+    public static void updateButtonsPosition(Screen screen, int left, int top) {
+        throw new AssertionError("Legendary Tabs API stub — the real implementation loads at runtime");
+    }
+
     public static class ScreenInfo {
         public Function<Player, Integer> width;
         public Function<Player, Integer> height;

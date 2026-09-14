@@ -62,6 +62,8 @@ public final class TConstructPackRuleSource implements TConstructRuleSource {
         Set<ResourceLocation> materials = new LinkedHashSet<>(materialIds);
         Optional<PackRule> rule = index.useRequirement(definitionId, materials,
                 roles(index, definitionId), tier(materialIds), action);
+        if (rule.isEmpty() && action == LockAction.MINE)
+            rule = index.useRequirement(definitionId, materials, roles(index, definitionId), tier(materialIds), LockAction.USE);
         return rule.map(matched -> new RequirementDecision(true, matched.requirements(),
                 List.of("pack:" + matched.id()), List.of(), null));
     }

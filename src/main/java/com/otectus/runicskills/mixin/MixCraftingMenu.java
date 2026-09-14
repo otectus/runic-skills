@@ -90,7 +90,7 @@ public abstract class MixCraftingMenu {
         // Classify from the recipe vanilla just used, so a repair-by-crafting or a special
         // recipe never receives a manufacturing restore (RS207-05).
         CraftOperationKind kind = resultContainer.getRecipeUsed() instanceof CraftingRecipe recipe
-                ? CraftOperationContext.classifyGrid(CraftOperationContext.gridInputs(container), recipe, result)
+                ? CraftOperationContext.classifyGrid(CraftOperationContext.gridInputs(container), recipe, result, level)
                 : CraftOperationKind.UNKNOWN;
         CraftResultTransformer.transform(serverPlayer, result, kind);
         // And the adjustments that need the recipe and the grid rather than only the item — the

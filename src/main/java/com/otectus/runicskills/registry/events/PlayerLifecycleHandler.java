@@ -90,7 +90,7 @@ public class PlayerLifecycleHandler {
                             serverPlayer.getGameProfile().getName());
                 }
                 ConfigSyncCP.sendToPlayer(serverPlayer);
-                GameplayConfigCP.sendToPlayer(serverPlayer);
+                com.otectus.runicskills.network.ServerNetworking.sendToPlayer(new com.otectus.runicskills.network.packet.client.IntegrationStatusCP(), serverPlayer);
                 PerkGroupsSyncCP.sendToPlayer(serverPlayer);
                 PowerOverridesSyncCP.sendToPlayer(serverPlayer);
                 // A Power cooldown that the save carried as remaining ticks becomes a deadline
@@ -120,6 +120,9 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public void onServerStarting(final ServerStartingEvent event) {
         RunicSkills.server = event.getServer();
+        com.otectus.runicskills.config.storage.ConfigHolder.setLocalThreadPredicate(() ->
+                RunicSkills.server != null && RunicSkills.server.isSameThread());
+        com.otectus.runicskills.handler.HandlerSkill.ForceRefresh();
     }
 
     @SubscribeEvent
@@ -232,6 +235,10 @@ public class PlayerLifecycleHandler {
     @SubscribeEvent
     public void onDatapackSync(net.minecraftforge.event.OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) return; // Login already sends the full snapshot in order.
+        // Tags, recipes and native material data are now committed. Rebuild once on the
+        // server, then send that exact revision; clients never regenerate providers.
+        com.otectus.runicskills.handler.HandlerSkill.getSkill();
+        ConfigSyncCP.sendToAllPlayers();
         for (ServerPlayer player : event.getPlayerList().getPlayers()) {
             PerkGroupsSyncCP.sendToPlayer(player);
             PowerOverridesSyncCP.sendToPlayer(player);

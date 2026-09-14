@@ -13,6 +13,7 @@
     "MixTargetFinder"
   ],
   "mixins": [
+    "MixArsSpellPayment",
     "tom.MixPaidSpellActions",
     "simplyswords.MixPrimaryWeaponHit",
     "simplyswords.MixPlayerWeaponWear",
@@ -44,7 +45,6 @@
     "MixAbstractFurnaceBlockEntity",
     "MixPlayerAction",
     "MixLivingEntityAccess",
-    "MixStonecutterMenu",
     "MixHopperBlockEntity",
     "MixDispenserBlock",
     "MixAbstractMinecart",
@@ -92,7 +92,15 @@
     "simplyswords.MixNativeGemHealing",
     "simplyswords.MixPassiveGemEffect",
     "simplyswords.MixManualGemEffect",
-    "simplyswords.MixGemMomentum"
+    "simplyswords.MixGemMomentum",
+    "MixPotionItem",
+    "MixFriendlyByteBuf",
+    "MixInventory",
+    "MixPackMuleMenu",
+    "MixInvWrapper",
+    "MixPackMuleDrops",
+    "MixPackMulePacketListener",
+    "MixSuspiciousStewItem"
   ],
   "injectors": {
     "defaultRequire": 1

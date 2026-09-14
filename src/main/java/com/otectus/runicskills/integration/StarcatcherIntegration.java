@@ -23,9 +23,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 /**
  * Starcatcher (fishing minigame) integration — Fortune/Dexterity-tree perks. Forge-only by design:
  * Starcatcher posts vanilla {@code ItemFishedEvent} for every successful catch (with a fake vanilla
- * FishingHook), and its default treasure loot table is addressable by id, so no
- * {@code com.wdiscute.starcatcher} types are ever referenced (verified against Starcatcher
- * 2.3-forge-1.20.1). A catch is recognized as Starcatcher's by a {@code starcatcher}-namespaced drop;
+ * FishingHook). Version 2.3 uses a treasure loot table; version 3.1.4.1 uses its native per-fish
+ * treasure API through {@link StarcatcherNativeTreasure}. A catch is recognized as
+ * Starcatcher's by a {@code starcatcher}-namespaced drop;
  * catches routed through Starcatcher's vanilla-loot modifier are indistinguishable from rod fishing
  * and are deliberately not boosted.
  *
@@ -33,7 +33,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * changes (data-driven {@code FishProperties.Difficulty} consumed internally) and bait/tackle
  * preservation (consumption is an internal rod data write with no event). The event's drops list is a
  * copy, so rewards are never mutated or duplicated — angler_luck only ever performs one additive
- * bonus roll of Starcatcher's own treasure table.</p>
+ * bonus roll using Starcatcher's own treasure rules.</p>
  */
 public class StarcatcherIntegration {
 
@@ -61,7 +61,7 @@ public class StarcatcherIntegration {
         return ModList.get().isLoaded(MOD_ID);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)
     public void onItemFished(ItemFishedEvent event) {
         // Tide posts copied drops before delivery/bait/journal commit, including foreign fish.
         // This ownership exclusion applies even when Tide's new benefits are disabled.
@@ -106,6 +106,13 @@ public class StarcatcherIntegration {
 
     private static void rollBonusTreasure(ServerLevel level, ServerPlayer player) {
         try {
+            // Starcatcher 3 moved treasure into a per-fish data map. Its former loot-table
+            // identifier no longer exists; use the native API and the actual in-flight catch.
+            if (StarcatcherNativeTreasure.isCurrentProfile()) {
+                ItemStack bonus = StarcatcherNativeTreasure.roll(player);
+                if (!bonus.isEmpty()) player.getInventory().placeItemBackInInventory(bonus);
+                return;
+            }
             LootTable table = level.getServer().getLootData().getLootTable(TREASURE_TABLE);
             if (table == LootTable.EMPTY) {
                 // Starcatcher renamed or removed the table. Angler's Luck then grants nothing,

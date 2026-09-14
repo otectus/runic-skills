@@ -23,5 +23,8 @@ public enum LockAction {
     CRAFT,
 
     /** Taken out of a container slot. */
-    TAKE
+    TAKE,
+
+    /** A block is being harvested; hybrid tools use their mining role. */
+    MINE
 }

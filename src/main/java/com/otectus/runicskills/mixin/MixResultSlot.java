@@ -2,6 +2,9 @@ package com.otectus.runicskills.mixin;
 
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.crafting.CraftingRefund;
+import com.otectus.runicskills.common.crafting.CraftOperationContext;
+import com.otectus.runicskills.common.crafting.CraftOperationKind;
+import com.otectus.runicskills.common.crafting.CraftingExecutionGuard;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -11,6 +14,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraftforge.common.util.FakePlayer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -83,7 +89,8 @@ public abstract class MixResultSlot {
 
         // Server-authoritative: the client runs this method too, and a refund applied there would
         // only survive until the next slot broadcast corrected it.
-        if (!(player instanceof ServerPlayer)) return;
+        if (!(player instanceof ServerPlayer) || player instanceof FakePlayer) return;
+        if (CraftingExecutionGuard.isReentrant()) return;
 
         Class<?> self = ((Object) this).getClass();
         if (self != ResultSlot.class) {
@@ -95,6 +102,15 @@ public abstract class MixResultSlot {
                 || !RegistryPerks.EFFICIENT_CRAFTING.get().isEnabled(player)) {
             return;
         }
+        // Saving all inputs on compression/decompression is a material duplicator just as an
+        // extra output is. Resolve before consumption; on shift-click the delivered stack may
+        // already be empty, while the grid still describes the native operation exactly.
+        CraftingRecipe recipe = player.level().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, this.craftSlots, player.level()).orElse(null);
+        if (recipe == null || CraftOperationContext.classifyGrid(
+                CraftOperationContext.gridInputs(this.craftSlots), recipe,
+                recipe.assemble(this.craftSlots, player.level().registryAccess()), player.level())
+                != CraftOperationKind.MANUFACTURE) return;
         if (!ProcRoll.rollsPercent(HandlerCommonConfig.HANDLER.instance().efficientCraftingPercent)) {
             return;
         }

@@ -1,0 +1,532 @@
+{
+  "schema": 1,
+  "version": "2.2.0",
+  "protocol": "16",
+  "recorded_utc": "2026-09-14T22:12:48.292457+00:00",
+  "release_status": "unpublished working build",
+  "baseline": {
+    "branch": "master",
+    "commit": "ee17728ea6eacb56d2651d825c9c656fb6d729cb",
+    "version": "2.1.2",
+    "timestamp": "2026-09-14T16:39:05.829247+00:00",
+    "source_archive_sha256": "4b8522681ce9c4829a2d0aeeb76a2033560d930c91b435a3d78f723d12db0391",
+    "status_sha256": "859a16f4082a36ffde423651ddb8658c0deaf47d2c830efa5376714c716dea3f",
+    "source_archive_path": "/tmp/runicskills-220/baseline-source.tar.gz",
+    "preexisting_changes_preserved": true
+  },
+  "toolchain": {
+    "minecraft": "1.20.1",
+    "forge": "47.4.23",
+    "java": "OpenJDK 17",
+    "gradle": "8.10",
+    "forge_gradle": "6.0.24",
+    "parchment": "2023.09.03",
+    "yacl": "3.5.0+1.20.1-forge"
+  },
+  "artifacts": [
+    {
+      "path": "build/libs/runicskills-2.2.0.jar",
+      "sha256": "6dd5ab8bfbace0ecf75ad696032f64efd95b6eb209a088bf12bd2fb87779f308",
+      "bytes": 2935436,
+      "validation": "Final reobfuscated multi-integration production tests; earlier minimal profiles retain their exact tested hashes"
+    },
+    {
+      "path": "build/compat-libs/runicskills-tom-compat-2.2.0.jar",
+      "sha256": "760239439ad8d737a38a47bd83b7496c3e8f6ea118531d7ea8cbb2d23837ad7a",
+      "bytes": 5193,
+      "validation": "Built and packaged/static checks; native companion gameplay not rerun in this session"
+    },
+    {
+      "path": "build/validation-libs/runicskills-production-validation-2.2.0.jar",
+      "sha256": "7d08e3791af50e06bbae18d77d16cc4133a3ea24cf8b830008b36a163edde1bb",
+      "bytes": 221005,
+      "validation": "Separate validation harness; final 31-test production run and earlier 22-test minimal runs have exact dependency hashes retained"
+    }
+  ],
+  "junit": {
+    "tests": 370,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "game_test_profiles": {
+    "base": {
+      "result": "passed",
+      "game_tests": 234,
+      "command": "./gradlew build productionValidationJar tomCompatJar runGameTestServer --offline --console=plain",
+      "log": "logs/final-build.log.gz",
+      "optional_absence_messages": [
+        "baitkeeperNativeConsumption: Tide absent",
+        "keeperNativeSequenceAndIndependentCharges: Tide absent",
+        "manyWatersNativeCatchPreparationAndSessionDebt: Tide absent",
+        "measuredCastNativeDurationAndToggle: verified Tide hook absent",
+        "nativeAquaAttributeScalingAndLifecycle: T.O. companion absent",
+        "nativeAquaProjectileBudgetAndRelicFollowup: T.O. companion absent",
+        "nativeCatchConservationAndRejections: Tide absent",
+        "nativeChargedPrimaryAndCounterRewards: sword pair absent",
+        "nativeCounterspellCancellationAndSuccess: T.O. companion absent",
+        "nativeGemSuccessRejectionAndResonance: simplyswords absent",
+        "nativeJournalKnowledgeMilestonesAndFavor: Tide absent",
+        "nativeLegalReachAndDistinctHits: simplymore absent",
+        "nativeMimicryContinuityAndShieldResults: simplymore absent",
+        "nativeMountedLanceTravelAndOwnedBonuses: Simply More absent",
+        "nativeOwnerReturnAcceptanceAndFollowup: simplyswords absent",
+        "nativePaidAquaRotationAndFreeCastExclusion: T.O. companion absent",
+        "nativePaidArmorPacketAndAquaFollowup: T.O. companion absent",
+        "nativePaidSummonOwnershipAndSingleRecipient: T.O. companion absent",
+        "nativePatientTemperOnePointAndActionBoundaries: Simply Swords absent",
+        "nativeRelicRepairPreviewAndPaidExtraction: sword pair absent",
+        "nativeSwordsInspectionPreservesState: Simply Swords absent",
+        "nativeTalentSlotAndPaidCast: T.O. companion absent",
+        "nativeWeaponAbilityPaymentAndAwakening: simplyswords absent",
+        "nativeWindowAndTwoMediumCharges: Tide absent",
+        "stillwaterNativeChargeAndCooldown: Tide absent",
+        "unbrokenThreadNativeSequence: Tide absent"
+      ]
+    },
+    "stable_delight_checkpoint": {
+      "result": "passed",
+      "game_tests": 331,
+      "command": "./gradlew runGameTestServer -PtinkersProfile=stable -PtinkersAddons=delight --offline --console=plain",
+      "log": "logs/test-stable.log.gz",
+      "optional_absence_messages": [
+        "baitkeeperNativeConsumption: Tide absent",
+        "keeperNativeSequenceAndIndependentCharges: Tide absent",
+        "manyWatersNativeCatchPreparationAndSessionDebt: Tide absent",
+        "measuredCastNativeDurationAndToggle: verified Tide hook absent",
+        "nativeAquaAttributeScalingAndLifecycle: T.O. companion absent",
+        "nativeAquaProjectileBudgetAndRelicFollowup: T.O. companion absent",
+        "nativeCatchConservationAndRejections: Tide absent",
+        "nativeChargedPrimaryAndCounterRewards: sword pair absent",
+        "nativeCounterspellCancellationAndSuccess: T.O. companion absent",
+        "nativeGemSuccessRejectionAndResonance: simplyswords absent",
+        "nativeJournalKnowledgeMilestonesAndFavor: Tide absent",
+        "nativeLegalReachAndDistinctHits: simplymore absent",
+        "nativeMimicryContinuityAndShieldResults: simplymore absent",
+        "nativeMountedLanceTravelAndOwnedBonuses: Simply More absent",
+        "nativeOwnerReturnAcceptanceAndFollowup: simplyswords absent",
+        "nativePaidAquaRotationAndFreeCastExclusion: T.O. companion absent",
+        "nativePaidArmorPacketAndAquaFollowup: T.O. companion absent",
+        "nativePaidSummonOwnershipAndSingleRecipient: T.O. companion absent",
+        "nativePatientTemperOnePointAndActionBoundaries: Simply Swords absent",
+        "nativeRelicRepairPreviewAndPaidExtraction: sword pair absent",
+        "nativeSwordsInspectionPreservesState: Simply Swords absent",
+        "nativeTalentSlotAndPaidCast: T.O. companion absent",
+        "nativeWeaponAbilityPaymentAndAwakening: simplyswords absent",
+        "nativeWindowAndTwoMediumCharges: Tide absent",
+        "stillwaterNativeChargeAndCooldown: Tide absent",
+        "unbrokenThreadNativeSequence: Tide absent"
+      ],
+      "scope": "Earlier implementation checkpoint; final shared behavior also covered by base, beta, combined add-ons and packaged production tests."
+    },
+    "beta": {
+      "result": "passed",
+      "game_tests": 256,
+      "command": "./gradlew runGameTestServer -PtinkersProfile=beta --offline --console=plain",
+      "log": "logs/test-beta.log.gz",
+      "optional_absence_messages": [
+        "baitkeeperNativeConsumption: Tide absent",
+        "keeperNativeSequenceAndIndependentCharges: Tide absent",
+        "manyWatersNativeCatchPreparationAndSessionDebt: Tide absent",
+        "measuredCastNativeDurationAndToggle: verified Tide hook absent",
+        "nativeAquaAttributeScalingAndLifecycle: T.O. companion absent",
+        "nativeAquaProjectileBudgetAndRelicFollowup: T.O. companion absent",
+        "nativeCatchConservationAndRejections: Tide absent",
+        "nativeChargedPrimaryAndCounterRewards: sword pair absent",
+        "nativeCounterspellCancellationAndSuccess: T.O. companion absent",
+        "nativeGemSuccessRejectionAndResonance: simplyswords absent",
+        "nativeJournalKnowledgeMilestonesAndFavor: Tide absent",
+        "nativeLegalReachAndDistinctHits: simplymore absent",
+        "nativeMimicryContinuityAndShieldResults: simplymore absent",
+        "nativeMountedLanceTravelAndOwnedBonuses: Simply More absent",
+        "nativeOwnerReturnAcceptanceAndFollowup: simplyswords absent",
+        "nativePaidAquaRotationAndFreeCastExclusion: T.O. companion absent",
+        "nativePaidArmorPacketAndAquaFollowup: T.O. companion absent",
+        "nativePaidSummonOwnershipAndSingleRecipient: T.O. companion absent",
+        "nativePatientTemperOnePointAndActionBoundaries: Simply Swords absent",
+        "nativeRelicRepairPreviewAndPaidExtraction: sword pair absent",
+        "nativeSwordsInspectionPreservesState: Simply Swords absent",
+        "nativeTalentSlotAndPaidCast: T.O. companion absent",
+        "nativeWeaponAbilityPaymentAndAwakening: simplyswords absent",
+        "nativeWindowAndTwoMediumCharges: Tide absent",
+        "stillwaterNativeChargeAndCooldown: Tide absent",
+        "unbrokenThreadNativeSequence: Tide absent"
+      ],
+      "scope": "Final gameplay behavior before the last bounded custom-effect logging addition; base and production runs cover the final jar."
+    },
+    "stable_combined_addons": {
+      "result": "passed",
+      "game_tests": 352,
+      "command": "./gradlew runGameTestServer -PtinkersProfile=stable -PtinkersAddons=levelling,delight,advanced,innovation,thinking,jewelry,tcintegrations,botania,ars --offline --console=plain",
+      "log": "logs/test-addons.log.gz",
+      "optional_absence_messages": [
+        "baitkeeperNativeConsumption: Tide absent",
+        "keeperNativeSequenceAndIndependentCharges: Tide absent",
+        "manyWatersNativeCatchPreparationAndSessionDebt: Tide absent",
+        "measuredCastNativeDurationAndToggle: verified Tide hook absent",
+        "nativeAquaAttributeScalingAndLifecycle: T.O. companion absent",
+        "nativeAquaProjectileBudgetAndRelicFollowup: T.O. companion absent",
+        "nativeCatchConservationAndRejections: Tide absent",
+        "nativeChargedPrimaryAndCounterRewards: sword pair absent",
+        "nativeCounterspellCancellationAndSuccess: T.O. companion absent",
+        "nativeGemSuccessRejectionAndResonance: simplyswords absent",
+        "nativeJournalKnowledgeMilestonesAndFavor: Tide absent",
+        "nativeLegalReachAndDistinctHits: simplymore absent",
+        "nativeMimicryContinuityAndShieldResults: simplymore absent",
+        "nativeMountedLanceTravelAndOwnedBonuses: Simply More absent",
+        "nativeOwnerReturnAcceptanceAndFollowup: simplyswords absent",
+        "nativePaidAquaRotationAndFreeCastExclusion: T.O. companion absent",
+        "nativePaidArmorPacketAndAquaFollowup: T.O. companion absent",
+        "nativePaidSummonOwnershipAndSingleRecipient: T.O. companion absent",
+        "nativePatientTemperOnePointAndActionBoundaries: Simply Swords absent",
+        "nativeRelicRepairPreviewAndPaidExtraction: sword pair absent",
+        "nativeSwordsInspectionPreservesState: Simply Swords absent",
+        "nativeTalentSlotAndPaidCast: T.O. companion absent",
+        "nativeWeaponAbilityPaymentAndAwakening: simplyswords absent",
+        "nativeWindowAndTwoMediumCharges: Tide absent",
+        "stillwaterNativeChargeAndCooldown: Tide absent",
+        "unbrokenThreadNativeSequence: Tide absent"
+      ],
+      "scope": "Final gameplay behavior before the last bounded custom-effect logging addition; base and production runs cover the final jar."
+    }
+  },
+  "production": {
+    "multi_integration": {
+      "world_ready": true,
+      "passed": 31,
+      "failed": 0,
+      "expected_tests": 31,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 89,
+      "log": "logs/production-release.log.gz",
+      "command": "python3 tools/run_instance_validation.py --directory build/update-220-production --java /usr/bin/java --tests 31 --progression --timeout 600 --log production-220-release.log --historical-providers build/instance-validation-server/mods/runicskills-2.1.2.jar",
+      "core_sha256": "6dd5ab8bfbace0ecf75ad696032f64efd95b6eb209a088bf12bd2fb87779f308",
+      "dependencies": "dependencies-multi_integration.json"
+    },
+    "core": {
+      "world_ready": true,
+      "passed": 22,
+      "failed": 0,
+      "expected_tests": 22,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 37,
+      "log": "logs/production-core.log.gz",
+      "command": "python3 tools/run_instance_validation.py --directory build/update-220-core --java /usr/bin/java --tests 22 --progression --timeout 600 --log production.log",
+      "core_sha256": "3aa8443c86c839cd6fe2b11dab1ebd65e6b2cb065adf77cb1c6be86d98de9aaa",
+      "scope": "Final gameplay behavior before the last bounded custom-effect logging addition; exact tested jar hash retained.",
+      "dependencies": "dependencies-core.json"
+    },
+    "spartan-weapons": {
+      "world_ready": true,
+      "passed": 22,
+      "failed": 0,
+      "expected_tests": 22,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 36,
+      "log": "logs/production-spartan-weapons.log.gz",
+      "command": "python3 tools/run_instance_validation.py --directory build/update-220-spartan-weapons --java /usr/bin/java --tests 22 --progression --timeout 600 --log production.log",
+      "core_sha256": "3aa8443c86c839cd6fe2b11dab1ebd65e6b2cb065adf77cb1c6be86d98de9aaa",
+      "scope": "Final gameplay behavior before the last bounded custom-effect logging addition; exact tested jar hash retained.",
+      "dependencies": "dependencies-spartan-weapons.json"
+    },
+    "spartan-shields": {
+      "world_ready": true,
+      "passed": 22,
+      "failed": 0,
+      "expected_tests": 22,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 35,
+      "log": "logs/production-spartan-shields.log.gz",
+      "command": "python3 tools/run_instance_validation.py --directory build/update-220-spartan-shields --java /usr/bin/java --tests 22 --progression --timeout 600 --log production.log",
+      "core_sha256": "3aa8443c86c839cd6fe2b11dab1ebd65e6b2cb065adf77cb1c6be86d98de9aaa",
+      "scope": "Final gameplay behavior before the last bounded custom-effect logging addition; exact tested jar hash retained.",
+      "dependencies": "dependencies-spartan-shields.json"
+    }
+  },
+  "real_clients": {
+    "edit": {
+      "receipt": "client-edit.json",
+      "log": "logs/client-edit.log.gz",
+      "result": "passed"
+    },
+    "restart": {
+      "receipt": "client-restart.json",
+      "log": "logs/client-restart.log.gz",
+      "result": "passed"
+    },
+    "io": {
+      "receipt": "client-io.json",
+      "log": "logs/client-io.log.gz",
+      "result": "passed"
+    },
+    "remote": {
+      "receipt": "client-remote.json",
+      "log": "logs/client-remote.log.gz",
+      "result": "passed"
+    },
+    "scales": {
+      "receipt": "client-scales.json",
+      "log": "logs/client-scales.log.gz",
+      "result": "passed"
+    },
+    "rank1": {
+      "receipt": "client-rank1.json",
+      "log": "logs/client-rank1.log.gz",
+      "result": "passed"
+    },
+    "rank3": {
+      "receipt": "client-rank3.json",
+      "log": "logs/client-rank3.log.gz",
+      "result": "passed"
+    },
+    "lan-guest": {
+      "receipt": "client-lan-guest.json",
+      "log": "logs/client-lan-guest.log.gz",
+      "result": "passed"
+    },
+    "lan-host": {
+      "receipt": "client-lan-host.json",
+      "log": "logs/client-lan-host.log.gz",
+      "result": "passed"
+    }
+  },
+  "audit": {
+    "registered_items": 16045,
+    "examined_items": 4837,
+    "loaded_output_recipes": 4776,
+    "loaded_mod_ids": 147,
+    "historical_provider_rules": 3161,
+    "comparison": "comparison.json",
+    "material_pairs": {
+      "compared": 188,
+      "before_inversions": 24,
+      "after_inversions": 0,
+      "before_family_drift": 13,
+      "after_family_drift": 0
+    },
+    "changed_vectors": 505,
+    "warning_counts": {
+      "review_intentional_utility_or_component_gate": 154,
+      "mandatory_recipe_cycle_check_native_reusable_tools_and_external_sources": 32,
+      "unverified_material_fallback": 961
+    },
+    "recipe_use_gate_warnings": 249,
+    "historical_artifact_sha256": "0e08b9c9b1474a41e05056ad3b38c4af932063444554b4f247f99a917f1758f8"
+  },
+  "boundaries": [
+    "Forge 47.4.10 plus the exact issue #7 magic/Connector environment was not reproduced; all runs use pinned Forge 47.4.23. Native effects and multi-player propagation passed.",
+    "A retained pre-update 2.1.2 build (54d505772e11302874c9d6e72af5b1cb9144c3aff32a41d63a69543ed434b514) cannot boot because its production completeUsingItem mixin target is invalid. Historical provider comparisons use separate original pack bytecode (0e08b9c9b1474a41e05056ad3b38c4af932063444554b4f247f99a917f1758f8), not an old-release gameplay pass.",
+    "Roaring beta 0.3 loads LocalPlayer on a dedicated server. It was excluded only from the disposable test copy; the untouched supplied full pack is not a startup pass.",
+    "An Epic Knights add-on 2.6 JSON5 parse/fallback failure occurred on one rerun. Its test config was preserved and regenerated; the subsequent same-jar production run passed 31 tests. Corruption origin unverified.",
+    "Native GUI scales 1-4 were visually inspected. The disposable client FML earlyWindowControl was disabled after an early-window handoff timeout at the larger test resolution.",
+    "Initial LAN attempts closed before both clients were ready or connected before publication; final fixture hides its native windows and uses offline authentication for synthetic identities; early refused connections are retried or relaunched after host publication. Only receipts marked passed count as validation.",
+    "Unknown native material fallbacks, 249 recipe use-gate warnings and 32 mandatory recipe cycle warnings are documented review boundaries, not certified global balance or proof of impossible crafting.",
+    "Native containers, Forge wrappers and tested pack boundaries are covered; arbitrary sorting, transfer, graves and alternative count codecs are not universally certified.",
+    "The optional T.O. companion is built/static-checked; the existing 41-test native companion suite was not rerun for 2.2.0.",
+    "Actual client tests ran mapped development code; reobfuscated distribution behavior was verified on production dedicated servers."
+  ],
+  "logs": {
+    "final-build": {
+      "path": "logs/final-build.log.gz",
+      "sha256": "54aa7333cb37f53cf95358357093c838757fe118c26c517a54c529b50b00776f",
+      "uncompressed_sha256": "e552fa982a4d98b3c6379b9b676503dc2ae45de5cbaddbd77351c69d7cbbbd57"
+    },
+    "test-stable": {
+      "path": "logs/test-stable.log.gz",
+      "sha256": "b489165fcf572261efb0cbc4a255ee9cd189b56ec78e79afc3dda6ab5ada2c2c",
+      "uncompressed_sha256": "bbc6f8461166d862ac7324278ea3f0778db5f3d2940c6b8b93cd21438c77e4e2"
+    },
+    "test-beta": {
+      "path": "logs/test-beta.log.gz",
+      "sha256": "8b00b39eb380b41d76e893d5e6ed3ae4126e79dd4362319c0935185cceb6f535",
+      "uncompressed_sha256": "37f9a3e46d27950e320907af685ed899413fd3216ecbcb6debfdb4aca482c20a"
+    },
+    "test-addons": {
+      "path": "logs/test-addons.log.gz",
+      "sha256": "bbf1dfd2c87660bd5fea45b0437937d154ca40603f4ba187c2dd7c65d5f17922",
+      "uncompressed_sha256": "aa33372e66ce9623d1c67304f649859770309ae59bef95962375324f4f010cdd"
+    },
+    "client-edit": {
+      "path": "logs/client-edit.log.gz",
+      "sha256": "ffcb3ed3ffa3fb39d10544c15201bd1a87d7f083b8fe7bf19e98f3e14abb61da",
+      "uncompressed_sha256": "595022fdd35436d32e9d93eb92a3858c77d0972e7655930bb9f244d0a93c24c5"
+    },
+    "client-restart": {
+      "path": "logs/client-restart.log.gz",
+      "sha256": "57d1c99a50815ac941999644af3cb31dfac6ad63abecb70de5698807972d93e9",
+      "uncompressed_sha256": "cacd028c4d996ccd2d543ef4510328a17506d946f426813a286f81c20894c378"
+    },
+    "client-io": {
+      "path": "logs/client-io.log.gz",
+      "sha256": "3cce94822c2811501cb8f8771df681e6b300000280143161c1b4ceed4b0d4d6d",
+      "uncompressed_sha256": "382fb0e9e8b004d9d2a3002a737f2e84bda681c524b19826d50a69f5c1e34557"
+    },
+    "client-remote": {
+      "path": "logs/client-remote.log.gz",
+      "sha256": "46aaa595f26a256bff282ee175d2cd757ddb436d5dddb1f16525399d6c0d3c97",
+      "uncompressed_sha256": "6c3cf6d80841bb197aa77f06caefec7aae93f76805bf5b5a37426f3743be0eb2"
+    },
+    "client-scales": {
+      "path": "logs/client-scales.log.gz",
+      "sha256": "af9e73185ab75c8c702b3352defda82c35d671884e78bfd5d2e3efa55a883da6",
+      "uncompressed_sha256": "82d613033e8efb6b0ae98980cf9dfeb93d91f025518a1ca6ad3b3e4bad6d3b47"
+    },
+    "remote-server": {
+      "path": "logs/remote-server.log.gz",
+      "sha256": "5e09d5601aa8e6448e2b2b082c5470fa1bf368e322155ba39e7709afb0c3dcbb",
+      "uncompressed_sha256": "6ed4ddf9e2dd880a226e559f920ae42eeff5c44cf3ca8234bd045051b776a8d8"
+    },
+    "client-rank1": {
+      "path": "logs/client-rank1.log.gz",
+      "sha256": "423721300cb0f835a755d0b3a40087fbdc7a7f31b7392a817b5849b8a4514e2e",
+      "uncompressed_sha256": "d0559b31d11f21ad17d9c7a59b39a8b000d48381ab93e2efab2374adeb5f92b4"
+    },
+    "client-rank3": {
+      "path": "logs/client-rank3.log.gz",
+      "sha256": "107976c57ab4855a35d0452bfa82cbcf489f5b8d301836868a6de67a0253a487",
+      "uncompressed_sha256": "02e0d692048a423dd5767cd4a6357e57cccc8bc06cb78b0051080babea1821dd"
+    },
+    "multiplayer-server": {
+      "path": "logs/multiplayer-server.log.gz",
+      "sha256": "5c6ba621ffa3594566c7d9f6e2c507f7f089513894b94a2fdaa47df412f1deb2",
+      "uncompressed_sha256": "dc69f135ecc8aba697e1618af782f4cc9af7d1c1cc172b0a279e532e2ab5ee81"
+    },
+    "multiplayer-compile": {
+      "path": "logs/multiplayer-compile.log.gz",
+      "sha256": "9ba9a9984ee64861b2bc48e99eb1d254addabbb1635a9846bd576946d13fefd3",
+      "uncompressed_sha256": "4d0559c5485da95becde352e3b8d1db462cb80d8c7376cb2c30d863042c9a0b5"
+    },
+    "client-lan-host": {
+      "path": "logs/client-lan-host.log.gz",
+      "sha256": "47d26daf09b4a8fc4d706b5b8894a04c93e7cf12612bdb66b6b388bcc1da0396",
+      "uncompressed_sha256": "ebdc674309099cd7804bc03ec6de93d7a6910ff06772d103ec52abd6f4c0056e"
+    },
+    "client-lan-guest": {
+      "path": "logs/client-lan-guest.log.gz",
+      "sha256": "2b0ee35fe9f47af34006571f141199f5a9c97ddb589cbdf01b49af3d926391af",
+      "uncompressed_sha256": "129635de86daf6c859246b3f7e4cfbf81b0a93eb39b6c04456903845893b5c33"
+    },
+    "client-lan-host-incomplete": {
+      "path": "logs/client-lan-host-incomplete.log.gz",
+      "sha256": "b9430147767e6b8c41e79d7993c32f06bdc017886971b4d7abde33e2de0a1f40",
+      "uncompressed_sha256": "5f6f3cfc3a67f45a08c952074acfdfc6aefb041ace34df88298b314e3d6338d4"
+    },
+    "client-lan-guest-incomplete": {
+      "path": "logs/client-lan-guest-incomplete.log.gz",
+      "sha256": "17054f9c1ce17d3673dca72c1246b8c9c93d5bae8a41c1e0854c1952f3e4eaf7",
+      "uncompressed_sha256": "d461d91c792c68579bbee09754de99c53b4c89e61ba6a77a1d5419b59cd126a4"
+    },
+    "client-lan-host-authentication-fixture": {
+      "path": "logs/client-lan-host-authentication-fixture.log.gz",
+      "sha256": "40c2292deb0c5e00170d6ebe514237e8bb25cc56bd764e2bd380ce5f76edfc51",
+      "uncompressed_sha256": "35046c2603245209b65482c068d8cab120822c82615ff7f65704006105c70211"
+    },
+    "client-lan-guest-authentication-fixture": {
+      "path": "logs/client-lan-guest-authentication-fixture.log.gz",
+      "sha256": "3dd63b50612c3b7d5dab45019ac712c29b7e706229d60cd3314a80a6a7bb7319",
+      "uncompressed_sha256": "77aa492040fb3e7486a1a20fb3d88481c9de2a3114669b7a0d6a8da9a1cf503a"
+    },
+    "production-release": {
+      "path": "logs/production-release.log.gz",
+      "sha256": "e172d4da6e0acf3938d0bb62a3d0ec2c4b8f9fac2603a808c9b0e95059302533",
+      "uncompressed_sha256": "801fed6dc17a1b6065b5b2e57aa5e44400062c8e7a13fd65120ab0f12e79981c"
+    },
+    "production-roaring-failure": {
+      "path": "logs/production-roaring-failure.log.gz",
+      "sha256": "c48b3b666a54b4d356a10ba596eb8f82ee2d82acaa577bffcc76fe5419356459",
+      "uncompressed_sha256": "cdf02b6fea10ea5eb96b558f616e4ad785ecd0aa5afd96ace290171f7558e7e8"
+    },
+    "production-addon-config-failure": {
+      "path": "logs/production-addon-config-failure.log.gz",
+      "sha256": "59a1cd8b9d402b0e1533570579cf94e3a0bf0651faf3f1ecc1973374ca3592c8",
+      "uncompressed_sha256": "1dfb0acee091ab6f0c3b1a40808ae5f6db7d3453411283d5e044983ad5222b3e"
+    },
+    "baseline-212-failure": {
+      "path": "logs/baseline-212-failure.log.gz",
+      "sha256": "07cce6741dc8326ef57b1989591f51448b12ca7c233270b73e6114f6c4434def",
+      "uncompressed_sha256": "52ec74c835a58cb4dd45e12a52d8820bfe0d8635151e3ccc56d87585a37654a9"
+    },
+    "production-core": {
+      "path": "logs/production-core.log.gz",
+      "sha256": "d12ff8e6d0ee2733dbf20c9b461e11008873c094e23f5eeb78dd26d9005686a7",
+      "uncompressed_sha256": "984be62aa46c73650fd7d0f6d5ab82eda15a910a457925bd5881f1018d7841bb"
+    },
+    "production-spartan-weapons": {
+      "path": "logs/production-spartan-weapons.log.gz",
+      "sha256": "9f45549c81901307a88d193618725b9e581c9130729467bf034ee26c816863b5",
+      "uncompressed_sha256": "18a3cbe378d4d9c8900a7446eb37e9cf7573e075fa4b29706ef9130329fc3c6e"
+    },
+    "production-spartan-shields": {
+      "path": "logs/production-spartan-shields.log.gz",
+      "sha256": "182d37c5f559d19c1b343de23ebbf60b96c6f70951489f9fa314faab0bfd2511",
+      "uncompressed_sha256": "ce714db5328ef975cc3e31305359582e189c56f9c7986a80beb8d4656825289c"
+    }
+  },
+  "evidence_sha256": {
+    "README.md": "4f7d6b942995cd2f4de9f06af9670d711aa40d86529e68385c63140f4c9c7b7f",
+    "baseline.json": "ddac5010f95b6352849849bfad4361ccefa3b9b29ee7b49f6bea5f17bbbc7695",
+    "client-edit.json": "ebbec63546251026bac804f12767e5bf1eef589b6bead85ad5b189a95175d2c2",
+    "client-io.json": "1cea5b965a5b16a7f390b14258ad673d93a2ce48a2b86b46ac80f2407e14e3fe",
+    "client-lan-guest.json": "b08ad83244093a3e32740c80777b3475f27863917c4acf43860e81fdf2b2054a",
+    "client-lan-host.json": "e7219c4fb6eb00e48e0f253bc8c230e17de81a22811a99d15f12bf0c78194d0f",
+    "client-rank1.json": "ddef59a75caa6e8fa972c118c7a73345b35948612845e3ea96db1330143b7d40",
+    "client-rank3.json": "09563d96883121fc82cbb114d697065e855dea1e92396dde11e401cc282c0888",
+    "client-remote.json": "9ef015111ad462c903e4b1b0cbdf62d373965cb4500a9ee86fb397f47c7a6ed6",
+    "client-restart.json": "287e4891818f49e8ad1a23c7faf7d28f13d23400c2ec4292c3900b86faca222b",
+    "client-scales.json": "96dd313253c9e7a1f68eed396e164a73429fc191c1b5ff4277409038893757d6",
+    "comparison.json": "1ef12fe36f00f24565d11496ba1fc93263da93afd8580391f9fe77ba13c92064",
+    "dependencies-core.json": "427e4229ef951c0009eec7a8ea8016563aaef7f60d9915f88407b392e5e09810",
+    "dependencies-multi_integration.json": "ca2fdbaab14c6d5f691dc72cee1576710bcfba1fd4d252598cb56e2cb0b268d1",
+    "dependencies-spartan-shields.json": "3d242840d25b035863f035cb7b01249f5d3a7cf9f110f2df4f9417c5c01ff003",
+    "dependencies-spartan-weapons.json": "99efb19263cdf06f0ac212d3494fca6ee09fa71da27aab5f8cfb236092e1d300",
+    "dependencies.json": "ca2fdbaab14c6d5f691dc72cee1576710bcfba1fd4d252598cb56e2cb0b268d1",
+    "historical-providers.json.gz": "ed0f66e27d6abc55078e512819889931131fb56222ba84d8e4b6daf3fadeb41d",
+    "inventory-128-192-256.png": "300e8b54b7ff034155abd65c4da21533507ed703d6e52331d81688d17721c31b",
+    "inventory-scale-1.png": "9cfcbac0972e15676e796eb5475c1f86e04b8062522e977c6f77101ab865d6e3",
+    "inventory-scale-2.png": "51962c49902bc385deefa4b7e79f8d016c5d2f13bc93b15bee9c05ad934ffe6a",
+    "inventory-scale-3.png": "26ed6a95ea7947cffa0123c0ac06be0d06d0e7773dcdf05f6a3c6f905f316b43",
+    "inventory-scale-4.png": "24b01d3c1feba2773681151f625dd916a1fb1ef8970622729eab05fe6e429565",
+    "junit-results.xml.gz": "230ae3fe7b35ee5abf363fd64093abf24de85ef96f7e7e1a1b355ab4b4524b19",
+    "lan-guest-multiplayer-128.png": "e277c29215199bc837c7e39862980b1bf9d03fc682de9add6ce26f4f7b096373",
+    "lan-host-multiplayer-256.png": "41a1d37f6d9658cdb4bbc4b74a3d1c02e1cb7dd34248ecdaf8850950bd814594",
+    "logs/baseline-212-failure.log.gz": "07cce6741dc8326ef57b1989591f51448b12ca7c233270b73e6114f6c4434def",
+    "logs/client-edit.log.gz": "ffcb3ed3ffa3fb39d10544c15201bd1a87d7f083b8fe7bf19e98f3e14abb61da",
+    "logs/client-io.log.gz": "3cce94822c2811501cb8f8771df681e6b300000280143161c1b4ceed4b0d4d6d",
+    "logs/client-lan-guest-authentication-fixture.log.gz": "3dd63b50612c3b7d5dab45019ac712c29b7e706229d60cd3314a80a6a7bb7319",
+    "logs/client-lan-guest-incomplete.log.gz": "17054f9c1ce17d3673dca72c1246b8c9c93d5bae8a41c1e0854c1952f3e4eaf7",
+    "logs/client-lan-guest.log.gz": "2b0ee35fe9f47af34006571f141199f5a9c97ddb589cbdf01b49af3d926391af",
+    "logs/client-lan-host-authentication-fixture.log.gz": "40c2292deb0c5e00170d6ebe514237e8bb25cc56bd764e2bd380ce5f76edfc51",
+    "logs/client-lan-host-incomplete.log.gz": "b9430147767e6b8c41e79d7993c32f06bdc017886971b4d7abde33e2de0a1f40",
+    "logs/client-lan-host.log.gz": "47d26daf09b4a8fc4d706b5b8894a04c93e7cf12612bdb66b6b388bcc1da0396",
+    "logs/client-rank1.log.gz": "423721300cb0f835a755d0b3a40087fbdc7a7f31b7392a817b5849b8a4514e2e",
+    "logs/client-rank3.log.gz": "107976c57ab4855a35d0452bfa82cbcf489f5b8d301836868a6de67a0253a487",
+    "logs/client-remote.log.gz": "46aaa595f26a256bff282ee175d2cd757ddb436d5dddb1f16525399d6c0d3c97",
+    "logs/client-restart.log.gz": "57d1c99a50815ac941999644af3cb31dfac6ad63abecb70de5698807972d93e9",
+    "logs/client-scales.log.gz": "af9e73185ab75c8c702b3352defda82c35d671884e78bfd5d2e3efa55a883da6",
+    "logs/final-build.log.gz": "54aa7333cb37f53cf95358357093c838757fe118c26c517a54c529b50b00776f",
+    "logs/multiplayer-compile.log.gz": "9ba9a9984ee64861b2bc48e99eb1d254addabbb1635a9846bd576946d13fefd3",
+    "logs/multiplayer-server.log.gz": "5c6ba621ffa3594566c7d9f6e2c507f7f089513894b94a2fdaa47df412f1deb2",
+    "logs/production-addon-config-failure.log.gz": "59a1cd8b9d402b0e1533570579cf94e3a0bf0651faf3f1ecc1973374ca3592c8",
+    "logs/production-core.log.gz": "d12ff8e6d0ee2733dbf20c9b461e11008873c094e23f5eeb78dd26d9005686a7",
+    "logs/production-release.log.gz": "e172d4da6e0acf3938d0bb62a3d0ec2c4b8f9fac2603a808c9b0e95059302533",
+    "logs/production-roaring-failure.log.gz": "c48b3b666a54b4d356a10ba596eb8f82ee2d82acaa577bffcc76fe5419356459",
+    "logs/production-spartan-shields.log.gz": "182d37c5f559d19c1b343de23ebbf60b96c6f70951489f9fa314faab0bfd2511",
+    "logs/production-spartan-weapons.log.gz": "9f45549c81901307a88d193618725b9e581c9130729467bf034ee26c816863b5",
+    "logs/remote-server.log.gz": "5e09d5601aa8e6448e2b2b082c5470fa1bf368e322155ba39e7709afb0c3dcbb",
+    "logs/test-addons.log.gz": "bbf1dfd2c87660bd5fea45b0437937d154ca40603f4ba187c2dd7c65d5f17922",
+    "logs/test-beta.log.gz": "8b00b39eb380b41d76e893d5e6ed3ae4126e79dd4362319c0935185cceb6f535",
+    "logs/test-stable.log.gz": "b489165fcf572261efb0cbc4a255ee9cd189b56ec78e79afc3dda6ab5ada2c2c",
+    "progression-preview-64.png": "faf1f4e7526b1a63f1188ba271ca798d028585d4adb1b719ed95a7e6455e4d47",
+    "rank1-multiplayer-128.png": "a77d22b79a2be0e8632bac03bf747bf011e3443364fce809b29f653437ef4fa1",
+    "rank3-multiplayer-256.png": "c055d48de68624044665d66209a24c9668487fcb8d852945b69a8e26a306c296",
+    "registry-audit.json.gz": "64ad2a86e725a4671007d793442a46db5cbe2f72530e39d8f3e5abb868934f10",
+    "restart-256.png": "efd5c058d4161beeeb034750ef29790074c5910361a1a820c7a6986c11497514",
+    "save-conflict.png": "eb86ec1b93b3f0dcbba286a2e3f902fc6c2070049cfc433a362df499fcf046bb",
+    "save-io-failure.png": "e92922f13f3156014ad5e36583d44fa2a9fa00153148978f664468a1398c993c",
+    "session-changes.json": "96d2e14760ed1b7056638df675a2af727c8eb700815a8538184fcd19c79da315"
+  }
+}

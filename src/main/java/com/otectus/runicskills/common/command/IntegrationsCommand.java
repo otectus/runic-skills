@@ -55,12 +55,19 @@ public final class IntegrationsCommand {
                 stack.getTags().map(tag->tag.location().toString()).collect(java.util.stream.Collectors.toSet()),action,
                 com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance().skillMaxLevel,false);
         source.sendSuccess(() -> Component.literal("Rule revision "+rules.revision()+": "+decision.rules()+"; proposed requirements "+decision.requirements()
-                +". Integration gate enforcement is not yet implemented."),false);
+                +". Action-specific pack rules are diagnostic only; generated equipment locks are separate."),false);
         if (!decision.conflicts().isEmpty()) source.sendSuccess(() -> Component.literal("Conflicting rules: "+decision.conflicts()),false);
         // Report gate evidence separately from benefit hooks. Preparation support is not cast authorization.
         var gate=IntegrationRuntime.check(module,action==IntegrationRuleIndex.Action.ABILITY?Feature.ABILITIES:Feature.GATES,
                 action==IntegrationRuleIndex.Action.ATTACK?Capability.ATTACK_GATE:Capability.ABILITY_GATE);
         source.sendSuccess(() -> Component.literal(module.id+" "+rawAction+" gate: "+gate.state()+". "+gate.explanation()),false);
+        var provider = new com.otectus.runicskills.integration.lock.RecentEquipmentLockProvider(module);
+        var locks = com.otectus.runicskills.handler.HandlerSkill.getValue(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString());
+        var playerSkills = com.otectus.runicskills.common.capability.SkillCapability.get(player);
+        source.sendSuccess(() -> Component.literal("Automatic equipment locks: "
+                + (provider.isActive(com.otectus.runicskills.handler.HandlerCommonConfig.HANDLER.instance()) ? "enabled" : "disabled")
+                + "; held item has " + (locks == null ? 0 : locks.size()) + " configured/generated requirement(s); use allowed: "
+                + (playerSkills == null || playerSkills.canUseItemSilent(player, stack))), false);
         for (var power : com.otectus.runicskills.registry.RegistryPowers.getCachedValues()) {
             if (module!=IntegrationModule.TIDE || !com.otectus.runicskills.integration.tide.TidePowers.owns(power)
                     || cap==null || !cap.isPowerEquipped(power)) continue;

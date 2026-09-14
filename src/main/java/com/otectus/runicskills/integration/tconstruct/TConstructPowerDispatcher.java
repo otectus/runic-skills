@@ -727,10 +727,19 @@ public final class TConstructPowerDispatcher {
         // Expire before applying the capacity limit, or three departed allies can fill the
         // collection and prevent a new contributor from completing the award.
         state.manyHandsContributors.entrySet().removeIf(entry -> tick - entry.getValue() > window);
+        int maxAllies = TConstructPowers.contributorLimit(power) - 1;
+        // A reload may lower the limit after allies have contributed. Trim oldest entries first,
+        // with UUID as a deterministic tie-breaker, before considering the next contribution.
+        while (state.manyHandsContributors.size() > maxAllies) {
+            UUID oldest = state.manyHandsContributors.entrySet().stream()
+                    .min(Map.Entry.<UUID, Long>comparingByValue().thenComparing(Map.Entry.comparingByKey()))
+                    .orElseThrow().getKey();
+            state.manyHandsContributors.remove(oldest);
+        }
         if (contributor.getUUID().equals(owner.getUUID())) {
             state.manyHandsOwnerAt = tick;
         } else if (PowerRuntime.AllyDetector.isAlly(owner, contributor)) {
-            if (state.manyHandsContributors.size() < TConstructPowerState.MAX_CONTRIBUTORS - 1
+            if (state.manyHandsContributors.size() < maxAllies
                     || state.manyHandsContributors.containsKey(contributor.getUUID())) {
                 state.manyHandsContributors.put(contributor.getUUID(), tick);
             }

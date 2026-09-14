@@ -10,7 +10,7 @@ public class L2TabsIntegration {
     private static final String CLIENT_INTEGRATION_CLASS =
             "com.otectus.runicskills.client.integration.L2TabsClientIntegration";
     private static final String TAB_FACTORY_CLASS =
-            "dev.xkmc.l2tabs.tabs.core.TabRegistry$TabFactory";
+            "dev.xkmc.l2tabs.tabs.core.TabToken$TabFactory";
 
     private static volatile boolean nativeTabsActive;
 
@@ -22,7 +22,7 @@ public class L2TabsIntegration {
      * Loads and invokes the client-only integration without putting L2 Tabs API types in an
      * always-loaded class's constant pool. This method is called only from client setup.
      *
-     * <p>L2 Tabs changed its registration API between 0.3.1 and 0.3.3. Because it is an optional
+     * <p>The API mirror is verified against L2 Tabs 0.3.3, bundled by L2Library 2.5.3. As an optional
      * integration, an incompatible version must disable only the native tab rather than crashing
      * Minecraft's deferred setup queue.</p>
      */

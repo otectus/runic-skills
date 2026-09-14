@@ -10,7 +10,7 @@ public final class ValidationMod {
     public ValidationMod() {
         // Forge intentionally disables its normal GameTest entry point in production.
         // This separate opt-in mod runs the same tests against the reobfuscated release.
-        if (Boolean.getBoolean("runicskills.productionValidation")) {
+        if (Boolean.getBoolean("runicskills.productionValidation") || Boolean.getBoolean("runicskills.baselineLocks")) {
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(this::started);
             net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(this::tick);
         }
@@ -18,6 +18,11 @@ public final class ValidationMod {
 
     @SuppressWarnings("deprecation")
     private void started(net.minecraftforge.event.server.ServerStartedEvent event) {
+        if (Boolean.getBoolean("runicskills.baselineLocks")) { BaselineLocksCheck.run(event.getServer()); return; }
+        if (Boolean.getBoolean("runicskills.latestPackValidation")) {
+            LatestPackChecks.run(event.getServer());
+            return;
+        }
         try {
             var mod=net.minecraftforge.fml.ModList.get().getModContainerById("runicskills").orElseThrow();
             com.otectus.runicskills.RunicSkills.getLOGGER().info("FOUR_MOD_PRODUCTION artifact {}",
@@ -28,8 +33,21 @@ public final class ValidationMod {
             com.otectus.runicskills.integration.common.IntegrationRuntime.localEvidence().forEach((module, evidence) ->
                     com.otectus.runicskills.RunicSkills.getLOGGER().info("FOUR_MOD_DEPENDENCY {} {} {}",
                             module.modId, evidence.version(), evidence.sha256()));
+            boolean progression = Boolean.getBoolean("runicskills.progressionValidation");
+            if (progression) {
+                com.otectus.runicskills.integration.lock.LockAudit.write(event.getServer());
+                HistoricalProviderCheck.run(event.getServer());
+                net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.PackMuleGameTest"));
+                net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.IncomingEffects220GameTest"));
+                net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.ResolvedLocks220GameTest"));
+                net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.Progression220GameTest"));
+                if (net.minecraftforge.fml.ModList.get().isLoaded("tconstruct"))
+                    net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.tconstruct.StackRequirementGameTest"));
+            } else {
             net.minecraft.gametest.framework.GameTestRegistry.register(
                     Class.forName("com.otectus.runicskills.gametest.FourModIntegrationGameTest"));
+            net.minecraft.gametest.framework.GameTestRegistry.register(
+                    Class.forName("com.otectus.runicskills.gametest.RecentEquipmentLocksGameTest"));
             net.minecraft.gametest.framework.GameTestRegistry.register(
                     Class.forName("com.otectus.runicskills.gametest.TideCatchGameTest"));
             net.minecraft.gametest.framework.GameTestRegistry.register(
@@ -40,12 +58,13 @@ public final class ValidationMod {
             net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.TomAquaGameTest"));
             net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.WeaponCombatGameTest"));
             net.minecraft.gametest.framework.GameTestRegistry.register(Class.forName("com.otectus.runicskills.gametest.TomCastGameTest"));
+            }
             tests = net.minecraft.gametest.framework.GameTestRunner.runTests(
                     net.minecraft.gametest.framework.GameTestRegistry.getAllTestFunctions(),
                     new net.minecraft.core.BlockPos(0, 160, 0), net.minecraft.world.level.block.Rotation.NONE,
                     event.getServer().overworld(), ticker, 4);
-            if (tests.size() != 40) throw new IllegalStateException("Expected 40 production validation tests, got " + tests.size());
-        } catch (ReflectiveOperationException e) {
+            if (!progression && tests.size() != 41) throw new IllegalStateException("Expected 41 production validation tests, got " + tests.size());
+        } catch (ReflectiveOperationException | java.io.IOException e) {
             throw new IllegalStateException("Production validation class missing", e);
         }
     }

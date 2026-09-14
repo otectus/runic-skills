@@ -194,5 +194,10 @@ public final class LockProviderRegistry {
         // "_head"/"_blade" component false-positives (Overgeared smithing kit).
         register(new StarcatcherLockProvider());
         register(new OvergearedLockProvider());
+
+        // Finished equipment from the four newest integrations. Manual locks retain precedence.
+        for (var module : com.otectus.runicskills.integration.common.IntegrationModule.values()) {
+            register(new RecentEquipmentLockProvider(module));
+        }
     }
 }

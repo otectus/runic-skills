@@ -322,7 +322,7 @@ public class RunicSkillsScreen extends Screen {
                 hoveredSkill = skill;
             }
 
-            guiGraphics.blit(skill.getOverviewIcon(), iconBounds.x(), iconBounds.y(), 0.0F, 0.0F,
+            guiGraphics.blit(com.otectus.runicskills.client.core.SkillVisualAssets.resolve(skill.getOverviewIcon(), skill.getLockedTexture()), iconBounds.x(), iconBounds.y(), 0.0F, 0.0F,
                     OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE, OVERVIEW_ICON_SIZE);
             guiGraphics.drawString(client.font,
                     Component.translatable(skill.getKey() + ".abbreviation").withStyle(ChatFormatting.BOLD),
@@ -347,7 +347,8 @@ public class RunicSkillsScreen extends Screen {
     private void drawDetailBackground(GuiGraphics guiGraphics, int panelX, int panelY) {
         DetailPageState detailState = getDetailPageStateForRender();
         if (detailState != null) {
-            ResourceLocation background = detailState.skill().getBackgroundTexture();
+            ResourceLocation background = com.otectus.runicskills.client.core.SkillVisualAssets.resolve(
+                    detailState.skill().getBackgroundTexture(), detailState.skill().background);
             if (background != null) {
                 guiGraphics.blit(background, panelX + DETAIL_CONTENT_X, panelY + 30, 0.0F, 0.0F,
                         DETAIL_CONTENT_WIDTH, 156, 16, 16);
@@ -370,7 +371,7 @@ public class RunicSkillsScreen extends Screen {
         int skillLevel = detailState.skillLevel();
         String rank = skill.getRank(skillLevel).getString();
 
-        guiGraphics.blit(skill.getDetailIcon(), panelX + 12, panelY + 9, 0.0F, 0.0F, 16, 16, 16, 16);
+        guiGraphics.blit(com.otectus.runicskills.client.core.SkillVisualAssets.resolve(skill.getDetailIcon(), skill.getLockedTexture()), panelX + 12, panelY + 9, 0.0F, 0.0F, 16, 16, 16, 16);
         guiGraphics.drawString(client.font, Component.translatable(key).withStyle(ChatFormatting.BOLD), panelX + 34, panelY + 8, Utils.FONT_COLOR, false);
         guiGraphics.drawString(client.font,
                 Component.translatable("screen.perk.level_and_rank", Utils.numberFormat(skillLevel),
@@ -518,9 +519,9 @@ public class RunicSkillsScreen extends Screen {
         guiGraphics.blit(HandlerResources.PERK_PAGE[PAGE_DETAIL], panelX + 153, panelY + 14, 177 + frame, 1, 6, 6);
 
         if (bounds.contains(mouseX, mouseY)) {
-            if (detailState.capability().getGlobalLevel() >= HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel) {
+            if (detailState.capability().getGlobalLevel() >= com.otectus.runicskills.common.progression.LevelCaps.global()) {
                 Utils.drawToolTip(guiGraphics,
-                        Component.translatable("tooltip.skill.global_max_level", HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel)
+                        Component.translatable("tooltip.skill.global_max_level", com.otectus.runicskills.common.progression.LevelCaps.global())
                                 .withStyle(ChatFormatting.RED),
                         mouseX,
                         mouseY);
@@ -1026,7 +1027,7 @@ public class RunicSkillsScreen extends Screen {
         }
 
         if (levelUpButtonBounds(panelX, panelY).contains(mouseX, mouseY)
-                && detailState.capability().getGlobalLevel() < HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel
+                && detailState.capability().getGlobalLevel() < com.otectus.runicskills.common.progression.LevelCaps.global()
                 && detailState.skillLevel() < HandlerCommonConfig.HANDLER.instance().skillMaxLevel
                 && canLevelUp(detailState.skill(), detailState.skillLevel())) {
             Utils.playSound();

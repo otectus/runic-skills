@@ -3,6 +3,7 @@ package com.otectus.runicskills.mixin;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.otectus.runicskills.common.util.ContainerInteraction;
+import com.otectus.runicskills.common.crafting.StonecuttingRewards;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -26,9 +27,19 @@ public abstract class MixAbstractContainerMenu {
     @WrapMethod(method = "clicked")
     private void runicskills$interaction(int slotId, int button, ClickType clickType,
                                          Player player, Operation<Void> original) {
+        AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
+        if (!menu.isValidSlotIndex(slotId) || (clickType == ClickType.SWAP && button != 40 && (button < 0 || button > 8))
+                || ((clickType == ClickType.PICKUP || clickType == ClickType.QUICK_MOVE || clickType == ClickType.THROW)
+                    && button != 0 && button != 1)) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer) menu.broadcastFullState();
+            return;
+        }
         Player previous = ContainerInteraction.begin(player);
         try {
+            StonecuttingRewards.Pending stonecutting = StonecuttingRewards.begin(
+                    (AbstractContainerMenu) (Object) this, slotId, player);
             original.call(slotId, button, clickType, player);
+            StonecuttingRewards.finish(stonecutting);
         } finally {
             ContainerInteraction.end(previous);
         }

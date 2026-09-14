@@ -61,14 +61,15 @@ public class VanillaPowerEventDispatcher {
     private static final Map<UUID, Long> LAST_LAUNCH = new ConcurrentHashMap<>();
 
     /**
-     * The entity a projectile was aimed at when it was fired, keyed by projectile id.
+     * The entity a projectile was aimed at when it was fired, saved on that projectile.
      *
      * <p>Trueshot rewards "aim-centered on the target at cast time", which cannot be reconstructed
      * at impact: by then the shooter has moved and the projectile has fallen. Resolving the
      * intended target at launch and comparing at impact is the same question asked at the only
      * moment it can be answered.
      */
-    private static final Map<Integer, UUID> INTENDED_TARGET = new ConcurrentHashMap<>();
+    private static final String INTENDED_TARGET = "runicskills:trueshot_target";
+    private static final String LAUNCH_PROCESSED = "runicskills:projectile_powers_launched";
 
     /** Recent projectile hits per attacker, for Volley Memory's sliding window. */
     private static final Map<UUID, Deque<ProjectileHit>> RECENT_HITS = new ConcurrentHashMap<>();
@@ -101,9 +102,30 @@ public class VanillaPowerEventDispatcher {
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         PowerRuntime.clearPlayer(id);
+        clearCombatHistory(id);
+    }
+
+    private static void clearCombatHistory(UUID id) {
         LAST_LAUNCH.remove(id);
         RECENT_HITS.remove(id);
         BARRAGE.remove(id);
+    }
+
+    @SubscribeEvent
+    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        clearCombatHistory(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        clearCombatHistory(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(net.minecraftforge.event.server.ServerStoppedEvent event) {
+        LAST_LAUNCH.clear();
+        RECENT_HITS.clear();
+        BARRAGE.clear();
     }
 
     @SubscribeEvent
@@ -113,11 +135,6 @@ public class VanillaPowerEventDispatcher {
         if (server != null && server.getTickCount() % 20 == 0) {
             PowerRuntime.sweep(server.overworld().getGameTime());
         }
-    }
-
-    @SubscribeEvent
-    public void onProjectileRemoved(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
-        if (!event.getLevel().isClientSide()) INTENDED_TARGET.remove(event.getEntity().getId());
     }
 
     @SubscribeEvent
@@ -135,9 +152,13 @@ public class VanillaPowerEventDispatcher {
      */
     @SubscribeEvent
     public void onProjectileLaunched(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide()) return;
+        if (event.getLevel().isClientSide() || event.loadedFromDisk() || event.isCanceled()) return;
         if (!(event.getEntity() instanceof Projectile projectile)) return;
         if (!(projectile.getOwner() instanceof Player player)) return;
+        // Joining a level also happens on reload/dimension transfer. Pierce and velocity are
+        // persisted by the projectile, so replaying a launch would amplify the same shot again.
+        if (projectile.getPersistentData().getBoolean(LAUNCH_PROCESSED)) return;
+        projectile.getPersistentData().putBoolean(LAUNCH_PROCESSED, true);
 
         long now = player.level().getGameTime();
 
@@ -146,8 +167,7 @@ public class VanillaPowerEventDispatcher {
         // it is active can change between launch and impact.
         Entity aimed = PowerDispatch.isEquipped(player, RegistryPowers.TRUESHOT) ? entityUnderCrosshair(player) : null;
         if (aimed != null) {
-            if (INTENDED_TARGET.size() > 4096) INTENDED_TARGET.clear();   // bound a pathological session
-            INTENDED_TARGET.put(projectile.getId(), aimed.getUUID());
+            projectile.getPersistentData().putUUID(INTENDED_TARGET, aimed.getUUID());
         }
 
         if (PowerDispatch.isEquipped(player, RegistryPowers.RICOCHET_PRIMER)) {
@@ -210,14 +230,15 @@ public class VanillaPowerEventDispatcher {
         // Trueshot — did this land on what it was aimed at?
         if (PowerDispatch.isEquipped(player, RegistryPowers.TRUESHOT)) {
             Power power = RegistryPowers.TRUESHOT.get();
-            UUID intended = INTENDED_TARGET.get(projectile.getId());
+            UUID intended = projectile.getPersistentData().hasUUID(INTENDED_TARGET)
+                    ? projectile.getPersistentData().getUUID(INTENDED_TARGET) : null;
             if (intended != null && intended.equals(victim.getUUID())) {
                 double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.15);
                 event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(player, power);
             }
         }
-        INTENDED_TARGET.remove(projectile.getId());
+        projectile.getPersistentData().remove(INTENDED_TARGET);
 
         // Gravity Well — airborne targets take more and are kept airborne.
         if (PowerDispatch.isEquipped(player, RegistryPowers.GRAVITY_WELL) && !victim.onGround()) {
@@ -233,34 +254,45 @@ public class VanillaPowerEventDispatcher {
         if (PowerDispatch.isEquipped(player, RegistryPowers.VOLLEY_MEMORY)) {
             Power power = RegistryPowers.VOLLEY_MEMORY.get();
             int windowTicks = PowerOverridesManager.intValueOr(power, "window_ticks", 100);
-            int needed = PowerOverridesManager.intValueOr(power, "hits_required", 3);
+            int needed = Math.max(1, Math.min(MAX_TRACKED_HITS,
+                    PowerOverridesManager.intValueOr(power, "hits_required", 3)));
             double bonus = PowerOverridesManager.valueOr(power, "damage_bonus", 0.40);
             if (countRecentHits(player, victim, now, windowTicks) >= needed) {
                 event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * (1.0 + bonus))));
                 PowerDispatch.fireProc(player, power);
+                // The setup purchases one payoff. Keeping it made every later hit stronger for
+                // as long as the player kept firing, rather than requiring another three hits.
+                Deque<ProjectileHit> hits = RECENT_HITS.get(player.getUUID());
+                if (hits != null) hits.removeIf(hit -> hit.target().equals(victim.getUUID()));
+            } else {
+                recordHit(player, victim, now, windowTicks);
             }
-            recordHit(player, victim, now, windowTicks);
         }
 
         // Arcanist's Barrage — every Nth projectile landed on the same target echoes.
         if (PowerDispatch.isEquipped(player, RegistryPowers.ARCANISTS_BARRAGE)) {
-            applyBarrage(player, victim, event.getAmount());
+            applyBarrage(player, victim, event);
         }
     }
 
     /**
      * Fires Arcanist's Barrage's echo.
      *
-     * <p>Applies the echo as damage rather than spawning a duplicate arrow. The spec's "fires a free
-     * echo of itself at the same target" is about the target taking another 75%; spawning a real
-     * projectile at an entity already in contact would either miss or re-enter this handler, and the
-     * reentrancy guard is what keeps an echo from echoing.
+     * <p>The echo's share is committed with the triggering impact. Calling {@code victim.hurt}
+     * inside its current hurt event encounters vanilla's already-started hurt cooldown: the
+     * weaker echo is discarded before damage events, despite the proc animation firing. One
+     * impact also lets armor, absorption and other mods resolve the whole payoff consistently.
      */
-    private static void applyBarrage(Player player, LivingEntity victim, float baseAmount) {
+    private static void applyBarrage(Player player, LivingEntity victim, LivingHurtEvent event) {
         Power power = RegistryPowers.ARCANISTS_BARRAGE.get();
-        int every = Math.max(2, PowerOverridesManager.intValueOr(power, "projectiles_per_echo", 10));
-        int resetTicks = PowerOverridesManager.intValueOr(power, "combat_reset_ticks", 200);
-        double share = PowerOverridesManager.valueOr(power, "echo_damage_share", 0.75);
+        // Accept the original ISS-only keys too, so consolidation never silently discards a
+        // pack's tuning. Canonical cross-projectile keys win when both spellings are supplied.
+        int every = Math.max(2, PowerOverridesManager.intValueOr(power, "projectiles_per_echo",
+                PowerOverridesManager.intValueOr(power, "echo_count_threshold", 10)));
+        int resetTicks = PowerOverridesManager.intValueOr(power, "combat_reset_ticks",
+                PowerOverridesManager.intValueOr(power, "combat_timeout_ticks", 200));
+        double share = PowerOverridesManager.valueOr(power, "echo_damage_share",
+                PowerOverridesManager.valueOr(power, "echo_damage_multiplier", 0.75));
         long now = player.level().getGameTime();
 
         BarrageCount state = BARRAGE.computeIfAbsent(player.getUUID(), k -> new BarrageCount());
@@ -274,28 +306,23 @@ public class VanillaPowerEventDispatcher {
         if (state.landed < every) return;
 
         state.landed = 0;
-        try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
-                DamageContext.Origin.POWER_ECHO)) {
-            if (scope.isSuppressed()) return;
-            victim.hurt(player.damageSources().indirectMagic(player, player),
-                    (float) (baseAmount * share));
-        }
+        event.setAmount(DamageMath.safeAmount(event.getAmount(), event.getAmount() * (1.0 + Math.max(0, share))));
         PowerDispatch.fireProc(player, power);
     }
 
     // ── Mobility (§5.4) ─────────────────────────────────────────────────────────────────────
 
     /** Ender-pearl teleports are this category's vanilla equivalent of a teleport spell. */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onEnderPearlTeleport(EntityTeleportEvent.EnderPearl event) {
-        onPlayerTeleported(event.getPlayer(), event.getTargetX(), event.getTargetY(), event.getTargetZ());
+        if (!event.isCanceled()) onPlayerTeleported(event.getPlayer(), true);
     }
 
     /** Chorus fruit is the other vanilla teleport a player can trigger deliberately. */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onChorusFruitTeleport(EntityTeleportEvent.ChorusFruit event) {
         if (event.getEntity() instanceof Player player) {
-            onPlayerTeleported(player, event.getTargetX(), event.getTargetY(), event.getTargetZ());
+            if (!event.isCanceled()) onPlayerTeleported(player, false);
         }
     }
 
@@ -305,7 +332,7 @@ public class VanillaPowerEventDispatcher {
      * <p>Runs before the move completes, so the player's current position is still the origin —
      * which is what Vanishing Trail needs.
      */
-    private void onPlayerTeleported(Player player, double toX, double toY, double toZ) {
+    private void onPlayerTeleported(Player player, boolean usedPearl) {
         if (player == null || player.level().isClientSide()) return;
         long now = player.level().getGameTime();
         Vec3 origin = player.position();
@@ -356,9 +383,11 @@ public class VanillaPowerEventDispatcher {
         if (PowerDispatch.isEquipped(player, RegistryPowers.FOLDED_SPACE)) {
             Power power = RegistryPowers.FOLDED_SPACE.get();
             int window = PowerOverridesManager.intValueOr(power, "window_ticks", 60);
-            if (PowerRuntime.ProcWindows.active(player.getUUID(), power.getName(), now)) {
+            if (usedPearl && PowerRuntime.ProcWindows.active(player.getUUID(), power.getName(), now)) {
                 PowerRuntime.ProcWindows.consume(player.getUUID(), power.getName());
-                if (!player.isCreative()) player.getInventory().add(new ItemStack(Items.ENDER_PEARL));
+                // Chorus fruit can prime the mobility window, but never consumed a pearl to
+                // refund. Vanilla's helper drops overflow instead of losing a full-inventory refund.
+                if (!player.isCreative()) player.getInventory().placeItemBackInInventory(new ItemStack(Items.ENDER_PEARL));
                 PowerDispatch.fireProc(player, power);
             } else {
                 PowerRuntime.ProcWindows.open(player.getUUID(), power.getName(), now + window);

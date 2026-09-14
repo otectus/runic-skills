@@ -3142,5 +3142,11 @@
     "skill": "tinkering",
     "texture_const": "TOM_ARTIFICERS_POISE_PERK",
     "texture": "runicskills:textures/skill/tinkering/tom_artificers_poise.png"
+  },
+  {
+    "id": "pack_mule",
+    "skill": "strength",
+    "texture_const": "PACK_MULE_PERK",
+    "texture": "runicskills:textures/skill/strength/pack_mule.png"
   }
 ]

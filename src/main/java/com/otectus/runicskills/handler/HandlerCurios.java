@@ -34,7 +34,7 @@ public class HandlerCurios {
                 if (skillCapability == null) return;
 
                 try {
-                    if (!skillCapability.canUseItem(player, item)) {
+                    if (!skillCapability.canUseItem(player, item, com.otectus.runicskills.integration.lock.LockAction.EQUIP)) {
                         event.setResult(Event.Result.DENY);
                     }
                 }

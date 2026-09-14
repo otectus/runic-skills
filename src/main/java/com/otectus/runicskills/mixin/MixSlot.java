@@ -48,6 +48,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Slot.class)
 public abstract class MixSlot {
 
+    @com.llamalad7.mixinextras.injector.ModifyReturnValue(
+            method = "getMaxStackSize(Lnet/minecraft/world/item/ItemStack;)I", at = @At("RETURN"))
+    private int runicskills$playerCapacity(int nativeLimit, ItemStack stack) {
+        return com.otectus.runicskills.common.inventory.PlayerStackPolicy.capacity((Slot) (Object) this, stack, nativeLimit);
+    }
+
+    /** An existing over-limit stack may shrink, but a negative insertion must never grow its source. */
+    @Inject(method = "safeInsert(Lnet/minecraft/world/item/ItemStack;I)Lnet/minecraft/world/item/ItemStack;",
+            at = @At("HEAD"), cancellable = true)
+    private void runicskills$overLimit(ItemStack incoming, int amount,
+            CallbackInfoReturnable<ItemStack> cir) {
+        Slot slot = (Slot) (Object) this;
+        if (!slot.getItem().isEmpty() && slot.getItem().getCount() >= slot.getMaxStackSize(incoming)) cir.setReturnValue(incoming);
+    }
+
     @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
     private void runicskills$refuseLockedCraftingResult(Player player,
                                                         CallbackInfoReturnable<Boolean> cir) {
@@ -72,7 +87,7 @@ public abstract class MixSlot {
 
         SkillCapability capability = SkillCapability.get(player);
         if (capability == null) return;
-        if (!capability.canUseItem(player, result)) {
+        if (!capability.canUseItem(player, result, com.otectus.runicskills.integration.lock.LockAction.CRAFT)) {
             cir.setReturnValue(false);
         }
     }

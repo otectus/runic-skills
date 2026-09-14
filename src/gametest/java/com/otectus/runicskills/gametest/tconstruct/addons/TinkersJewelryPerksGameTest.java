@@ -43,6 +43,27 @@ public class TinkersJewelryPerksGameTest {
 
     private static final String EMPTY = "empty";
 
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void jewelryUsesMaterialProgressionAndCanBeDisabled(GameTestHelper helper) {
+        var player = TinkerFixtures.player(helper, "tc_jewelry_locks");
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        boolean previous = cfg.enableTConstructLockItems;
+        try {
+            cfg.enableTConstructLockItems = true;
+            var decision = com.otectus.runicskills.integration.lock.LockProviderRegistry.resolveStack(
+                    player, ring(), com.otectus.runicskills.integration.lock.LockAction.EQUIP);
+            helper.assertTrue(decision.isPresent(), "Native addon jewelry must reach the material resolver");
+            helper.assertTrue(decision.get().unsupportedFacts().isEmpty(), "Jewelry must have a known material tier");
+            cfg.enableTConstructLockItems = false;
+            helper.assertTrue(com.otectus.runicskills.integration.lock.LockProviderRegistry.resolveStack(
+                    player, ring(), com.otectus.runicskills.integration.lock.LockAction.EQUIP).isEmpty(),
+                    "Tinkers opt-out must also cover addon jewelry");
+        } finally {
+            cfg.enableTConstructLockItems = previous;
+        }
+        helper.succeed();
+    }
+
     /** Jeweler's Setting arms on the take and pays only on the piece that was taken. */
     @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
     public static void jewelerSettingAffectsStationTake(GameTestHelper helper) {

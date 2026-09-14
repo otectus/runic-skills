@@ -27,6 +27,68 @@ import java.util.UUID;
 
 @PrefixGameTestTemplate(false)
 public final class SpellPowerGameTest {
+    public static final class BarrageProcs {
+        private final UUID player;
+        int count;
+        BarrageProcs(UUID player) { this.player = player; }
+        @net.minecraftforge.eventbus.api.SubscribeEvent
+        public void onProc(com.otectus.runicskills.event.PowerProcEvent event) {
+            if (event.getEntity().getUUID().equals(player)
+                    && event.getPower() == RegistryPowers.ARCANISTS_BARRAGE.get()) count++;
+        }
+    }
+
+    @GameTest(template = "empty", templateNamespace = "runicskills")
+    public static void crimsonTitheIgnoresUncommittedDamageAndOverkill(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        equipChain(player, RegistryPowers.CRIMSON_TITHE.get());
+        MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.OnDatapackSyncEvent(
+                helper.getLevel().getServer().getPlayerList(), player));
+        player.setHealth(10);
+        var source = SpellDamageSource.source(player, SpellRegistry.BLOOD_SLASH_SPELL.get());
+        var victim = EntityType.PIG.create(helper.getLevel());
+        MinecraftForge.EVENT_BUS.post(new io.redspace.ironsspellbooks.api.events.SpellDamageEvent(victim, 100, source));
+        helper.assertTrue(player.getHealth() == 10, "spell damage before health commitment healed Crimson Tithe");
+        victim.setAbsorptionAmount(20);
+        victim.hurt(source, 4);
+        helper.assertTrue(player.getHealth() == 10, "fully absorbed damage healed Crimson Tithe");
+        var weak = EntityType.PIG.create(helper.getLevel());
+        weak.setHealth(1);
+        weak.hurt(source, 100);
+        helper.assertTrue(Math.abs(player.getHealth() - 10.1f) < .001,
+                "Crimson Tithe healed more than its share of the target's remaining health");
+        PowerRuntime.clearPlayer(player.getUUID());
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "runicskills")
+    public static void spellProjectileBarrageHasOnlyOneEchoCounter(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        equipChain(player, RegistryPowers.ARCANISTS_BARRAGE.get());
+        MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.OnDatapackSyncEvent(
+                helper.getLevel().getServer().getPlayerList(), player));
+        var victim = EntityType.IRON_GOLEM.create(helper.getLevel());
+        BarrageProcs observer = new BarrageProcs(player.getUUID());
+        MinecraftForge.EVENT_BUS.register(observer);
+        try {
+            for (int hit = 0; hit < 10; hit++) {
+                var projectile = new net.minecraft.world.entity.projectile.Arrow(helper.getLevel(), player);
+                var source = SpellDamageSource.source(projectile, player, SpellRegistry.BLOOD_SLASH_SPELL.get());
+                var spell = new io.redspace.ironsspellbooks.api.events.SpellDamageEvent(victim, 2, source);
+                MinecraftForge.EVENT_BUS.post(spell);
+                MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.living.LivingHurtEvent(
+                        victim, source, spell.getAmount()));
+            }
+            helper.assertTrue(observer.count == 1, "one sequence of ten spell projectiles emitted "
+                    + observer.count + " Barrage procs instead of one");
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(observer);
+            new com.otectus.runicskills.registry.events.VanillaPowerEventDispatcher()
+                    .onLogout(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(player));
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "empty", templateNamespace = "runicskills")
     public static void manaShieldNeverRoundsItsProtectionAboveTheConfiguredShare(GameTestHelper helper) {
         com.otectus.runicskills.gametest.GameplayStabilizationGameTest
@@ -44,7 +106,7 @@ public final class SpellPowerGameTest {
                     "unreachable spell Power " + power.getName());
             count++;
         }
-        helper.assertTrue(count == 45, "expected all 45 spell-school Powers, got " + count);
+        helper.assertTrue(count == 48, "expected 45 spell-school Powers and 3 spell-only category Crowns, got " + count);
         helper.succeed();
     }
 

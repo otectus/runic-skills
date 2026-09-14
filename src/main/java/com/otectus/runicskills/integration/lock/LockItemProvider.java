@@ -30,6 +30,9 @@ public interface LockItemProvider {
     /** Stable lower-case identifier used in debug logs and registry guards (e.g. {@code "spartan"}). */
     String id();
 
+    /** Providers with an existing cap-relative material table must never be scaled twice. */
+    default boolean scalesWithSkillCap() { return false; }
+
     /** True when this provider should contribute locks: required mod present AND master toggle (if any) on. */
     boolean isActive(HandlerCommonConfig cfg);
 

@@ -29,11 +29,10 @@ import java.util.Optional;
  * locks neither — which is why spec §7 asks for a stack-aware resolver and why this is a
  * {@link StackLockProvider} rather than another entry in the lock table.
  *
- * <p><b>Off by default.</b> {@code enableTConstructLockItems} defaults to false. §7.1 is explicit
- * about why: turning material-tier locks on in an existing world can disable equipment players
- * already own and rely on, so it is an opt-in progression preset rather than something a version
- * bump does to a server. With it off, this provider declines every automatic verdict and the
- * install behaves exactly as it did before Tinkers' was recognised.
+ * <p>Automatic progression is enabled by default. {@code enableTConstructLockItems} disables
+ * generated requirements without discarding explicit pack rules or configured item locks.
+ * Native addon equipment is covered by its modifiable tag and actual material tiers, regardless
+ * of namespace. Existing saved false settings remain explicit opt-outs.
  *
  * <h2>Precedence (§7.2)</h2>
  * <ol>
@@ -58,13 +57,11 @@ public final class TConstructRequirementResolver implements StackLockProvider {
      * The §7.3 table, at the stock cap of 32. Index is the native material tier.
      *
      * <p>Index 0 is the starting materials — Tinkers' calls wood tier 0 — and asks for nothing.
-     * Tier 5 and above is deliberately absent: the table's last row says an explicit rule is
-     * required and no extra lock is inferred, which is what {@link #requirementFor} returning empty
-     * above the table means.
+     * Addon tiers 5 and 6 extend progression to the cap; still higher known tiers use the last row.
      */
-    private static final int[] TINKERING_AT_CAP_32 = {0, 1, 8, 16, 24};
+    private static final int[] TINKERING_AT_CAP_32 = {0, 1, 8, 16, 24, 28, 32};
 
-    private static final int[] FUNCTIONAL_AT_CAP_32 = {0, 1, 4, 8, 16};
+    private static final int[] FUNCTIONAL_AT_CAP_32 = {0, 1, 4, 8, 16, 20, 24};
 
     /** The cap the table above is written against, so a server that changes it scales rather than breaks. */
     private static final int TABLE_CAP = 32;
@@ -83,10 +80,6 @@ public final class TConstructRequirementResolver implements StackLockProvider {
     @Override
     public Optional<RequirementDecision> resolve(ServerPlayer player, ItemStack stack, LockAction action) {
         if (!TConstructEquipmentAdapter.isNativeTool(stack)) return Optional.empty();
-        // §7.4: never deny inventory removal, storage or crafting. Those actions are not a use, and
-        // a lock that stopped a player picking their own tool out of a chest would be a trap.
-        if (action == LockAction.TAKE || action == LockAction.CRAFT) return Optional.empty();
-
         ToolStack tool = ToolStack.from(stack);
         ResourceLocation definitionId = tool.getDefinition().getId();
         List<ResourceLocation> materialIds = new ArrayList<>();
@@ -97,11 +90,14 @@ public final class TConstructRequirementResolver implements StackLockProvider {
         Optional<RequirementDecision> explicit = rules.rule(definitionId, materialIds, action);
         if (explicit.isPresent()) return explicit.map(decision -> evaluated(player, stack, decision));
 
+        // Explicit action rules remain meaningful; automatic use gates never trap recipe outputs/storage.
+        if (action == LockAction.TAKE || action == LockAction.CRAFT) return Optional.empty();
+
         // An existing id lock outranks the automatic profile, and the id path already enforces it.
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId != null) {
             var configured = HandlerSkill.getValue(itemId.toString());
-            if (configured != null && !configured.isEmpty()) return Optional.empty();
+            if (configured != null) return Optional.empty();
         }
 
         if (!HandlerCommonConfig.HANDLER.instance().enableTConstructLockItems) return Optional.empty();
@@ -157,11 +153,12 @@ public final class TConstructRequirementResolver implements StackLockProvider {
         // -1, not 0: Tinkers' numbers its tiers from zero, so wood is a determined tier that asks
         // for nothing. Treating it as "could not be determined" would report the most common tool
         // in the game as unrecognised.
-        if (undetermined || tier < 0) {
+        if (tier < 0) {
             return new RequirementDecision(true, Map.of(), List.of(id() + ":auto_material"),
                     List.of("material tier could not be determined"), null);
         }
 
+        List<String> facts = undetermined ? List.of("Some material tiers are undetermined; known requirements are retained") : List.of();
         Map<String, Integer> required = new LinkedHashMap<>();
         requirementFor(TINKERING_AT_CAP_32, tier)
                 .ifPresent(level -> required.put("tinkering", level));
@@ -175,7 +172,7 @@ public final class TConstructRequirementResolver implements StackLockProvider {
         }
         if (required.isEmpty()) {
             return new RequirementDecision(true, Map.of(), List.of(id() + ":auto_material"),
-                    List.of(), null);
+                    facts, null);
         }
 
         boolean allowed = true;
@@ -186,7 +183,7 @@ public final class TConstructRequirementResolver implements StackLockProvider {
             }
         }
         return new RequirementDecision(allowed, required, List.of(id() + ":auto_material"),
-                List.of(), allowed ? null : reason(stack, required));
+                facts, allowed ? null : reason(stack, required));
     }
 
     /**
@@ -197,11 +194,9 @@ public final class TConstructRequirementResolver implements StackLockProvider {
      * raises it does not leave the whole table sitting at the bottom of the range.
      */
     static Optional<Integer> requirementFor(int[] table, int tier) {
-        // Tier 0 (wood and its peers) sits at index 0, whose entry is zero: the starting materials
-        // ask for nothing. Above the table, §7.3's last row says an explicit rule is required and no
-        // extra lock is inferred, which is what an empty answer means here.
-        if (tier < 0 || tier >= table.length) return Optional.empty();
-        int base = table[tier];
+        // Unknown materials remain unrestricted; known high-tier addons must not bypass progression.
+        if (tier < 0 || table.length == 0) return Optional.empty();
+        int base = table[Math.min(tier, table.length - 1)];
         if (base <= 0) return Optional.empty();
         int cap = Math.max(2, HandlerCommonConfig.HANDLER.instance().skillMaxLevel);
         int scaled = (int) Math.ceil(base * (double) cap / TABLE_CAP);
@@ -227,6 +222,7 @@ public final class TConstructRequirementResolver implements StackLockProvider {
         boolean meleePrimary = stack.is(TinkerTags.Items.MELEE_PRIMARY);
 
         return switch (action) {
+            case MINE -> stack.is(TinkerTags.Items.HARVEST) ? "endurance" : null;
             case ATTACK -> stack.is(TinkerTags.Items.MELEE_WEAPON) ? "strength" : null;
             case EQUIP -> armor ? "constitution" : null;
             case USE -> {
@@ -250,12 +246,14 @@ public final class TConstructRequirementResolver implements StackLockProvider {
 
     /** The sentence the player is shown, naming the tool and everything it asks for. */
     private static Component reason(ItemStack stack, Map<String, Integer> required) {
-        StringBuilder text = new StringBuilder();
+        var text = Component.empty();
         for (Map.Entry<String, Integer> entry : required.entrySet()) {
-            if (text.length() > 0) text.append(", ");
-            text.append(entry.getKey()).append(' ').append(entry.getValue());
+            if (!text.getSiblings().isEmpty()) text.append(", ");
+            var skill = com.otectus.runicskills.registry.RegistrySkills.getSkill(entry.getKey());
+            text.append(skill == null ? Component.literal(entry.getKey()) : Component.translatable(skill.getKey()));
+            text.append(" " + entry.getValue());
         }
         return Component.translatable("message.runicskills.tconstruct.material_locked",
-                stack.getHoverName(), text.toString());
+                stack.getHoverName(), text);
     }
 }

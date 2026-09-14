@@ -36,7 +36,7 @@ import java.util.Map;
 
 /**
  * Powers panel. Three tier columns (Marks / Seals / Crown), each listing every
- * registered Power with an Equip/Unequip button and a tooltip description on hover. Triggered
+ * registered Power with a square +/- toggle and a tooltip description on hover. Triggered
  * by the {@code key.runicskills.open_powers} keybind, which ships <b>unbound</b>: no default key
  * can be chosen safely without testing it against a real pack's control scheme, and a silent
  * clash is worse than an unassigned key. Players bind it under Options → Controls. This javadoc
@@ -63,8 +63,8 @@ public class PowersScreen extends Screen {
     private static final int LIST_ROW_HEIGHT = 22;
     private static final int LIST_BOTTOM_PAD = FOOTER_BAND_HEIGHT + 6;
     private static final int COL_PAD = 6;
-    private static final int BTN_W = 56;
     private static final int BTN_H = 16;
+    private static final int BTN_W = BTN_H;
 
     private final int[] scroll = new int[]{0, 0, 0}; // one scroll offset per column
     private List<Power> markPool;
@@ -147,14 +147,15 @@ public class PowersScreen extends Screen {
             int rowY = LIST_TOP_Y + i * LIST_ROW_HEIGHT;
             boolean equipped = cap.isPowerEquipped(p);
             boolean disabled = RegistryPowers.isDisabled(p);
-            Component label = equipped
+            Component action = equipped
                     ? Component.translatable("screen.runicskills.powers.unequip")
                     : Component.translatable("screen.runicskills.powers.equip");
-            Button btn = Button.builder(label, b -> {
+            Button btn = Button.builder(Component.literal(equipped ? "-" : "+"), b -> {
                         SkillCapability current = SkillCapability.getLocal();
                         if (current != null) sendEquip(p, !current.isPowerEquipped(p));
                     })
                     .bounds(x + colWidth - BTN_W - 2, rowY + 2, BTN_W, BTN_H)
+                    .createNarration(supplier -> Component.translatable("gui.narrate.button", action))
                     .build();
             btn.active = !disabled || equipped; // can always unequip even a disabled Power
             this.addRenderableWidget(btn);

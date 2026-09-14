@@ -9,8 +9,8 @@ Java. Parsed and enforced by `TConstructRulesLoader` / `PackRuleIndex` / `PackRu
 
 No default rule ships with the mod — `src/main/resources/data/runicskills` has no
 `tconstruct_rules` folder. Everything in this document only takes effect once a pack adds files of
-its own, and the material-tier lock this schema can replace is itself opt-in: it only applies at
-all when `enableTConstructLockItems` is turned on (default `false`).
+its own. The material-tier lock this schema can replace is enabled by default and can be disabled
+with `enableTConstructLockItems: false`; explicit pack rules still apply when it is disabled.
 
 ## Where files go
 
@@ -18,7 +18,7 @@ all when `enableTConstructLockItems` is turned on (default `false`).
 data/<namespace>/runicskills/tconstruct_rules/*.json
 ```
 
-The loader is a plain `SimpleJsonResourceReloadListener` registered on every install, Tinkers' or
+The loader uses the shared `AtomicJsonReloadListener` registered on every install, Tinkers' or
 not — it never names a `slimeknights` class, so it loads and validates identically without that mod
 (`TConstructRulesLoader.java:62-67`). It is registered unconditionally in the `AddReloadListenerEvent`
 handler (`registry/events/PlayerLifecycleHandler.java:226`).
@@ -65,7 +65,8 @@ Every populated selector is ANDed together; within one selector, any one listed 
 
 | Limit | Value | Source |
 |---|---|---|
-| Document size | 256 KiB (measured on the re-serialised JSON) | `TConstructRulesLoader.MAX_DOCUMENT_CHARS` |
+| Document size | 256 KiB of UTF-8 source bytes, including whitespace, bounded before parsing | `TConstructRulesLoader.MAX_DOCUMENT_BYTES` |
+| JSON files per reload | 2,048, across every namespace together | `AtomicJsonReloadListener` constructor bound |
 | Rules per reload | 2,048, across every namespace together | `TConstructRulesLoader.MAX_RULES_PER_RELOAD` |
 | Values per selector array or per `requirements` map | 64 | `TConstructRulesLoader.MAX_SELECTOR_VALUES` |
 
@@ -76,11 +77,15 @@ Every populated selector is ANDed together; within one selector, any one listed 
 - **A rule for an absent mod is skipped; a rule naming something unknown while its mod *is*
   installed is invalid.** `requires_mods` at the document level and an item id under `items` both
   follow this split (`TConstructRulesLoader.java:252-256`, `:326-335`).
-- **Duplicate id at the same priority is rejected — both copies, not one.** Deciding by filesystem
-  order is explicitly what this refuses (`TConstructRulesLoader.parse`, `:205-213`).
-- **Any unreadable file refuses the whole reload**, and the previously loaded rules stay in force —
-  *unless* there is no previous ruleset to keep, in which case the files that did parse are
-  installed and the failure is only reported (`TConstructRulesLoader.install`, `:132-146`).
+- **Duplicate id at the highest priority is rejected — both copies, not one.** A unique higher
+  priority entry wins regardless of conflicting lower-priority duplicates (`TConstructRulesLoader.parse`).
+- **Preparation failure refuses the whole reload.** Unreadable, malformed, empty/null or oversized
+  JSON, and excessive file counts, retain the previous snapshot even when that snapshot is empty
+  (`AtomicJsonReloadListener`). No partial set reaches schema validation.
+- **Schema failure retains a nonempty previous ruleset.** The existing `TConstructRulesLoader.install`
+  compatibility exception remains: when the previous index is empty, individually valid schema
+  documents may be installed alongside logged schema failures. This exception does not apply to
+  preparation failures above.
 
 ## Precedence
 
@@ -113,8 +118,8 @@ lookup never observes a half-loaded ruleset. It carries a `revision` that increm
 successful install and never rolls back, so a stale profile or preview computed against an old
 ruleset can tell it is stale (`common/rules/PackRuleIndex.java:14-31`).
 
-**Equal-priority disagreement produces no verdict**, not a filesystem-order pick. If two loaded
-rules of the same priority both match a lookup and disagree, neither applies; the conflict is
+**Equal-priority disagreement produces no verdict**, not a filesystem-order pick. Every matching
+rule at the highest priority must agree. If any disagree, none applies; the conflict is
 logged once, naming both ids, and the automatic profile (or "no reward") is used instead
 (`PackRuleIndex.winner`, `:148-167`).
 

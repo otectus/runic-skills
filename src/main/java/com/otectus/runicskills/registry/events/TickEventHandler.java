@@ -32,11 +32,11 @@ public class TickEventHandler {
             player.getCapability(RegistryCapabilities.SKILL).ifPresent(provider -> {
                 ItemStack hand = player.getMainHandItem();
                 ItemStack offHand = player.getOffhandItem();
-                if (!provider.canUseItem(player, hand)) {
+                if (!provider.canUseItem(player, hand, com.otectus.runicskills.integration.lock.LockAction.TAKE)) {
                     player.drop(hand.copy(), false);
                     hand.setCount(0);
                 }
-                if (!provider.canUseItem(player, offHand)) {
+                if (!provider.canUseItem(player, offHand, com.otectus.runicskills.integration.lock.LockAction.TAKE)) {
                     player.drop(offHand.copy(), false);
                     offHand.setCount(0);
                 }

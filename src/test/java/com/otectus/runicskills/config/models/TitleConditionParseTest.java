@@ -34,12 +34,26 @@ class TitleConditionParseTest {
     @Test
     void rejectsWrongSegmentCount() {
         assertNull(TitleModel.ParsedParts.parse("Skill/mining/GREATER"), "3 segments");
-        assertNull(TitleModel.ParsedParts.parse("Skill/mining/GREATER/10/extra"), "5 segments");
         assertNull(TitleModel.ParsedParts.parse(""), "empty string");
+        assertNull(TitleModel.ParsedParts.parse(null), "null condition");
+        assertNull(TitleModel.ParsedParts.parse("Skill//GREATER/10"), "empty variable");
+        assertNull(TitleModel.ParsedParts.parse("Skill/mining/GREATER/"), "empty expected value");
     }
 
     @Test
     void rejectsUnknownComparator() {
         assertNull(TitleModel.ParsedParts.parse("Skill/mining/BIGGER_THAN/10"));
     }
+
+    @Test
+    void resourcePathsSurviveOnEitherSideOfTheComparator() {
+        var advancement = TitleModel.ParsedParts.parse("Advancement/minecraft:story/mine_stone/equals/true");
+        assertNotNull(advancement);
+        assertEquals("minecraft:story/mine_stone", advancement.variable());
+        assertEquals("true", advancement.expected());
+        var dimension = TitleModel.ParsedParts.parse("Special/dimension/equals/pack:realms/deep");
+        assertNotNull(dimension);
+        assertEquals("pack:realms/deep", dimension.expected());
+    }
+
 }

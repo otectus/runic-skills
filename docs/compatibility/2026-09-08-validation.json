@@ -1,0 +1,244 @@
+{
+  "date": "2026-09-08",
+  "minecraft": "1.20.1",
+  "forge": "47.4.23",
+  "java": "17.0.20",
+  "build_command": "gradlew.bat build tomCompatJar productionValidationJar --offline",
+  "build_success": true,
+  "junit": {
+    "tests": 358,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "static_native_members_checked": 465,
+  "confirmed_missing_members": 0,
+  "unknown_inherited_members": 35,
+  "absent_optional_owner_references": 9,
+  "mixin_references_checked": 104,
+  "mixin_failures": 0,
+  "runtime": [
+    {
+      "world_ready": true,
+      "passed": 4,
+      "failed": 0,
+      "expected_tests": 4,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 172,
+      "log": "build/instance-validation-server/full-pack-final-validation.log",
+      "log_sha256": "182cce7287de69d74dcd4f1aa2ea8199e04440ef3f67847326f7a31ac26aa36e",
+      "test_results": [
+        [
+          "PASS",
+          "latestpack.saintsdragons:moop"
+        ],
+        [
+          "PASS",
+          "latestpack.tide:shooting_starfish"
+        ],
+        [
+          "PASS",
+          "latestpack.removed_silver_recipes"
+        ],
+        [
+          "PASS",
+          "latestpack.native_treasure_and_missing_bob"
+        ]
+      ]
+    },
+    {
+      "world_ready": true,
+      "passed": 40,
+      "failed": 0,
+      "expected_tests": 40,
+      "clean_save": true,
+      "exit_code": 0,
+      "elapsed_seconds": 128,
+      "log": "build/compat-integration-server/latest-integration-validation.log",
+      "log_sha256": "e92061d34a09d26b62cfa05c911e9bdc9d72f28c64d81c57fd7f9a74e00a78b6",
+      "test_results": [
+        [
+          "PASS",
+          "disabledpowerstopsspendingwithoutdeletingtheselection"
+        ],
+        [
+          "PASS",
+          "missingnativecapabilitydoesnotspenddormantpoints"
+        ],
+        [
+          "PASS",
+          "unavailabletidecannotsellmeasuredcast"
+        ],
+        [
+          "PASS",
+          "measuredcastnativedurationandtoggle"
+        ],
+        [
+          "PASS",
+          "integrationdiagnosticpermissions"
+        ],
+        [
+          "PASS",
+          "nativejournalknowledgemilestonesandfavor"
+        ],
+        [
+          "PASS",
+          "nativecatchconservationandrejections"
+        ],
+        [
+          "PASS",
+          "keepernativesequenceandindependentcharges"
+        ],
+        [
+          "PASS",
+          "catchperksareunavailablewithouttheirnativebridge"
+        ],
+        [
+          "PASS",
+          "manywatersnativecatchpreparationandsessiondebt"
+        ],
+        [
+          "PASS",
+          "nativewindowandtwomediumcharges"
+        ],
+        [
+          "PASS",
+          "stillwaternativechargeandcooldown"
+        ],
+        [
+          "PASS",
+          "unbrokenthreadnativesequence"
+        ],
+        [
+          "PASS",
+          "baitkeepernativeconsumption"
+        ],
+        [
+          "PASS",
+          "guardcancellationnesteddamageandcallbackgrants"
+        ],
+        [
+          "PASS",
+          "guardnativedamageordering"
+        ],
+        [
+          "PASS",
+          "guardshieldlifecycleandwirebounds"
+        ],
+        [
+          "PASS",
+          "resonantreadingneedsitsnativecapability"
+        ],
+        [
+          "PASS",
+          "nativeswordsinspectionpreservesstate"
+        ],
+        [
+          "PASS",
+          "nativepatienttemperonepointandactionboundaries"
+        ],
+        [
+          "PASS",
+          "patienttemperrequiresnativewearcapability"
+        ],
+        [
+          "PASS",
+          "nativeaquaattributescalingandlifecycle"
+        ],
+        [
+          "PASS",
+          "aquarequirescompanionandpreservesdormantrank"
+        ],
+        [
+          "PASS",
+          "activationrewardsrequirenativecapabilities"
+        ],
+        [
+          "PASS",
+          "nativeownerreturnacceptanceandfollowup"
+        ],
+        [
+          "PASS",
+          "nativemimicrycontinuityandshieldresults"
+        ],
+        [
+          "PASS",
+          "nativechargedprimaryandcounterrewards"
+        ],
+        [
+          "PASS",
+          "nativerelicrepairpreviewandpaidextraction"
+        ],
+        [
+          "PASS",
+          "nativeweaponabilitypaymentandawakening"
+        ],
+        [
+          "PASS",
+          "nativemountedlancetravelandownedbonuses"
+        ],
+        [
+          "PASS",
+          "weaponrewardsrequirenativecapabilities"
+        ],
+        [
+          "PASS",
+          "nativegemsuccessrejectionandresonance"
+        ],
+        [
+          "PASS",
+          "nativelegalreachanddistincthits"
+        ],
+        [
+          "PASS",
+          "nativepaidsummonownershipandsinglerecipient"
+        ],
+        [
+          "PASS",
+          "nativecounterspellcancellationandsuccess"
+        ],
+        [
+          "PASS",
+          "nativepaidarmorpacketandaquafollowup"
+        ],
+        [
+          "PASS",
+          "nativepaidaquarotationandfreecastexclusion"
+        ],
+        [
+          "PASS",
+          "nativeaquaprojectilebudgetandrelicfollowup"
+        ],
+        [
+          "PASS",
+          "paidcastrewardsrequirecompanion"
+        ],
+        [
+          "PASS",
+          "nativetalentslotandpaidcast"
+        ]
+      ]
+    }
+  ],
+  "installed_artifacts": [
+    {
+      "file": "runicskills-2.1.2.jar",
+      "sha256": "024b8559267d54e45318b536c2f5dec8557436a148ea550efd6382d8bb9620ac"
+    },
+    {
+      "file": "runicskills-tom-compat-2.1.2.jar",
+      "sha256": "ba260b30b4c56c4aae2db5f5928d6b9204f68781ef977c312624d0d891e9e290"
+    },
+    {
+      "file": "bielgg_spells-1.4-hotfix.jar",
+      "sha256": "74997b84e6da5f8fc4d0fbf7eec60b91eab09895c254e48a68be59ffff9a1984"
+    }
+  ],
+  "backup_relative_to_instance": "runicskills-backups/2026-09-08_16-40-36",
+  "original_world_saves_modified": false,
+  "requested_memory_override_mib": 8192,
+  "memory_override_persisted": false,
+  "observed_effective_client_heap_mib": 11648,
+  "client_world_load_verified": false
+}

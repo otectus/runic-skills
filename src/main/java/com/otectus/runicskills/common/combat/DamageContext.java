@@ -58,15 +58,15 @@ import java.util.function.BiConsumer;
  *       spawn itself is gated on {@link #mayEmitSecondary()}</td><td>no</td><td>no</td></tr>
  *   <tr><td>WeaponCasterPowerHandler</td><td>Spell Parry reflect</td>
  *       <td>{@code WEAPON_CASTER_REFLECT}</td><td>no</td><td>no</td></tr>
- *   <tr><td>VanillaPowerEventDispatcher</td><td>Arcanist's Barrage echo</td><td>{@code POWER_ECHO}</td>
- *       <td>no</td><td>no</td></tr>
+ *   <tr><td>VanillaPowerEventDispatcher</td><td>Arcanist's Barrage echo share</td><td>part of the
+ *       triggering impact; no secondary hurt call</td><td>once</td><td>no</td></tr>
  *   <tr><td>SummonPowerHandler</td><td>Lingering Binding burst</td><td>{@code SUMMON_BURST}</td>
  *       <td>no</td><td>no</td></tr>
  *   <tr><td>ChannelPowerHandler</td><td>Harmonic Resonance splash</td><td>{@code CHANNEL_SPLASH}</td>
  *       <td>no</td><td>no</td></tr>
  *   <tr><td>IronsSpellbooksPowerEventDispatcher</td><td>The Heart's Toll HP cost (on the caster)</td>
  *       <td>{@code SPELL_EFFECT}</td><td>no</td><td>no</td></tr>
- *   <tr><td>IronsSpellbooksPowerEventDispatcher</td><td>Arcanist's Barrage echo, The Long Note
+ *   <tr><td>IronsSpellbooksPowerEventDispatcher</td><td>The Long Note
  *       chain, Crackle Arc chain, Herald of Dawn smite, Thunder Lord strike, Pyroclasm
  *       detonation</td><td>{@code SPELL_EFFECT}</td><td>no</td><td>no</td></tr>
  *   <tr><td>IronsSpellbooksSchoolPowerDispatcher</td><td>detonation splash, Heat Haze pulse,

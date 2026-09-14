@@ -165,15 +165,17 @@ public class HandlerCommonConfig {
     @Clamp(min = 0, max = 35)
     public int tideCarefulLandingPercent = 10;
     // 2.1.1: flat fields use the existing atomic server snapshot and /skillsreload.
-    // Compatibility defaults preserve existing worlds: no automatic new locks.
+    // New configurations enable equipment progression; explicit saved opt-outs are preserved.
     @SerialEntry(comment = "Four-mod integration mode: off, auto, observe. Unknown values disable new effects.")
     @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
     public String simplySwordsIntegrationMode = "auto";
 
-    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
-    public boolean simplySwordsAutomaticEquipmentGates = false;
+    @SerialEntry(comment = "Enable generated skill requirements for finished equipment. Enabled by default; disable to opt out without disabling perks.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean simplySwordsAutomaticEquipmentGates = true;
 
-    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    @SerialEntry(comment = "Reserved native ability gate switch; no additional native ability restrictions are implemented.")
     public boolean simplySwordsNativeAbilityGates = false;
 
     @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
@@ -186,10 +188,12 @@ public class HandlerCommonConfig {
     @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
     public String simplyMoreIntegrationMode = "auto";
 
-    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
-    public boolean simplyMoreAutomaticEquipmentGates = false;
+    @SerialEntry(comment = "Enable generated skill requirements for finished equipment. Enabled by default; disable to opt out without disabling perks.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean simplyMoreAutomaticEquipmentGates = true;
 
-    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    @SerialEntry(comment = "Reserved native ability gate switch; no additional native ability restrictions are implemented.")
     public boolean simplyMoreNativeAbilityGates = false;
 
     @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
@@ -202,10 +206,12 @@ public class HandlerCommonConfig {
     @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
     public String tomIntegrationMode = "auto";
 
-    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
-    public boolean tomAutomaticEquipmentGates = false;
+    @SerialEntry(comment = "Enable generated skill requirements for finished equipment. Enabled by default; disable to opt out without disabling perks.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean tomAutomaticEquipmentGates = true;
 
-    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    @SerialEntry(comment = "Reserved native ability gate switch; no additional native ability restrictions are implemented.")
     public boolean tomNativeAbilityGates = false;
 
     @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
@@ -218,10 +224,12 @@ public class HandlerCommonConfig {
     @com.otectus.runicskills.config.storage.StringChoices(value = {"off", "auto", "observe"}, fallback = "off")
     public String tideIntegrationMode = "auto";
 
-    @SerialEntry(comment = "Requests AutomaticEquipmentGates only when the native capability is verified.")
-    public boolean tideAutomaticEquipmentGates = false;
+    @SerialEntry(comment = "Enable generated skill requirements for finished equipment. Enabled by default; disable to opt out without disabling perks.")
+    @AutoGen(category = "common", group = "integrations")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean tideAutomaticEquipmentGates = true;
 
-    @SerialEntry(comment = "Requests NativeAbilityGates only when the native capability is verified.")
+    @SerialEntry(comment = "Reserved native ability gate switch; no additional native ability restrictions are implemented.")
     public boolean tideNativeAbilityGates = false;
 
     @SerialEntry(comment = "Requests Perks only when the native capability is verified.")
@@ -278,18 +286,50 @@ public class HandlerCommonConfig {
     @SerialEntry(comment = "DEPRECATED and ignored since 2.0.0. Titles are no longer written to a player's custom name at all; they are composed as a name prefix, controlled by displayTitlesAsPrefix. Kept so existing config files still parse; it will be removed in a future major.")
     public boolean titlesUseCustomName = true;
 
+    @SerialEntry(comment = "Enable Pack Mule: three Strength ranks allow ordinary 64-stack items to reach 128, 192 and 256 in the owner's inventory. Existing extended counts remain readable when disabled.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enablePackMule = true;
+    @SerialEntry(comment = "Pack Mule rank I reference Strength requirement, scaled from cap 32.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 1, max = 32)
+    @Clamp(min = 1, max = 32)
+    public int packMuleRank1RequiredLevel = 8;
+    @SerialEntry(comment = "Pack Mule rank II reference Strength requirement, scaled from cap 32.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 1, max = 32)
+    @Clamp(min = 1, max = 32)
+    public int packMuleRank2RequiredLevel = 16;
+    @SerialEntry(comment = "Pack Mule rank III reference Strength requirement, scaled from cap 32.")
+    @AutoGen(category = "common", group = "general")
+    @IntField(min = 1, max = 32)
+    @Clamp(min = 1, max = 32)
+    public int packMuleRank3RequiredLevel = 24;
+    @SerialEntry(comment = "Items excluded from Pack Mule, as namespace:item or #namespace:tag. Stateful storage, damageable and non-64-stack items are always excluded.")
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> packMuleExclusions = new java.util.ArrayList<>();
+
     // General options
     @SerialEntry(comment = "Skills Max Level")
-    @AutoGen(category = "common", group = "general")
     @IntField(min = 2, max = 1000)
     @Clamp(min = 2, max = 1000)
     public int skillMaxLevel = 32;
 
-    @SerialEntry(comment = "Global max level, the global level is calculated summing all skills level, so if this is set to 32 players will be able to only maximize 1 perk.")
-    @AutoGen(category = "common", group = "general")
+    @SerialEntry(comment = "Custom global level budget: sum of all skill levels, including starting levels. Ten skills at 32 require 320 total; the default 256 encourages specialization. Stored even in automatic mode.")
     @IntField(min = 32, max = 99999)
     @Clamp(min = 32, max = 99999)
     public int playersMaxGlobalLevel = 256;
+
+    @SerialEntry(comment = "custom uses your stored global budget; sum_of_skill_caps allows every registered skill to reach the per-skill maximum automatically.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"custom", "sum_of_skill_caps"}, fallback = "custom")
+    @dev.isxander.yacl3.config.v2.api.autogen.StringField
+    public String globalLevelCapMode = "custom";
+
+    @SerialEntry(comment = "Scale generated legacy item requirements relative to the per-skill cap, using 32 as reference. Manual levels stay literal; native reference profiles are never scaled twice.")
+    @AutoGen(category = "common", group = "general")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean scaleGeneratedLockRequirements = false;
 
     @SerialEntry(comment = "First skills level cost")
     @AutoGen(category = "common", group = "general")
@@ -546,10 +586,10 @@ public class HandlerCommonConfig {
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
     public boolean enableTConstructPowers = true;
 
-    @SerialEntry(comment = "Should Tinker's Construct tools carry automatic skill requirements derived from their material tier? OFF by default and deliberately: turning it on in an existing world can lock players out of equipment they already own and rely on. Explicit item locks are enforced either way.")
+    @SerialEntry(comment = "Enable automatic material-tier skill requirements for Tinkers' Construct and addon equipment, including jewelry. Enabled by default; disable to remove generated requirements. Explicit item locks and pack rules are enforced either way.")
     @AutoGen(category = "common", group = "integrations")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)
-    public boolean enableTConstructLockItems = false;
+    public boolean enableTConstructLockItems = true;
 
     @SerialEntry(comment = "Master toggle for the TCIntegrations add-on layer. When false, Mana Polisher, Source Tempering, Clockwork Alternation and Soulsteel Resolve are inert and the adapter is not loaded. Each of its four effects also needs the companion mod (Botania, Ars Nouveau, Create, Malum) that TCIntegrations integrates with; the compatibility diagnostic names which are missing.")
     @AutoGen(category = "common", group = "integrations")

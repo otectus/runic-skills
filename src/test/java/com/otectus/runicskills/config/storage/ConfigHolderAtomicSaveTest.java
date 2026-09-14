@@ -38,7 +38,7 @@ class ConfigHolderAtomicSaveTest {
         h.save();
 
         assertTrue(Files.exists(path));
-        assertFalse(Files.exists(dir.resolve("runicskills.sample.json5.tmp")),
+        assertFalse(Files.exists(dir.resolve("runicskills.sample.json5.runicskills.tmp")),
                 "temp file must be moved into place, not left as a sibling");
         assertEquals(9, holder(path).instance().count);
     }
@@ -51,15 +51,15 @@ class ConfigHolderAtomicSaveTest {
         h.save();
         String before = Files.readString(path, StandardCharsets.UTF_8);
 
-        // Make the directory unwritable so the temp-file write fails. The live file must be
-        // untouched — the old behavior would have truncated it before failing.
-        boolean readOnly = dir.toFile().setWritable(false);
-        if (!readOnly) return; // e.g. running as root — cannot simulate the failure, skip
+        // A directory at the exact temporary-file path makes opening that file fail
+        // on Windows and on privileged CI, where changing permission bits is unreliable.
+        Path temporary = path.resolveSibling(path.getFileName() + ".runicskills.tmp");
+        Files.createDirectory(temporary);
         try {
             h.instance().count = 99;
             h.save(); // logs a WARN, must not corrupt the existing file
         } finally {
-            assertTrue(dir.toFile().setWritable(true), "test cleanup: restore directory permissions");
+            Files.deleteIfExists(temporary);
         }
 
         assertEquals(before, Files.readString(path, StandardCharsets.UTF_8),

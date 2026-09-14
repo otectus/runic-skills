@@ -636,6 +636,56 @@ public class TcArtificePowersGameTest {
         helper.succeed();
     }
 
+    /** Datapacks can cap Many Hands at the owner plus one ally; the extra ally gets no award. */
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID, batch = WORKSHOP_BATCH)
+    public static void manyHandsHonorsItsContributorOverride(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos controller = melter(helper);
+        ServerPlayer owner = TinkerFixtures.onlinePlayer(helper, "tc_limit_owner");
+        ServerPlayer first = TinkerFixtures.onlinePlayer(helper, "tc_limit_first");
+        ServerPlayer second = TinkerFixtures.onlinePlayer(helper, "tc_limit_second");
+        Power power = power(TConstructPowers.MANY_HANDS);
+        java.util.Map<net.minecraft.resources.ResourceLocation, com.otectus.runicskills.registry.powers.PowerOverrides> previous =
+                new java.util.HashMap<>();
+        for (var override : com.otectus.runicskills.registry.powers.PowerOverridesManager.all()) {
+            previous.put(override.id(), override);
+        }
+        try {
+            for (double limit : new double[] {-100, 2, 100}) {
+                var override = new com.otectus.runicskills.registry.powers.PowerOverrides(power.key,
+                        Integer.MIN_VALUE, Integer.MIN_VALUE, java.util.Map.of("max_contributors", limit));
+                com.otectus.runicskills.registry.powers.PowerOverridesManager.replaceAll(java.util.Map.of(power.key, override));
+                if (TConstructPowers.contributorLimit(power) != (limit > 4 ? 4 : 2)) {
+                    throw new GameTestAssertException("Many Hands contributor limit was not bounded to 2..4");
+                }
+            }
+            var override = new com.otectus.runicskills.registry.powers.PowerOverrides(power.key,
+                    Integer.MIN_VALUE, Integer.MIN_VALUE, java.util.Map.of("max_contributors", 2.0));
+            com.otectus.runicskills.registry.powers.PowerOverridesManager.replaceAll(java.util.Map.of(power.key, override));
+            setPosition(owner, Vec3.atCenterOf(controller));
+            setPosition(first, Vec3.atCenterOf(controller));
+            setPosition(second, Vec3.atCenterOf(controller));
+            TinkerFixtures.equipPower(owner, RegistryPowers.TC_MANY_HANDS);
+            team(level, owner, first);
+            team(level, owner, second);
+            WorkshopFocusService.focus(owner, controller, 0L);
+            TConstructPowerDispatcher.onCastCompleted(level, controller, first);
+            TConstructPowerDispatcher.onCastCompleted(level, controller, second);
+            TConstructPowerDispatcher.onCastCompleted(level, controller, owner);
+            TinkerStationBlockEntity station = TinkerFixtures.station(helper, STATION, 1);
+            if (TConstructPowerDispatcher.repairBonusShare(first, damagedTool(), station) <= 0
+                    || TConstructPowerDispatcher.repairBonusShare(second, damagedTool(), station) != 0) {
+                throw new GameTestAssertException("Many Hands ignored its two-contributor limit");
+            }
+        } finally {
+            com.otectus.runicskills.registry.powers.PowerOverridesManager.replaceAll(previous);
+            TinkerFixtures.logOut(owner);
+            TinkerFixtures.logOut(first);
+            TinkerFixtures.logOut(second);
+        }
+        helper.succeed();
+    }
+
     // -- helpers -------------------------------------------------------------------------------
 
     @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)

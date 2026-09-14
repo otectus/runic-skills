@@ -1,6 +1,8 @@
 # Runic Skills documentation
 
-Current development: [2.1.1 four-mod implementation and remaining acceptance gates](FOUR_MOD_INTEGRATION_2.1.1.md).
+Current development: [2.2.0 implementation and validation](IMPLEMENTATION_2.2.0.md),
+[upgrade and removal instructions](MIGRATING_TO_2.2.0.md), and [progression audit](PROGRESSION_AUDIT_2.2.0.md).
+The [2.1.2 working-tree audit](AUDIT_RESULTS_2026_09.md) remains a historical baseline.
 
 Which document is current, which is a historical record, and where each kind of question is
 answered. This index exists because thirteen markdown files used to sit at the repository root with
@@ -13,14 +15,16 @@ releases behind — and a reader had no way to tell which described the mod as i
 | --- | --- |
 | [`../README.md`](../README.md) | Install it, build it, configure it, what it integrates with |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | What changed, per release |
+| [`INSTANCE_COMPATIBILITY_2026_09_08.md`](INSTANCE_COMPATIBILITY_2026_09_08.md) | Runic Skills Tests loading fixes, latest-version review of all 127 original jars, installed profile and remaining upstream compatibility work |
 | [`STABILIZATION_2.1.0.md`](STABILIZATION_2.1.0.md) | Stabilization changes, save/protocol compatibility, executed validation and limits |
 | [`../CLAUDE.md`](../CLAUDE.md) | Orientation for someone (or something) editing the code |
 | [`CONTENT_STATUS.md`](CONTENT_STATUS.md) | **What the mod admits it is not doing** — inert and approximate content, and how that is enforced |
 | [`PERK_AUDIT.md`](PERK_AUDIT.md) | Perk effect coverage: the closed backlog, and why seventeen perks were removed |
-| [`CONTENT_TRACE_2.1.0.md`](CONTENT_TRACE_2.1.0.md) | Every Skill, Perk, Passive and Power: registration, descriptions, default requirements, effect consumers and shared synchronization/persistence routes; source-review limits and behavioral regressions |
+| [`CONTENT_TRACE.md`](CONTENT_TRACE.md) | Current inventory of all 10 Skills, 507 Perks, 38 Passives, 111 Powers and owned attributes: definitions, descriptions, defaults and line-linked consumers. `CONTENT_TRACE_2.1.0.md` is the historical pre-four-mod snapshot |
 | [`API_EVENTS.md`](API_EVENTS.md) | The public Forge event surface for addons and KubeJS |
 | [`KUBEJS.md`](KUBEJS.md) | KubeJS server-side progression events — gate skill level-ups, including advancement-based rules (current) |
 | [`INTEGRATION_MATRIX.md`](INTEGRATION_MATRIX.md) | Which mods get item-lock generation, and how it is wired |
+| [`PROGRESSION_GATING.md`](PROGRESSION_GATING.md) | Default-on equipment progression, Tinkers/addon tiers, per-mod opt-outs and persistent config saves |
 | [`RECYCLING_RULES.md`](RECYCLING_RULES.md) | Datapack format for grindstone salvage rules: JSON schema, shipped defaults, reload behaviour |
 | [`TCONSTRUCT_PACK_RULES.md`](TCONSTRUCT_PACK_RULES.md) | Datapack format for `tconstruct_rules`: pack-authored use requirements and craft reward policies on Tinkers' Construct tools, precedence, limits, reload behaviour |
 | [`MIGRATING_TO_2.0.7.md`](MIGRATING_TO_2.0.7.md) | What changes for a server admin or pack author upgrading from 2.0.6: salvage, crafting rewards, protocol, config, and save compatibility |

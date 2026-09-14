@@ -1,0 +1,10 @@
+{
+  "branch": "master",
+  "commit": "ee17728ea6eacb56d2651d825c9c656fb6d729cb",
+  "version": "2.1.2",
+  "timestamp": "2026-09-14T16:39:05.829247+00:00",
+  "source_archive_sha256": "4b8522681ce9c4829a2d0aeeb76a2033560d930c91b435a3d78f723d12db0391",
+  "status_sha256": "859a16f4082a36ffde423651ddb8658c0deaf47d2c830efa5376714c716dea3f",
+  "source_archive_path": "/tmp/runicskills-220/baseline-source.tar.gz",
+  "preexisting_changes_preserved": true
+}

@@ -52,13 +52,29 @@ and the only remedy was disabling the mod's locks entirely. See `LockGenTest`.
 | `more_vanilla` | curated |
 | `jewelcraft` | curated |
 
-## Standalone providers (3)
+## Standalone providers (7 registrations)
 
 | Provider | Namespace | Why standalone |
 | --- | --- | --- |
 | `IronsSpellbooksLockProvider` | `irons_spellbooks` | registry scan (books/staves/scrolls/armor/rings/orbs); no ISS API imports, so the registry can hold it when ISS is absent |
 | `StarcatcherLockProvider` | `starcatcher` | rods and reusable tackle; ordinary bait and catches stay unlocked |
 | `OvergearedLockProvider` | `overgeared` | hammers, tongs, blueprints and forged gear; crafting components stay unlocked |
+| `RecentEquipmentLockProvider(SIMPLY_SWORDS)` | `simplyswords` | finished weapon classes, including named relics |
+| `RecentEquipmentLockProvider(SIMPLY_MORE)` | `simplymore` | finished weapon classes, including named relics |
+| `RecentEquipmentLockProvider(TOM)` | `traveloptics` | weapons, armor and complete spellcasting implements |
+| `RecentEquipmentLockProvider(TIDE)` | `tide` | native fishing rods; bait, fish and materials stay unlocked |
+
+The recent providers are registered once per `IntegrationModule` and default on. Each honors
+its `AutomaticEquipmentGates` flag, integration mode and discovered mod/item opt-outs. Their
+reference levels scale to the configured skill cap; see [progression settings](PROGRESSION_GATING.md).
+
+## Stack-aware providers
+
+`TConstructBootstrap` registers `TConstructRequirementResolver` when Tinkers is enabled.
+It reads actual material tiers for every native modifiable tool, including addon weapons,
+armor and Jewelry, regardless of namespace. `enableTConstructLockItems` defaults to `true`;
+explicit item-ID and datapack requirements retain their documented precedence. This provider
+does not generate static item-ID entries because every material shares the same equipment ID.
 
 ## Discovered namespaces (24)
 

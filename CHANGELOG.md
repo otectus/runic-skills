@@ -1,5 +1,70 @@
 # Changelog
 
+## [2.2.0] - 2026-09-14 — Progression and Pack Mule (unpublished)
+
+- Add Pack Mule, a three-rank Strength perk for ordinary inventory stacks of 128, 192 and 256. Containers and special items retain their own limits.
+- Fix Temporal Wisdom, Blessing of Luck and Hearty Feast recursively reapplying effects. Their duration bonuses combine once; Hearty Feast extends beneficial food effects only.
+- Preserve deliberate Spartan starter exemptions and server-resolved item requirements. Explicit `Allow` rules override automatic item gates.
+- Save configuration through a checked transaction, preserve external edits and show failures in the editor. Add automatic global caps and progression presets.
+- Preserve existing Tinkers opt-outs, retain known requirements when a tool includes unknown materials, and exempt crafting from automatic material use locks.
+- Protocol **16** requires matching client/server builds. Normalize extended stacks before removing or downgrading Runic Skills.
+
+Validation and migration details: [2.2.0 implementation](docs/IMPLEMENTATION_2.2.0.md).
+
+## [2.1.2] - 2026-09-08 — Gameplay and customization audit (unpublished)
+
+Protocol **15** adds authoritative skill artwork snapshots. Update both client and server;
+saved skill/perk/passive/Power identifiers and paid Tinkers upgrades remain intact.
+See [migration notes](docs/MIGRATING_TO_2.1.2.md), [the complete content trace](docs/CONTENT_TRACE.md)
+and [validation/results](docs/AUDIT_RESULTS_2026_09.md).
+
+- Enable equipment progression by default for Tinkers' Construct and its native addons,
+  Simply Swords, Simply More, T.O. Magic and Tide, with individual config opt-outs.
+  Known Tinkers material tiers above 4 now remain gated; actual stack requirements reach
+  right-click, mining, melee, armor and Curios equipment checks. Saved opt-outs are preserved.
+- Fix config-screen saves reverting when reopened. Save through the atomic config holder,
+  retain unknown settings, and refresh/synchronize a local world after saving.
+  See [progression settings and upgrade behavior](docs/PROGRESSION_GATING.md).
+
+- Update the L2 Tabs API mirror and reflection probe to the actual 0.3.3 API embedded in
+  L2Library 2.5.3. Add the verified Iron's Spellbooks 3.16.3 profile to the optional T.O. companion.
+- Restore Angler's Luck treasure rolls for Starcatcher 3.1.4.1 using its native per-fish data API.
+  Migrate two outdated cross-mod fish records and guard three obsolete Galosphere silver recipes
+  that otherwise prevent world data loading. See the
+  [complete instance audit](docs/INSTANCE_COMPATIBILITY_2026_09_08.md) for runtime tests and upstream gaps.
+
+- Close crafting material-refund loops involving reversible compression recipes; preserve
+  ordinary manufacture. Stonecutting bonuses are earned after input consumption, so cycling
+  result previews cannot reroll a free reward. Curse Breaker now actually clears stored book curses.
+- Restore workshop focus expiry, reject stale heartbeats and release dismantled casting
+  associations. Tinkers rule reloads reject oversized sets atomically and resolve duplicate
+  priorities deterministically. Many Hands respects its configured contributor limit.
+- Bound passive bonuses by currently met skill requirements while preserving allocated ranks.
+  Show dormant allocations in tooltips. Saturate XP arithmetic to prevent high-level overflow.
+- Consume Volley Memory setup after each payoff; prevent projectile launch effects from
+  replaying on reload. Folded Space refunds only spent pearls and delivers inventory overflow.
+  Expire Blade Storm promptly and clear transient combat history across player lifecycle changes.
+- Keep three spell-only Crowns unavailable without Iron's Spellbooks while retaining saved IDs.
+- Resolve Arcanist's Barrage through one committed damage pipeline instead of duplicate callbacks
+  and recursive hits swallowed by invulnerability frames. Crimson Tithe heals only from bounded
+  post-mitigation health damage. Trueshot launch aim survives projectile save/reload.
+- Correct Ars Schoolbridge to transfer only earned school power. Unified Arcana now refunds
+  a fraction of mana actually paid, once per paid cast, respecting integration toggles.
+- Harden title IDs, malformed conditions and optional hidden-requirement fields; support normal
+  slash-bearing advancement paths while preserving legacy aliases. Perk group reloads retain
+  working restrictions on invalid/oversized input and reject overflowing or fractional caps.
+- Validate complete JSON reloads before applying perk groups, Tinkers rules or skill artwork;
+  malformed, unreadable, empty/null and oversized files retain the last valid snapshot.
+- Force configuration file contents to storage before replacement; strengthen failed-save
+  regression coverage across Windows and privileged CI.
+- Restore datapack skill artwork on multiplayer clients, with bounded snapshots, deterministic
+  reload behavior and fallback for missing client resources.
+- Refresh progression documentation, current registration/consumer inventories and regression tests.
+- Derive the separate production-validation harness dependency from the build version, so version
+  bumps no longer leave its exact core requirement stale.
+- Include resource-pack metadata in the optional T.O. companion jar, fixing Forge's
+  "failed to load a valid ResourcePackInfo" error when loading its client resources.
+
 ## [2.1.1] - 2026-09-08 — Four-mod integration development
 
 Implemented all **32 perks and 24 Powers** for Simply Swords, Simply More, T.O. and Tide.

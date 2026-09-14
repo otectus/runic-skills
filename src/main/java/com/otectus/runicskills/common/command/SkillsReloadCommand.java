@@ -38,23 +38,8 @@ public class SkillsReloadCommand {
      * the restart-required settings it read but could not apply.
      */
     private static int execute(CommandContext<CommandSourceStack> command){
-        HandlerSkill.ForceRefresh();
-
-        // Re-sync to every connected client. Without this, the lock-items list
-        // is only refreshed server-side; clients keep their stale cache (which
-        // InteractionEventHandler also consults, since events fire on both sides)
-        // until they relog.
         MinecraftServer server = command.getSource().getServer();
-        if (server != null) {
-            ConfigSyncCP.sendToAllPlayers();
-            for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
-                GameplayConfigCP.sendToPlayer(sp);
-                PerkGroupsSyncCP.sendToPlayer(sp);
-                // Re-apply passive attribute modifiers so disabledPassives changes take effect
-                // immediately without requiring a relog.
-                RegistryAttributes.modifierAttributes(sp);
-            }
-        }
+        reload(server);
 
         int liveServer = GameplayConfigSnapshot.countWithScope(ConfigScope.LIVE_SERVER);
         int players = server == null ? 0 : server.getPlayerList().getPlayers().size();
@@ -70,5 +55,29 @@ public class SkillsReloadCommand {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    /** Shared by the operator command and local-world config editor; call on the server thread. */
+    public static void reload(MinecraftServer server) {
+        HandlerSkill.ForceRefresh();
+
+        // Re-sync to every connected client. Without this, the lock-items list
+        // is only refreshed server-side; clients keep their stale cache (which
+        // InteractionEventHandler also consults, since events fire on both sides)
+        // until they relog.
+        if (server != null) {
+            ConfigSyncCP.sendToAllPlayers();
+            for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
+                com.otectus.runicskills.network.ServerNetworking.sendToPlayer(new com.otectus.runicskills.network.packet.client.IntegrationStatusCP(), sp);
+                PerkGroupsSyncCP.sendToPlayer(sp);
+                // Re-apply passive attribute modifiers so disabledPassives changes take effect
+                // immediately without requiring a relog.
+                RegistryAttributes.modifierAttributes(sp);
+                com.otectus.runicskills.common.inventory.InventoryReconciliation.restore(sp);
+                com.otectus.runicskills.common.inventory.InventoryReconciliation.normalize(sp, false);
+                sp.containerMenu.broadcastFullState();
+            }
+        }
+
     }
 }

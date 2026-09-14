@@ -86,6 +86,12 @@ public final class PerkTooltip {
                 }
             }
         }
+        if (perk == RegistryPerks.PACK_MULE.get()) {
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            int activeRank = com.otectus.runicskills.common.inventory.PlayerStackPolicy.rank(player);
+            list.add(Component.translatable("tooltip.perk.pack_mule.capacity", 64 * (activeRank + 1),
+                    64 * (Math.min(3, activeRank + 1) + 1)).withStyle(ChatFormatting.GOLD));
+        }
         list.add(Component.empty());
         if (Screen.hasShiftDown()) {
             list.add(Component.empty()

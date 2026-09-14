@@ -491,55 +491,6 @@ public class PerkEffectsHandler {
     }
 
     /**
-     * Blessing of Luck — extends how long the Luck effect lasts.
-     *
-     * <p>Used to add to the LUCK attribute, which raises the *strength* of your luck and does
-     * nothing at all to its duration. Hooked where the effect arrives, so it applies to whatever
-     * granted it — a potion, a beacon, another mod.
-     */
-    @SubscribeEvent
-    public void onLuckApplied(net.minecraftforge.event.entity.living.MobEffectEvent.Added event) {
-        if (!(event.getEntity() instanceof Player player) || player instanceof FakePlayer) return;
-        if (player.level().isClientSide()) return;
-        net.minecraft.world.effect.MobEffectInstance added = event.getEffectInstance();
-        if (added == null || added.getEffect() != MobEffects.LUCK) return;
-        if (!on(RegistryPerks.BLESSING_OF_LUCK, player)) return;
-
-        double extra = cfg().blessingOfLuckPercent / 100.0;
-        if (extra <= 0 || added.isInfiniteDuration()) return;
-        // Re-add rather than mutate: MobEffectInstance's duration is not safely writable from here,
-        // and re-adding with a longer duration is the same path any other source would take.
-        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                MobEffects.LUCK, (int) (added.getDuration() * (1.0 + extra)),
-                added.getAmplifier(), added.isAmbient(), added.isVisible()));
-    }
-
-    /**
-     * Hearty Feast — makes the effects a food grants last longer.
-     *
-     * <p>Used to add saturation, which is a different resource and does nothing for effect
-     * duration. Gated on the effect arriving while an edible item is being finished, which is the
-     * narrow "this came from the food" context rather than the blanket "player is using something"
-     * check the audit criticised elsewhere.
-     */
-    @SubscribeEvent
-    public void onFoodEffectApplied(net.minecraftforge.event.entity.living.MobEffectEvent.Added event) {
-        if (!(event.getEntity() instanceof Player player) || player instanceof FakePlayer) return;
-        if (player.level().isClientSide()) return;
-        if (!player.isUsingItem() || !player.getUseItem().isEdible()) return;
-        net.minecraft.world.effect.MobEffectInstance added = event.getEffectInstance();
-        if (added == null || added.isInfiniteDuration()) return;
-        if (added.getEffect() == MobEffects.LUCK) return;   // Blessing of Luck owns that one
-        if (!on(RegistryPerks.HEARTY_FEAST, player)) return;
-
-        double extra = cfg().heartyFeastPercent / 100.0;
-        if (extra <= 0) return;
-        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                added.getEffect(), (int) (added.getDuration() * (1.0 + extra)),
-                added.getAmplifier(), added.isAmbient(), added.isVisible()));
-    }
-
-    /**
      * Serendipity — "a chance to find rare items while mining".
      *
      * <p>Was a duplicate of the block just broken, which is what the Fortune-style perks already do

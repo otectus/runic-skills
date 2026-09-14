@@ -7,11 +7,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.equipment.EquipmentRole;
+import com.otectus.runicskills.common.util.AtomicJsonReloadListener;
 import com.otectus.runicskills.integration.lock.LockAction;
 import com.otectus.runicskills.registry.RegistrySkills;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -66,7 +66,7 @@ import java.util.Set;
  * set and a material tier is {@code TConstructPackRuleSource}'s job, on the other side of the
  * integration boundary.
  */
-public class TConstructRulesLoader extends SimpleJsonResourceReloadListener {
+public class TConstructRulesLoader extends AtomicJsonReloadListener {
 
     private static final Gson GSON = new GsonBuilder().setLenient().create();
 
@@ -87,8 +87,8 @@ public class TConstructRulesLoader extends SimpleJsonResourceReloadListener {
             Set.of("definitions", "materials", "roles", "native_material_tiers", "actions",
                     "equipment_provider", "items");
 
-    /** §13.3: 256 KiB per document. Measured on the re-serialised form, which is close enough. */
-    private static final int MAX_DOCUMENT_CHARS = 256 * 1024;
+    /** §13.3: 256 KiB per document, enforced on the input before parsing. */
+    public static final int MAX_DOCUMENT_BYTES = 256 * 1024;
 
     /** §13.3: 2,048 rules per reload, across every namespace together. */
     private static final int MAX_RULES_PER_RELOAD = 2048;
@@ -107,7 +107,7 @@ public class TConstructRulesLoader extends SimpleJsonResourceReloadListener {
             Map.of("mining", EquipmentRole.DIGGER);
 
     public TConstructRulesLoader() {
-        super(GSON, FOLDER);
+        super(GSON, FOLDER, MAX_RULES_PER_RELOAD, MAX_DOCUMENT_BYTES);
     }
 
     @Override
@@ -194,17 +194,22 @@ public class TConstructRulesLoader extends SimpleJsonResourceReloadListener {
                 skippedFiles++;
                 continue;
             }
+            if (parsed.size() > MAX_RULES_PER_RELOAD - total) {
+                // A truncated index can silently remove a pack's equipment locks. Treat the
+                // entire reload as invalid, with no partial index to install on first load.
+                RunicSkills.getLOGGER().warn(
+                        "[Runic Skills] tconstruct rules exceed the {} rule reload limit at {}; "
+                        + "the reload is refused.", MAX_RULES_PER_RELOAD, file.getKey());
+                return new Result(List.of(), failedFiles + 1);
+            }
             for (PackRule rule : parsed) {
-                if (total >= MAX_RULES_PER_RELOAD) {
-                    RunicSkills.getLOGGER().warn(
-                            "[Runic Skills] more than {} tconstruct rules were loaded; the rest of {}"
-                            + " and any later file are ignored.", MAX_RULES_PER_RELOAD, file.getKey());
-                    break;
-                }
                 total++;
                 PackRule existing = byId.get(rule.id());
                 if (existing == null || rule.priority() > existing.priority()) {
                     byId.put(rule.id(), rule);
+                    // Only ties at the winning priority are ambiguous. Otherwise a lower-
+                    // priority duplicate poisons a valid override depending on file order.
+                    rejected.remove(rule.id());
                 } else if (rule.priority() == existing.priority()) {
                     // §13.3 step 4: "Duplicate IDs at an indistinguishable priority are rejected."
                     // Both copies, not one: keeping either would be the filesystem-order behaviour
@@ -230,13 +235,6 @@ public class TConstructRulesLoader extends SimpleJsonResourceReloadListener {
     private static List<PackRule> parseDocument(ResourceLocation file, JsonElement element) {
         if (!(element instanceof JsonObject document)) {
             throw new IllegalArgumentException("expected a JSON object");
-        }
-        // Length of the re-serialised document rather than of the bytes on disk: the reload listener
-        // is handed a parsed tree, and a document large enough to matter is large in both forms. The
-        // bound exists to stop one pathological file, not to police whitespace.
-        if (document.toString().length() > MAX_DOCUMENT_CHARS) {
-            throw new IllegalArgumentException("larger than the " + (MAX_DOCUMENT_CHARS / 1024)
-                    + " KiB limit for one rule document");
         }
         rejectUnknown(document, KNOWN_DOCUMENT_FIELDS, "document");
 

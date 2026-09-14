@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 public class SkillLevelUpSP {
     private final String skill;
+    private static final java.util.Set<java.util.UUID> PURCHASING = new java.util.HashSet<>();
 
     public SkillLevelUpSP(Skill skill) {
         this.skill = skill.getName();
@@ -68,6 +69,8 @@ public class SkillLevelUpSP {
      * below is a rule of the game and belongs with the purchase wherever it is invoked from.
      */
     public static void applyPurchase(ServerPlayer player, Skill skillPlayer) {
+        if (!PURCHASING.add(player.getUUID())) return;
+        try {
         SkillCapability capability = SkillCapability.get(player);
         if (capability == null) return;
 
@@ -90,7 +93,7 @@ public class SkillLevelUpSP {
         // operators explicitly tune with /globallimit. Because the perk budget scales from
         // earned global level, exceeding it also granted extra perk slots — the cap is a
         // balance rule, and a rule only the client enforces is not a rule (RS-008).
-        int globalCap = HandlerCommonConfig.HANDLER.instance().playersMaxGlobalLevel;
+        int globalCap = com.otectus.runicskills.common.progression.LevelCaps.global();
         if (globalCap > 0 && capability.getGlobalLevel() >= globalCap) {
             SyncSkillCapabilityCP.send(player);
             return;
@@ -130,6 +133,7 @@ public class SkillLevelUpSP {
         if (!player.isCreative()) {
             addPlayerXP(player, requiredPoints * -1);
         }
+        } finally { PURCHASING.remove(player.getUUID()); }
     }
 
     /** The player's current spendable XP-point balance (authoritative currency for level-up cost). */
@@ -143,7 +147,7 @@ public class SkillLevelUpSP {
      * never go negative or desync.
      */
     public static void addPlayerXP(Player player, int amount) {
-        int experience = Math.max(0, getPlayerXP(player) + amount);
+        int experience = Math.max(0, ExperienceMath.saturatingAdd(getPlayerXP(player), amount));
         player.totalExperience = experience;
         player.experienceLevel = ExperienceMath.getLevelForExperience(experience);
         player.experienceProgress = ExperienceMath.progressForTotal(experience, player.experienceLevel);
@@ -204,5 +208,4 @@ public class SkillLevelUpSP {
         ServerNetworking.sendToServer(new SkillLevelUpSP(skill));
     }
 }
-
 

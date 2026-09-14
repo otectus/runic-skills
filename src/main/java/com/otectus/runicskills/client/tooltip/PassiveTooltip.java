@@ -17,13 +17,21 @@ public final class PassiveTooltip {
 
     public static List<Component> tooltip(Passive passive) {
         DecimalFormat df = new DecimalFormat("0.##");
-        String valuePerLevel = df.format(passive.getValue() / passive.levelsRequired.length);
-        String valueActualLevel = df.format(passive.getValue() / passive.levelsRequired.length * passive.getLevel());
+        int ranks = passive.levelsRequired.length;
+        int allocated = passive.getLevel();
+        int effective = passive.getEffectiveLevel();
+        double perRank = ranks > 0 ? passive.getValue() / ranks : 0.0;
+        String valuePerLevel = df.format(perRank);
+        String valueActualLevel = df.format(perRank * effective);
         String valueMaxLevel = df.format(passive.getValue());
 
         List<Component> list = new ArrayList<>();
         list.add(Component.translatable("tooltip.passive.title").append(Component.translatable(passive.getKey())).withStyle(ChatFormatting.GREEN));
-        list.add(Component.translatable("tooltip.passive.description.passive_level", passive.getLevel(), passive.levelsRequired.length).withStyle(ChatFormatting.GRAY));
+        list.add(Component.translatable("tooltip.passive.description.passive_level", effective, ranks).withStyle(ChatFormatting.GRAY));
+        if (effective < allocated) {
+            list.add(Component.translatable("tooltip.passive.description.dormant", allocated)
+                    .withStyle(ChatFormatting.YELLOW));
+        }
         list.add(Component.empty());
         if (Screen.hasShiftDown()) {
             list.add(Component.empty()

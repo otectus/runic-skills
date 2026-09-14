@@ -3,6 +3,9 @@ package com.otectus.runicskills.gametest;
 import com.mojang.authlib.GameProfile;
 import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.crafting.CraftOperationContext;
+import com.otectus.runicskills.common.crafting.CraftOperationKind;
+import com.otectus.runicskills.common.crafting.CraftingConversionIndex;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.registry.RegistryCapabilities;
 import com.otectus.runicskills.registry.RegistryPerks;
@@ -22,6 +25,7 @@ import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.RegistryObject;
@@ -137,6 +141,59 @@ public class EfficientCraftingGameTest {
             assertSlot(grid, i, Items.WHEAT, 1, "consumed wheat must be refunded");
         }
         helper.succeed();
+    }
+
+    /** Compression and its reverse consume normally even at a guaranteed refund chance. */
+    @GameTest(template = EMPTY)
+    public static void reversibleCompressionCannotMintMaterials(GameTestHelper helper) {
+        ServerPlayer player = newPlayer(helper, "efficient_crafting_compression");
+        enablePerk(player, RegistryPerks.EFFICIENT_CRAFTING);
+        CraftingConversionIndex.invalidate();
+        CraftingContainer packed = grid(3);
+        for (int slot = 0; slot < 9; slot++) packed.setItem(slot, new ItemStack(Items.IRON_INGOT));
+        assertConversion(player, packed, new ItemStack(Items.IRON_BLOCK));
+        craft(player, packed, new ItemStack(Items.IRON_BLOCK), 100);
+        if (count(packed, Items.IRON_INGOT) != 0) {
+            throw new GameTestAssertException("compression refunded the ingots and created a free iron block");
+        }
+
+        CraftingContainer unpacked = grid(2);
+        unpacked.setItem(0, new ItemStack(Items.IRON_BLOCK));
+        assertConversion(player, unpacked, new ItemStack(Items.IRON_INGOT, 9));
+        craft(player, unpacked, new ItemStack(Items.IRON_INGOT, 9), 100);
+        if (!unpacked.getItem(0).isEmpty()) {
+            throw new GameTestAssertException("decompression refunded the block and created free iron ingots");
+        }
+        helper.succeed();
+    }
+
+    /** Repairing gear must consume the second tool instead of copying both inputs back. */
+    @GameTest(template = EMPTY)
+    public static void repairRecipesDoNotRefundTheirEquipment(GameTestHelper helper) {
+        ServerPlayer player = newPlayer(helper, "efficient_crafting_repair");
+        enablePerk(player, RegistryPerks.EFFICIENT_CRAFTING);
+        CraftingContainer grid = grid(2);
+        ItemStack first = new ItemStack(Items.IRON_PICKAXE);
+        first.setDamageValue(200);
+        ItemStack second = first.copy();
+        grid.setItem(0, first);
+        grid.setItem(1, second);
+        var recipe = player.level().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, grid, player.level()).orElseThrow();
+        craft(player, grid, recipe.assemble(grid, player.level().registryAccess()), 100);
+        if (count(grid, Items.IRON_PICKAXE) != 0) {
+            throw new GameTestAssertException("repair-by-crafting refunded its consumed tools");
+        }
+        helper.succeed();
+    }
+
+    private static void assertConversion(ServerPlayer player, CraftingContainer grid, ItemStack result) {
+        var recipe = player.level().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, grid, player.level()).orElseThrow();
+        if (CraftOperationContext.classifyGrid(CraftOperationContext.gridInputs(grid), recipe, result,
+                player.level()) != CraftOperationKind.CONVERSION) {
+            throw new GameTestAssertException("a reversible recipe was classified as manufacture: " + recipe.getId());
+        }
     }
 
     // -- helpers -----------------------------------------------------------------------------------

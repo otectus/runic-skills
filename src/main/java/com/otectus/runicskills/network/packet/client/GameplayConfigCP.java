@@ -70,12 +70,12 @@ public class GameplayConfigCP {
     }
 
     public static void sendToPlayer(ServerPlayer player) {
-        ServerNetworking.sendToPlayer(new GameplayConfigCP(), player);
+        ConfigSyncCP.sendToPlayer(player);
         ServerNetworking.sendToPlayer(new IntegrationStatusCP(), player);
     }
 
     public static void sendToAllPlayers() {
-        ServerNetworking.sendToAllClients(new GameplayConfigCP());
+        ConfigSyncCP.sendToAllPlayers();
         ServerNetworking.sendToAllClients(new IntegrationStatusCP());
     }
 

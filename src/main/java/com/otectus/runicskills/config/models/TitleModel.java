@@ -14,6 +14,8 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class TitleModel {
     // @SerializedName alternates let plain Gson read both the current Pascal-case format AND
@@ -72,7 +74,7 @@ public class TitleModel {
 
     @Override
     public String toString() {
-        return String.format("%s:%s:%s", TitleId, String.join("=", Conditions), Default);
+        return String.format("%s:%s:%s", TitleId, Conditions == null ? "null" : String.join("=", Conditions), Default);
     }
 
     /**
@@ -82,15 +84,20 @@ public class TitleModel {
      */
     public record ParsedParts(String type, String variable, EComparator comparator, String expected) {
 
+        // Resource-location paths may contain '/'. Split at the named comparator rather
+        // than treating every slash as a delimiter (e.g. minecraft:story/mine_stone).
+        private static final Pattern FORMAT = Pattern.compile(
+                "^([^/]+)/(.+)/(EQUALS|GREATER|LESS|GREATER_OR_EQUAL|LESS_OR_EQUAL)/(.+)$",
+                Pattern.CASE_INSENSITIVE);
+
         @org.jetbrains.annotations.Nullable
         public static ParsedParts parse(String condition) {
-            String[] split = condition.split("/");
-            if (split.length != 4) return null;
-            try {
-                return new ParsedParts(split[0], split[1], EComparator.valueOf(split[2].toUpperCase()), split[3]);
-            } catch (IllegalArgumentException e) {
-                return null;
-            }
+            if (condition == null) return null;
+            var match = FORMAT.matcher(condition);
+            if (!match.matches() || match.group(1).isBlank() || match.group(2).isBlank()
+                    || match.group(4).isBlank()) return null;
+            return new ParsedParts(match.group(1), match.group(2),
+                    EComparator.valueOf(match.group(3).toUpperCase(Locale.ROOT)), match.group(4));
         }
     }
 
@@ -119,6 +126,11 @@ public class TitleModel {
      */
     private List<Parsed> parsedConditions() {
         if (_parsedConditions == null) {
+            if (Conditions == null) {
+                RunicSkills.getLOGGER().error("Title {} has a null condition list; it cannot be earned.", TitleId);
+                _parsedConditions = java.util.Collections.singletonList(null);
+                return _parsedConditions;
+            }
             List<Parsed> parsed = new ArrayList<>(Conditions.size());
             for (String condition : Conditions) {
                 ParsedParts parts = ParsedParts.parse(condition);
@@ -175,7 +187,7 @@ public class TitleModel {
             }
         }
 
-        return passedConditions == Conditions.size();
+        return passedConditions == parsedConditions().size();
     }
 
     public RegistryObject<Title> registry(DeferredRegister<Title> TITLES) {
@@ -185,7 +197,7 @@ public class TitleModel {
 
     private Title register(String name, boolean requirement) {
         ResourceLocation key = new ResourceLocation(RunicSkills.MOD_ID, name);
-        return new Title(key, requirement, this.HideRequirements);
+        return new Title(key, requirement, Boolean.TRUE.equals(this.HideRequirements));
     }
 
     private boolean Compare(int a, int b, EComparator comparator) {

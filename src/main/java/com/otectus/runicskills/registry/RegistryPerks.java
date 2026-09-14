@@ -176,6 +176,18 @@ public class RegistryPerks {
             HandlerResources.TIDE_CAREFUL_LANDING_PERK,
             new Value(ValueType.PERCENT, HandlerCommonConfig.HANDLER.instance().tideCarefulLandingPercent)));
 
+    public static final RegistryObject<Perk> PACK_MULE = registerPerk("pack_mule", () -> {
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        int first = cfg.packMuleRank1RequiredLevel;
+        int second = Math.max(first, cfg.packMuleRank2RequiredLevel);
+        int third = Math.max(second, cfg.packMuleRank3RequiredLevel);
+        return new Perk(new ResourceLocation(RunicSkills.MOD_ID, "pack_mule"), RegistrySkills.STRENGTH,
+                new int[]{com.otectus.runicskills.common.perk.ScaledRequirement.forConfiguredCap(first),
+                        com.otectus.runicskills.common.perk.ScaledRequirement.forConfiguredCap(second),
+                        com.otectus.runicskills.common.perk.ScaledRequirement.forConfiguredCap(third)},
+                HandlerResources.PACK_MULE_PERK);
+    });
+
     public static final RegistryObject<Perk> ONE_HANDED =
             registerPerk("one_handed", () -> register(
                     "one_handed",
@@ -4409,6 +4421,7 @@ public class RegistryPerks {
 
     public static boolean isDisabled(Perk perk) {
         if (perk == null) return false;
+        if ("pack_mule".equals(perk.getName()) && !HandlerCommonConfig.HANDLER.instance().enablePackMule) return true;
         if (RunicSkills.MOD_ID.equals(perk.getMod())) {
             if ("tom_aqua_attunement".equals(perk.getName()) && (!com.otectus.runicskills.integration.tom.TomAquaAttunement.available()
                     || com.otectus.runicskills.integration.tom.TomAquaAttunement.percent() <= 0)) return true;

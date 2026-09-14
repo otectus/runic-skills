@@ -14,6 +14,13 @@ package com.otectus.runicskills.integration;
  */
 public final class InventoryTabOwnership {
 
+    private static java.util.function.BooleanSupplier visibilityProbe;
+
+    /** Installed by the client coordinator; no optional or Minecraft client types link here. */
+    public static void setVisibilityProbe(java.util.function.BooleanSupplier probe) {
+        visibilityProbe = probe;
+    }
+
     private InventoryTabOwnership() {
     }
 
@@ -29,6 +36,7 @@ public final class InventoryTabOwnership {
      * Anything short of that leaves the built-in strip switched on.
      */
     public static boolean externalTabsActive() {
+        if (visibilityProbe != null) return visibilityProbe.getAsBoolean();
         return L2TabsIntegration.isNativeTabsActive()
                 || LegendaryTabsIntegration.isNativeTabsActive()
                 || CustomNpcsIntegration.isNativeTabsActive();

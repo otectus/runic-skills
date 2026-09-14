@@ -257,11 +257,6 @@ public class IronsSpellbooksPowerEventDispatcher {
 
     // ── ISS SpellDamageEvent router ─────────────────────────────────────────────────
 
-    /** Per-player rolling projectile-hit counter for Arcanist's Barrage. Reset after a
-     *  configurable timeout of no projectile hits — implements the spec's "single combat" scope. */
-    private static final class ProjectileCombatState { int count; long lastHitTick; }
-    private static final Map<UUID, ProjectileCombatState> BARRAGE_STATE = new HashMap<>();
-
     /** Per-player game-time tick at which the current CONTINUOUS-cast channel began.
      *  Used by The Long Note to gate its 4s-sustain chain effect. Set on SpellOnCastEvent
      *  for continuous casts, cleared on PlayerTickEvent when the channel ends. */
@@ -298,15 +293,6 @@ public class IronsSpellbooksPowerEventDispatcher {
             Power p = RegistryPowers.KINDLE.get();
             double mult = 1.0 + PowerOverridesManager.valueOr(p, "damage_multiplier_bonus", 0.20);
             event.setAmount(DamageMath.safeAmount(event.getAmount(), (float) (event.getAmount() * mult)));
-            fireProc(player, p, target);
-        }
-
-        // Crimson Tithe (Blood Mark) — heal 10% of blood-school damage dealt.
-        if (PowerSchool.BLOOD.equals(schoolId)
-                && isEquipped(player, RegistryPowers.CRIMSON_TITHE)) {
-            Power p = RegistryPowers.CRIMSON_TITHE.get();
-            float pct = (float) PowerOverridesManager.valueOr(p, "lifesteal_fraction", 0.10);
-            player.heal(event.getAmount() * pct);
             fireProc(player, p, target);
         }
 
@@ -427,32 +413,8 @@ public class IronsSpellbooksPowerEventDispatcher {
             fireProc(player, p, target);
         }
 
-        // Arcanist's Barrage (Projectile Crown) — every Nth projectile hit (default 10) in
-        // the same combat fires a free echo to the same target at 75% damage. Counter resets
-        // after `combat_timeout_ticks` of no projectile hits. Echo lands as vanilla magic
-        // damage to avoid recursive SpellDamageEvent re-entry.
-        if (isEquipped(player, RegistryPowers.ARCANISTS_BARRAGE)
-                && IronsSpellbooksPowerCompat.directEntityOf(event) instanceof Projectile) {
-            Power p = RegistryPowers.ARCANISTS_BARRAGE.get();
-            int threshold = PowerOverridesManager.intValueOr(p, "echo_count_threshold", 10);
-            int timeoutTicks = PowerOverridesManager.intValueOr(p, "combat_timeout_ticks", 600);
-            long now = player.level().getGameTime();
-            ProjectileCombatState state = BARRAGE_STATE.computeIfAbsent(player.getUUID(),
-                    k -> new ProjectileCombatState());
-            if (now - state.lastHitTick > timeoutTicks) state.count = 0;
-            state.count++;
-            state.lastHitTick = now;
-            if (threshold > 0 && state.count % threshold == 0) {
-                double mult = PowerOverridesManager.valueOr(p, "echo_damage_multiplier", 0.75);
-                try (DamageContext.Scope scope = DamageContext.push(player.getUUID(),
-                        DamageContext.Origin.SPELL_EFFECT)) {
-                    if (!scope.isSuppressed()) {
-                        target.hurt(player.damageSources().magic(), (float) (event.getAmount() * mult));
-                    }
-                }
-                fireProc(player, p, target);
-            }
-        }
+        // Arcanist's Barrage is owned by VanillaPowerEventDispatcher for every projectile,
+        // including spell projectiles. Counting again here caused the same impact to echo twice.
 
         // The Long Note (Channel Crown) — while the player is mid-CONTINUOUS-cast and the
         // channel has been sustained for ≥ sustain_threshold_ticks, replicate this damage
@@ -509,6 +471,22 @@ public class IronsSpellbooksPowerEventDispatcher {
     }
 
     // ── Vanilla LivingDamageEvent router (vanilla hits + vanilla projectiles) ───────
+
+    /** SpellDamageEvent precedes armor and absorption; lifesteal needs surviving health damage. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCrimsonTitheDamage(LivingDamageEvent event) {
+        if (!DamageContext.allowsStandardOutgoingModifiers() || event.getAmount() <= 0
+                || !(event.getSource().getEntity() instanceof ServerPlayer player)
+                || !PowerSchool.BLOOD.equals(schoolOfDamage(event.getSource()))
+                || !isEquipped(player, RegistryPowers.CRIMSON_TITHE)) return;
+        Power power = RegistryPowers.CRIMSON_TITHE.get();
+        float actual = Math.min(event.getAmount(), Math.max(0, event.getEntity().getHealth()));
+        float healing = (float) (actual * PowerOverridesManager.valueOr(power, "lifesteal_fraction", 0.10));
+        if (Float.isFinite(healing) && healing > 0) {
+            player.heal(healing);
+            fireProc(player, power, event.getEntity());
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onLivingDamage(LivingDamageEvent event) {
@@ -1068,7 +1046,6 @@ public class IronsSpellbooksPowerEventDispatcher {
         PowerRuntime.clearPlayer(id);
         // This dispatcher's own per-player state, without which every player who ever
         // triggered these powers leaves permanent map entries for the server's lifetime.
-        BARRAGE_STATE.remove(id);
         LONG_NOTE_CHANNEL_START.remove(id);
         PYROCLASM_DETONATIONS.remove(id);
     }

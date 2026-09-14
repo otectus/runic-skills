@@ -177,4 +177,37 @@ class ExperienceMathTest {
         assertEquals(Integer.MIN_VALUE, ExperienceMath.saturatingAdd(Integer.MIN_VALUE, -10L));
         assertEquals(15, ExperienceMath.saturatingAdd(5, 10L));
     }
+
+    @Test
+    void largeExperienceBalancesKeepTheirVanillaCurveAndSaturate() {
+        // The old arithmetic overflowed the intermediate multiply before the final / 2.
+        assertEquals(1_796_752_220, ExperienceMath.getExperienceForLevel(20_000));
+        assertEquals(2_147_407_943, ExperienceMath.getExperienceForLevel(21_863));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.getExperienceForLevel(21_864));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.getExperienceForLevel(Integer.MAX_VALUE));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.spendableXp(21_863, 1f));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.xpBarCap(Integer.MAX_VALUE));
+        assertEquals(7, ExperienceMath.xpBarCap(Integer.MIN_VALUE));
+    }
+
+    @Test
+    void inverseHonorsEveryLevelBoundaryIncludingMaximumBalance() {
+        for (int level = 1; level <= 21_863; level++) {
+            int threshold = ExperienceMath.getExperienceForLevel(level);
+            assertEquals(level, ExperienceMath.getLevelForExperience(threshold));
+            assertEquals(level - 1, ExperienceMath.getLevelForExperience(threshold - 1));
+        }
+        assertEquals(21_863, ExperienceMath.getLevelForExperience(Integer.MAX_VALUE));
+        float progress = ExperienceMath.progressForTotal(Integer.MAX_VALUE, 21_863);
+        assertTrue(progress > 0f && progress < 1f);
+    }
+
+    @Test
+    void corruptProgressAndExtremeAdjustmentsNeverWrapTheBalance() {
+        assertEquals(55, ExperienceMath.spendableXp(5, Float.NaN));
+        assertEquals(55, ExperienceMath.spendableXp(5, Float.POSITIVE_INFINITY));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.saturatingAdd(100, Long.MAX_VALUE));
+        assertEquals(Integer.MIN_VALUE, ExperienceMath.saturatingAdd(-100, Long.MIN_VALUE));
+        assertEquals(Integer.MAX_VALUE, ExperienceMath.requiredPoints(Integer.MAX_VALUE, 5, 1f, 1));
+    }
 }

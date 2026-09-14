@@ -18,13 +18,19 @@ public class AdvancementCondition extends ConditionImpl<Boolean> {
     public void ProcessVariable(String value, ServerPlayer serverPlayer) {
         // tryParse returns null (instead of throwing ResourceLocationException) on a malformed
         // advancement id, so a typo in a title condition can't crash title evaluation.
-        ResourceLocation advancementId = ResourceLocation.tryParse(value.replace("-", "/"));
+        ResourceLocation advancementId = ResourceLocation.tryParse(value);
         if (advancementId == null) {
             RunicSkills.getLOGGER().error(">> Error! Advancement name {} is not a valid resource location!", value);
             setProcessedValue(false);
             return;
         }
         Advancement advancement = Objects.requireNonNull(serverPlayer.getServer()).getAdvancements().getAdvancement(advancementId);
+        // Old title files encoded '/' as '-'. Prefer the exact modern ID so valid
+        // hyphens in a namespace/path survive; fall back only for a missing legacy ID.
+        if (advancement == null && value.contains("-") && !value.contains("/")) {
+            ResourceLocation legacyId = ResourceLocation.tryParse(value.replace("-", "/"));
+            if (legacyId != null) advancement = serverPlayer.getServer().getAdvancements().getAdvancement(legacyId);
+        }
         if (advancement == null){
             RunicSkills.getLOGGER().error(">> Error! Advancement name {} not found!", value);
             setProcessedValue(false);

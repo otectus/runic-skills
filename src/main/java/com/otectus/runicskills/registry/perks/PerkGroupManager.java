@@ -29,7 +29,10 @@ public final class PerkGroupManager {
         if (next.size() > PerkGroup.MAX_GROUPS) {
             throw new IllegalArgumentException("Too many perk groups to synchronize: " + next.size());
         }
-        groups = Map.copyOf(next);
+        java.util.Map<ResourceLocation, PerkGroup> sorted = new java.util.LinkedHashMap<>();
+        next.entrySet().stream().sorted(java.util.Map.Entry.comparingByKey())
+                .forEach(entry -> sorted.put(entry.getKey(), java.util.Objects.requireNonNull(entry.getValue())));
+        groups = Collections.unmodifiableMap(sorted);
     }
 
     public static void clear() {

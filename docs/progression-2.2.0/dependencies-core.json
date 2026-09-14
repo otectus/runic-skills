@@ -1,0 +1,27 @@
+[
+  {
+    "id": "minecraft",
+    "version": "1.20.1",
+    "sha256": "cba463381db0c98d6da71ab879c8eee4e66146cb1af5449cf1525f159f56bba2"
+  },
+  {
+    "id": "runicskills",
+    "version": "2.2.0",
+    "sha256": "3aa8443c86c839cd6fe2b11dab1ebd65e6b2cb065adf77cb1c6be86d98de9aaa"
+  },
+  {
+    "id": "mixinextras",
+    "version": "0.4.0",
+    "sha256": "c49a11ce7edef7cf7612bad02a54371d96658818dc26549309518c82791981db"
+  },
+  {
+    "id": "forge",
+    "version": "47.4.23",
+    "sha256": "98a6c0a2318c1788db6f592357eb00d09b15316f054942ba432f71027f074fef"
+  },
+  {
+    "id": "runicskills_validation",
+    "version": "1",
+    "sha256": "25ec7b0e243d1759bc6a75daf0b6470095b75494b663bbb6c68eb1f7ecc620f4"
+  }
+]

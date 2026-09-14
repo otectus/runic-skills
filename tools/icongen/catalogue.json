@@ -3549,6 +3549,13 @@
     "pixels_sha256": "687abc67b827e518572823544fc1fbae9ae891c5675359e163d8304b918ffa93"
   },
   {
+    "path": "textures/skill/strength/pack_mule.png",
+    "kind": "perk",
+    "id": "pack_mule",
+    "concept": "Reinforced cargo pack with straps and clasp — carry larger stacks",
+    "pixels_sha256": "c4a603ebed00db219d4aaa5ede3750834a199d26779af72b4fb1ab86ec886ca3"
+  },
+  {
     "path": "textures/skill/strength/passive_attack_damage.png",
     "kind": "passive",
     "id": "attack_damage",

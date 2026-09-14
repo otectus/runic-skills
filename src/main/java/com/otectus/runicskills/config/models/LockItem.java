@@ -30,6 +30,16 @@ public class LockItem {
     @SerializedName(value = "Source", alternate = {"source"})
     public String Source;
 
+    /** Explicit allow; absent/false retains the legacy meaning of empty invalid entries. */
+    @SerializedName(value = "Allow", alternate = {"allow"})
+    public boolean Allow;
+
+    public static LockItem unrestricted(String id) {
+        LockItem rule = new LockItem(id, new Skill[0]);
+        rule.Allow = true;
+        return rule;
+    }
+
     public LockItem() {
     }
 

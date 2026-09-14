@@ -28,10 +28,16 @@ public class RegistryClientEvents {
             List<Component> tooltips = event.getToolTip();
             ItemStack itemStack = event.getItemStack();
 
+            if (itemStack.getCount() > itemStack.getMaxStackSize()) {
+                int capacity = com.otectus.runicskills.common.inventory.PlayerStackPolicy.capacity(event.getEntity(), itemStack);
+                tooltips.add(Component.translatable(itemStack.getCount() > capacity ? "tooltip.pack_mule.over_limit" : "tooltip.pack_mule.cargo",
+                        itemStack.getCount(), capacity).withStyle(ChatFormatting.GRAY));
+            }
+            if (com.otectus.runicskills.client.tooltip.StackRequirementTooltip.append(itemStack, tooltips)) return;
             ResourceLocation location = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
             if (location == null) return; // unregistered/modded item: no lock entry possible, don't NPE the tooltip
             List<Skills> list = HandlerSkill.getValue(location.toString());
-            if (list != null && HandlerCommonConfig.HANDLER.instance().enableItemLocks) {
+            if (list != null && !list.isEmpty() && HandlerCommonConfig.HANDLER.instance().enableItemLocks) {
                 // Capability may not be synced yet when a tooltip renders pre-join; treat
                 // as "requirement not met" and colour red rather than NPE the tooltip.
                 SkillCapability localCap = SkillCapability.getLocal();

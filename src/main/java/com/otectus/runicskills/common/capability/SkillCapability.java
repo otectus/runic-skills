@@ -515,7 +515,11 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     // — on the server during a use/attack/equip, mid-gameplay — instead of gracefully allowing it.
     // This mirrors the null check already present in ClientCapabilityAccess.canUseItemClient.
     public boolean canUseItem(Player player, ItemStack item) {
-        Boolean stackVerdict = stackLockVerdict(player, item, LockAction.USE, true);
+        return canUseItem(player, item, LockAction.USE);
+    }
+
+    public boolean canUseItem(Player player, ItemStack item, LockAction action) {
+        Boolean stackVerdict = stackLockVerdict(player, item, action, true);
         if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
         return id == null || canUse(player, id);
@@ -561,7 +565,11 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      * action events (attack swing, left/right-click).
      */
     public boolean canUseItemSilent(Player player, ItemStack item) {
-        Boolean stackVerdict = stackLockVerdict(player, item, LockAction.USE, false);
+        return canUseItemSilent(player, item, LockAction.USE);
+    }
+
+    public boolean canUseItemSilent(Player player, ItemStack item, LockAction action) {
+        Boolean stackVerdict = stackLockVerdict(player, item, action, false);
         if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
         return id == null || canUse(player, id.toString(), false);

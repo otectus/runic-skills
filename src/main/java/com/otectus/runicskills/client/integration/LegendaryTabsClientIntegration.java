@@ -1,12 +1,16 @@
 package com.otectus.runicskills.client.integration;
 
 import com.mojang.logging.LogUtils;
+import com.otectus.runicskills.client.gui.InventoryTabLayout;
 import com.otectus.runicskills.client.gui.LegendaryTabRunicSkills;
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
 import com.otectus.runicskills.handler.HandlerConfigClient;
+import com.otectus.runicskills.integration.L2TabsIntegration;
 import com.otectus.runicskills.integration.LegendaryTabsIntegration;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -14,205 +18,258 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.slf4j.Logger;
 import sfiomn.legendarytabs.api.tabs_menu.TabBase;
 import sfiomn.legendarytabs.api.tabs_menu.TabsMenu;
+import sfiomn.legendarytabs.client.screens.TabButton;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Set;
 
 /**
- * Client-side companion to {@link LegendaryTabsIntegration}. Lives under {@code client/}
- * because it touches {@code net.minecraft.client.*} (Screen, InventoryScreen) which the
- * {@code :checkSidedImports} lint forbids in the shared {@code integration/} package.
+ * Optional, client-only adapter. All Legendary Tabs symbols stay behind the reflective
+ * {@link LegendaryTabsIntegration} facade so installations without that mod still load.
+ *
+ * <p>Legendary Tabs owns the buttons, focus, selected state and pagination. Foreign inventory
+ * destinations join that same strip before its Init.Post handler builds the actual widgets.
+ * Suppression of the other strips is conditional on those replacement widgets being usable.
  */
 public final class LegendaryTabsClientIntegration {
-
     private static final Logger LOGGER = LogUtils.getLogger();
-
-    /** Skills panel geometry: same width as vanilla inventory, taller panel. */
-    private static final int PANEL_WIDTH = 176;
-    private static final int PANEL_HEIGHT = 194;
-
-    /** The single registered tab instance, captured at {@link #registerTab()}. */
+    private static final String NEXT_BUTTON = "sfiomn.legendarytabs.client.screens.NextTabsButton";
+    private static final Map<String, LegendaryTabDestination> DESTINATIONS = new LinkedHashMap<>();
     private static LegendaryTabRunicSkills tabInstance;
-
-    /** Latches the "internals changed" warning so a broken upstream cannot flood the log. */
-    private static boolean warned = false;
+    private static Method l2Synchronize;
+    private static boolean l2DestinationsReady;
+    private static boolean warned;
 
     private LegendaryTabsClientIntegration() {}
 
-    /**
-     * Registers the Runic Skills tab with Legendary Tabs' {@code TabsMenu}.
-     * <p>
-     * This method body contains direct bytecode references to {@code sfiomn.*} types and
-     * to {@link LegendaryTabRunicSkills} (which extends {@code TabBase}). It MUST only be
-     * invoked when {@link LegendaryTabsIntegration#isModLoaded()} is {@code true} — calling
-     * it (or even loading this class via a method reference to it) when Legendary Tabs is
-     * absent will throw {@link NoClassDefFoundError} on {@code TabBase}.
-     * <p>
-     * Isolating this call into a dedicated method — rather than inlining a lambda inside
-     * {@code ClientProxy.clientSetup} — keeps ClientProxy's bytecode free of any direct
-     * reference to optional-mod types. Forge's {@code AutomaticEventSubscriber} loads every
-     * {@code @EventBusSubscriber} class with {@code Class.forName(..., true, loader)} at
-     * mod construction; the JVM verifier then checks assignability for every method body,
-     * and a lambda body like {@code TabsMenu.register(new LegendaryTabRunicSkills())}
-     * triggers eager resolution of {@code TabBase} even though the lambda is never invoked.
-     * Moving the call here defers class loading until {@code isModLoaded()} is true.
-     */
     public static void registerTab() {
+        if (tabInstance != null) return;
         LegendaryTabRunicSkills tab = new LegendaryTabRunicSkills();
-        tabInstance = tab;
         TabsMenu.register(tab);
+        // Upstream register catches Exception internally: returning alone is not proof.
+        if (!contains(TabsMenu.getScreenInfo(InventoryScreen.class), tab)) {
+            throw new IllegalStateException("Legendary Tabs did not register the Skills destination");
+        }
+        tabInstance = tab;
     }
 
-    /**
-     * Entry point called reflectively by {@link LegendaryTabsIntegration#registerClientTab()}:
-     * registers the tab and, only if that succeeded, subscribes the per-screen handler below.
-     *
-     * <p>Both steps live here rather than in {@code RunicSkillsClient} so a Legendary Tabs API
-     * change is caught by the facade's try/catch and downgraded to the built-in strip, instead of
-     * escaping {@code enqueueWork} and failing mod loading. Subscribing after registration also
-     * means the handler never runs without a {@link #tabInstance} to place.
-     */
     public static void register() {
         registerTab();
+        synchronizeDestinations();
+        NativeInventoryTabs.registerStrip("legendarytabs", LegendaryTabsClientIntegration::isStripPresent,
+                LegendaryTabsClientIntegration::controls);
         MinecraftForge.EVENT_BUS.register(LegendaryTabsClientIntegration.class);
     }
 
-    /**
-     * Full sweep across every screen Legendary Tabs currently knows about. Called once at
-     * {@code FMLLoadCompleteEvent} so the strip is already correct for anything opened
-     * before a world is joined.
-     *
-     * <p>This is no longer sufficient on its own — see {@link #onScreenInitPre} — but it is
-     * kept so the pre-world state matches the post-world state, and so the summary line
-     * below still appears once per launch.
-     */
+    /** Data-driven Legendary tabs arrive on world join and /reload, after client setup. */
     public static void synchronizeTabStripAcrossScreens() {
         if (!LegendaryTabsIntegration.isModLoaded()) return;
-
         try {
-            int forward = mirrorInventoryStripOntoSkillsScreen();
-
-            int reverse = 0;
-            // Snapshot: addTabToScreen mutates the underlying map.
-            for (Class<?> screenClass : new ArrayList<>(TabsMenu.getRegisteredScreens())) {
-                if (ensureSkillsTabOn(screenClass)) reverse++;
-            }
-
-            LOGGER.info("[runicskills] Legendary Tabs sync — forward: {} tab(s) onto Skills screen; reverse: Skills tab onto {} screen(s).",
-                    forward, reverse);
+            synchronizeDestinations();
+            LOGGER.info("[runicskills] Unified Legendary Tabs navigation across {} registered screens.",
+                    TabsMenu.getRegisteredScreens().size());
         } catch (RuntimeException | LinkageError e) {
             warnOnce(e);
         }
     }
 
-    /**
-     * Keeps the strip correct as screens are opened.
-     *
-     * <p>The load-complete sweep alone used to be the whole mechanism, justified by "every
-     * mod's client setup has finished, so {@code TabsMenu.tabsScreens} is fully populated".
-     * That held for Legendary Tabs 1.x and is false in 2.0: data-driven tabs are loaded from
-     * a datapack and pushed to the client by {@code SyncTabsPacket}, so
-     * {@code TabRegistry.reloadTabs()} — which seeds new screen classes and calls
-     * {@code TabsMenu.fanOutInventoryTab()} — first runs on <em>world join</em>, long after
-     * {@code FMLLoadCompleteEvent}, and again on every {@code /reload}. Screens that only
-     * enter the registry at that point (Sophisticated Backpacks' {@code BackpackScreen}
-     * among them) were never visited, so the Skills tab silently never appeared on them.
-     *
-     * <p>{@code Init.Pre} rather than {@code Init.Post}: Legendary Tabs builds its
-     * {@code TabButton} widgets from an {@code Init.Post} listener, so a tab added here is
-     * picked up on the same frame the screen opens.
-     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onScreenInitPre(ScreenEvent.Init.Pre event) {
+        synchronizeFor(event.getScreen());
+    }
+
+    /** L2 Tabs creates its manager during initialization; export it before Legendary's NORMAL handler. */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void beforeNativeButtons(ScreenEvent.Init.Post event) {
+        synchronizeFor(event.getScreen());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onScreenInitPost(ScreenEvent.Init.Post event) {
+        updateLayout(event.getScreen());
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onScreenRenderPre(ScreenEvent.Render.Pre event) {
+        updateLayout(event.getScreen());
+    }
+
+    private static void synchronizeFor(Screen screen) {
         try {
-            Class<?> screenClass = TabsMenu.resolveScreenIdentity(event.getScreen());
-            if (screenClass == RunicSkillsScreen.class) {
-                mirrorInventoryStripOntoSkillsScreen();
+            if (L2TabsIntegration.isNativeTabsActive() && Minecraft.getInstance().player != null) {
+                if (l2Synchronize == null) {
+                    l2Synchronize = Class.forName(
+                            "com.otectus.runicskills.client.integration.L2TabsClientIntegration")
+                            .getMethod("synchronizeDestinations", Screen.class);
+                }
+                l2Synchronize.invoke(null, screen);
+                l2DestinationsReady = true;
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            l2DestinationsReady = false;
+            warnOnce(e);
+        }
+        try {
+            synchronizeDestinations();
+        } catch (RuntimeException | LinkageError e) {
+            warnOnce(e);
+        }
+    }
+
+    private static void synchronizeDestinations() {
+        if (tabInstance == null) return;
+        Set<Class<?>> commonScreens = new LinkedHashSet<>();
+        commonScreens.add(InventoryScreen.class);
+        commonScreens.add(RunicSkillsScreen.class);
+        List<NativeInventoryTabs.Destination> destinations = NativeInventoryTabs.destinations();
+        Set<String> currentIds = new LinkedHashSet<>();
+        for (NativeInventoryTabs.Destination destination : destinations) currentIds.add(destination.id());
+        List<LegendaryTabDestination> obsolete = DESTINATIONS.entrySet().stream()
+                .filter(entry -> !currentIds.contains(entry.getKey())).map(Map.Entry::getValue).toList();
+        if (!obsolete.isEmpty()) {
+            for (Class<?> screenClass : new ArrayList<>(TabsMenu.getRegisteredScreens())) {
+                TabsMenu.ScreenInfo info = TabsMenu.getScreenInfo(screenClass);
+                if (info != null && info.tabs != null) {
+                    for (List<TabBase> bucket : info.tabs.values()) bucket.removeAll(obsolete);
+                }
+            }
+            DESTINATIONS.keySet().retainAll(currentIds);
+        }
+        int priority = 100;
+        for (NativeInventoryTabs.Destination destination : destinations) {
+            commonScreens.addAll(destination.screens());
+            LegendaryTabDestination tab = DESTINATIONS.get(destination.id());
+            if (tab == null) {
+                tab = new LegendaryTabDestination(destination, priority++);
+                // Call directly: upstream register swallows exceptions and can claim success.
+                tab.initTabOnScreens();
+                DESTINATIONS.put(destination.id(), tab);
             } else {
-                ensureSkillsTabOn(screenClass);
+                tab.update(destination);
+                priority++;
+            }
+        }
+
+        // Only these known player-navigation screens acquire a new strip. Existing addon
+        // screens keep their own geometry/skin; chests and unrelated menus stay untouched.
+        for (Class<?> screenClass : commonScreens) mirrorInventoryStrip(screenClass);
+        for (Class<?> screenClass : new ArrayList<>(TabsMenu.getRegisteredScreens())) {
+            TabsMenu.ScreenInfo info = TabsMenu.getScreenInfo(screenClass);
+            addIfMissing(info, screenClass, tabInstance, HandlerConfigClient.legendaryTabsPriority.get());
+            int foreignPriority = 100;
+            for (LegendaryTabDestination tab : DESTINATIONS.values()) {
+                addIfMissing(info, screenClass, tab, foreignPriority++);
+            }
+        }
+    }
+
+    private static void mirrorInventoryStrip(Class<?> screenClass) {
+        if (screenClass == InventoryScreen.class) return;
+        TabsMenu.ScreenInfo inventory = TabsMenu.getScreenInfo(InventoryScreen.class);
+        if (inventory == null || inventory.tabs == null) return;
+        for (Map.Entry<Integer, List<TabBase>> bucket : inventory.tabs.entrySet()) {
+            for (TabBase tab : new ArrayList<>(bucket.getValue())) {
+                addIfMissing(TabsMenu.getScreenInfo(screenClass), screenClass, tab, bucket.getKey());
+            }
+        }
+    }
+
+    private static void addIfMissing(TabsMenu.ScreenInfo info, Class<?> screenClass, TabBase tab, int priority) {
+        if (contains(info, tab)) return;
+        TabsMenu.addTabToScreen(tab, screenClass,
+                player -> panelSize(screenClass, true), player -> panelSize(screenClass, false), priority);
+    }
+
+    private static int panelSize(Class<?> screenClass, boolean width) {
+        Screen current = Minecraft.getInstance().screen;
+        if (current != null && TabsMenu.resolveScreenIdentity(current) == screenClass) {
+            InventoryTabLayout.Rect panel = NativeInventoryTabs.panel(current);
+            if (panel != null) return width ? panel.w() : panel.h();
+        }
+        return width ? 176 : screenClass == RunicSkillsScreen.class ? 194 : 166;
+    }
+
+    private static boolean contains(TabsMenu.ScreenInfo info, TabBase tab) {
+        return info != null && info.tabs != null && info.tabs.values().stream().anyMatch(list -> list.contains(tab));
+    }
+
+    /** Keep native hitboxes on the actual panel, including recipe-book shifts and CNPC geometry. */
+    public static void updateLayout(Screen screen) {
+        try {
+            InventoryTabLayout.Rect panel = NativeInventoryTabs.panel(screen);
+            if (panel != null && !controls(screen).isEmpty()) {
+                TabsMenu.updateButtonsPosition(screen, panel.x(), panel.y());
             }
         } catch (RuntimeException | LinkageError e) {
             warnOnce(e);
         }
     }
 
-    /**
-     * Forward pass — copy every tab registered on {@link InventoryScreen} onto
-     * {@link RunicSkillsScreen} at the same priority, so the Skills page shows the same
-     * strip the player sees on the vanilla inventory. Idempotent: {@code ScreenInfo.addTab}
-     * dedupes by instance across all priority buckets.
-     *
-     * @return how many tabs were offered (not necessarily how many were newly added)
-     */
-    private static int mirrorInventoryStripOntoSkillsScreen() {
-        TabsMenu.ScreenInfo inventoryScreenInfo = TabsMenu.getScreenInfo(InventoryScreen.class);
-        if (inventoryScreenInfo == null || inventoryScreenInfo.tabs == null) return 0;
-
-        Function<Player, Integer> width = player -> PANEL_WIDTH;
-        Function<Player, Integer> height = player -> PANEL_HEIGHT;
-
-        int forward = 0;
-        for (Map.Entry<Integer, List<TabBase>> entry : inventoryScreenInfo.tabs.entrySet()) {
-            int priority = entry.getKey();
-            // Snapshot the bucket: addTabToScreen mutates these lists.
-            for (TabBase tab : new ArrayList<>(entry.getValue())) {
-                if (tab == tabInstance) continue;
-                TabsMenu.addTabToScreen(tab, RunicSkillsScreen.class, width, height, priority);
-                forward++;
+    public static List<AbstractWidget> controls(Screen screen) {
+        List<AbstractWidget> controls = new ArrayList<>();
+        for (var child : screen.children()) {
+            if (child instanceof AbstractWidget widget
+                    && (child instanceof TabButton || child.getClass().getName().equals(NEXT_BUTTON))) {
+                controls.add(widget);
             }
         }
-        return forward;
+        return controls;
     }
 
-    /**
-     * Reverse pass for one screen — put the Skills tab on it if Legendary Tabs already draws
-     * a strip there.
-     *
-     * <p>The gate is {@code getScreenInfo(...) != null}, i.e. Legendary Tabs has already
-     * registered this screen. That is deliberate, and load-bearing in two directions.
-     * {@code addTabToScreen} routes through {@code ensureScreenInfo}, a
-     * {@code computeIfAbsent} — calling it for an unregistered screen would <em>create</em>
-     * the entry and grow a tab strip on a screen that is not meant to have one (every chest,
-     * say). And the previous gate — "does this screen already contain Legendary Tabs'
-     * built-in {@code InventoryTab}?" — is no longer safe to rely on, because addons
-     * legitimately drop that tab from screens where they supply their own equivalent
-     * (Sophisticated Tab does exactly this on {@code BackpackScreen}); keying off it would
-     * make the Skills tab vanish from any screen another mod curates.
-     *
-     * @return true if the tab was newly added to this screen
-     */
-    private static boolean ensureSkillsTabOn(Class<?> screenClass) {
-        if (tabInstance == null) return false;
-        if (screenClass == InventoryScreen.class) return false;   // registered by the tab itself
-        if (screenClass == RunicSkillsScreen.class) return false; // our own screen
-
-        TabsMenu.ScreenInfo info = TabsMenu.getScreenInfo(screenClass);
-        if (info == null || info.tabs == null) return false;
-
-        for (List<TabBase> bucket : info.tabs.values()) {
-            if (bucket.contains(tabInstance)) return false;
+    /** A registered mod is insufficient: every enabled replacement must actually be reachable. */
+    public static boolean isStripPresent(Screen screen) {
+        try {
+            if (L2TabsIntegration.isNativeTabsActive() && !l2DestinationsReady) return false;
+            if (!hasDestination(screen, "runicskills_skills")) return false;
+            for (NativeInventoryTabs.Destination destination : NativeInventoryTabs.destinations()) {
+                if (destination.enabled().getAsBoolean() && !hasDestination(screen, destination.id())) return false;
+            }
+            return true;
+        } catch (RuntimeException | LinkageError e) {
+            warnOnce(e);
+            return false;
         }
-
-        TabsMenu.addTabToScreen(
-                tabInstance,
-                screenClass,
-                player -> PANEL_WIDTH,
-                player -> PANEL_HEIGHT,
-                HandlerConfigClient.legendaryTabsPriority.get());
-        return true;
     }
 
-    /**
-     * Degrade rather than crash: this is a cosmetic convenience reaching into another mod's
-     * state, and a hard failure here would take the client down the way the 1.x/2.0
-     * {@code TabBase} mismatch did. Latched, because this now runs per screen init.
-     */
+    /** Paginated destinations count only when a native page and its page control are visible. */
+    public static boolean hasDestination(Screen screen, String id) {
+        boolean visibleTab = false;
+        boolean visiblePager = false;
+        for (AbstractWidget widget : controls(screen)) {
+            if (!usable(widget, screen)) continue;
+            if (widget instanceof TabButton button) {
+                visibleTab = true;
+                if (button.tabBase != null && id.equals(button.tabBase.getId())) return true;
+            } else {
+                visiblePager = true;
+            }
+        }
+        if (!visibleTab) return false;
+        TabsMenu.ScreenInfo info = TabsMenu.getScreenInfo(TabsMenu.resolveScreenIdentity(screen));
+        if (info == null || info.tabs == null) return false;
+        for (List<TabBase> bucket : info.tabs.values()) {
+            for (TabBase tab : bucket) {
+                if (id.equals(tab.getId()) && tab.isEnabled(Minecraft.getInstance().player)
+                        && (visiblePager || tab.isCurrentlyUsed(screen))) return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean usable(AbstractWidget widget, Screen screen) {
+        return widget.visible && widget.active && widget.getX() >= 0 && widget.getY() >= 0
+                && widget.getX() + widget.getWidth() <= screen.width
+                && widget.getY() + widget.getHeight() <= screen.height;
+    }
+
     private static void warnOnce(Throwable e) {
         if (warned) return;
         warned = true;
-        LOGGER.warn("[runicskills] Could not synchronize Legendary Tabs strip across screens (internals changed?) — {}: {}",
-                e.getClass().getSimpleName(), e.getMessage());
+        LOGGER.warn("[runicskills] Could not unify Legendary Tabs navigation; other native controls remain available.", e);
     }
 }

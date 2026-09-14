@@ -90,7 +90,7 @@ public record CraftOperationContext(UUID actor, boolean fakePlayer, CraftOperati
                     inputs, remainders, result);
         }
 
-        CraftOperationKind kind = classifyGrid(inputs, recipe.get(), result);
+        CraftOperationKind kind = classifyGrid(inputs, recipe.get(), result, level);
         return new CraftOperationContext(actor, fake, kind, recipe.get().getId(),
                 inputs, remainders, result);
     }
@@ -105,9 +105,9 @@ public record CraftOperationContext(UUID actor, boolean fakePlayer, CraftOperati
      * extend it. When its result is also one of its inputs it is a repair of that input; otherwise
      * it is something this method cannot describe and must not reward.
      *
-     * <p>For an ordinary recipe, an input that is the result is the shape every compression and
-     * decompression recipe has: nine ingots to a block, one block back to nine ingots. None of
-     * them creates material, so none of them may be paid a copy of one.
+     * <p>For an ordinary recipe, carrying an input item into the output is a conversion.
+     * Reversible compression recipes need the level-aware overload: an ingot and its storage
+     * block have different item ids, so the recipe index must identify the reverse recipe.
      */
     public static CraftOperationKind classifyGrid(List<ItemStack> inputs, CraftingRecipe recipe,
                                                   ItemStack result) {
@@ -116,6 +116,14 @@ public record CraftOperationContext(UUID actor, boolean fakePlayer, CraftOperati
             return sameMaterial ? CraftOperationKind.REPAIR : CraftOperationKind.UNKNOWN;
         }
         return sameMaterial ? CraftOperationKind.CONVERSION : CraftOperationKind.MANUFACTURE;
+    }
+
+    /** Includes reversible recipes from the server's current datapacks. */
+    public static CraftOperationKind classifyGrid(List<ItemStack> inputs, CraftingRecipe recipe,
+                                                  ItemStack result, Level level) {
+        CraftOperationKind basic = classifyGrid(inputs, recipe, result);
+        return basic == CraftOperationKind.MANUFACTURE && CraftingConversionIndex.isReversible(level, recipe)
+                ? CraftOperationKind.CONVERSION : basic;
     }
 
     /** The non-empty stacks of a crafting grid, copied, in slot order. */

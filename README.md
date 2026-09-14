@@ -1,6 +1,15 @@
 # Runic Skills
 
-A RPG-style progression mod for Minecraft 1.20.1 Forge. Level ten skills through the actions you already take, unlock perks and passives, gate equipment behind skill thresholds, and earn titles for milestones your world rarely sees.
+An RPG-style progression mod for Minecraft 1.20.1 Forge. Spend earned vanilla XP to level ten skills, unlock perks and passives, gate equipment behind skill thresholds, and earn titles for world milestones.
+
+Current development: **2.2.0**, with 508 perks, 38 passives and 111 Powers across the full optional catalogue.
+See the [complete content trace](docs/CONTENT_TRACE.md), [2.2.0 implementation and validation](docs/IMPLEMENTATION_2.2.0.md),
+and [upgrade notes](docs/MIGRATING_TO_2.2.0.md). This working build has not been published.
+
+**2.2.0:** Pack Mule raises ordinary player stacks to 128/192/256. The config editor now commits
+a detached draft with visible failure and conflict handling. Progression presets can let every
+skill reach its cap, and clients receive the server’s resolved equipment requirements.
+Use `/skills locks inspect`, `/skills locks audit`, and `/skills packmule status` for diagnostics.
 
 ![Minecraft 1.20.1](https://img.shields.io/badge/Minecraft-1.20.1-62B47A)
 ![Forge 47.3.0+](https://img.shields.io/badge/Forge-47.3.0%2B-1E2D3C)
@@ -49,18 +58,21 @@ The mod is designed to feel flexible in custom modpacks — almost every number 
 
 Ten core skills; the player UI calls these "Skills" (internally "aptitudes"):
 
-| Skill | Focuses | Typical level-up actions |
-|---|---|---|
-| **Strength** | Melee damage, heavy armour, sprinting | Melee kills, wearing heavier gear |
-| **Constitution** | Max health, kb resistance, armour absorption | Taking survivable damage |
-| **Dexterity** | Speed, crit chance, bow & projectile damage | Ranged kills, bow shots landed |
-| **Endurance** | Stamina, air supply, environmental resistance | Long swims, sprinting, cold exposure |
-| **Intelligence** | Enchanting, XP gain, scholar perk | Enchanting, reading books |
-| **Building** | Block-placement speed, haggle discounts, storage perks | Placing blocks, villager trading |
-| **Wisdom** | Brewing, farming, and mob-interaction bonuses | Brewing, villager interactions |
-| **Magic** | Mana pool, spell damage, mana regen (spellbook mods) | Casting spells, studying glyphs |
-| **Fortune** | Lucky drops, rare-loot multipliers | Mining ore, breaking grass, fishing |
-| **Tinkering** | Smithing, crafting refunds, tool durability | Crafting, smithing table operations |
+| Skill | Typical benefits |
+|---|---|
+| **Strength** | Melee damage and martial perks |
+| **Constitution** | Maximum health and defensive perks |
+| **Dexterity** | Movement, critical hits and ranged combat |
+| **Endurance** | Environmental survival and sustained activity |
+| **Intelligence** | Enchanting, XP efficiency and research |
+| **Building** | Mining, construction and utility access |
+| **Wisdom** | Brewing, farming and support |
+| **Magic** | Magical resistance and optional spell integrations |
+| **Fortune** | Lucky drops, fishing and loot bonuses |
+| **Tinkering** | Smithing, crafting refunds and tool durability |
+
+These activities benefit from your build; they do not automatically raise its skill levels.
+Purchase levels with vanilla XP in the Skills screen.
 
 Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be set via `/globallimit` or the config.
 
@@ -86,7 +98,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the `runicskills-2.1.1.jar` from the [latest release](https://github.com/otectus/runic-skills/releases/latest) into your `mods/` folder.
+2. Drop the built `runicskills-2.2.0.jar` into your `mods/` folder. Published builds are available from [releases](https://github.com/otectus/runic-skills/releases).
 3. Optionally install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.5.0+ — it powers the in-game configuration screen. Without it the mod runs normally and the Configure button explains that the screen needs YACL; every setting remains editable in `config/RunicSkills/`.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -97,9 +109,15 @@ and the Forge configuration workaround for packs that must retain the older Mant
 
 No client-side-only nor server-side-only variants; one jar on both sides.
 
+For the September 2026 Forge 1.20.1 mod set, see the
+[instance compatibility report](docs/INSTANCE_COMPATIBILITY_2026_09_08.md) and
+[per-mod version review](docs/compatibility/2026-09-08-mod-matrix.md). The development build
+updates L2 Tabs, Starcatcher 3 and the optional Iron's/T.O. profile, and repairs the data errors
+that prevented world loading. The report distinguishes tested behavior from remaining upstream gaps.
+
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
-- Syncs skill, perk, passive, and title state to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=14`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, title state and skill artwork to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=16`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
@@ -177,7 +195,7 @@ Both are server-authoritative and synced to clients on join, so a dedicated serv
 
 There are **four distinct actions** — pick the one that matches what you want:
 
-1. **Turn the whole feature off (master toggle).** Set `enableItemLocks: false` in `config/RunicSkills/runicskills.common.json5`, or untick **Enable item locks** under **Mods → Runic Skills → Config → General**. Apply by saving in the UI, running `/skillsreload`, or restarting. This disables *every* lock — config entries and integration-generated ones alike.
+1. **Turn the whole feature off (master toggle).** Set `enableItemLocks: false` in `config/RunicSkills/runicskills.common.json5`, or untick **Enable item locks** under **Mods → Runic Skills → Config → General**. Saving in the UI applies changes to a local world; dedicated servers require editing the server file and running `/skillsreload` or restarting. This disables *every* lock — config entries and integration-generated ones alike.
 2. **Disable specific locked items.** Edit `config/RunicSkills/runicskills.lockItems.json5` and remove the entries you don't want (or run `/registeritem <skill> 0` while holding the item to drop a requirement). Apply with `/skillsreload`.
 3. **Disable an integration's auto-generated locks.** Each integration has a per-lock toggle (e.g. `spartanEnableLockItems`) and a master toggle (e.g. `enableSpartanIntegration`) in the common config. Setting either off stops that integration's locks; the master toggle also disables the integration's other hooks.
 4. **Deleting `runicskills.lockItems.json5` does NOT disable locking.** On the next launch the mod **regenerates the default lock list** (an `INFO` line names the file in the log). To turn locking off, use the master toggle in action 1 — not file deletion.
@@ -201,6 +219,8 @@ Since 1.3.0, the overview-grid icon, detail-page icon, and detail-page backgroun
 - `overview_icon`, `detail_icon`, and `background` are all optional. Any field omitted falls back to the legacy hardcoded asset, so you can override a single slot without re-supplying the rest.
 - Texture ids accept either a fully-qualified `namespace:path` or a bare path. Bare paths resolve to the `runicskills` namespace for parity with the legacy KubeJS helper.
 - Reloads pick up overrides via the standard datapack reload path (`/reload` or world load). Removing the JSON restores the default on the next reload.
+- Since 2.1.2, the server sends a full artwork snapshot on login and `/reload`; clients clear it on disconnect. Missing client textures fall back to the normal skill artwork.
+- Invalid reloads retain the preceding snapshot. Limits: 128 files, 64 overrides and 256 characters per resource ID. The same file ID follows normal pack priority; different files targeting one skill resolve in resource-ID order (last wins, with a warning).
 
 **Client-asset caveat.** Texture ids must point at assets the **client** actually has. Datapack overrides on a dedicated server don't conjure client textures out of thin air — ship the PNGs in a resource pack (or as part of the pack's overrides folder) alongside the JSON.
 
@@ -252,6 +272,7 @@ Example task SNBT / JSON:
 
 | Runic Skills | Minecraft | Forge | Java | Network protocol | FTB Quests Forge (optional) |
 |---|---|---|---|---|---|
+| 2.2.0 | 1.20.1 | 47.3.0+ | 17 | 16 | `[2001.4,2002.0)` |
 | 2.1.1 | 1.20.1 | 47.3.0+ | 17 | 14 | `[2001.4,2002.0)` |
 | 2.0.7 | 1.20.1 | 47.3.0+ | 17 | 12 | `[2001.4,2002.0)` |
 | 2.0.6 | 1.20.1 | 47.3.0+ | 17 | 11 | `[2001.4,2002.0)` |
@@ -271,12 +292,13 @@ client and the server must be on the same one. 2.0.1 changed the shape of the Po
 added a configuration field, both of which live inside protocol 10, so it could not keep that number
 without a 2.0.0 peer agreeing on the version and then misreading the wire.
 
-**2.1.1 requires protocol 14 on both sides.** New integration settings and capability evidence
-are synchronized from the server. Update clients and servers together.
+**2.2.0 requires protocol 16 on both sides.** Extended stack counts, paired config/lock revisions,
+and authoritative stack inspection require matching builds. Existing progression IDs remain stable.
+Normalize extended stacks before removing or downgrading the mod; see the upgrade notes.
 
 The 2.1.1 four-mod catalogue implements all 32 perks and 24 Powers. See the [implementation record](docs/FOUR_MOD_INTEGRATION_2.1.1.md) for supported native paths, validation and remaining release checks.
 
-Aqua Attunement requires the separate `runicskills-tom-compat-2.1.1.jar`, built with
+Aqua Attunement requires the separate `runicskills-tom-compat-2.2.0.jar`, built with
 `gradlew.bat tomCompatJar` under `build/compat-libs/`. Install the companion with the
 matching core and pinned T.O./Iron's Spellbooks versions on both sides; see the
 [T.O. companion guide](docs/integrations/tom-aqua-attunement.md).
@@ -301,9 +323,13 @@ Artifacts land in `build/libs/`:
 
 Two tab integrations have no public Maven coordinate, so they compile against minimal API surfaces kept in the repo instead of against the real mods:
 - **Legendary Tabs** (Sfiomn) — a hand-written source stub in [`src/legendarytabsApi/java`](src/legendarytabsApi/java), compiled by the `legendarytabsApi` source set and placed on the compile classpath only. It never enters the shipped jar; the real Legendary Tabs classes load at runtime.
-- **L2Tabs** (Minecraft-LightLand) — a tracked compile-only stub jar at `libs/l2tabs-0.3.3.jar`, resolved through `flatDir('libs')`.
+- **L2Tabs** (Minecraft-LightLand) — source signature mirrors in [`src/l2tabsApi/java`](src/l2tabsApi/java), compiled by the `l2tabsApi` source set and used only on the compile classpath. These mirror the actual L2 Tabs `0.3.3` jar embedded in L2 Library `2.5.3` and never enter the shipped jar.
 
 Both mirror a specific upstream version (Legendary Tabs `1.20.1-2.0`, L2Tabs `0.3.3`). If upstream changes those APIs, update the stub and the matching `versionRange` in `mods.toml` together — the stub is deliberately minimal, so calling a method it does not declare is a compile error rather than a runtime `NoSuchMethodError`.
+
+The optional JEI inventory-control exclusion uses four public API signature mirrors in
+`src/jeiApi/java`, verified against JEI `15.56.0.205`. The `jeiApi` source set is also
+compile-only; JEI discovers the integration when installed, and the mirrors never ship.
 
 **Other tasks:**
 - `./gradlew compileJava` — compile only (faster iteration).
@@ -353,7 +379,7 @@ datapack-driven, and every number is configurable.
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=14`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=16`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills.common.json5` on the client is read for display defaults only.
 - **Title display** — titles are composed as a name prefix in `PlayerEvent.NameFormat`. **Nothing writes to a player's vanilla custom name**, so a nickname, chat, team or tab-list mod keeps ownership of the name and its styling; a name written by a pre-2.0.0 version is cleared once on login. `titlesUseCustomName` is deprecated and ignored — the conflict it existed to work around can no longer occur. Turn the prefix off entirely with `displayTitlesAsPrefix=false`.
 

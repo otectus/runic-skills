@@ -17,7 +17,7 @@ public class GlobalLimitCommand {
         return dispatcher.register((
                 Commands.literal("globallimit")
                         .requires((source) -> source.hasPermission(2))
-                        .then(Commands.argument("level", IntegerArgumentType.integer(1))
+                        .then(Commands.argument("level", IntegerArgumentType.integer(32, 99999))
                                 .executes(GlobalLimitCommand::execute)
                         )
         ));
@@ -28,10 +28,20 @@ public class GlobalLimitCommand {
 
         // local(), not instance(): this edits the server's own config file, and instance() may be
         // serving a snapshot on an integrated server (RS10-005).
-        HandlerCommonConfig.HANDLER.local().playersMaxGlobalLevel = globalLimitLevel;
-        HandlerCommonConfig.HANDLER.save();
-
-        GameplayConfigCP.sendToAllPlayers();
+        var holder = HandlerCommonConfig.HANDLER;
+        try {
+            var session = holder.beginEdit();
+            session.draft().playersMaxGlobalLevel = globalLimitLevel;
+            session.draft().globalLevelCapMode = "custom";
+            var result = holder.commit(session, session.draft());
+            if (!result.success()) {
+                command.getSource().sendFailure(Component.literal(result.message()));
+                return 0;
+            }
+        } catch (com.otectus.runicskills.config.storage.ConfigHolder.EditException failure) {
+            command.getSource().sendFailure(Component.literal(failure.getMessage())); return 0;
+        }
+        SkillsReloadCommand.reload(command.getSource().getServer());
         command.getSource().sendSystemMessage(Component.literal(String.format("Updating playersMaxGlobalLevel, new level: %d", globalLimitLevel)));
 
         return Command.SINGLE_SUCCESS;

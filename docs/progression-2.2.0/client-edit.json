@@ -1,0 +1,11 @@
+{
+  "failure": "",
+  "passed": true,
+  "checks": [
+    "open_resize_save_done",
+    "reopen_cancel_server_authority",
+    "external_conflict_retained_draft_retry",
+    "real_server_client_extended_counts",
+    "native_client_server_split_and_merge"
+  ]
+}

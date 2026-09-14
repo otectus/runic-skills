@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "integrated_server_published_to_lan",
+    "rank_capacity_and_native_split_merge_256",
+    "two_simultaneous_real_clients_server_verified"
+  ],
+  "passed": true,
+  "failure": ""
+}

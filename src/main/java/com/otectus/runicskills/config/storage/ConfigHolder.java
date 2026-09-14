@@ -79,6 +79,14 @@ public class ConfigHolder<T> {
      * readers are on the render and tick threads.
      */
     private volatile T authoritative;
+    private static final ThreadLocal<Boolean> SNAPSHOT_VIEW = new ThreadLocal<>();
+    /** Explicit client-view service boundary, also usable by an in-process client fixture. */
+    public static void withAuthoritativeView(Runnable action) {
+        Boolean previous = SNAPSHOT_VIEW.get(); SNAPSHOT_VIEW.set(true);
+        try { action.run(); } finally { if (previous == null) SNAPSHOT_VIEW.remove(); else SNAPSHOT_VIEW.set(previous); }
+    }
+    private static volatile java.util.function.BooleanSupplier localThread = () -> false;
+    public static void setLocalThreadPredicate(java.util.function.BooleanSupplier predicate) { localThread = predicate; }
 
     /** Bumped on every authoritative publish/clear, so view-model caches can key off it. */
     private final java.util.concurrent.atomic.AtomicInteger authoritativeVersion =
@@ -100,6 +108,7 @@ public class ConfigHolder<T> {
      * snapshot, otherwise this machine's own file.
      */
     public T instance() {
+        if (localThread.getAsBoolean() && !Boolean.TRUE.equals(SNAPSHOT_VIEW.get())) return local();
         T published = this.authoritative;
         if (published != null) return published;
         return local();
@@ -142,6 +151,65 @@ public class ConfigHolder<T> {
         return this.authoritative != null;
     }
 
+    public record SaveResult(boolean success, String message) {
+        public void orThrow() { if (!success) throw new IllegalStateException(message); }
+    }
+    public static final class EditException extends IllegalStateException {
+        public EditException(String message, Throwable cause) { super(message, cause); }
+    }
+    public record EditSession<T>(T draft, String revision) {}
+
+    /** Reads a detached draft without writing defaults, recovery copies, or changing runtime state. */
+    public synchronized EditSession<T> beginEdit() {
+        try {
+            String revision = diskRevision();
+            T draft;
+            var oldOrphans = new java.util.LinkedHashMap<>(orphans);
+            try {
+                if (revision == null) draft = defaultSupplier.get();
+                else {
+                    JsonElement document = JsonParser.parseString(stripJsonComments(revision));
+                    if (document == null || !document.isJsonObject()) throw new IOException("Expected a JSON object");
+                    draft = bindFields(document.getAsJsonObject());
+                }
+                applyClamps(draft);
+            } finally { orphans.clear(); orphans.putAll(oldOrphans); }
+            return new EditSession<>(draft, revision);
+        } catch (Exception e) { throw new EditException("Cannot edit " + path + ": " + e.getMessage(), e); }
+    }
+
+    private String diskRevision() throws IOException {
+        return Files.exists(path) ? Files.readString(path, StandardCharsets.UTF_8) : null;
+    }
+
+    /** Validate → persist → publish. Conflicting external edits require reopening the draft. */
+    public synchronized SaveResult commit(EditSession<T> session, T edited) {
+        if (edited == null || !type.isInstance(edited)) return new SaveResult(false, "Wrong config type");
+        try {
+            if (!java.util.Objects.equals(session.revision(), diskRevision())) {
+                return new SaveResult(false, "Configuration changed on disk. Reopen before saving; your changes were not written.");
+            }
+            T candidate = new Gson().fromJson(new Gson().toJsonTree(edited), type);
+            applyClamps(candidate);
+            var oldOrphans = new java.util.LinkedHashMap<>(orphans);
+            try {
+                if (session.revision() != null) bindFields(JsonParser.parseString(stripJsonComments(session.revision())).getAsJsonObject());
+                SaveResult result = write(candidate);
+                if (result.success()) { instance = candidate; loadFailed = false; }
+                else { orphans.clear(); orphans.putAll(oldOrphans); }
+                return result;
+            } catch (RuntimeException e) {
+                orphans.clear(); orphans.putAll(oldOrphans);
+                throw e;
+            }
+        } catch (Exception e) { return new SaveResult(false, "Could not save " + path + ": " + e.getMessage()); }
+    }
+
+    /** Compatibility entry point. New editors retain beginEdit's revision until Save. */
+    public synchronized void saveEdited(T edited) {
+        commit(beginEdit(), edited).orThrow();
+    }
+
     /** Monotonic counter, incremented on every publish and clear. */
     public int authoritativeVersion() {
         return this.authoritativeVersion.get();
@@ -156,6 +224,7 @@ public class ConfigHolder<T> {
                 if (element != null && element.isJsonObject()) {
                     instance = bindFields(element.getAsJsonObject());
                     applyClamps(instance);
+                    loadFailed = false;
                     // A per-field bind never loses the other 1140 settings, so it is always safe
                     // to write back — that re-emits any field the file was missing.
                     trySave();
@@ -185,6 +254,7 @@ public class ConfigHolder<T> {
             // it does not disable a feature. INFO names the file so this is obvious in the log.
             LOGGER.info("Config {} not found; writing defaults.", path);
         }
+        loadFailed = false;
         instance = defaultSupplier.get();
         trySave();
     }
@@ -308,21 +378,16 @@ public class ConfigHolder<T> {
      * own file.
      */
     public synchronized void save() {
-        if (instance == null) return;
-        if (loadFailed) {
-            // The file on disk is the operator's, and we could not read it. Writing our defaults
-            // over it is exactly the data loss RS-004 describes, so refuse (RS-004).
-            LOGGER.debug("Not writing {}: the existing file failed to parse and is being preserved.", path);
-            return;
-        }
-        try {
-            ensureParent();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to create parent directory for {}: {}", path, e.toString());
-            return;
-        }
+        if (instance == null || loadFailed) return;
+        SaveResult result = write(instance);
+        if (!result.success()) LOGGER.warn("{}", result.message());
+    }
+
+    private SaveResult write(T candidate) {
+        try { ensureParent(); }
+        catch (IOException e) { return new SaveResult(false, "Cannot create config directory: " + e.getMessage()); }
         Gson gson = prettyPrint ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
-        JsonElement tree = gson.toJsonTree(instance);
+        JsonElement tree = gson.toJsonTree(candidate);
         if (tree.isJsonObject() && !orphans.isEmpty()) {
             // Replay keys we did not recognise on load. Ours are written first and are not
             // overwritten, so a field that exists wins over a stale duplicate (RS-093).
@@ -338,14 +403,16 @@ public class ConfigHolder<T> {
         // directory that another tool might claim (RS-176).
         Path tmp = path.resolveSibling(path.getFileName().toString() + ".runicskills.tmp");
         try {
-            try (java.io.OutputStream out = Files.newOutputStream(tmp)) {
-                Writer w = new java.io.OutputStreamWriter(out, StandardCharsets.UTF_8);
+            try (java.nio.channels.FileChannel channel = java.nio.channels.FileChannel.open(tmp,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+                    java.nio.file.StandardOpenOption.WRITE)) {
+                Writer w = java.nio.channels.Channels.newWriter(channel, StandardCharsets.UTF_8);
                 gson.toJson(tree, w);
                 w.flush();
                 // Force the bytes to the platter before the rename. Without this an OS-level
                 // crash between write and move can leave a zero-length file that the next load
                 // treats as empty and regenerates from defaults (RS-176).
-                if (out instanceof java.io.FileOutputStream fos) fos.getFD().sync();
+                channel.force(true);
             }
             try {
                 Files.move(tmp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
@@ -355,13 +422,11 @@ public class ConfigHolder<T> {
                 Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            LOGGER.warn("Failed to save {}: {}", path, e.toString());
-            try {
-                Files.deleteIfExists(tmp);
-            } catch (IOException cleanup) {
-                LOGGER.debug("Could not remove temp config file {}: {}", tmp, cleanup.toString());
-            }
+            try { Files.deleteIfExists(tmp); }
+            catch (IOException cleanup) { LOGGER.debug("Could not remove {}", tmp, cleanup); }
+            return new SaveResult(false, "Failed to save " + path + ": " + e.getMessage());
         }
+        return new SaveResult(true, "Saved");
     }
 
     /**

@@ -85,6 +85,9 @@ public class ConfigAuthorityGameTest {
      */
     @GameTest(template = EMPTY)
     public static void aPublishedSnapshotOverridesReadsButNotTheLocalFile(GameTestHelper helper) {
+        com.otectus.runicskills.config.storage.ConfigHolder.withAuthoritativeView(() -> aPublishedSnapshotOverridesReadsButNotTheLocalFileClient(helper));
+    }
+    private static void aPublishedSnapshotOverridesReadsButNotTheLocalFileClient(GameTestHelper helper) {
         HandlerCommonConfig local = HandlerCommonConfig.HANDLER.local();
         int localValue = local.skillMaxLevel;
         int foreignValue = localValue + 7;
@@ -117,6 +120,9 @@ public class ConfigAuthorityGameTest {
      */
     @GameTest(template = EMPTY)
     public static void perkRequirementsFollowTheConfigInForce(GameTestHelper helper) {
+        com.otectus.runicskills.config.storage.ConfigHolder.withAuthoritativeView(() -> perkRequirementsFollowTheConfigInForceClient(helper));
+    }
+    private static void perkRequirementsFollowTheConfigInForceClient(GameTestHelper helper) {
         Perk probe = firstPerkWithAPositiveRequirement();
         if (probe == null) {
             throw new GameTestAssertException("no perk has a positive requirement level; the "
@@ -161,6 +167,9 @@ public class ConfigAuthorityGameTest {
     /** Passives carry per-level values and requirement arrays with the same problem. */
     @GameTest(template = EMPTY)
     public static void passiveLevelArraysFollowTheConfigInForce(GameTestHelper helper) {
+        com.otectus.runicskills.config.storage.ConfigHolder.withAuthoritativeView(() -> passiveLevelArraysFollowTheConfigInForceClient(helper));
+    }
+    private static void passiveLevelArraysFollowTheConfigInForceClient(GameTestHelper helper) {
         Passive probe = RegistryPassives.getPassive("attack_damage");
         if (probe == null || probe.levelsRequired == null || probe.levelsRequired.length == 0) {
             throw new GameTestAssertException(

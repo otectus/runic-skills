@@ -43,6 +43,9 @@ public final class GenericNamespaceLockProvider implements LockItemProvider {
         return id;
     }
 
+    public List<String> namespaces() { return namespaces; }
+    public int referenceBase() { return baseLevel; }
+
     @Override
     public boolean isActive(HandlerCommonConfig cfg) {
         List<String> disabled = cfg.disabledDiscoveredLockMods;
@@ -71,7 +74,9 @@ public final class GenericNamespaceLockProvider implements LockItemProvider {
             if (!namespaces.contains(ns)) continue;
             if (disabled.contains(ns) || disabled.contains(id)) continue;
             if (disabledItems.contains(rl.toString())) continue;
-            LockItem lock = LockGen.gearLock(rl.toString(), baseLevel, mult);
+            var resolution = NativeMaterialLocks.resolve(rl.toString(), ForgeRegistries.ITEMS.getValue(rl), baseLevel, mult);
+            LockItem lock = resolution.rule();
+            if (lock != null) lock.Source = id + ":" + resolution.outcome().name().toLowerCase(java.util.Locale.ROOT);
             if (lock != null) items.add(lock);
         }
         if (!items.isEmpty()) {

@@ -36,15 +36,15 @@ public class HandlerConditions {
     }
 
     public static void registerCondition(String name, Supplier<ConditionImpl<?>> factory){
-        if(ConditionFactories.containsKey(name.toLowerCase())){
+        if(ConditionFactories.containsKey(name.toLowerCase(java.util.Locale.ROOT))){
             throw new IllegalArgumentException(String.format("Condition with name %s already exists!", name));
         }
 
-        ConditionFactories.put(name.toLowerCase(), factory);
+        ConditionFactories.put(name.toLowerCase(java.util.Locale.ROOT), factory);
     }
 
     public static Optional<ConditionImpl<?>> getConditionByName(String conditionName){
-        Supplier<ConditionImpl<?>> factory = ConditionFactories.get(conditionName.toLowerCase());
+        Supplier<ConditionImpl<?>> factory = ConditionFactories.get(conditionName.toLowerCase(java.util.Locale.ROOT));
         if (factory == null) return Optional.empty();
         return Optional.of(factory.get());
     }

@@ -30,6 +30,8 @@ public class SkillLevelCommand {
                 Commands.literal("skills")
                 .then(TinkersCommand.node())
                 .then(IntegrationsCommand.node())
+                .then(LocksCommand.node())
+                .then(PackMuleCommand.node())
                 .then(Commands.argument("player", EntityArgument.player())
                         .requires(source -> source.hasPermission(2))
                         .then(

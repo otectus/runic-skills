@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "failure": "",
+  "checks": [
+    "native_save_io_failure_retained_draft_and_retry"
+  ]
+}

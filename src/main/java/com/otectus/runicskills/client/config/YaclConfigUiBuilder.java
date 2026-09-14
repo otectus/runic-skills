@@ -4,7 +4,10 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.config.storage.ConfigHolder;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
-import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
+import dev.isxander.yacl3.config.v2.api.ConfigSerializer;
+import dev.isxander.yacl3.config.v2.api.ConfigField;
+import dev.isxander.yacl3.config.v2.api.FieldAccess;
+import dev.isxander.yacl3.api.YetAnotherConfigLib;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -19,12 +22,9 @@ import java.util.regex.Pattern;
  * class in the project allowed to import {@code dev.isxander.yacl3.*} symbols other than
  * the inert annotations applied to fields in the {@code Handler*Config} POJOs themselves.
  *
- * <p>Sync strategy: before the YACL screen opens, the holder writes its current in-memory
- * state to disk. YACL then reads the file fresh, presents the autogen UI, and on Save writes
- * the user's edits back to the same file. After the user closes the screen we let the next
- * read-cycle ({@code /skillsreload}, the join-time sync packet, or the next
- * {@code .instance()} cache miss) pull the YACL-edited values back through the holder.
- * This avoids depending on YACL's internal field layout.
+ * <p>The editor loads the local file and saves through ConfigHolder's atomic writer.
+ * Saving publishes the edited local instance immediately; reopening never writes a stale cache
+ * over the file. An integrated server refreshes and synchronizes its gameplay state after Save.
  *
  * <p>Loaded only from {@code RunicSkillsClient.ClientProxy.clientSetup} (which is itself
  * client-only). This class never appears on the dedicated server classpath, so its
@@ -39,9 +39,10 @@ public final class YaclConfigUiBuilder {
      * Returns a YACL {@code YetAnotherConfigLib} (typed as {@code Object} in the holder
      * signature so that class doesn't reference YACL types).
      */
-    public static Object buildYacl(ConfigHolder<?> holder) {
-        holder.save();
-        return adapt(holder).generateGui();
+    public static <T> Object buildYacl(ConfigHolder<T> holder) {
+        var handler = adapt(holder);
+        handler.load();
+        return gui(holder, handler);
     }
 
     /**
@@ -65,11 +66,11 @@ public final class YaclConfigUiBuilder {
      */
     public static Screen buildScreen(Minecraft mc, Screen parent) {
         try {
-            HandlerCommonConfig.HANDLER.save();
             ConfigClassHandler<HandlerCommonConfig> handler = adapt(HandlerCommonConfig.HANDLER);
             handler.load();
-            Screen screen = handler.generateGui().generateScreen(parent);
-            return new ReloadOnCloseScreen(screen, parent, HandlerCommonConfig.HANDLER);
+            return gui(HandlerCommonConfig.HANDLER, handler).generateScreen(parent);
+        } catch (ConfigHolder.EditException e) {
+            return new YaclUnavailableScreen(parent, Component.literal(e.getMessage()));
         } catch (LinkageError e) {
             // YACL is absent, or present with an API that has drifted from the build we compile
             // against. NoClassDefFoundError / NoSuchMethodError / NoSuchFieldError /
@@ -143,13 +144,64 @@ public final class YaclConfigUiBuilder {
         }
     }
 
+    private static boolean remote() {
+        return Minecraft.getInstance().getConnection() != null && Minecraft.getInstance().getSingleplayerServer() == null;
+    }
+
+    private static <T> YetAnotherConfigLib gui(ConfigHolder<T> holder, ConfigClassHandler<T> handler) {
+        var generated = handler.generateGui();
+        var builder = YetAnotherConfigLib.createBuilder().title(Component.translatable("runicskills.config.title"));
+        if (handler.instance() instanceof HandlerCommonConfig common) builder.category(ProgressionConfigCategory.create(common, remote()));
+        builder.categories(generated.categories()).save(generated.saveFunction()).screenInit(generated.initConsumer());
+        var config = builder.build();
+        if (remote() && holder == HandlerCommonConfig.HANDLER) {
+            dev.isxander.yacl3.api.utils.OptionUtils.forEachOptions(config, option -> {
+                if (!(option instanceof dev.isxander.yacl3.api.LabelOption)) option.setAvailable(false);
+            });
+        }
+        return new YetAnotherConfigLib() {
+            public Component title() { return config.title(); }
+            public com.google.common.collect.ImmutableList<dev.isxander.yacl3.api.ConfigCategory> categories() { return config.categories(); }
+            public Runnable saveFunction() { return config.saveFunction(); }
+            public java.util.function.Consumer<dev.isxander.yacl3.gui.YACLScreen> initConsumer() { return config.initConsumer(); }
+            public Screen generateScreen(Screen parent) { return new TransactionalConfigScreen(this, parent); }
+        };
+    }
+
     private static <T> ConfigClassHandler<T> adapt(ConfigHolder<T> holder) {
+        boolean readOnly = remote() && holder == HandlerCommonConfig.HANDLER;
+        var session = new java.util.concurrent.atomic.AtomicReference<ConfigHolder.EditSession<T>>(
+                readOnly ? new ConfigHolder.EditSession<>(holder.instance(), null) : holder.beginEdit());
         return ConfigClassHandler.createBuilder(holder.type())
                 .id(new ResourceLocation(RunicSkills.MOD_ID, "config"))
-                .serializer(c -> GsonConfigSerializerBuilder.create(c)
-                        .setPath(holder.path())
-                        .setJson5(true)
-                        .build())
-                .build();
+                .serializer(c -> new ConfigSerializer<T>(c) {
+                    @Override public LoadResult loadSafely(java.util.Map<ConfigField<?>, FieldAccess<?>> fields) {
+                        try {
+                            for (var entry : fields.entrySet()) copyDraftField(holder, session.get().draft(), entry.getValue());
+                            return LoadResult.SUCCESS;
+                        } catch (ReflectiveOperationException e) { throw new IllegalStateException("Could not prepare config draft", e); }
+                    }
+                    @Override public void save() {
+                        if (readOnly) throw new IllegalStateException("Server gameplay settings are read-only");
+                        var server = Minecraft.getInstance().getSingleplayerServer();
+                        Runnable save = () -> {
+                            holder.commit(session.get(), c.instance()).orThrow();
+                            session.set(holder.beginEdit());
+                            if (server != null && holder == HandlerCommonConfig.HANDLER) {
+                                try { com.otectus.runicskills.common.command.SkillsReloadCommand.reload(server); }
+                                catch (RuntimeException e) { throw new IllegalStateException("Saved to disk, but live reload failed: " + e.getMessage(), e); }
+                            }
+                        };
+                        if (server != null && holder == HandlerCommonConfig.HANDLER) server.submit(save).join();
+                        else save.run();
+                    }
+                }).build();
+    }
+    private static <T, V> void copyDraftField(ConfigHolder<T> holder, T draft, FieldAccess<V> field)
+            throws ReflectiveOperationException {
+        Object value = holder.type().getField(field.name()).get(draft);
+        @SuppressWarnings("unchecked") V copy = (V) new com.google.gson.Gson().fromJson(
+                new com.google.gson.Gson().toJsonTree(value), field.type());
+        field.set(copy);
     }
 }

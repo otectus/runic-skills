@@ -94,7 +94,7 @@ public class RegistryAttributes {
                 }
                 // Clamp to the configured maximum. Shrinking a passive's level array left players
                 // who were already above the new cap scaling past it indefinitely (RS-043).
-                int level = Math.min(passive.getLevel(serverPlayer), maxLevel);
+                int level = passive.getEffectiveLevel(serverPlayer);
                 double value = passive.getValue() / maxLevel * level;
                 new RegisterAttribute(serverPlayer, passive.attribute, value,
                         UUID.fromString(passive.attributeUuid)).amplifyAttribute(enabled);

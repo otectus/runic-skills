@@ -145,7 +145,7 @@ public class ChannelPowerHandler {
     /** Converts the channel that has just ended into a bonus carried by the projectile it fired. */
     @SubscribeEvent
     public void onProjectileLaunched(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide()) return;
+        if (event.getLevel().isClientSide() || event.loadedFromDisk() || event.isCanceled()) return;
         if (!(event.getEntity() instanceof Projectile projectile)) return;
         if (!(projectile.getOwner() instanceof Player player)) return;
         if (projectile.getPersistentData().getBoolean(CHANNELLED)) return;

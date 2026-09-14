@@ -29,6 +29,11 @@ public class InteractionEventHandler {
     // (shield raise, off-hand food, off-hand right-click) is gated by the same call — the
     // off-hand event arrives with the off-hand stack here. No separate off-hand lookup needed.
     public static boolean shouldCancelInteraction(Player player, ItemStack item, Block block, Entity target) {
+        return shouldCancelInteraction(player, item, block, target, com.otectus.runicskills.integration.lock.LockAction.USE);
+    }
+
+    public static boolean shouldCancelInteraction(Player player, ItemStack item, Block block, Entity target,
+            com.otectus.runicskills.integration.lock.LockAction action) {
         SkillCapability provider = SkillCapability.get(player);
         if (provider == null) return false;
 
@@ -37,7 +42,7 @@ public class InteractionEventHandler {
         // SkillCapability.canUseItem).
         ResourceLocation location = ForgeRegistries.ITEMS.getKey(item.getItem());
         if (location == null) return false;
-        if (!provider.canUseItem(player, location)) return true;
+        if (!provider.canUseItem(player, item, action)) return true;
         if (block != null && !provider.canUseBlock(player, block)) return true;
         if (target != null && !provider.canUseEntity(player, target)) return true;
         return false;
@@ -48,7 +53,7 @@ public class InteractionEventHandler {
         Player player = event.getEntity();
         if (player.isCreative() || player instanceof FakePlayer) return;
         Block block = event.getLevel().getBlockState(event.getPos()).getBlock();
-        if (shouldCancelInteraction(player, event.getItemStack(), block, null)) event.setCanceled(true);
+        if (shouldCancelInteraction(player, event.getItemStack(), block, null, com.otectus.runicskills.integration.lock.LockAction.MINE)) event.setCanceled(true);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -82,7 +87,7 @@ public class InteractionEventHandler {
                 if (provider == null) return;
                 ItemStack item = event.getTo();
 
-                if (!provider.canUseItem(player, item)) {
+                if (!provider.canUseItem(player, item, com.otectus.runicskills.integration.lock.LockAction.EQUIP)) {
                     player.drop(item.copy(), false);
                     item.setCount(0);
                 }

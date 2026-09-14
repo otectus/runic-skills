@@ -4,6 +4,7 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.handler.HandlerResources;
 import com.otectus.runicskills.registry.RegistrySkills;
+import com.otectus.runicskills.registry.RegistryPassives;
 import com.otectus.runicskills.registry.skill.Skill;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -124,6 +125,24 @@ public class Passive {
     public int getLevel(Player player) {
         SkillCapability cap = SkillCapability.get(player);
         return cap != null ? cap.getPassiveLevel(this) : 0;
+    }
+
+    /** Allocations survive a lowered skill or changed pack gate; only qualified ranks grant stats. */
+    public int getEffectiveLevel(Player player) {
+        return getEffectiveLevel(SkillCapability.get(player));
+    }
+
+    public int getEffectiveLevel() {
+        return getEffectiveLevel(SkillCapability.getLocal());
+    }
+
+    private int getEffectiveLevel(SkillCapability cap) {
+        if (cap == null || levelsRequired == null || RegistryPassives.isDisabled(this)) return 0;
+        int allocated = Math.min(cap.getPassiveLevel(this), levelsRequired.length);
+        int skillLevel = cap.getSkillLevel(getSkill());
+        int effective = 0;
+        while (effective < allocated && skillLevel >= levelsRequired[effective]) effective++;
+        return effective;
     }
 
     public int getMaxLevel() {

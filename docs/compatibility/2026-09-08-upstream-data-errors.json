@@ -1,0 +1,1189 @@
+{
+  "scope": "296 nonfatal recipe parse errors in the first successful full-pack server boot; namespaces do not necessarily identify the supplying jar. Dragonsteel supplies 182 minecraft:false overrides across several namespaces.",
+  "errors": [
+    {
+      "recipe": "scguns:create/anthralite_ingot_from_smelting_crushed_raw_anthralite",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: scguns:create_mod_loaded"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_chestplate",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_chestplate",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "scguns:create/mechanical_crafting/jr_wristbreaker",
+      "error": "com.google.gson.JsonSyntaxException: Key defines symbols that aren't used in pattern: [C]"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "ice_and_fire_delight:dragonsteel_lightning_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:cosmical_light_block",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'avaritia:diamond_lattice'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:relicron_chestplate",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/voltaic_crystal/voltaic_crystal_material11",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:voltaic_crystal'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_shovel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/anti_neutronium/anti_neutronium_creation",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'mekanism:nucleosynthesizing'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonforge/dragonsteel_fire_ingot",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'forge:false'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_hoe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_leggings",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/resonance_crystal/resonance_crystal_material11",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:resonance_crystal'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/moray_eel",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_boots",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "scguns:create/diamond_steel_filling",
+      "error": "com.google.gson.JsonSyntaxException: Invalid empty fluid 'create_enchantment_industry:experience'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_advanced:modifiers/energy_reinforced",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:signalum_reinforcement'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_hoe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "iceandfire:dragonbone_sword_fire",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_chestplate",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_ingot_from_smelting",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_raw'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_shovel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_knight_chestplate_smithing",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:roaring_smithing_template'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_knight_helmet_smithing",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:roaring_smithing_template'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:tome_of_infinity",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'avaritia:extreme_shaped'"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/triggerfish",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "iceandfire:dragonbone_sword_ice",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_axe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_smithing_template",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:living_shadow'"
+    },
+    {
+      "recipe": "nichirin_dynasty:tkv_2",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "minecraft:iron_ingot_from_blasting_iron_ore",
+      "error": "com.google.gson.JsonSyntaxException: Empty ingredient not allowed here"
+    },
+    {
+      "recipe": "scguns:create/anthralite_ingot_from_blasting_crushed_raw_anthralite",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: scguns:create_mod_loaded"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/needlefish",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/parrotfish",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:jeed/miners_rage",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "samurai_dynasty:mask_netherite_samurai_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'samurai_dynasty:mask_netherite_samurai_helmet'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_delight:tinkering/tools/papas_fried_rice/repair_4",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_delight:slime_rice'"
+    },
+    {
+      "recipe": "malum:jeed/poseidons_grasp",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "nichirin_dynasty:ok",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "nichirin_dynasty:nk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'epicsamurai:steel_ingot'"
+    },
+    {
+      "recipe": "nichirin_dynasty:mk",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "nichirin_dynasty:tb",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'epicsamurai:onyx'"
+    },
+    {
+      "recipe": "nichirin_dynasty:rk",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "nichirin_dynasty:gk",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "nichirin_dynasty:ga",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'epicsamurai:steel_ingot'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "nichirin_dynasty:ik",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_spellbook",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:living_shadow'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:infinity_orb",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:infinity_rune'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:tome_of_infinity_re_avaritia",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'avaritia:shaped_table'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:photon_light_block",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:glowshard'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_hoe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "dragonsteel:custom_draconiccodex/draconic_codex",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'draconiccodex:draconic_codex'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_leggings",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_pickaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:farmersdelight/holy_caramel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'malum:holy_syrup'"
+    },
+    {
+      "recipe": "nichirin_dynasty:sak",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "malum:jeed/zephyrs_courage",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:relicron_leggings",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "dragonsteel:custom_iceandfire_delight/phantom_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'ice_and_fire_delight:dragonbone_knife'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:jeed/gaias_bulwark",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:infinity_rune",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'avaritia:infinity_catalyst'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "samurai_dynasty:mask_straw_hat",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'samurai_dynasty:mask_straw_hat'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "galosphere:block_comparator",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'galosphere:block_comparator'"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/disintegrate_crystal/disintegrate_crystal_material11",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:disintegrate_crystal'"
+    },
+    {
+      "recipe": "malum:jeed/aethers_charm",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_delight:cooking/noodles/steak_and_ichor_pasta",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tconstruct:ichor_ball'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:farmersdelight/unholy_caramel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'malum:unholy_syrup'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "antiquelegacy:furnace/gold_nugget_blasting",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'antiquelegacy:golden_laurel_wreath'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "samurai_dynasty:mask_amethyst_samurai_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'samurai_dynasty:mask_amethyst_samurai_helmet'"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/blitz_lumium/blitz_lumiumto_ingot",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:blitz_lumium_nugget'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:jeed/earthen_might",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "dragonsteel:custom_iceandfire_delight/dragonsteel_fire_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'ice_and_fire_delight:dragonsteel_fire_knife'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:shadow_orb",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:delta_rune'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_boots",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_boots",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_club",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:delta_rune",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:living_shadow'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:recruit_storage",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:living_shadow'"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/protocite/protocite_ingot_create",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'mekanism:combining'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_club",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "samurai_dynasty:mask_quartz_samurai_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'samurai_dynasty:mask_quartz_samurai_helmet'"
+    },
+    {
+      "recipe": "bielgg_spells:relicron_orb",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:relic_rune'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/irradium/irradium_ingot_create",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'mekanism:combining'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_axe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "ice_and_fire_delight:dragonsteel_ice_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "minecraft:iron_ingot_from_blasting_raw_iron",
+      "error": "com.google.gson.JsonSyntaxException: Empty ingredient not allowed here"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_leggings",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_shovel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "dragonsteel:custom_iceandfire_delight/dragonsteel_lightning_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'ice_and_fire_delight:dragonsteel_lightning_knife'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:jeed/anglers_lure",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "bielgg_spells:tainted_orb",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:rune_of_the_order'"
+    },
+    {
+      "recipe": "vintagedelight:fermenting/frost_fermenta",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'minecraft:rotten_tomato'"
+    },
+    {
+      "recipe": "antiquelegacy:furnace/bronze_nugget_blasting",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'antiquelegacy:left_gladiator_shoulder_pad'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/lionfish",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "magistuarmoryaddon:darkblued_armet_from_dark_knight_helmet_darkening",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "bielgg_spells:tome_of_relics",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:relic_rune",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "roaring:roaring_blade_recipe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:glowshard'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_battleaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "ice_and_fire_delight:dragonsteel_fire_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_boots",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "nichirin_dynasty:recipenkhr",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'epicsamurai:steel_ingot'"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_knight_leggings_smithing",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:roaring_smithing_template'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_sword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "antiquelegacy:mars_of_todi_thorax",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'antiquelegacy:mars_of_todi_thorax'"
+    },
+    {
+      "recipe": "minecraft:iron_ingot_from_blasting_deepslate_iron_ore",
+      "error": "com.google.gson.JsonSyntaxException: Empty ingredient not allowed here"
+    },
+    {
+      "recipe": "minecraft:tipped_arrow",
+      "error": "com.google.gson.JsonSyntaxException: Missing type, expected to find a string"
+    },
+    {
+      "recipe": "dragonsteel:custom_iceandfire_delight/dragonsteel_ice_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'ice_and_fire_delight:dragonsteel_ice_knife'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_quarterstaff",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:relicron_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_club",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:tainted_spellbook",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:rune_of_the_order'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_javelin",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_sword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "overgeared:silver_ingot_from_cooling",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'oreganized:silver_ingot'"
+    },
+    {
+      "recipe": "antiquelegacy:furnace/iron_nugget_blasting",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'antiquelegacy:iron_left_hand_manika'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_leggings",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "nichirin_dynasty:recipernm",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'epicsamurai:steel_ingot'"
+    },
+    {
+      "recipe": "dragonsteel:dragonhead_to_scale",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'quark:dragon_scale'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "ice_and_fire_delight:phantom_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'ice_and_fire_delight:dragonbone_knife'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_warhammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_halberd",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_sword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "overgeared:silver_ingot_from_cooling_3",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'caverns_and_chasms:silver_ingot'"
+    },
+    {
+      "recipe": "bielgg_spells:loaded_disc",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:glowshard'"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/blitz_lumium/blitz_lumiumto_nugget",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'tinkers_advanced:blitz_lumium'"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_saber",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_axe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_heavy_crossbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_longsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_fire_chestplate",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonforge/dragonsteel_ice_ingot",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'forge:false'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragonsteel_scythe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_katana",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "magistuarmoryaddon:darkblued_sallet_from_dark_gothic_helmet_darkening",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'minecraft:smithing'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonbone_sword_lightning",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_battle_hammer",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_helmet",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "bielgg_spells:eye_of_penumbra",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:shadow_crystal'"
+    },
+    {
+      "recipe": "malum:jeed/ifrits_embrace",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_flanged_mace",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_spear",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:relicron_boots",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'eeeabsmobs:ancient_drive_crystal'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_ice_pickaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lost_ingot",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'roaring:shadow_crystal'"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_sword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:fire_dragonsteel_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "tinkers_advanced:materials/signalum/signalum_reinforcement",
+      "error": "com.google.gson.JsonSyntaxException: Unable to parse result as registry minecraft:item does not contain ID tinkers_advanced:signalum_reinforcement"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonforge/dragonsteel_lightning_ingot",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'forge:false'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_boomerang",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_pickaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:dragonsteel_lightning_hoe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_lance",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:roaring_knight_boots_smithing",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:roaring_smithing_template'"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_glaive",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_tomahawk",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:ice_dragonsteel_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "draconiccodex:draconic_codex",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_pike",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:shadow_crystal_from_fragments",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:shadow_crystal_fragment'"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_shovel",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_axe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_rapier",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_ingot_from_blasting",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_raw'"
+    },
+    {
+      "recipe": "spartanfire:iced_dragon_bone_throwing_knife",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "iceandfire:ghost_sword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "lilis_lucky_lures:fish_trap/carp",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'lilis_lucky_lures:fish_trap'"
+    },
+    {
+      "recipe": "bielgg_spells:rune_of_the_order",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'witherstormmod:tainted_dust'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_parrying_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:flamed_dragon_bone_longbow",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "malum:jeed/gluttony",
+      "error": "com.google.gson.JsonSyntaxException: Invalid or unsupported recipe type 'jeed:effect_provider'"
+    },
+    {
+      "recipe": "bielgg_spells:lacquer_pickaxe",
+      "error": "com.google.gson.JsonSyntaxException: Unknown item 'bielgg_spells:lacquer_ingot'"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_greatsword",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    },
+    {
+      "recipe": "spartanfire:lightning_dragon_bone_dagger",
+      "error": "com.google.gson.JsonSyntaxException: Unknown condition type: minecraft:false"
+    }
+  ]
+}

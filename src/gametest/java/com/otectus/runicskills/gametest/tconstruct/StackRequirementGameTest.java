@@ -22,11 +22,7 @@ import java.util.Optional;
 /**
  * Spec §18.3 C06 and §7: what a native tool asks of the player holding it.
  *
- * <p>The first test is the one that matters most on an existing server, and it is a negative:
- * {@code enableTConstructLockItems} is off by default, so installing this release must not lock a
- * single tool anybody already owns. §7.1 spells out why that default is not timidity — an automatic
- * material-tier lock switched on by a version bump disables equipment mid-world, and a player whose
- * hammer stopped working has no way to tell that from a bug.
+ * <p>Defaults enable progression; an explicit opt-out still leaves equipment unrestricted.
  */
 @PrefixGameTestTemplate(false)
 public class StackRequirementGameTest {
@@ -38,17 +34,31 @@ public class StackRequirementGameTest {
     public static void withLocksOffNothingIsClaimed(GameTestHelper helper) {
         ServerPlayer player = TinkerFixtures.player(helper, "tc_lock_default");
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
-        if (config.enableTConstructLockItems) {
-            throw new GameTestAssertException("enableTConstructLockItems defaults to true; §7.1 "
-                    + "requires automatic material-tier locks to be opt-in");
+        boolean previous = config.enableTConstructLockItems;
+        try {
+            config.enableTConstructLockItems = false;
+            Optional<RequirementDecision> decision = LockProviderRegistry.resolveStack(
+                    player, TinkerFixtures.pickaxeOfTier(4), LockAction.USE);
+            helper.assertTrue(decision.isEmpty(), "Disabled automatic locks must decline the tool");
+        } finally {
+            config.enableTConstructLockItems = previous;
         }
+        helper.succeed();
+    }
 
-        Optional<RequirementDecision> decision = LockProviderRegistry.resolveStack(
-                player, TinkerFixtures.pickaxeOfTier(4), LockAction.USE);
-        if (decision.isPresent()) {
-            throw new GameTestAssertException("with locks off the resolver returned a verdict on a "
-                    + "late-material pickaxe; it must decline so the unchanged item-id path decides");
-        }
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void defaultGatesReachRealInteractionsAndHonorMasterOptOut(GameTestHelper helper) {
+        helper.assertTrue(new HandlerCommonConfig().enableTConstructLockItems, "Fresh installs enable Tinkers progression");
+        ServerPlayer player = TinkerFixtures.player(helper, "tc_lock_interact");
+        var capability = TinkerFixtures.capabilityOf(player);
+        capability.setSkillLevel(RegistrySkills.TINKERING.get(), 1);
+        var late = TinkerFixtures.pickaxeOfTier(4);
+        withLocksOn(() -> {
+            helper.assertTrue(com.otectus.runicskills.registry.events.InteractionEventHandler
+                    .shouldCancelInteraction(player, late, null, null), "Right/left click must check actual materials");
+            HandlerCommonConfig.HANDLER.instance().enableItemLocks = false;
+            helper.assertTrue(capability.canUseItemSilent(player, late), "Master opt-out removes native requirements");
+        });
         helper.succeed();
     }
 
@@ -147,6 +157,26 @@ public class StackRequirementGameTest {
 
     /** Parts, casts and patterns are components, never lockable gear (§5.1's last table row). */
     @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void knownHighTierAddonMaterialsRemainGated(GameTestHelper helper) {
+        var player = TinkerFixtures.player(helper, "tc_lock_addon_tiers");
+        TinkerFixtures.capabilityOf(player).setSkillLevel(RegistrySkills.TINKERING.get(), 1);
+        var tiers = slimeknights.tconstruct.library.materials.MaterialRegistry.getMaterials().stream()
+                .filter(m -> !m.isHidden() && m.getTier() >= 5)
+                .filter(m -> slimeknights.tconstruct.library.materials.MaterialRegistry.getInstance()
+                        .getMaterialStats(m.getIdentifier(), slimeknights.tconstruct.tools.stats.HeadMaterialStats.ID).isPresent())
+                .map(m -> m.getTier()).distinct().toList();
+        withLocksOn(() -> {
+            for (int tier : tiers) {
+                var decision = require(player, TinkerFixtures.pickaxeOfTier(tier), LockAction.USE, "addon tier " + tier);
+                helper.assertTrue(!decision.allowed() && decision.requirements().containsKey("tinkering"),
+                        "Known tier " + tier + " must not bypass material progression");
+            }
+        });
+        helper.succeed();
+    }
+
+    /** Parts, casts and patterns are components, never lockable gear. */
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
     public static void componentsAndVanillaItemsAreNotClaimed(GameTestHelper helper) {
         ServerPlayer player = TinkerFixtures.player(helper, "tc_lock_parts");
         ItemStack part = new ItemStack(ForgeRegistries.ITEMS.getValue(
@@ -164,6 +194,57 @@ public class StackRequirementGameTest {
             }
         });
         helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void mixedUnknownMaterialsRetainKnownRequirementsAndRefreshViews(GameTestHelper h) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(h, "tc_mixed_220");
+        var late = TinkerFixtures.pickaxeOfTier(4);
+        var materials = late.getOrCreateTag().getList(slimeknights.tconstruct.library.tools.nbt.ToolStack.TAG_MATERIALS, net.minecraft.nbt.Tag.TAG_STRING);
+        h.assertTrue(materials.size() > 1, "fixture lacks material slots");
+        materials.set(1, net.minecraft.nbt.StringTag.valueOf("missing_material:unknown"));
+        withLocksOn(() -> {
+            var decision = require(player, late, LockAction.MINE, "mixed material");
+            h.assertTrue(decision.requirements().get("tinkering") == 24 && !decision.unsupportedFacts().isEmpty(), "unknown part erased known tier");
+            player.getInventory().setItem(0, late);
+            var request = new com.otectus.runicskills.network.packet.common.InspectStackSP(player.containerMenu.containerId, 36, 1);
+            var response = request.inspect(player);
+            h.assertTrue(response != null && response.views().get(LockAction.MINE).requirements().get("tinkering") == 24, "server inspection diverged");
+            player.getInventory().setItem(0, TinkerFixtures.pickaxeOfTier(1));
+            var fresh = request.inspect(player);
+            h.assertTrue(fresh != null && fresh.stackHash() != response.stackHash()
+                    && fresh.views().get(LockAction.MINE).requirements().get("tinkering") == 1, "material swap kept stale inspection");
+            h.assertTrue(new com.otectus.runicskills.network.packet.common.InspectStackSP(999, 36, 1).inspect(player) == null, "foreign menu inspection accepted");
+        });
+        h.succeed();
+    }
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void nativeMiningAndResultRemovalUseTheirActualActions(GameTestHelper h) {
+        ServerPlayer player = TinkerFixtures.connectedPlayer(h, "tc_action_220");
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        var cap = TinkerFixtures.capabilityOf(player);
+        cap.setSkillLevel(RegistrySkills.TINKERING.get(), 32); cap.setSkillLevel(RegistrySkills.STRENGTH.get(), 32);
+        cap.setSkillLevel(RegistrySkills.ENDURANCE.get(), 1);
+        var late = TinkerFixtures.pickaxeOfTier(4); player.getInventory().setItem(0, late);
+        withLocksOn(() -> {
+            h.assertTrue(cap.canUseItemSilent(player, late, LockAction.ATTACK), "attack inherited mining gate");
+            var pos = h.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+            h.getLevel().setBlock(pos, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+            h.assertTrue(!player.gameMode.destroyBlock(pos) && h.getLevel().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.STONE), "native mining bypassed functional gate");
+            cap.setSkillLevel(RegistrySkills.TINKERING.get(), 1);
+            var result = new net.minecraft.world.inventory.ResultContainer(); result.setItem(0, late.copy());
+            var grid = new net.minecraft.world.inventory.TransientCraftingContainer(player.inventoryMenu, 2, 2);
+            var slot = new net.minecraft.world.inventory.ResultSlot(player, grid, result, 0, 0, 0);
+            h.assertTrue(slot.mayPickup(player), "automatic use lock trapped a native crafting result");
+            var cfg = HandlerCommonConfig.HANDLER.instance(); boolean dropping = cfg.dropLockedItems;
+            try {
+                cfg.dropLockedItems = true;
+                com.otectus.runicskills.registry.events.TickEventHandler.onPlayerTick(
+                        new net.minecraftforge.event.TickEvent.PlayerTickEvent(net.minecraftforge.event.TickEvent.Phase.END, player));
+                h.assertTrue(player.getMainHandItem() == late && !late.isEmpty(), "automatic use gate ejected stored cargo");
+            } finally { cfg.dropLockedItems = dropping; }
+        });
+        h.succeed();
     }
 
     /** Runs {@code body} with the automatic profile switched on, and always switches it back. */

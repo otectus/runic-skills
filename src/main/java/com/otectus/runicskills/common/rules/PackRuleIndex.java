@@ -50,8 +50,8 @@ public final class PackRuleIndex {
                 case CRAFT_REWARD_POLICY -> reward.add(rule);
             }
         }
-        // Sorted once, at build time, highest priority first: a lookup then reads the front of the
-        // list and only has to look at the second entry to detect a tie.
+        // Sorted once, at build time, highest priority first. A lookup compares all matches in
+        // the winning priority group; two agreeing entries must not hide a third disagreement.
         Comparator<PackRule> byPriority = Comparator.comparingInt(PackRule::priority).reversed();
         use.sort(byPriority);
         reward.sort(byPriority);
@@ -117,14 +117,12 @@ public final class PackRuleIndex {
                                              LockAction action) {
         List<PackRule> matched = new ArrayList<>();
         for (PackRule rule : useRequirements) {
+            if (!matched.isEmpty() && rule.priority() < matched.get(0).priority()) break;
             if (rule.match().matchesTool(definitionId, materialIds, roles, materialTier, action)) {
                 matched.add(rule);
-                // Two is enough to decide: the list is sorted, so a third can only be lower than or
-                // equal to the second, and the tie test only looks at the first two.
-                if (matched.size() == 2) break;
             }
         }
-        return winner(matched, first -> first.requirements().equals(matched.get(1).requirements()));
+        return winner(matched, (first, next) -> first.requirements().equals(next.requirements()));
     }
 
     /** Whether any reward rule is loaded at all, so the ordinary craft path can skip the lookup. */
@@ -136,33 +134,32 @@ public final class PackRuleIndex {
     public Optional<PackRule> craftRewardPolicy(String providerId, ResourceLocation itemId) {
         List<PackRule> matched = new ArrayList<>();
         for (PackRule rule : craftRewardPolicies) {
+            if (!matched.isEmpty() && rule.priority() < matched.get(0).priority()) break;
             if (rule.match().matchesResult(providerId, itemId)) {
                 matched.add(rule);
-                if (matched.size() == 2) break;
             }
         }
         return winner(matched,
-                first -> first.allowExtraOutput() == matched.get(1).allowExtraOutput());
+                (first, next) -> first.allowExtraOutput() == next.allowExtraOutput());
     }
 
     /**
-     * The highest-priority match, unless two of equal priority disagree.
+     * The highest-priority match, unless any pair of winning-priority matches disagrees.
      *
-     * @param agrees whether the top two say the same thing, in which case there is no conflict to
-     *               report — two packs stating the same requirement is not an error
+     * @param agrees whether two rules say the same thing; repeated identical requirements are fine
      */
     private static Optional<PackRule> winner(List<PackRule> matched,
-                                             java.util.function.Predicate<PackRule> agrees) {
+                                             java.util.function.BiPredicate<PackRule, PackRule> agrees) {
         if (matched.isEmpty()) return Optional.empty();
         PackRule first = matched.get(0);
-        if (matched.size() < 2 || first.priority() != matched.get(1).priority()) {
-            return Optional.of(first);
+        for (int index = 1; index < matched.size(); index++) {
+            PackRule next = matched.get(index);
+            if (agrees.test(first, next)) continue;
+            LogOnce.warnOnce("pack-rule-conflict:" + first.id() + "|" + next.id(),
+                    "[Runic Skills] pack rules {} and {} both match at priority {} and disagree; neither"
+                    + " is applied. Give one of them a higher priority.", first.id(), next.id(), first.priority());
+            return Optional.empty();
         }
-        if (agrees.test(first)) return Optional.of(first);
-        LogOnce.warnOnce("pack-rule-conflict:" + first.id() + "|" + matched.get(1).id(),
-                "[Runic Skills] pack rules {} and {} both match at priority {} and disagree; neither"
-                + " is applied. Give one of them a higher priority.",
-                first.id(), matched.get(1).id(), first.priority());
-        return Optional.empty();
+        return Optional.of(first);
     }
 }

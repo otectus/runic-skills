@@ -19,6 +19,9 @@ package com.otectus.runicskills.common.util;
  */
 public final class ExperienceMath {
 
+    /** Highest vanilla level whose starting balance fits in the game's signed XP-point field. */
+    private static final int MAX_POINT_LEVEL = 21_863;
+
     private ExperienceMath() {
     }
 
@@ -27,14 +30,15 @@ public final class ExperienceMath {
      * {@code Player.getXpNeededForNextLevel()} exactly, so it can stand in for it without a player.
      */
     public static int xpBarCap(int level) {
-        if (level >= 30) return 112 + (level - 30) * 9;
+        if (level >= 30) return (int) Math.min(Integer.MAX_VALUE, 112L + (level - 30L) * 9L);
         if (level >= 15) return 37 + (level - 15) * 5;
-        return 7 + level * 2;
+        return 7 + Math.max(0, level) * 2;
     }
 
     /** Total XP points accumulated to reach {@code level} (0 progress into it). Vanilla curve. */
     public static int getExperienceForLevel(int level) {
         if (level <= 0) return 0;
+        if (level > MAX_POINT_LEVEL) return Integer.MAX_VALUE;
         if (level <= 15) return sum(level, 7, 2);
         if (level <= 30) return 315 + sum(level - 15, 37, 5);
         return 1395 + sum(level - 30, 112, 9);
@@ -47,13 +51,14 @@ public final class ExperienceMath {
      */
     public static int getLevelForExperience(int totalXp) {
         if (totalXp <= 0) return 0;
-        int level = 0;
-        while (true) {
-            final int xpToNextLevel = xpBarCap(level);
-            if (totalXp < xpToNextLevel) return level;
-            level++;
-            totalXp -= xpToNextLevel;
+        int low = 0;
+        int high = MAX_POINT_LEVEL;
+        while (low < high) {
+            int middle = low + (high - low + 1) / 2;
+            if (getExperienceForLevel(middle) <= totalXp) low = middle;
+            else high = middle - 1;
         }
+        return low;
     }
 
     /**
@@ -64,8 +69,9 @@ public final class ExperienceMath {
      */
     public static int spendableXp(int experienceLevel, float experienceProgress) {
         int level = Math.max(0, experienceLevel);
-        float progress = experienceProgress < 0f ? 0f : (experienceProgress > 1f ? 1f : experienceProgress);
-        return getExperienceForLevel(level) + (int) (progress * xpBarCap(level));
+        float progress = Float.isFinite(experienceProgress)
+                ? Math.max(0f, Math.min(1f, experienceProgress)) : 0f;
+        return saturatingAdd(getExperienceForLevel(level), (long) (progress * xpBarCap(level)));
     }
 
     /**
@@ -92,7 +98,7 @@ public final class ExperienceMath {
      * real level-up down to a free one. {@code minCost} is itself floored at 0.</p>
      */
     public static int requiredPoints(int skillLevel, int firstCostLevel, float mult, int minCost) {
-        int base = getExperienceForLevel(skillLevel + firstCostLevel - 1);
+        int base = getExperienceForLevel(saturatingAdd(skillLevel, (long) firstCostLevel - 1));
         int cost = Math.max(0, Math.round(base * mult));
         return Math.max(Math.max(0, minCost), cost);
     }
@@ -132,13 +138,12 @@ public final class ExperienceMath {
 
     /** {@code base + add} clamped to the int range, so a huge award cannot wrap to negative XP. */
     public static int saturatingAdd(int base, long add) {
-        long sum = (long) base + add;
-        if (sum > Integer.MAX_VALUE) return Integer.MAX_VALUE;
-        if (sum < Integer.MIN_VALUE) return Integer.MIN_VALUE;
-        return (int) sum;
+        if (add > (long) Integer.MAX_VALUE - base) return Integer.MAX_VALUE;
+        if (add < (long) Integer.MIN_VALUE - base) return Integer.MIN_VALUE;
+        return (int) (base + add);
     }
 
     private static int sum(int n, int a0, int d) {
-        return n * (2 * a0 + (n - 1) * d) / 2;
+        return (int) ((long) n * (2L * a0 + (n - 1L) * d) / 2);
     }
 }

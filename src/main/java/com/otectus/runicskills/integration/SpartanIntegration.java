@@ -238,6 +238,9 @@ public class SpartanIntegration {
             if (!id.getNamespace().startsWith("spartan")) continue;
             String idStr = id.toString();
             if (covered.contains(idStr)) continue;
+            var cfg = HandlerCommonConfig.HANDLER.instance();
+            if (cfg.disabledDiscoveredLockItems != null && cfg.disabledDiscoveredLockItems.contains(idStr)) continue;
+            if (cfg.disabledDiscoveredLockMods != null && cfg.disabledDiscoveredLockMods.contains(id.getNamespace())) continue;
             LockItem lock = com.otectus.runicskills.integration.lock.LockGen.gearLock(idStr, 8, multiplier);
             if (lock == null) continue;
             items.add(lock);
@@ -261,10 +264,9 @@ public class SpartanIntegration {
                     if (weapon != WeaponType.LONGBOW && weapon != WeaponType.HEAVY_CROSSBOW) continue;
                 }
 
-                if (material.level == 0) continue; // Wooden tier = no restriction
-
                 String itemId = namespace + ":" + material.id + "_" + weapon.id;
                 if (!itemExists(itemId)) continue;
+                if (material.level == 0) { items.add(LockItem.unrestricted(itemId)); continue; }
 
                 LockItem lockItem = buildWeaponLockItem(itemId, weapon, material.level, multiplier);
                 if (lockItem != null) items.add(lockItem);
@@ -293,7 +295,13 @@ public class SpartanIntegration {
             String material = (String) entry[0];
             int level = (int) entry[1];
 
-            if (level == 0) continue;
+            if (level == 0) {
+                for (String family : List.of("basic_shield", "tower_shield")) {
+                    String id = SHIELDS + ":" + material + "_" + family;
+                    if (itemExists(id)) items.add(LockItem.unrestricted(id));
+                }
+                continue;
+            }
 
             // Basic shield: Endurance + Constitution
             String basicId = SHIELDS + ":" + material + "_basic_shield";
@@ -399,12 +407,12 @@ public class SpartanIntegration {
     }
 
     private static WeaponType identifyWeaponType(String path) {
+        WeaponType best = null;
         for (WeaponType type : WeaponType.values()) {
-            if (path.endsWith("_" + type.id) || path.equals(type.id)) {
-                return type;
-            }
+            if ((path.endsWith("_" + type.id) || path.equals(type.id))
+                    && (best == null || type.id.length() > best.id.length())) best = type;
         }
-        return null;
+        return best;
     }
 
     // --- Helpers ---

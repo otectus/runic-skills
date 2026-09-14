@@ -382,33 +382,10 @@ public class EnchantingLorePerkHandler {
         }
     }
 
-    /**
-     * Temporal Wisdom — "Enchantment effects last longer in combat".
-     *
-     * <p>Vanilla enchantments do not grant timed effects, so the durable reading is the beneficial
-     * effects a player is running on while fighting. Extended as they arrive, and only while combat
-     * is recent, so it rewards drinking during a fight rather than stockpiling beforehand.
-     */
-    @SubscribeEvent
-    public void onEffectAdded(MobEffectEvent.Added event) {
-        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()) return;
-        if (RegistryPerks.TEMPORAL_WISDOM == null
-                || !RegistryPerks.TEMPORAL_WISDOM.get().isEnabled(player)) {
-            return;
-        }
-        MobEffectInstance added = event.getEffectInstance();
-        if (added == null || added.isInfiniteDuration()) return;
-        if (added.getEffect().getCategory() != MobEffectCategory.BENEFICIAL) return;
-
-        Long lastCombat = LAST_COMBAT_TICK.get(player.getUUID());
-        int window = HandlerCommonConfig.HANDLER.instance().temporalWisdomCombatTicks;
-        if (!GameTimeWindow.within(player.level().getGameTime(), lastCombat, window)) return;
-
-        double extra = HandlerCommonConfig.HANDLER.instance().temporalWisdomPercent / 100.0;
-        if (extra <= 0) return;
-        player.addEffect(new MobEffectInstance(added.getEffect(),
-                (int) (added.getDuration() * (1.0 + extra)),
-                added.getAmplifier(), added.isAmbient(), added.isVisible()));
+    /** Duration policy reads combat history before Forge posts Added; it never reapplies. */
+    public static boolean inCombat(Player player) {
+        return GameTimeWindow.within(player.level().getGameTime(), LAST_COMBAT_TICK.get(player.getUUID()),
+                HandlerCommonConfig.HANDLER.instance().temporalWisdomCombatTicks);
     }
 
     // ── Mystic Sight ────────────────────────────────────────────────────────────────────────

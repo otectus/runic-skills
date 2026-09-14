@@ -1,0 +1,7 @@
+{
+  "checks": [
+    "remote_server_values_and_read_only_editor"
+  ],
+  "passed": true,
+  "failure": ""
+}

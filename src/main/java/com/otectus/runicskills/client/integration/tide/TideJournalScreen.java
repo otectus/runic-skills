@@ -37,7 +37,7 @@ public final class TideJournalScreen extends Screen {
                 && player != null && TideJournal.hasJournal(player)
                 && (TideJournal.availability(false, false).available() || TideJournal.availability(true, false).available());
         if (!nativeJournal && !inventory) return;
-        event.addListener(Button.builder(text("title"), button -> {
+        event.addListener(new FieldNotesButton(nativeJournal ? 5 : parent.width - 125, button -> {
             ResourceLocation fish = TideJournal.NONE;
             try {
                 var field = parent.getClass().getDeclaredField("activeFish"); field.setAccessible(true);
@@ -45,7 +45,14 @@ public final class TideJournalScreen extends Screen {
                 if (value instanceof ItemStack stack && !stack.isEmpty()) fish = ForgeRegistries.ITEMS.getKey(stack.getItem());
             } catch (ReflectiveOperationException ignored) { }
             var screen = new TideJournalScreen(parent, fish); Minecraft.getInstance().setScreen(screen); screen.query(0, false);
-        }).bounds(nativeJournal ? 5 : parent.width - 125, 5, 120, 20).build());
+        }));
+    }
+
+    /** A marker for optional overlay integrations; availability and navigation stay in journal(). */
+    public static final class FieldNotesButton extends Button {
+        private FieldNotesButton(int x, OnPress onPress) {
+            super(x, 5, 120, 20, text("title"), onPress, DEFAULT_NARRATION);
+        }
     }
     private void query(int page, boolean select) {
         request = ++nextRequest; ServerNetworking.sendToServer(new TideJournalSP(request, focused, Math.max(0,page), filter, select));

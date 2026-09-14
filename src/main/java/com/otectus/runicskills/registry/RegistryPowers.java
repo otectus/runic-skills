@@ -99,14 +99,17 @@ public class RegistryPowers {
                 powerIcon(path), icdTicks));
     }
 
-    /** Builds a cross-cutting Power. Always registers (no mod gate). */
+    /** Builds a cross-cutting Power. IDs always register; spell-only Crowns still need their provider. */
     private static RegistryObject<Power> crossPower(String path,
                                                      PowerTier tier,
                                                      ResourceLocation category,
                                                      Supplier<Skill> governingSkill,
                                                      int icdTicks) {
-        return registerPower(path, () -> Power.of(path, tier, category, governingSkill, lvlFor(tier),
-                powerIcon(path), icdTicks));
+        boolean spellOnly = path.equals("the_long_note") || path.equals("warmages_covenant")
+                || path.equals("the_still_mind");
+        return registerPower(path, () -> spellOnly
+                ? Power.ofIss(path, tier, category, governingSkill, lvlFor(tier), powerIcon(path), icdTicks)
+                : Power.of(path, tier, category, governingSkill, lvlFor(tier), powerIcon(path), icdTicks));
     }
 
     /**

@@ -192,6 +192,81 @@ public class RulesReloadGameTest {
         helper.succeed();
     }
 
+    /** A unique higher-priority override wins regardless of lower-priority duplicate order. */
+    @GameTest(template = EMPTY)
+    public static void lowerPriorityDuplicatesDoNotPoisonAUniqueOverride(GameTestHelper helper) {
+        String override = VALID.replace("\"priority\": 100", "\"priority\": 200");
+        for (int position = 0; position < 3; position++) {
+            Map<String, String> files = new LinkedHashMap<>();
+            for (int index = 0; index < 3; index++) files.put("order_" + index, index == position ? override : VALID);
+            TConstructRulesLoader.Result result = parse(files);
+            if (result.rules().size() != 1 || result.rules().get(0).priority() != 200) {
+                throw new GameTestAssertException("lower-priority duplicate poisoned override at position " + position);
+            }
+        }
+        helper.succeed();
+    }
+
+    /** A resource-limit failure retains all prior rules instead of silently truncating locks. */
+    @GameTest(template = EMPTY)
+    public static void tooManyRulesRefuseTheReloadAtomically(GameTestHelper helper) {
+        try {
+            TConstructRulesLoader.install(parse(Map.of("valid", VALID)));
+            int revision = PackRuleIndex.get().revision();
+            Map<String, String> oversized = new LinkedHashMap<>();
+            for (int file = 0; file < 33; file++) {
+                StringBuilder json = new StringBuilder("{\"schema_version\":1,\"rules\":[");
+                for (int rule = 0; rule < 64; rule++) {
+                    if (rule > 0) json.append(',');
+                    json.append("{\"id\":\"gametest:limit_").append(file).append('_').append(rule)
+                            .append("\",\"kind\":\"craft_reward_policy\",\"allow_extra_output\":false}");
+                }
+                oversized.put("limit_" + file, json.append("]}").toString());
+            }
+            TConstructRulesLoader.Result result = parse(oversized);
+            if (result.failedFiles() == 0 || !result.rules().isEmpty()) {
+                throw new GameTestAssertException("an oversized reload returned a partial rule index");
+            }
+            TConstructRulesLoader.install(result);
+            if (PackRuleIndex.get().revision() != revision || PackRuleIndex.get().size() != 1) {
+                throw new GameTestAssertException("an oversized reload changed the previous rules");
+            }
+            helper.succeed();
+        } finally {
+            PackRuleIndex.clear();
+        }
+    }
+
+    /** Two agreeing rules must not conceal a third equal-priority disagreement. */
+    @GameTest(template = EMPTY)
+    public static void everyWinningPriorityRuleMustAgree(GameTestHelper helper) {
+        try {
+            for (int disagreement = 0; disagreement < 3; disagreement++) {
+                java.util.List<PackRule> rewards = new java.util.ArrayList<>();
+                java.util.List<PackRule> requirements = new java.util.ArrayList<>();
+                for (int index = 0; index < 3; index++) {
+                    ResourceLocation id = new ResourceLocation("gametest", "three_way_" + index);
+                    rewards.add(new PackRule(id, PackRule.Kind.CRAFT_REWARD_POLICY, 50,
+                            PackRule.Match.any(), Map.of(), index == disagreement));
+                    requirements.add(new PackRule(id, PackRule.Kind.USE_REQUIREMENT, 50,
+                            PackRule.Match.any(), Map.of("tinkering", index == disagreement ? 30 : 4), false));
+                }
+                PackRuleIndex.install(rewards);
+                if (PackRuleIndex.get().craftRewardPolicy(null, new ResourceLocation("minecraft", "stone")).isPresent()) {
+                    throw new GameTestAssertException("reward rules ignored disagreement at position " + disagreement);
+                }
+                PackRuleIndex.install(requirements);
+                if (PackRuleIndex.get().useRequirement(new ResourceLocation("gametest", "pickaxe"),
+                        Set.of(), Set.of(), -1, null).isPresent()) {
+                    throw new GameTestAssertException("use requirements ignored disagreement at position " + disagreement);
+                }
+            }
+        } finally {
+            PackRuleIndex.clear();
+        }
+        helper.succeed();
+    }
+
     /** Parses named documents the way the reload listener would, without a resource manager. */
     private static TConstructRulesLoader.Result parse(Map<String, String> documents) {
         Map<ResourceLocation, JsonElement> files = new LinkedHashMap<>();

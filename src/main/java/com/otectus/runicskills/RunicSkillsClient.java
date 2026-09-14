@@ -58,7 +58,12 @@ public class RunicSkillsClient {
         @SubscribeEvent
         public static void onLoggingOut(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
             com.otectus.runicskills.config.snapshot.GameplayConfigSnapshot.clear();
+            com.otectus.runicskills.handler.HandlerSkill.clearClient();
+            com.otectus.runicskills.client.tooltip.StackRequirementTooltip.clear();
+            com.otectus.runicskills.network.packet.client.ConfigSyncCP.clearPending();
             com.otectus.runicskills.integration.common.IntegrationRuntime.disconnect();
+            com.otectus.runicskills.registry.skill.SkillVisualsManager.clearClient();
+            com.otectus.runicskills.client.core.SkillVisualAssets.clear();
             // Proc presentation is per-session too: coalescing keys reference entity ids from the
             // world being left, and a HUD card outliving its world would name a Power the next
             // world may not even register.
@@ -121,30 +126,14 @@ public class RunicSkillsClient {
             MinecraftForge.EVENT_BUS.register(OverlayNoticeGui.INSTANCE);
             MinecraftForge.EVENT_BUS.register(OverlayPowerProcGui.INSTANCE);
 
-            if (L2TabsIntegration.isModLoaded()) {
-                // The dependency-free bridge probes the expected API, reflectively loads the
-                // typed adapter, and quarantines linkage failures from incompatible versions.
-                // ClientProxy therefore contains neither L2 Tabs symbols nor an adapter-class
-                // reference that an eager verifier could resolve during startup.
-                event.enqueueWork(L2TabsIntegration::registerClientTab);
-            }
-
-            if (LegendaryTabsIntegration.isModLoaded()) {
-                // Register on the main thread during client setup so Legendary Tabs' own
-                // @EventBusSubscriber FMLClientSetupEvent handler has already populated its
-                // tab registry (Forge dispatches mod events in alphabetical mod-id order,
-                // and "legendarytabs" precedes "runicskills"). TabsMenu.register is thread
-                // -safe but we still enqueueWork to match Legendary Tabs' own pattern.
-                //
-                // Routed through the server-safe facade, exactly as L2Tabs and CustomNPCs are:
-                // it probes TabBase, reflectively loads the typed adapter — which registers the
-                // tab and subscribes the per-screen handler — and quarantines linkage failures
-                // from an incompatible Legendary Tabs so they downgrade to Runic Skills' own
-                // strip instead of failing mod loading. ClientProxy therefore holds neither
-                // sfiomn.* symbols nor an adapter-class reference an eager verifier could
-                // resolve during startup.
-                event.enqueueWork(LegendaryTabsIntegration::registerClientTab);
-            }
+            // Export CustomNPCs destinations first, then register L2 wrappers, then let
+            // Legendary Tabs gather them. One main-thread job makes this order explicit;
+            // the facades keep optional types out of ClientProxy's constant pool.
+            event.enqueueWork(() -> {
+                CustomNpcsIntegration.registerClientTabs();
+                L2TabsIntegration.registerClientTab();
+                LegendaryTabsIntegration.registerClientTab();
+            });
 
             if (net.minecraftforge.fml.ModList.get().isLoaded("tconstruct")) {
                 // The station panel names no slimeknights type at all — it recognises the native
@@ -155,12 +144,7 @@ public class RunicSkillsClient {
                         .TinkerStationPanel::register);
             }
 
-            if (CustomNpcsIntegration.isModLoaded()) {
-                // Same isolation pattern again: the server-safe facade probes CustomNPCs'
-                // AbstractTab and only then reflectively loads the client integration that
-                // subclasses it, so no noppes.* symbol reaches ClientProxy's constant pool.
-                event.enqueueWork(CustomNpcsIntegration::registerClientTabs);
-            }
+
         }
 
         @SubscribeEvent

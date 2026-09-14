@@ -25,6 +25,29 @@ import java.util.List;
 
 @Mixin({ItemStack.class})
 public abstract class MixItemStack {
+    @org.spongepowered.asm.mixin.Shadow private int count;
+
+    @Inject(method = "of", at = @At("HEAD"))
+    private static void runicskills$preserveUnsupportedData(CompoundTag tag,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<ItemStack> cir) {
+        com.otectus.runicskills.common.inventory.StackDataRecovery.preserveInvalid(tag);
+    }
+
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V",
+            at = @At(value = "FIELD", target = "Lnet/minecraft/world/item/ItemStack;count:I",
+                    opcode = org.objectweb.asm.Opcodes.PUTFIELD))
+    private void runicskills$readExtendedCount(ItemStack instance, int legacy, CompoundTag tag) {
+        count = tag.contains("Count", net.minecraft.nbt.Tag.TAG_INT)
+                ? com.otectus.runicskills.common.inventory.StackCapacityMath.checkedCount(tag.getInt("Count")) : legacy;
+    }
+
+    @Inject(method = "save", at = @At("RETURN"))
+    private void runicskills$saveExtendedCount(CompoundTag tag,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<CompoundTag> cir) {
+        if (count > 127) cir.getReturnValue().putInt("Count",
+                com.otectus.runicskills.common.inventory.StackCapacityMath.checkedCount(count));
+    }
+
     /**
      * Hides enchantment names from players who have not taken Scholar, when the pack opts in with
      * {@code enableScholarEnchantmentHiding} (default false, in which case names always render).

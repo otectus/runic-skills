@@ -51,16 +51,16 @@ public class RegistryTitles {
         // iterators) sees only the registered entries. Without this, the skipped
         // duplicate TitleModel lingered in titleList with `_title == null`, causing
         // an NPE in serverPlayerTitles during player join (the 1.3.4 world-join crash).
-        Set<String> seenTitleIds = new HashSet<>();
+        Set<String> seenTitleIds = new HashSet<>(Set.of("administrator", "titleless"));
         List<TitleModel> uniqueTitles = new ArrayList<>();
         HandlerTitlesConfig.HANDLER.instance().titleList.forEach(title -> {
-            if (title == null || title.TitleId == null || title.TitleId.isEmpty()) {
-                RunicSkills.getLOGGER().warn("Skipping null/unnamed TitleModel entry in titleList.");
+            if (!isValidConfiguredTitle(title)) {
+                RunicSkills.getLOGGER().warn("Skipping null or invalid title id in titleList: {}", title == null ? null : title.TitleId);
                 return;
             }
             if (!seenTitleIds.add(title.TitleId)) {
                 RunicSkills.getLOGGER().warn(
-                        "Duplicate title id '{}' in titleList; ignoring duplicate (suspected YACL List.of/Gson interaction).",
+                        "Duplicate or reserved title id '{}' in titleList; ignoring entry.",
                         title.TitleId);
                 return;
             }
@@ -122,15 +122,15 @@ public class RegistryTitles {
     public static void rebindAfterReload() {
         mergeDefaultsIntoConfig();
 
-        Set<String> seenTitleIds = new HashSet<>();
+        Set<String> seenTitleIds = new HashSet<>(Set.of("administrator", "titleless"));
         List<TitleModel> boundTitles = new ArrayList<>();
         for (TitleModel title : HandlerTitlesConfig.HANDLER.instance().titleList) {
-            if (title == null || title.TitleId == null || title.TitleId.isEmpty()) {
-                RunicSkills.getLOGGER().warn("Skipping null/unnamed TitleModel entry in titleList.");
+            if (!isValidConfiguredTitle(title)) {
+                RunicSkills.getLOGGER().warn("Skipping null or invalid title id in titleList: {}", title == null ? null : title.TitleId);
                 continue;
             }
             if (!seenTitleIds.add(title.TitleId)) {
-                RunicSkills.getLOGGER().warn("Duplicate title id '{}' in titleList; ignoring duplicate.", title.TitleId);
+                RunicSkills.getLOGGER().warn("Duplicate or reserved title id '{}' in titleList; ignoring entry.", title.TitleId);
                 continue;
             }
             Title registered = TITLES_REGISTRY.get().getValue(new ResourceLocation(RunicSkills.MOD_ID, title.TitleId));
@@ -148,6 +148,12 @@ public class RegistryTitles {
 
     private static Title register(String name, boolean requirement) {
         return register(name, requirement, false);
+    }
+
+    /** Config title IDs are paths in Runic's namespace, never arbitrary registry keys. */
+    private static boolean isValidConfiguredTitle(TitleModel title) {
+        return title != null && title.TitleId != null && !title.TitleId.isBlank()
+                && ResourceLocation.tryBuild(RunicSkills.MOD_ID, title.TitleId) != null;
     }
 
     private static Title register(String name, boolean requirement, boolean revocable) {

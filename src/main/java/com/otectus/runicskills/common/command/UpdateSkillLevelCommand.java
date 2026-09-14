@@ -18,7 +18,7 @@ public class UpdateSkillLevelCommand {
         return dispatcher.register((
                 Commands.literal("updateskilllevel")
                         .requires((source) -> source.hasPermission(2))
-                        .then(Commands.argument("level", IntegerArgumentType.integer(1))
+                        .then(Commands.argument("level", IntegerArgumentType.integer(2, 1000))
                                 .executes(UpdateSkillLevelCommand::execute)
                         )
 
@@ -34,12 +34,15 @@ public class UpdateSkillLevelCommand {
 
         int levelLimit = command.getArgument("level", Integer.class);
 
-        // local(), not instance(): this edits the server's own config file, and instance() may be
-        // serving a snapshot on an integrated server (RS10-005).
-        HandlerCommonConfig.HANDLER.local().skillMaxLevel = levelLimit;
-        HandlerCommonConfig.HANDLER.save();
-
-        GameplayConfigCP.sendToAllPlayers();
+        var holder = HandlerCommonConfig.HANDLER;
+        try {
+            var session = holder.beginEdit(); session.draft().skillMaxLevel = levelLimit;
+            var result = holder.commit(session, session.draft());
+            if (!result.success()) { command.getSource().sendFailure(Component.literal(result.message())); return 0; }
+        } catch (com.otectus.runicskills.config.storage.ConfigHolder.EditException failure) {
+            command.getSource().sendFailure(Component.literal(failure.getMessage())); return 0;
+        }
+        SkillsReloadCommand.reload(command.getSource().getServer());
         command.getSource().sendSystemMessage(Component.literal(String.format("Updating skillMaxLevel, new level: %d", levelLimit)));
 
         return Command.SINGLE_SUCCESS;

@@ -111,12 +111,15 @@ No Guard-dependent catalog entry is registered before its own native trigger is 
 Settings remain in `config/RunicSkills/runicskills.common.json5`, not a second gameplay
 configuration. Prefixes are `simplySwords`, `simplyMore`, `tom`, `tide`. Each has
 `IntegrationMode`, `AutomaticEquipmentGates`, `NativeAbilityGates`, `Perks`, and `Powers`.
-Automatic gates default **false**. Specialized switches request workshop, Mimicry, Aqua,
+Automatic equipment gates default **true** as of 2.1.2. Specialized switches request workshop, Mimicry, Aqua,
 native activation, journal, minigame and weighting capabilities.
 
-**A reserved feature switch does not implement its missing hook.** There are currently no
-new automatic equipment locks or native ability gates. Existing manual
-locks and upstream restrictions retain their behavior.
+Equipment locks now generate through `RecentEquipmentLockProvider` using registered finished
+equipment classes and reference levels scaled to `skillMaxLevel`. Each module's
+`AutomaticEquipmentGates` setting disables its generated locks; `IntegrationMode: off` or
+`observe` also stops generation. Existing manual locks retain precedence. Native ability gates
+remain reserved and disabled: they are separate from the implemented equipment restrictions.
+See [the progression guide](PROGRESSION_GATING.md) for defaults and opt-outs.
 
 Measured Cast tunables: `tideMeasuredCastRequiredLevel` (−1 through 32; nonpositive disables)
 and `tideMeasuredCastPercent` (0 through 25; zero disables purchasing a no-effect perk).

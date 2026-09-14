@@ -129,6 +129,7 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
                  "MixNativeGemSummon", "MixNativeGemHealing", "MixPassiveGemEffect", "MixManualGemEffect", "MixGemMomentum" -> verifiedSwords();
             case "MixTideFishingRodItem", "MixTideCastLifecycle", "MixTideFishingHook", "MixTideBaitLifecycle", "MixTideBaitContents", "MixTideNormalWindow", "MixTideSpeciesRoll", "MixTideSpeciesWeight" -> verifiedTide();
             case "MixTargetFinder"           -> isModPresent("bettercombat");
+            case "MixArsSpellPayment"        -> isModPresent("ars_nouveau");
             case "MixGunItem"                -> isModPresent("pointblank");
             case "MixTrueInvisibilityEffect", "MixAbstractMagicProjectile",
                  "MixCreeperHeadProjectile", "WallOfFireEntityAccess" -> isModPresent("irons_spellbooks");
@@ -227,10 +228,12 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
     private static boolean verifiedTomCompanion() {
         if (!isModPresent("runicskills_tom_compat") || !isModPresent("traveloptics") || !isModPresent("irons_spellbooks")) return false;
         var list = LoadingModList.get();
+        var irons = list.getModFileById("irons_spellbooks");
+        var ironsHash = com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(irons.getFile().getFilePath());
         return com.otectus.runicskills.integration.common.IntegrationModule.TOM.sha256.equals(
                 com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(list.getModFileById("traveloptics").getFile().getFilePath()))
-                && "92c046383b4960c655f840d8846732a481edcf7c5ed89028b3d7b2cc2910b224".equals(
-                com.otectus.runicskills.integration.common.IntegrationRuntime.sha256(list.getModFileById("irons_spellbooks").getFile().getFilePath()));
+                && irons.getMods().stream().anyMatch(mod -> "irons_spellbooks".equals(mod.getModId())
+                && com.otectus.runicskills.integration.tom.TomIronsProfiles.supports(mod.getVersion().toString(), ironsHash));
     }
     private static boolean verifiedMore() {
         if(!verifiedSwords() || !isModPresent("simplymore"))return false;

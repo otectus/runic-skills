@@ -1,0 +1,536 @@
+{
+  "baseline": "pre-existing dirty 2.1.2 working tree archived before edits",
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "status": "modified",
+      "sha256": "b2c34d4baacf9b669744f5a964b8a9b6eae26555914eefd27b1edfc752d85868"
+    },
+    {
+      "path": "CLAUDE.md",
+      "status": "modified",
+      "sha256": "60b038844b8a85ed7678abbd6d059291fff93f93d798660ff1751da0fb40ae9a"
+    },
+    {
+      "path": "CURSEFORGE_DESCRIPTION.md",
+      "status": "modified_unarchived_baseline",
+      "sha256": "31c7c9aaaa597ed1a721ed23152b5cb4fecbff72912bcd52b0a9172be2e22032",
+      "note": "Pre-existing file omitted from the source archive; release-description edits identified from session work."
+    },
+    {
+      "path": "MODMAP.md",
+      "status": "modified",
+      "sha256": "43c713da669d5c92f545936e5d87e249a72fb3d15c03cccabc794aec7bad0ee8"
+    },
+    {
+      "path": "README.md",
+      "status": "modified",
+      "sha256": "e7e7ff57bb1a8e7a3af7da5d1f9e4de95e48e2b8fadfc18d5d667187afe95f87"
+    },
+    {
+      "path": "VERSION",
+      "status": "modified",
+      "sha256": "c4a2383a03bdb6739d16a0e24058e4b9c7da4e63d203e0be2f448868cc03c530"
+    },
+    {
+      "path": "build.gradle",
+      "status": "modified",
+      "sha256": "4eaffe8df13e200ad0c955c97795760302ddf08aeb3a93d010372b44377ada24"
+    },
+    {
+      "path": "docs/CONTENT_STATUS.md",
+      "status": "modified",
+      "sha256": "74da0ea6f09cbc5cef4b41b8748f6b7066ce618e9393de2cb93f5146d2a9d788"
+    },
+    {
+      "path": "docs/CONTENT_TRACE.md",
+      "status": "modified",
+      "sha256": "cf99bbb28731753599cba21c304563a32d59dc387a229306761f2389828f062d"
+    },
+    {
+      "path": "docs/IMPLEMENTATION_2.2.0.md",
+      "status": "added",
+      "sha256": "abc42a12f0a2b533968a2107197dda49f3bfbacc7328df2c66154b0278bd7297"
+    },
+    {
+      "path": "docs/MIGRATING_TO_2.2.0.md",
+      "status": "added",
+      "sha256": "8aeab9c5cab348d7278b109eb0f885fc7fbd67ab08f5e44983a503759737ff7a"
+    },
+    {
+      "path": "docs/PROGRESSION_AUDIT_2.2.0.md",
+      "status": "added",
+      "sha256": "b42ff1be4272ce714fcdacc58cb32822ed80d2851e85f94a9f91c21603bdae34"
+    },
+    {
+      "path": "docs/PROGRESSION_GATING.md",
+      "status": "modified",
+      "sha256": "5f600668a85ca96cb3939b592c56e4f47495cc061f56426049ee465d11625f0d"
+    },
+    {
+      "path": "docs/README.md",
+      "status": "modified",
+      "sha256": "408a7ded9f969efba67666c2665af8ff08877ddf367f383f506497707001df70"
+    },
+    {
+      "path": "gradle.properties",
+      "status": "modified",
+      "sha256": "7c9fd699f20b22f3bab4790886e36ef5af89e5627d0632cfa40923c5020cacdb"
+    },
+    {
+      "path": "gradlew",
+      "status": "modified",
+      "sha256": "a3648413b47ef77af21d5ebc36c687c7d103aaef3e17f33de7d4f080a6f300a3"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/ConfigAuthorityGameTest.java",
+      "status": "modified",
+      "sha256": "faba154939598b205e793ed5156e5d8f32fb305d46bc9f334549c0e59901ae76"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/IncomingEffects220GameTest.java",
+      "status": "added",
+      "sha256": "b82a515185b0c152ab87fcb4a45b37874e280e24d3969a93e4acb71b34b4c350"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/PackMuleGameTest.java",
+      "status": "added",
+      "sha256": "47b93284ac71a9882388c1f3370de6379cdafee8bcf34654b4de8417a6c93c31"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/Progression220GameTest.java",
+      "status": "added",
+      "sha256": "4fbc70a70e7279776a99038896a629c9055f9e277811a0de142e87a2f939b531"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/ResolvedLocks220GameTest.java",
+      "status": "added",
+      "sha256": "c756f2fd7193e83abb238ba86f9da81c70d4a5a89bb5e8555422d43370b131a3"
+    },
+    {
+      "path": "src/gametest/java/com/otectus/runicskills/gametest/tconstruct/StackRequirementGameTest.java",
+      "status": "modified",
+      "sha256": "c92aa3152240f3082168f7bef9866d5b5b5ee1d7ca91b834d528b3303cc631f0"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/RunicSkillsClient.java",
+      "status": "modified",
+      "sha256": "3430021ac7da1f2a2e847b0ad76ea1b6d37e177884f26ab68fbeffae396089d2"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/config/ProgressionConfigCategory.java",
+      "status": "added",
+      "sha256": "61586a9bb714497e0317aad2898de3823429c26e23ae1ef31b6c1d85512a61fa"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/config/TransactionalConfigScreen.java",
+      "status": "added",
+      "sha256": "9ed61aca589232bea25e96d25a82ff979a3fb2cd6fd6b98a05c07e623b03f4e2"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/config/YaclConfigUiBuilder.java",
+      "status": "modified",
+      "sha256": "86e9a10ae25f8c709cd4a4b61c19b490441d4bd4cfaf2224013fd969de4282cb"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/event/RegistryClientEvents.java",
+      "status": "modified",
+      "sha256": "d3cacd00b04f36ef18098bee41fd4274681a8f1084cbb284b08f0ccbfa84e4a8"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/screen/RunicSkillsScreen.java",
+      "status": "modified",
+      "sha256": "520827471c37d08cd70584b2f084c8a890fa048045f7481e4094561f916bbd35"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/tooltip/PerkTooltip.java",
+      "status": "modified",
+      "sha256": "8d90157081f9d9080119db26cfab97c001fdacdbf04895e6a586d883b5430db2"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/client/tooltip/StackRequirementTooltip.java",
+      "status": "added",
+      "sha256": "381edc5c97fbaaeca96fc5a43d72dcdfcd703dbda3f34ebcb283aa3f4d879db3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/GlobalLimitCommand.java",
+      "status": "modified",
+      "sha256": "d65c3ab69d2d9dc165ca9485ad67b4800d5a645a724011a861ec37227ff226e6"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/LocksCommand.java",
+      "status": "added",
+      "sha256": "30b29bc789d30ba61052e01b0f33a6bc5bf23efa24acee7107357fd5fe9ceb91"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/PackMuleCommand.java",
+      "status": "added",
+      "sha256": "15984470c54eb58b518c2b729c74e274d9b401e481e20ee1de0ed023f41c0a42"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/SkillLevelCommand.java",
+      "status": "modified",
+      "sha256": "e9fd238939126f0d911101a8f6847be30db7f9f21e710ce88effd71a2b0c6d3a"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/SkillsReloadCommand.java",
+      "status": "modified",
+      "sha256": "a86a48617ae3d8585bfd9959b15a18955d1b4b1088a020c06e1893d5adac98f6"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/command/UpdateSkillLevelCommand.java",
+      "status": "modified",
+      "sha256": "16d7db080f1f4e74b8e7a5d0ed038db108645a572b60f5ed3b549294ae17336e"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/effects/EffectApplicationContext.java",
+      "status": "added",
+      "sha256": "5ab26b53048548eee12d33cde74663e70675b0a2d6a5b6f264a5d22473bd8c6f"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/effects/IncomingEffectPolicy.java",
+      "status": "modified",
+      "sha256": "3987bfb5f9be11f7419c825cfca08f3e752f3531b1cdfd4700bfbea1c856f5a1"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/inventory/InventoryReconciliation.java",
+      "status": "added",
+      "sha256": "85ebd4dbd8b57a5a530da73c433dc4d011432ecfacdcf966a86d59e9654043d3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/inventory/PlayerStackPolicy.java",
+      "status": "added",
+      "sha256": "7366a41d90eca1bdff0497ef1d705057cd0a40be420fb5f16daf74b9b8b8f088"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/inventory/StackCapacityMath.java",
+      "status": "added",
+      "sha256": "f5a3e5da23b846bf122249a3751555b5ea94e0cd8e7a9927415d4b8eb2b2ee27"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/inventory/StackDataRecovery.java",
+      "status": "added",
+      "sha256": "30ccfc1e8965ea13d8e83fb32814780976ac03f8cc9920405dd270d2bdfb23ec"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/progression/LevelCaps.java",
+      "status": "added",
+      "sha256": "cf6a60efd01b778b0b4b82a08b9b427dc7c995e70b3b27f61ad97c3d513da821"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/progression/ProgressionService.java",
+      "status": "modified",
+      "sha256": "e9aba5648ad07eed8c4ebec71402439e76649d34d9fcb1b39356309fc7366737"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/common/util/LevelCapMath.java",
+      "status": "added",
+      "sha256": "5b24b82ee85e3db49de75b0bfdaf1f338dd93ae41efc96789eabf5d2541189cd"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/config/models/LockItem.java",
+      "status": "modified",
+      "sha256": "e5aa2657d9b2424450022be5702085e7cc8859fd9549b08171eff676e48f7f01"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/config/storage/ConfigHolder.java",
+      "status": "modified",
+      "sha256": "78bafe75fbbbc2bc5238e6209cf1a6660c102afe93c73a013a6e413dc3ccde04"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/handler/HandlerCommonConfig.java",
+      "status": "modified",
+      "sha256": "e4c1968a2f7a5ee52b5b25ac55f870da699982fa4f0f6db5ff663c9a5f6288f8"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/handler/HandlerResources.java",
+      "status": "modified",
+      "sha256": "cf534473850254090dbb3df4d78d5d71e4cc441534ad0e7b7b5a9bf0448e4f31"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/handler/HandlerSkill.java",
+      "status": "modified",
+      "sha256": "f15ed1a3497726aa71784e6f2d2ae8aef2085111e008ae9ceea2836022e5fbf3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/SpartanIntegration.java",
+      "status": "modified",
+      "sha256": "a53dedac938198a68f8350e56561fc0796d681552b085c89f97e2a54e1f8d7e4"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/GenericNamespaceLockProvider.java",
+      "status": "modified",
+      "sha256": "11a9debfd6f9ee61ef83694febaa83d9e527cfa8e3cd7d727ca5ee4607fd15e8"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/LockAction.java",
+      "status": "modified",
+      "sha256": "b313f0fb51097809d1555547a683e1fd0c3eb62248d607f0010230d23d419758"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/LockAudit.java",
+      "status": "added",
+      "sha256": "456583082c1b70c80e0edbc59bd5c5c258efbd1f5f0a3e57e8a94c6ce2392d7c"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/LockItemProvider.java",
+      "status": "modified",
+      "sha256": "e0be2ff8da529bac227d5066de4dbfb8a55565c42a19f911a02ba5a69da8f865"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/LockResolution.java",
+      "status": "added",
+      "sha256": "df596f963b0213bb9b42bef57853f14521ff6f9529edcf6d976f7ad496010138"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/NativeMaterialLocks.java",
+      "status": "added",
+      "sha256": "8dda96bddfb227c088a627415928635ddc919d6c52747d72d3216a5e83aef3f4"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/lock/RecentEquipmentLockProvider.java",
+      "status": "modified",
+      "sha256": "235138e3814f7400add8313cf011895e488363670e033d85b441179c5e0b3bf8"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/tconstruct/TConstructPackRuleSource.java",
+      "status": "modified",
+      "sha256": "56380ca326f3b6e86b0558b67a1813a2d895b137259925aee3c30ad65a4d9202"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/integration/tconstruct/TConstructRequirementResolver.java",
+      "status": "modified",
+      "sha256": "14a5f39a649ab38cce9480ae784d8079e2b98e1e8d853ac3a5d100e06ad59832"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixAbstractContainerMenu.java",
+      "status": "modified",
+      "sha256": "b04cdd2ee14169e9670e210a38b8681e6c496721f37ff391307169effaf2473f"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixFriendlyByteBuf.java",
+      "status": "added",
+      "sha256": "dea245aed4de2f9c2fc8dfcb12d7283a176cb464b4ce27bfb65534bb8f33d38e"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixInvWrapper.java",
+      "status": "added",
+      "sha256": "697474204e7a790cd9c2322b1515c201e6f97ca453f8921ecdd7bbfa39237843"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixInventory.java",
+      "status": "added",
+      "sha256": "7ea2c291829388b9213a8a03a081d05566065b114ecfd2fde35846b752cf1906"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixItemStack.java",
+      "status": "modified",
+      "sha256": "def6813e99cca6ceddde7cfa5717064c1e2eb24028cf38566a9a9734f0ffd071"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixLivingEntity.java",
+      "status": "modified",
+      "sha256": "f74a99f03db9b5db5eae85240eec0fda90b2861a6e735ff3a4116e73e7cf6c0e"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixPackMuleDrops.java",
+      "status": "added",
+      "sha256": "c51122b0934e6fa1203cec3e82b5013961e7a5114d4e90b78be7620762c692d3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixPackMuleMenu.java",
+      "status": "added",
+      "sha256": "c958f3c92f30e931e4516af817cecddd043c1b044e8de79196b34e64b9fb5c78"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixPackMulePacketListener.java",
+      "status": "added",
+      "sha256": "3319d14a4a84a8ca06b87bd5dec6cc85709affbac3962c2e40cea206c76504a8"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixPotionItem.java",
+      "status": "added",
+      "sha256": "825e35ce55b5d4de5367b8b94669b3538020700874afa6b29f134e9cf3fa184a"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixServerPlayerGameMode.java",
+      "status": "modified",
+      "sha256": "6d0b6f5259e5c36d7f5f585a0cd7b4757a3721063ffdb53c719e423106da6d9b"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixSlot.java",
+      "status": "modified",
+      "sha256": "cd484f6cf89b9561c19cf708290accb4701e6c18ec8eecebb45c7cbc13668ba0"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/mixin/MixSuspiciousStewItem.java",
+      "status": "added",
+      "sha256": "f66ddd0a792e1ecab630d779ee5244ecdf6577b83540e2cfd294b34f2f80391c"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/ServerNetworking.java",
+      "status": "modified",
+      "sha256": "4b0145dc5b5d10f835ffbff2d92bb1f16bf03decca3ac0aa86774d1714f2615d"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/packet/client/ConfigSyncCP.java",
+      "status": "modified",
+      "sha256": "56ce9ea19b3fa5a8a66e94703f0b83c2fda89fb92dec4332077812e5ce8d2aa1"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/packet/client/GameplayConfigCP.java",
+      "status": "modified",
+      "sha256": "29e273bc9415885e7d21624f317c58db8e7a78289ee6d474c21848dd73838a13"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/packet/client/StackRequirementsCP.java",
+      "status": "added",
+      "sha256": "f5296a382e3e25b7ac81ab707bd1aeee07f33c3665e8fcc941ccae6b1797e06e"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/packet/common/InspectStackSP.java",
+      "status": "added",
+      "sha256": "9483c5e2259388d8c608f8b6fe30a4a219360f0b3211302ea9c136fddcda3ac3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/network/packet/common/SkillLevelUpSP.java",
+      "status": "modified",
+      "sha256": "10cece1b625f1146c06a4ec9c1364c89512c6e1cf828b7800176b9cf9242f053"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/RegistryPerks.java",
+      "status": "modified",
+      "sha256": "9426e00e0b6be18d927f5ffc34f302c600b236d8cf58eaecef90e2410e52aae4"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/EnchantingLorePerkHandler.java",
+      "status": "modified",
+      "sha256": "3bb5030a635070b619b93b718c9f8f5f90e5597978fb7ed47cea0685ea8bf7c3"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/InteractionEventHandler.java",
+      "status": "modified",
+      "sha256": "b85db8e2626ec3dce4237d3fdf6ab133b3645046e9ec28f9c4a660855daff3e0"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/PerkEffectsHandler.java",
+      "status": "modified",
+      "sha256": "237f6ec437889ae7d38e2590f868e4444f82edb04f907e81883b10f6fbe078c5"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/PlayerLifecycleHandler.java",
+      "status": "modified",
+      "sha256": "3268405923dbd6217cb69e8a109613919352f2f01e28977eb8e1b171ffa02784"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/TickEventHandler.java",
+      "status": "modified",
+      "sha256": "6d49884cc6f6abd9bd5544140fb9a7420ff93ba6ff96558aec8664894dfe1695"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/events/UtilityPowerHandler.java",
+      "status": "modified",
+      "sha256": "7527c626d5f86b9cc8df11bcd18c8aa02aee20ce773eb9b6a15a82a5bce09e10"
+    },
+    {
+      "path": "src/main/java/com/otectus/runicskills/registry/powers/PowerEligibility.java",
+      "status": "modified",
+      "sha256": "b606f5449f530079efa445dd98d128044d2cbe70cc3c850a600b561a060a6c96"
+    },
+    {
+      "path": "src/main/resources/assets/runicskills/lang/en_us.json",
+      "status": "modified",
+      "sha256": "18037f1300984e6df2a9d45360b7afa73becb6772e71e461fbb51a86ae01eb9c"
+    },
+    {
+      "path": "src/main/resources/assets/runicskills/textures/skill/strength/pack_mule.png",
+      "status": "added",
+      "sha256": "a48aa5ee48d92d4f2e27b6964c48247b8bb7ec5de99774115b67783a2bee789c"
+    },
+    {
+      "path": "src/main/resources/runicskills.mixins.json",
+      "status": "modified",
+      "sha256": "4249839bc5a26fb7d2075d863c27dfa5c7ca698d11e8ea3548ec0c13f1de9d83"
+    },
+    {
+      "path": "src/test/java/com/otectus/runicskills/common/inventory/StackCapacityMathTest.java",
+      "status": "added",
+      "sha256": "51d153c0e13446ec27db5139a082f25f2bf300c3e9d2dcc2d24018d1bf94c2d6"
+    },
+    {
+      "path": "src/test/java/com/otectus/runicskills/common/progression/LevelCapMathTest.java",
+      "status": "added",
+      "sha256": "d475a4cdcea0cd0e28fb1a704d593be0dd049fd9218b30d0484060f4fcae33b2"
+    },
+    {
+      "path": "src/test/java/com/otectus/runicskills/config/storage/ConfigEditTransactionTest.java",
+      "status": "added",
+      "sha256": "535602503662d88b197f5cb60df309242803c2172494b7d2a6cd12fc117153d1"
+    },
+    {
+      "path": "src/validation/java/com/otectus/runicskills/validation/BaselineLocksCheck.java",
+      "status": "added",
+      "sha256": "214ec6fb696d5b3becbd3d80388260b4d55fb0f9c2228672e1c90655fa85025c"
+    },
+    {
+      "path": "src/validation/java/com/otectus/runicskills/validation/HistoricalProviderCheck.java",
+      "status": "added",
+      "sha256": "684aa9a01f57a3503299275bd28e0e2ef03a8da4c5e876375054f515acf57b02"
+    },
+    {
+      "path": "src/validation/java/com/otectus/runicskills/validation/Multiplayer220Checks.java",
+      "status": "added",
+      "sha256": "8a2353be1cc4f8478fc46e9892ed5f8baa0b3dcfdaf9985b0a7fcccd393b3f87"
+    },
+    {
+      "path": "src/validation/java/com/otectus/runicskills/validation/ProgressionClientChecks.java",
+      "status": "added",
+      "sha256": "b3bfa20710115cae3b5f0bf3f2891979c1de1f38f911f7f84a3aac025ec6c576"
+    },
+    {
+      "path": "src/validation/java/com/otectus/runicskills/validation/ValidationMod.java",
+      "status": "modified",
+      "sha256": "cbda88dd35e4abac105586ddc1b6bd9b36f1d7858a997bd807230fca1eb9ff95"
+    },
+    {
+      "path": "tools/audit_progression.py",
+      "status": "added",
+      "sha256": "8ce01a1068ae1faae4c5581b16922bc01503455b0140d0ccca6d925625a85aee"
+    },
+    {
+      "path": "tools/icongen/catalogue.json",
+      "status": "modified",
+      "sha256": "ed9aef88f095a2e73c685eecec4de70b58ca26768d13ae27ae89026d9483224a"
+    },
+    {
+      "path": "tools/icongen/glyphs4.txt",
+      "status": "modified",
+      "sha256": "f627e07d56392b08204c1603cbb2c1e961f507d83365c9f2a5534d331a97698b"
+    },
+    {
+      "path": "tools/icongen/perks_manifest.json",
+      "status": "modified",
+      "sha256": "03cbfd18f8c59cb9b18dca85aa87a4ee77f2e8f47167a454d33542e1e33b7c54"
+    },
+    {
+      "path": "tools/icongen/specs.tsv",
+      "status": "modified",
+      "sha256": "4d399706890c21fc77213d48d96727442bc27d5f7d672e56e83a3185fd45886b"
+    },
+    {
+      "path": "tools/lang/intentional_fallbacks.json",
+      "status": "modified",
+      "sha256": "537f10d129c6b359d0d4b52e21b0ff2d53b4521f425a7cee8423840a7014551d"
+    },
+    {
+      "path": "tools/run_instance_validation.py",
+      "status": "modified",
+      "sha256": "36f5ac5867b804da61e9d87cb41a6daf2aab8cc9a68b73991f25951a603bd723"
+    },
+    {
+      "path": "update.json",
+      "status": "modified",
+      "sha256": "37ab7b0b1e62b512258f72631c8b9849ae60160bb513a16b19ebe4d0259bc3d7"
+    }
+  ]
+}

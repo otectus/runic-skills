@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.GrindstoneMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -59,7 +60,16 @@ public abstract class MixGrindstoneMenu {
         }
         Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(result);
         if (!enchantments.keySet().removeIf(Enchantment::isCurse)) return result;
+        // EnchantmentHelper only appends StoredEnchantments on books; an empty map clears the
+        // ordinary Enchantments tag but leaves a cursed book's stored curse untouched.
+        if (result.is(Items.ENCHANTED_BOOK)) result.removeTagKey("StoredEnchantments");
         EnchantmentHelper.setEnchantments(enchantments, result);
+        result.setRepairCost(0);
+        if (result.is(Items.ENCHANTED_BOOK) && enchantments.isEmpty()) {
+            ItemStack book = new ItemStack(Items.BOOK, result.getCount());
+            if (result.hasTag()) book.setTag(result.getTag().copy());
+            return book;
+        }
         return result;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "inventory_gui_scale_1",
+    "inventory_gui_scale_2",
+    "inventory_gui_scale_3",
+    "inventory_gui_scale_4"
+  ],
+  "passed": true,
+  "failure": ""
+}

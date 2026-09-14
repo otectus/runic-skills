@@ -43,14 +43,34 @@ public class UtilityPowerHandler {
     private static final Map<UUID, Float> ABSORPTION = new ConcurrentHashMap<>();
 
     /** Stops Shared Flame's copied effects from re-entering this handler. */
-    private static final ThreadLocal<Boolean> IN_SHARE = ThreadLocal.withInitial(() -> false);
+
 
     @SubscribeEvent
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        UUID id = event.getEntity().getUUID();
+        clearHistory(event.getEntity().getUUID());
+    }
+
+    private static void clearHistory(UUID id) {
         BANKED_DEBUFF_TICKS.remove(id);
         SHIELD_DISABLED.remove(id);
         ABSORPTION.remove(id);
+    }
+
+    @SubscribeEvent
+    public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        clearHistory(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        clearHistory(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(net.minecraftforge.event.server.ServerStoppedEvent event) {
+        BANKED_DEBUFF_TICKS.clear();
+        SHIELD_DISABLED.clear();
+        ABSORPTION.clear();
     }
 
     // ── Marks ───────────────────────────────────────────────────────────────────────────────
@@ -63,7 +83,7 @@ public class UtilityPowerHandler {
      */
     @SubscribeEvent
     public void onEffectAdded(MobEffectEvent.Added event) {
-        if (IN_SHARE.get()) return;
+        if (com.otectus.runicskills.common.effects.EffectApplicationContext.sharing(event.getEntity(), event.getEffectInstance())) return;
         if (!(event.getEntity() instanceof Player player)) return;
         if (player.level().isClientSide()) return;
 
@@ -74,21 +94,19 @@ public class UtilityPowerHandler {
         Power power = RegistryPowers.SHARED_FLAME.get();
         double radius = PowerOverridesManager.valueOr(power, "radius_blocks", 4.0);
         double share = PowerOverridesManager.valueOr(power, "duration_share", 0.5);
-        int duration = (int) (added.getDuration() * share);
+        if (added.isInfiniteDuration() || added.getEffect().isInstantenous()) return;
+        int duration = (int) Math.min(Integer.MAX_VALUE, Math.floor(added.getDuration() * share));
         if (duration <= 0) return;
 
         AABB around = player.getBoundingBox().inflate(radius);
         boolean any = false;
-        IN_SHARE.set(true);
-        try {
-            for (LivingEntity ally : player.level().getEntitiesOfClass(LivingEntity.class, around)) {
-                if (ally == player || !PowerRuntime.AllyDetector.isAlly(player, ally)) continue;
-                ally.addEffect(new MobEffectInstance(added.getEffect(), duration,
-                        added.getAmplifier(), added.isAmbient(), added.isVisible()));
-                any = true;
-            }
-        } finally {
-            IN_SHARE.set(false);
+        for (LivingEntity ally : player.level().getEntitiesOfClass(LivingEntity.class, around)) {
+            if (ally == player || !PowerRuntime.AllyDetector.isAlly(player, ally)) continue;
+            MobEffectInstance copy = com.otectus.runicskills.common.effects.IncomingEffectPolicy.withDuration(added, duration);
+            if (copy == added) continue; // An unsupported instance must not share mutable state.
+            any |= com.otectus.runicskills.common.effects.EffectApplicationContext.apply(ally, copy,
+                    com.otectus.runicskills.common.effects.EffectApplicationContext.Origin.SHARED,
+                    () -> ally.addEffect(copy, event.getEffectSource()));
         }
         if (any) PowerDispatch.fireProc(player, power);
     }

@@ -142,7 +142,7 @@ public final class PowerEligibility {
         if (tier != PowerTier.CROWN) return 0;
         HandlerCommonConfig config = HandlerCommonConfig.HANDLER.instance();
         if (config.powerCrownTotalSkillPercent <= 0) return 0;
-        return scale(config.playersMaxGlobalLevel, config.powerCrownTotalSkillPercent);
+        return scale(com.otectus.runicskills.common.progression.LevelCaps.global(config), config.powerCrownTotalSkillPercent);
     }
 
     private static int scale(int cap, int percent) {
@@ -167,7 +167,7 @@ public final class PowerEligibility {
         if (budget == 0 || capability == null) return budget;
 
         int baseline = SkillCapability.baselineGlobalLevel();
-        int maxEarned = config.playersMaxGlobalLevel - baseline;
+        int maxEarned = com.otectus.runicskills.common.progression.LevelCaps.global(config) - baseline;
         if (maxEarned <= 0) return budget;
 
         int earned = Math.max(0, Math.min(capability.getEarnedGlobalLevelForPerkBudget(), maxEarned));

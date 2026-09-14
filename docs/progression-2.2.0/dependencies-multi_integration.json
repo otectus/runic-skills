@@ -1,0 +1,737 @@
+[
+  {
+    "id": "tinymultiblocklib",
+    "version": "4.0.0",
+    "sha256": "37dc6512d6c5555e95db37252c2b716102c75fd358b69b73157ad9044ed6fde9"
+  },
+  {
+    "id": "playeranimator",
+    "version": "1.0.2-rc1+1.20",
+    "sha256": "90d9965cb9efdbda29fdc5610be3914cf7008bf5c392ff34f7ab25f96a852691"
+  },
+  {
+    "id": "tinkerslevellingaddon",
+    "version": "1.4.3",
+    "sha256": "2e343c330b9f4a97f1b32867ed0ec74c629ecd08cd91c15824b1b8c238f008a0"
+  },
+  {
+    "id": "galosphere",
+    "version": "1.5.2",
+    "sha256": "b9a749b0dff0c8e306f9395f7f757d05f1530cd18dcb2d984be5f46180e623f1"
+  },
+  {
+    "id": "stalwart_dungeons",
+    "version": "1.2.8",
+    "sha256": "c0b967220e751629da248151a30d8d21f9cf3afc6c92da0aa8bd838a05f8fd7a"
+  },
+  {
+    "id": "selling_bin",
+    "version": "1.4.3-FORGE-1.20.1",
+    "sha256": "8d04a6e0872c091f36d025a7a9d0d7ee394aa7d761d424ddc1963393720d46f3"
+  },
+  {
+    "id": "neobackports",
+    "version": "1.3.1",
+    "sha256": "d85e18f43ed078cc2b8bd6278d728a096317b0e3b1a0990885389ebb6dafa5eb"
+  },
+  {
+    "id": "placebo",
+    "version": "8.6.3",
+    "sha256": "1cdf906cfbcbb5e5be2ef1bb721f79a24b01bd2ac559c8cdbfb7693f62421571"
+  },
+  {
+    "id": "citadel",
+    "version": "2.6.3",
+    "sha256": "56c7ab87348a5292583aac787b6cf11b5193e77f02af1d17ea75a96f8640b3ce"
+  },
+  {
+    "id": "biolith",
+    "version": "1.0.1-beta.1",
+    "sha256": "e329f05c2e7d179a42efd352548e1053a4dd08dd6f18eb6aca853a00bc8e9bff"
+  },
+  {
+    "id": "apotheosis",
+    "version": "7.4.8",
+    "sha256": "5ed8c17cf62837bb649d1054e3e4fe93c4d9bdec98fe9f332e2637a260da30da"
+  },
+  {
+    "id": "cloth_config",
+    "version": "11.1.136",
+    "sha256": "1e895e85cf5b1e1905ef3178ec155c8badfe22a1577b92c09143a5aa1f4ce0f2"
+  },
+  {
+    "id": "fzzy_config",
+    "version": "0.7.6+1.20.1+forge",
+    "sha256": "d39cd5d6b23b86468937e306776dc70faba900072c7e359ce9348d8a3c26982e"
+  },
+  {
+    "id": "farmersdelight",
+    "version": "1.20.1-1.3.4",
+    "sha256": "34f03eb671ea1ca579b00c98e4541404cb96d1a292014aed9cc5eb45ad8afbce"
+  },
+  {
+    "id": "starcatcher",
+    "version": "3.1.4.1-FORGE-1.20.1",
+    "sha256": "0371f7036d8c0596a4a814f36b230f8a690a27e705fd0fe83e9f0a4149b3fa90"
+  },
+  {
+    "id": "vintagedelight",
+    "version": "0.1.6",
+    "sha256": "f3645fcf42546edb5fe09bee833f2e7524dd93b9b5380ecae3d3aa2847a4c9db"
+  },
+  {
+    "id": "nichirin_dynasty",
+    "version": "1.0",
+    "sha256": "ae27f355777e45cd3ff590f44491024080f18d224f31928cd8a10009a3ba6aaf"
+  },
+  {
+    "id": "fantasy_armor",
+    "version": "1.2.4-1.20.1",
+    "sha256": "60723448eb979d29da51bd6fe71e6ef1b695decd3d91da76f1e970664bf80693"
+  },
+  {
+    "id": "epic_knights__japanese_armory",
+    "version": "1.6.2",
+    "sha256": "d95ba4a712d9fc3e681e29c912a5ae98d2ff1b6f73a1be57b8aa43312996866b"
+  },
+  {
+    "id": "botania",
+    "version": "1.20.1-455-FORGE",
+    "sha256": "b33a7cf5ac2cf859d78f13daf9bc45678ffd32a85e91661304cdec5dfd296700"
+  },
+  {
+    "id": "fishingreal",
+    "version": "1.9.1-backport",
+    "sha256": "cd7839a5499bdb182f37880deaaafa1715844c3f2b51941e6acad401da70914d"
+  },
+  {
+    "id": "bendylib",
+    "version": "4.0.0",
+    "sha256": "dd4af8f403fc9b2f1250144c4b6cb89ea46114be50e6fa00a6c9162cfc870b2b"
+  },
+  {
+    "id": "samurai_dynasty",
+    "version": "0.0.51-1.20.1-forge",
+    "sha256": "be95a714c1d5b2e577cf2d05c6158782cc484951d08ef0ea17b3c31b80f544df"
+  },
+  {
+    "id": "lionfishapi",
+    "version": "3.0",
+    "sha256": "d2fdaf7e9bc53fde7da4a86ab17018a3ed6c16fc2d46de5054e5a83e2bef7871"
+  },
+  {
+    "id": "wdutils",
+    "version": "1.8.1-FORGE-1.20.1",
+    "sha256": "54135d3d88eeaa0d400ca6c54e7daf0aa090cf3cfea20d2a962033bb2d9f1e25"
+  },
+  {
+    "id": "spartantoolkit",
+    "version": "1.20.1-1.6.1",
+    "sha256": "e33951b88742d7547c898e1594511bc22329b5638469120ce04e96f806613ca7"
+  },
+  {
+    "id": "cataclysm",
+    "version": "3.31",
+    "sha256": "c29dcf940168208517b72f2d9965828b106a6b94cbea55d5001558c69a27b362"
+  },
+  {
+    "id": "curios",
+    "version": "5.14.1+1.20.1",
+    "sha256": "1e817919a35b37cf30524aaec73f0ca5130452f23f168f844854df282eb8e51f"
+  },
+  {
+    "id": "quality_equipment",
+    "version": "1.6",
+    "sha256": "b4220fa0fb84def3140968ed1acac166358bbbfda611088999fdd4829a59e7a2"
+  },
+  {
+    "id": "patchouli",
+    "version": "1.20.1-85-FORGE",
+    "sha256": "05f7b5d52f6b8f0fd7f8b4822fa07a192d1394d83a264309c9d221d6d4fd21c5"
+  },
+  {
+    "id": "blockui",
+    "version": "1.20.1-1.0.193",
+    "sha256": "0658aea747cfaea37171ea0794e420c4ac40e638b1d7dec50d196086b80a4cb7"
+  },
+  {
+    "id": "simplebedrockmodel",
+    "version": "2.2.2-forge+mc1.20.1",
+    "sha256": "88d8b6d4d59c7a706caaedd3712ef74e51204d803d6a23118e5d463df0e656da"
+  },
+  {
+    "id": "cerbons_api",
+    "version": "1.0.0",
+    "sha256": "b764f411ddcf4612b27774166d227d3bc92741e1a89ac0590aa3dbba432ab249"
+  },
+  {
+    "id": "jewelcraft",
+    "version": "1.7.0",
+    "sha256": "c4527f42913fd95865447431b751fa402d61dc115c532ebf91186db68d4ebdc4"
+  },
+  {
+    "id": "attributeslib",
+    "version": "1.3.7",
+    "sha256": "68487b11c0d4e2f67a85f2b04bf65e99ac15294f2923f4391f83e9542293187a"
+  },
+  {
+    "id": "spartanfire",
+    "version": "2.1.0",
+    "sha256": "be4413b59cd2619fee2529164b68936c86ac010de43665afdb8fffb43c51fc66"
+  },
+  {
+    "id": "saintsdragons",
+    "version": "0.9.52",
+    "sha256": "bb29b07c16fac7372acef036d175e94ac5957d2867cdb07a909f9e2f1a51d4d1"
+  },
+  {
+    "id": "legendarytabs",
+    "version": "1.20.1-2.0",
+    "sha256": "4f06b218e5228513a3fb173a498d819795c80dce67e7f2b26ddabda16e2d4b4a"
+  },
+  {
+    "id": "scguns",
+    "version": "0.5.5",
+    "sha256": "f339dd8444eaf4623449cd11db092beb1f02f14f5d03045a0394070b0ea50170"
+  },
+  {
+    "id": "pointblank",
+    "version": "1.12.1",
+    "sha256": "67d757a93ac2e7b67323640c458486753c32c9f5a1b2f70f00b8acebaec91402"
+  },
+  {
+    "id": "customnpcs",
+    "version": "1.20.1.20260711",
+    "sha256": "604916a1cd0949fd426cab5fad8f839037d7e6f74d9f18a9afbeaa7731edfc38"
+  },
+  {
+    "id": "etstlib",
+    "version": "3.0.0-beta.20",
+    "sha256": "3bafc16fbdfe870ca9423aa93273dc008a622b8074e429e112bcf005a5c3e95c"
+  },
+  {
+    "id": "rusticdelight",
+    "version": "1.7.0",
+    "sha256": "43786263003824cb8d042037edcd7639b44e30819a5f585c42de294d3d7da80b"
+  },
+  {
+    "id": "naturesaura",
+    "version": "39.4",
+    "sha256": "df1c4dffce5d02695031c674e6fd7b34b8a67cece88400c48e942bb27b8fff6d"
+  },
+  {
+    "id": "morevanillaarmor",
+    "version": "1.20.1-5.1.2",
+    "sha256": "ab7bace652c479138f29cab9b830c3e4b9322209f350147591b6c6d22a1c3d1e"
+  },
+  {
+    "id": "spartanweaponry",
+    "version": "3.2.1",
+    "sha256": "2736ac2dd52a7b3a188df454e61a4154cd36e273fa770f3ab89dcf6e732e88ad"
+  },
+  {
+    "id": "spartancataclysm",
+    "version": "1.1.2+1.20.1+forge",
+    "sha256": "cafb5d4b09421d4852e578d9c205b0b87f64330cecccb700f9d255cfa7837b32"
+  },
+  {
+    "id": "deeperdarker",
+    "version": "1.3.3",
+    "sha256": "d07dc6155e0b751c7d1ec26dabb7284a41798c85e48b0d809fd1254e489ed455"
+  },
+  {
+    "id": "architectury",
+    "version": "9.2.14",
+    "sha256": "218b471d0b8a1f6cda14cfc1beb9eeb0df54304500acc6c5613d9b88ec65d9af"
+  },
+  {
+    "id": "doapi",
+    "version": "1.2.15",
+    "sha256": "d08b99df112cfffb46e289635c79d4ac8397223320abd6469b47e202e23fa28c"
+  },
+  {
+    "id": "terraform",
+    "version": "7.0.1",
+    "sha256": "d08b99df112cfffb46e289635c79d4ac8397223320abd6469b47e202e23fa28c"
+  },
+  {
+    "id": "vinery",
+    "version": "1.4.41",
+    "sha256": "5d7e11f6e2218562ce75d60788fdcfc9ccf59e4532757c18bf37759d5fc739ee"
+  },
+  {
+    "id": "beachparty",
+    "version": "2.0.3",
+    "sha256": "cd31dab1eb6d88e70697ee0342ebb79f22d9b9f0cb09d4a0b1562ed809178aef"
+  },
+  {
+    "id": "simplytooltips",
+    "version": "0.1.5-1.20.1",
+    "sha256": "a50357b4982132522f48afc6fa625c453359390f8180e4c72f6288ecd46dee3c"
+  },
+  {
+    "id": "meadow",
+    "version": "1.3.25",
+    "sha256": "e96a241cc2b991d158bedb6e9239ce77656a9858c76345c7dc7b6eadeaa6ddcf"
+  },
+  {
+    "id": "herbalbrews",
+    "version": "1.0.12",
+    "sha256": "8cf03776a4a876810a2af9c9f18f73eb5a20f041b0791b6c8b8150b5441b83c1"
+  },
+  {
+    "id": "libtooltips",
+    "version": "2.3-FORGE-1.20.1",
+    "sha256": "81718c32ff76cd2dddc4b891e12bb94f0e3e5f9e69e89649e366ff7d7ea47dd6"
+  },
+  {
+    "id": "undergarden",
+    "version": "0.8.14",
+    "sha256": "43029e388ab455f8c9bcfc8653b9a57a3eb1ff6b435cf6e58722d2d4c50d2444"
+  },
+  {
+    "id": "framework",
+    "version": "0.8.0",
+    "sha256": "37c267f46d8b8dfa81bae8c9fa9fa6467e456cadecae10722ee91b43437f25a0"
+  },
+  {
+    "id": "l2library",
+    "version": "2.5.3",
+    "sha256": "c36a9c5c93b6114c15aea11d084600a8ed230f179f1b70d6222633a50f77fc18"
+  },
+  {
+    "id": "l2damagetracker",
+    "version": "0.4.4",
+    "sha256": "1f77c9a835b1d3c5e01f1e36b8df982f7b475f8438d56c835c5ee2583e3a9469"
+  },
+  {
+    "id": "tide",
+    "version": "2.1.1",
+    "sha256": "cac8ec3ee8772686ac8d3c35b86869399cede9ce1cc194cea925dc8d3b498a22"
+  },
+  {
+    "id": "hapi",
+    "version": "1.0.0",
+    "sha256": "a0e877657ec202c381bdcb0e1566b88425745a574f9bec2fc717cd58ee00b9ca"
+  },
+  {
+    "id": "rhino",
+    "version": "2001.2.3-build.10",
+    "sha256": "fed2211429301bf043864183cab9ab8e92d4cc4dbb9e488ce6c75217c54584a6"
+  },
+  {
+    "id": "mowziesmobs",
+    "version": "1.8.2",
+    "sha256": "e8ce1768cda6f1e1fadd2321c92921b473bd0cee45ba4b8387fb30f8326cb31c"
+  },
+  {
+    "id": "geckolib",
+    "version": "4.8.4",
+    "sha256": "4518779a31b6c2abb92c98b5ad17ef3d60177df68626bfc86c44de2764913c2b"
+  },
+  {
+    "id": "tinkers_advanced_materials",
+    "version": "3.0.0-beta.3",
+    "sha256": "92fed750a79ebb5f34e57d3db8daa97b0b78396aa7dc0f71a88e019275651750"
+  },
+  {
+    "id": "l2tabs",
+    "version": "0.3.3",
+    "sha256": "9390cabfa20bf7e1e8011d623ca0d6f4322628ca72ccd04faa42db92158ce1b4"
+  },
+  {
+    "id": "ftblibrary",
+    "version": "2001.2.13",
+    "sha256": "41810281b65336265cae2c88412022d02f2f0a3f28c66a06173d86f98acf14a7"
+  },
+  {
+    "id": "ftbteams",
+    "version": "2001.3.2",
+    "sha256": "b1cb4d82ea9f137a87e12a7aaf3329619294b56f7d70337dfd557a76e10b6e07"
+  },
+  {
+    "id": "mca",
+    "version": "7.6.26+1.20.1",
+    "sha256": "5dc3ee1f2f74221b3b7b73456451bf9a3f0cc87c8378a64233680f051dbc3d19"
+  },
+  {
+    "id": "mcareputation",
+    "version": "0.4.1",
+    "sha256": "f9a8590fc11700cbf9f72332aeb14c4cf16e5fed7f911e925ddebe717574495b"
+  },
+  {
+    "id": "tinkers_katanas",
+    "version": "1.4.3",
+    "sha256": "01af06cee6b13ec09b6631a246dc55bbe2c0814e99cae30dbcea3a2cab1adaf4"
+  },
+  {
+    "id": "locks",
+    "version": "1.7.5",
+    "sha256": "d7ca3b957e98575a3c8d715a3efa26ac98d7b7e60fd321141fef4fb2b3fdbfbc"
+  },
+  {
+    "id": "siegemachines",
+    "version": "1.39",
+    "sha256": "6a24c20ff92a9b804656bdb3dc1d06b601bc258d0c5b6fb644ccfc680555d6a1"
+  },
+  {
+    "id": "jei",
+    "version": "15.56.0.205",
+    "sha256": "6b251e60a4719c874da89d750af97aa6498f6f4475e3ae79cb1288c7bf0cb65c"
+  },
+  {
+    "id": "kubejs",
+    "version": "2001.6.5-build.26",
+    "sha256": "1769312192fbf9d72f45054ba61130523bfb471b5f480a4bff8c210ec09400bb"
+  },
+  {
+    "id": "cgm",
+    "version": "1.4.20",
+    "sha256": "e9374b1c0e3fa2dad4a862dc289aef03e47546ca15c14ce716255af1904dea24"
+  },
+  {
+    "id": "lithostitched",
+    "version": "1.4.11",
+    "sha256": "c19a5a36c0e6cb3782cf7ca5b9648fb1bce5fc41fd737bed423a1f4971bccf75"
+  },
+  {
+    "id": "irons_lib",
+    "version": "1.20.1-2.1.0",
+    "sha256": "db4c7cc853c0ffb1d36a0f19af22c224a8608b2a55c747adc70fb44455baf097"
+  },
+  {
+    "id": "tacz",
+    "version": "1.1.8-hotfix",
+    "sha256": "9ed8ada1283ed7a793a70cc1b51c4a340f367ce84707e1a7b8cf21ee3d288d77"
+  },
+  {
+    "id": "l2complements",
+    "version": "2.6.1",
+    "sha256": "2aae9d5fc4286f2952939f9edda636ad85d6a9451c960d1c2ece6732b8862e43"
+  },
+  {
+    "id": "l2harvester60x",
+    "version": "0.1.2",
+    "sha256": "f544827730e8db41be3e695eba7ea7571057f190654d5ba536367a35082bc5f5"
+  },
+  {
+    "id": "tinkers_things",
+    "version": "1.3.3",
+    "sha256": "4010a7c98b1df2ab4be2c720cdbbacdeee0b813c7e0885d646428963543b69b4"
+  },
+  {
+    "id": "libx",
+    "version": "1.20.1-5.0.12",
+    "sha256": "2de52bac5d699e6a2cbf74e94b0b3e6afdcb2e3b939dc2449fc1c6dfb8c9a96c"
+  },
+  {
+    "id": "morevanillatools",
+    "version": "1.20.1-6.0.0",
+    "sha256": "a1e4363c823d3c4d09c8ded5c1a7ef8cccae485f4f146bd4e31ea93720416e8c"
+  },
+  {
+    "id": "l2screentracker",
+    "version": "0.1.4",
+    "sha256": "c48be2efb13620553f70b325be609f957d218274e3db0b249cc225ea3980e3e0"
+  },
+  {
+    "id": "magistuarmory",
+    "version": "10.11",
+    "sha256": "6043fdc77ea9651b1293e8602c8e858c728628f6f6b6e9efa247e4281f4ca733"
+  },
+  {
+    "id": "antiquelegacy",
+    "version": "1.13",
+    "sha256": "06bf57a754d93816382fd60a4b2030a84854518918a0553b3f7b38aae33f5def"
+  },
+  {
+    "id": "call_of_yucutan",
+    "version": "1.0.13",
+    "sha256": "063be00ddec8cd799b59db056157ac9b0ebbd177de2401c3f5d22ae4efc47bcc"
+  },
+  {
+    "id": "runiclib",
+    "version": "4.3.11",
+    "sha256": "5e4c5d299b2beb746e7aa48add747654f617bd78da1e38996b29695d7698b260"
+  },
+  {
+    "id": "magistuarmoryaddon",
+    "version": "2.6",
+    "sha256": "cbaf743ce72199d2007fc9d9199be28d2f805a81a837230cf0d6e8ce828cd193"
+  },
+  {
+    "id": "iceandfire",
+    "version": "2.1.13-1.20.1",
+    "sha256": "2b80245fc9b7d6fdc61d71f9892f4c6114eb7f303f65634845aaab25f84d1e82"
+  },
+  {
+    "id": "dragonsteel",
+    "version": "0.81",
+    "sha256": "3fe90037d651276967301d763dcf5ce0173561312da9f33cd3a56a95f61efd0e"
+  },
+  {
+    "id": "epic_knights_ice_and_fire",
+    "version": "1.0",
+    "sha256": "2c1c89c8c4d7bb077c5f235e763471e0b4204ffd59aafb950c33e37c90c87c80"
+  },
+  {
+    "id": "bosses_of_mass_destruction",
+    "version": "1.1.1",
+    "sha256": "4530411d4cd1004f3a6ad248c6bda667c364ee4fd345ceb7a20c947ef093e3be"
+  },
+  {
+    "id": "azurelib",
+    "version": "3.1.12",
+    "sha256": "482d12cdcba5c029e8c22fd34c4913edc22b0ba1f5c5121613f0974192323fb7"
+  },
+  {
+    "id": "tinkers_delight",
+    "version": "2.0.2",
+    "sha256": "b8df6d974ac3cc52a0303035e0db2a3ec048fe63035a18d7aa61f94742c39815"
+  },
+  {
+    "id": "ars_nouveau",
+    "version": "4.12.7",
+    "sha256": "1f1debc282a0c379c1141f2840ea294eede6f6b544c589663f40bbe17b59a1af"
+  },
+  {
+    "id": "forge",
+    "version": "47.4.23",
+    "sha256": "98a6c0a2318c1788db6f592357eb00d09b15316f054942ba432f71027f074fef"
+  },
+  {
+    "id": "farm_and_charm",
+    "version": "1.0.14",
+    "sha256": "2311790589a58678640cb788de13bebd40efe3ed92f03e82a8fa871850a382eb"
+  },
+  {
+    "id": "candlelight",
+    "version": "2.0.5",
+    "sha256": "6c384737ebc26a0efb50a0688e4ff38f59bce9db30c4b61dcbb1118095b34688"
+  },
+  {
+    "id": "bakery",
+    "version": "2.0.6",
+    "sha256": "feb70544c3b8409122c26b9a80d86691c8e36508b95e24fe7bd89e3a973a947e"
+  },
+  {
+    "id": "brewery",
+    "version": "2.0.6",
+    "sha256": "c8ae46cac66ab2a054cac6f9353512855c2cebaf5eb2eacc38503a50f05c56ea"
+  },
+  {
+    "id": "jsonthings",
+    "version": "0.9.13",
+    "sha256": "fed77277bc5acb79c9b3dc72b5d4fae2cea654cb71605fd7910118a750da0e3c"
+  },
+  {
+    "id": "minecraft",
+    "version": "1.20.1",
+    "sha256": "cba463381db0c98d6da71ab879c8eee4e66146cb1af5449cf1525f159f56bba2"
+  },
+  {
+    "id": "overgeared",
+    "version": "1.20.1-1.6.33",
+    "sha256": "02dca6174df33f99272af5d57d1b7fbaacd328d20531d3fd202cbd95d3e096c4"
+  },
+  {
+    "id": "fancytabsections",
+    "version": "6.2.1-FORGE-1.20.1",
+    "sha256": "69e7c86317ae52045e540b5ad2748991c61fed20b9adbbc5068e009332de8a6a"
+  },
+  {
+    "id": "tconstruct",
+    "version": "3.11.2.166",
+    "sha256": "653b49d73481a1325ba78adc7273dee6c765a51bafdf264a7510576d6ef91c43"
+  },
+  {
+    "id": "tinkers_thinking",
+    "version": "0.1.6.6.3",
+    "sha256": "660816d2272fa501f8093050e573fce13d77cb22be05de1a7bf382f4f2fe0ce3"
+  },
+  {
+    "id": "tinkersjewelry",
+    "version": "1.2.0",
+    "sha256": "f80f5f426ab6362f28b72a31b6ea903942a74f4882cdff5a955a825f3d76171c"
+  },
+  {
+    "id": "tinkers_advanced",
+    "version": "3.0.0-beta.5",
+    "sha256": "384903a602685c4ecc18f93ae31b8e386f07c2147f8a150999f4658cb1fe8db1"
+  },
+  {
+    "id": "alexscaves",
+    "version": "2.0.2",
+    "sha256": "131e205ce3eed384d701b336d8a0d4a671108ed56b6eff6014f0e407db2997f0"
+  },
+  {
+    "id": "simplyswords",
+    "version": "1.70.2-1.20.1",
+    "sha256": "642e385ffda914f1b9411f0a457fe5fb5e05aa160dc44392dec9a549c2bcec21"
+  },
+  {
+    "id": "bettercombat",
+    "version": "1.9.0+1.20.1",
+    "sha256": "49c69dccf2c641246b4e3deca81ebac21f0ee119e81fc713b838b8e33569eea1"
+  },
+  {
+    "id": "ftbquests",
+    "version": "2001.4.22",
+    "sha256": "9ea9d159a78a2724cfe0457b024680fdb52a2126eff9cfa5280a30578f647a68"
+  },
+  {
+    "id": "jet_and_elias_armors",
+    "version": "1.0.0",
+    "sha256": "b5a80b949b86f473c3b06ce90b0fdc98e0c7f1069254f544eb7e73e777617f22"
+  },
+  {
+    "id": "simplymore",
+    "version": "1.1.4",
+    "sha256": "50a14bf8d1aad4a38843d5fa88db71a8a2aecf03c65a558bf4a56ce71a828e17"
+  },
+  {
+    "id": "l2harvester",
+    "version": "0.1.2",
+    "sha256": "c69b0ce94ceeeef65b096174e102f538c16da62c6e804347cd32d75feee36608"
+  },
+  {
+    "id": "tinkersinnovation",
+    "version": "1.20.1-3.0.0",
+    "sha256": "61122ade819d6d9cc3c33c8c68edad7e88ea81bc04aef249de6f53e6a82240f9"
+  },
+  {
+    "id": "domum_ornamentum",
+    "version": "1.20.1-1.0.296",
+    "sha256": "a5a46c0bcadbcaa36a69b8be32f6eeec0c655b2990f6f6c0c8c61ddb569e809f"
+  },
+  {
+    "id": "kotlinforforge",
+    "version": "4.12.0",
+    "sha256": "007d01bead461011be3774a3edf858314e0324023270f06d008834a7a404ee71"
+  },
+  {
+    "id": "traveloptics",
+    "version": "6.3.0-1.20.1",
+    "sha256": "878a0fb5a2057de530698fd63091b9fa1c23af0139054af108e9d566840a0fa9"
+  },
+  {
+    "id": "brewinandchewin",
+    "version": "1.20.1-3.2.1",
+    "sha256": "d06edc7a145e8808903b7bd06e0639458a817fbc4ee589be239c0af77a6367db"
+  },
+  {
+    "id": "flywheel",
+    "version": "1.0.5",
+    "sha256": "316ca250f19244956b5f0cd75329309ea65a77b4b8da854389b6a9222e7f427c"
+  },
+  {
+    "id": "ponder",
+    "version": "1.0.91",
+    "sha256": "86e6b64372aba6d9c56f2c35725ea26d8febf2c75eed9950566e7f2849443b34"
+  },
+  {
+    "id": "create",
+    "version": "6.0.8",
+    "sha256": "6fbb910c367dbce8e4fc7e5bf64b6edd4de980906ed00af8e47e4af843c0d9b0"
+  },
+  {
+    "id": "spartanshields",
+    "version": "3.1.1",
+    "sha256": "920368908e26e1a75186e06affd03274d0fe93770d5c5d12c177f53d7aa1deac"
+  },
+  {
+    "id": "mantle",
+    "version": "1.11.113",
+    "sha256": "c059d5dcaca940383d9c4ff31bc79473b30ac267ccc5922d0d6b0fe7d93c6f7c"
+  },
+  {
+    "id": "malum",
+    "version": "1.20.1-1.6.7",
+    "sha256": "ceda6ce4cc19de21ff6c21a732d8f9270ecc83cdae69027b13aaa24b536307f8"
+  },
+  {
+    "id": "irons_spellbooks",
+    "version": "1.20.1-3.16.3",
+    "sha256": "54b5aaa52887c38f570fbd820288171234d8541c17a5e953f9271189fdd480fb"
+  },
+  {
+    "id": "bielgg_spells",
+    "version": "1.5",
+    "sha256": "05fd3a1deaa2e778de80c34dde9fef5e575dd5f94f88f47379902b879c95c047"
+  },
+  {
+    "id": "structurize",
+    "version": "1.20.1-1.0.818",
+    "sha256": "42524cf5ebb2152ee07d412e9c9e10e311fee9768d0dabbaedb093304d7bbb9c"
+  },
+  {
+    "id": "multipiston",
+    "version": "1.20-1.2.43-RELEASE",
+    "sha256": "3102eb9915591296d14e22992d0a7baa526161b6e92058c017425c0bff19efb6"
+  },
+  {
+    "id": "minecolonies",
+    "version": "1.20.1-1.1.1276",
+    "sha256": "d1a1cb3f6a93ae9301c4c96568c11d98dc8a99ecec9abcba3e8f7455a022ddfa"
+  },
+  {
+    "id": "yet_another_config_lib_v3",
+    "version": "3.6.6+1.20.1-forge",
+    "sha256": "57bc01c404da864cce52d92edc40ec92447133b91bd8a547f4e6ae51eb4b9fe8"
+  },
+  {
+    "id": "runicskills",
+    "version": "2.2.0",
+    "sha256": "6dd5ab8bfbace0ecf75ad696032f64efd95b6eb209a088bf12bd2fb87779f308"
+  },
+  {
+    "id": "runicskills_validation",
+    "version": "1",
+    "sha256": "7d08e3791af50e06bbae18d77d16cc4133a3ea24cf8b830008b36a163edde1bb"
+  },
+  {
+    "id": "aquaculture",
+    "version": "2.5.7",
+    "sha256": "4c96cf0dd3363a8e15f9ef6b6bfc00ac7d4791e8e9eeebe19b8092c59e800f8f"
+  },
+  {
+    "id": "tcintegrations",
+    "version": "2.0.25.19",
+    "sha256": "c9dd76334c1a8ab3477a0d57cf470329c5f581c322c552f63a9b5bcb6b7b8891"
+  },
+  {
+    "id": "l2itemselector",
+    "version": "0.1.9",
+    "sha256": "fc2188e5c5ff3bcb7e8020b39b5aaecc131aa8f3266572a56546d27bd8e8e0da"
+  },
+  {
+    "id": "lodestone",
+    "version": "1.20.1-1.6.4.1",
+    "sha256": "e9f8b7bc70ba99d97005f2acee2061b149785fbae3c1e37db08c79197bcc7c2d"
+  },
+  {
+    "id": "hybrid_aquatic",
+    "version": "1.7.0",
+    "sha256": "1e48c81c6f6a7a6ca08abdc8927eb05b339378e89934dc6d3206713b4a4187fa"
+  },
+  {
+    "id": "l2harvester05x",
+    "version": "0.1.2",
+    "sha256": "5c06335cc279bb4de650a0184aebdfe9eca72d5d9f806f04b2e27fbea2db26c5"
+  },
+  {
+    "id": "dungeonsdelight",
+    "version": "1.3.0",
+    "sha256": "7766b90dbd4404db917f675bdd84dcacfb72ce6c3f89ddd0154433821b6b2b68"
+  },
+  {
+    "id": "fruitsdelight",
+    "version": "1.1.3",
+    "sha256": "ad136ea910d1b09bab90425168f64d841ea4f57d49f8a616da9882c7d6d8aec1"
+  },
+  {
+    "id": "darkagesarmory",
+    "version": "1.1",
+    "sha256": "227279de86f19e44be7a05f4ea187dd3b083d17e321179d3b8da224ed545c6ae"
+  }
+]

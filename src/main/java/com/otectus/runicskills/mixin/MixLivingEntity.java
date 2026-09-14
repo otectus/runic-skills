@@ -55,6 +55,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class MixLivingEntity {
 
+    /** Runs only after LivingDrops listeners decline ownership (for example a grave). */
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "dropAllDeathLoot",
+            at = @At(value = "INVOKE", target = "Ljava/util/Collection;forEach(Ljava/util/function/Consumer;)V", remap = false))
+    private void runicskills$recoverRefusedDeathDrops(java.util.Collection<net.minecraft.world.entity.item.ItemEntity> drops,
+            java.util.function.Consumer<net.minecraft.world.entity.item.ItemEntity> spawn,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
+        if (!((Object) this instanceof Player player)) { original.call(drops, spawn); return; }
+        original.call(drops, (java.util.function.Consumer<net.minecraft.world.entity.item.ItemEntity>) entity -> {
+            spawn.accept(entity);
+            if (!entity.isAddedToWorld()) com.otectus.runicskills.common.inventory.InventoryReconciliation.recover(player, entity.getItem());
+        });
+    }
+
     @Unique
     private final LivingEntity runicskills$self = (LivingEntity) (Object) this;
 
@@ -101,45 +114,15 @@ public abstract class MixLivingEntity {
         return Float.isFinite(reduced) ? Math.max(0.0F, reduced) : 0.0F;
     }
 
-    // ── Which item is being consumed ────────────────────────────────────────────────────────
-
-    /**
-     * The consumable this entity is in the act of finishing, or empty.
-     *
-     * <p>Alchemy Manipulation and the beneficial-effect duration bonus are about <em>drinking a
-     * potion</em>, and the only honest way to know that an effect arrived because of a drink is to
-     * know that a drink is being completed right now. {@code isUsingItem()} is true for the whole
-     * animation and answers a much weaker question.
-     *
-     * <p>Set and cleared around {@code completeUsingItem}, which is the call that runs
-     * {@code finishUsingItem} — the method that adds a potion's effects. Anything added inside that
-     * window came from the item; anything added outside it did not.
-     */
-    @Unique
-    private ItemStack runicskills$finishing = ItemStack.EMPTY;
-
-    @Inject(method = "completeUsingItem", at = @At("HEAD"))
-    private void runicskills$beginFinishingItem(CallbackInfo ci) {
-        this.runicskills$finishing = this.runicskills$self.getUseItem();
-    }
-
-    @Inject(method = "completeUsingItem", at = @At("RETURN"))
-    private void runicskills$endFinishingItem(CallbackInfo ci) {
-        this.runicskills$finishing = ItemStack.EMPTY;
-    }
-
-    /**
-     * Whether a potion this entity is drinking is the reason an effect is arriving.
-     *
-     * <p>The {@code isUsingItem} conjunct is a belt-and-braces guard rather than the test itself: if
-     * {@code completeUsingItem} ever escaped by exception the marker would not be cleared, and this
-     * keeps a stale marker from amplifying effects for the rest of the session.
-     */
-    @Unique
-    private boolean runicskills$isDrinkingAPotion() {
-        return this.runicskills$self.isUsingItem()
-                && !this.runicskills$finishing.isEmpty()
-                && this.runicskills$finishing.getItem() instanceof PotionItem;
+    /** Scope only the native food effect call, including exception/nesting cleanup. */
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(
+            method = "addEatEffect", at = @At(value = "INVOKE", target =
+            "Lnet/minecraft/world/entity/LivingEntity;addEffect(Lnet/minecraft/world/effect/MobEffectInstance;)Z"))
+    private boolean runicskills$foodEffect(LivingEntity target, MobEffectInstance effect,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<Boolean> original) {
+        return com.otectus.runicskills.common.effects.EffectApplicationContext.apply(target, effect,
+                com.otectus.runicskills.common.effects.EffectApplicationContext.Origin.FOOD,
+                () -> original.call(target, effect));
     }
 
     // ── Effect perks ────────────────────────────────────────────────────────────────────────
@@ -161,33 +144,34 @@ public abstract class MixLivingEntity {
         if (incoming == null) return incoming;
         if (!(this.runicskills$self instanceof Player player)) return incoming;
 
-        int duration = incoming.getDuration();
-        int amplifier = incoming.getAmplifier();
-        MobEffectCategory category = incoming.getEffect().getCategory();
-
-        if (category == MobEffectCategory.HARMFUL) {
+        if (player.level().isClientSide() || player instanceof net.minecraftforge.common.util.FakePlayer) return incoming;
+        if (incoming.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
             return runicskills$shortenHarmful(player, incoming);
         }
-
-        if (category == MobEffectCategory.BENEFICIAL && runicskills$isDrinkingAPotion()) {
-            if (RegistryPerks.ALCHEMY_MANIPULATION != null
-                    && RegistryPerks.ALCHEMY_MANIPULATION.get().isEnabled(player)) {
-                amplifier += (int) RegistryPerks.ALCHEMY_MANIPULATION.get().getActiveValue(player)[0];
-            }
-            if (!incoming.isInfiniteDuration()) {
-                double bonusSeconds =
-                        player.getAttributeValue(RegistryAttributes.BENEFICIAL_EFFECT.get());
-                if (bonusSeconds > 0) duration += (int) bonusSeconds * 20;
+        if (incoming.getEffect().getCategory() != MobEffectCategory.BENEFICIAL) return incoming;
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        double percent = 0;
+        if (RegistryPerks.TEMPORAL_WISDOM.get().isEnabled(player)
+                && com.otectus.runicskills.registry.events.EnchantingLorePerkHandler.inCombat(player)) {
+            percent += Math.max(0, cfg.temporalWisdomPercent);
+        }
+        if (incoming.getEffect() == net.minecraft.world.effect.MobEffects.LUCK
+                && RegistryPerks.BLESSING_OF_LUCK.get().isEnabled(player)) {
+            percent += Math.max(0, cfg.blessingOfLuckPercent);
+        }
+        var origin = com.otectus.runicskills.common.effects.EffectApplicationContext.origin(player, incoming);
+        if (origin == com.otectus.runicskills.common.effects.EffectApplicationContext.Origin.FOOD
+                && RegistryPerks.HEARTY_FEAST != null && RegistryPerks.HEARTY_FEAST.get().isEnabled(player)) percent += Math.max(0, cfg.heartyFeastPercent);
+        double flatTicks = 0;
+        int amplifier = 0;
+        if (origin == com.otectus.runicskills.common.effects.EffectApplicationContext.Origin.POTION) {
+            flatTicks = player.getAttributeValue(RegistryAttributes.BENEFICIAL_EFFECT.get()) * 20.0;
+            if (RegistryPerks.ALCHEMY_MANIPULATION.get().isEnabled(player)) {
+                amplifier = (int) RegistryPerks.ALCHEMY_MANIPULATION.get().getActiveValue(player)[0];
             }
         }
-
-        if (duration == incoming.getDuration() && amplifier == incoming.getAmplifier()) {
-            // Nothing to change: hand back the very instance vanilla was given. This is what makes
-            // "both perks off behaves exactly like vanilla" true by construction rather than by
-            // careful copying.
-            return incoming;
-        }
-        return runicskills$respan(incoming, Math.max(0, duration), Math.max(0, amplifier));
+        return com.otectus.runicskills.common.effects.EffectApplicationContext.transformed(player, incoming,
+                IncomingEffectPolicy.extend(incoming, percent, flatTicks, amplifier));
     }
 
     /**
@@ -200,8 +184,8 @@ public abstract class MixLivingEntity {
      *
      * <p><b>Why Lucky Charm is here and not in an event handler (RS207-04).</b> It used to listen to
      * {@code MobEffectEvent.Added} and call {@code addEffect} again with a rebuilt instance. That
-     * fires <em>after</em> vanilla has already run {@code canBeAffected}, posted the event to every
-     * other listener and merged the instance into the active map, so every observer saw the full
+     * fires before the active-map merge, after vanilla has run {@code canBeAffected}, posted the event to every
+     * other listener (before merging into the active map), so every observer saw the full
      * duration and then a second, shorter application of the same effect arriving from this mod —
      * and the rebuild used the three-argument constructor, which drops the ambient flag, the icon
      * and particle flags, the curative items and the factor data. HEAD of the two-argument
@@ -227,28 +211,6 @@ public abstract class MixLivingEntity {
         }
         if (cut <= 0) return incoming;
         return IncomingEffectPolicy.shorten(incoming, cut);
-    }
-
-    /**
-     * A copy of {@code original} with a new duration and amplifier and everything else intact.
-     *
-     * <p>The eight-argument constructor is used rather than the three-argument one precisely
-     * because of what the short one drops: ambient state decides whether a beacon's effect renders
-     * as a faint overlay, {@code visible} and {@code showIcon} decide whether the player sees
-     * particles and an icon at all, and Forge's curative list decides what cures it. The hidden
-     * effect is passed through for completeness even though an <em>incoming</em> instance never
-     * carries one — vanilla builds that chain inside {@code update}, on the instance already
-     * active, which this never touches.
-     */
-    @Unique
-    private static MobEffectInstance runicskills$respan(MobEffectInstance original,
-                                                        int duration, int amplifier) {
-        MobEffectInstance copy = new MobEffectInstance(
-                original.getEffect(), duration, amplifier,
-                original.isAmbient(), original.isVisible(), original.showIcon(),
-                null, original.getFactorData());
-        copy.setCurativeItems(new java.util.ArrayList<>(original.getCurativeItems()));
-        return copy;
     }
 
     // ── Stealth ─────────────────────────────────────────────────────────────────────────────

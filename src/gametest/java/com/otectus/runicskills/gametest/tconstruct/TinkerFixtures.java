@@ -151,7 +151,16 @@ public final class TinkerFixtures {
     public static ServerPlayer connectedPlayer(GameTestHelper helper, String name) {
         ServerPlayer player = MockPlayers.connectedServerPlayer(helper, name);
         player.containerMenu.setSynchronizer(SILENT);
+        disableRandomCrits(player);
         return player;
+    }
+
+    private static void disableRandomCrits(ServerPlayer player) {
+        // Jewelry brings Apothic Attributes, whose default crit chance randomizes exact damage
+        // assertions in otherwise identical Tinkers fixtures. No gameplay configuration is changed.
+        var attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation("attributeslib", "crit_chance"));
+        if (attribute != null && player.getAttribute(attribute) != null)
+            player.getAttribute(attribute).setBaseValue(0);
     }
 
     /**
@@ -162,6 +171,7 @@ public final class TinkerFixtures {
     public static ServerPlayer onlinePlayer(GameTestHelper helper, String name) {
         ServerPlayer player = MockPlayers.onlineServerPlayer(helper, name);
         player.containerMenu.setSynchronizer(SILENT);
+        disableRandomCrits(player);
         // A logged-in player loads their save file, and the gametest world keeps one from run to
         // run. Without this, the second run of a test that spends a Crown cooldown starts with that
         // cooldown already restored from login and the Power silently declines to fire -- a

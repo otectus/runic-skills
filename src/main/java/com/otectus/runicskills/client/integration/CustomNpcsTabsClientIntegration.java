@@ -1,9 +1,8 @@
 package com.otectus.runicskills.client.integration;
 
 import com.otectus.runicskills.client.screen.RunicSkillsScreen;
+import com.otectus.runicskills.client.gui.InventoryTabLayout.Rect;
 import com.otectus.runicskills.integration.CustomNpcsIntegration;
-import com.otectus.runicskills.integration.L2TabsIntegration;
-import com.otectus.runicskills.integration.LegendaryTabsIntegration;
 import com.otectus.runicskills.common.util.LogOnce;
 import com.otectus.runicskills.registry.RegistryItems;
 import net.minecraft.client.Minecraft;
@@ -11,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -24,8 +24,10 @@ import noppes.npcs.client.gui.player.tabs.InventoryTabQuests;
 import noppes.npcs.client.gui.player.tabs.InventoryTabVanilla;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Client-side companion to {@link CustomNpcsIntegration}: inserts a Skills tab of CustomNPCs' own
@@ -160,7 +162,58 @@ public final class CustomNpcsTabsClientIntegration {
      * {@code AbstractTab} still matches the compile-time stub.
      */
     public static void register() {
+        registerDestinations();
+        NativeInventoryTabs.registerStrip("customnpcs",
+                screen -> screen.children().stream().anyMatch(listener ->
+                        listener instanceof RunicSkillsCustomNpcsTab tab
+                                && NativeInventoryTabs.onScreen(tab, screen)),
+                screen -> screen.children().stream().filter(AbstractTab.class::isInstance)
+                        .map(AbstractWidget.class::cast).toList());
         MinecraftForge.EVENT_BUS.register(CustomNpcsTabsClientIntegration.class);
+    }
+
+    /** Export the native actions and icons, so L2/Legendary can host them in a single strip. */
+    private static void registerDestinations() {
+        try {
+            Class<?> factions = Class.forName("noppes.npcs.client.gui.player.GuiFaction");
+            Class<?> quests = Class.forName("noppes.npcs.client.gui.player.GuiQuestLog");
+            Set<Class<?>> screens = Set.of(InventoryScreen.class, RunicSkillsScreen.class, factions, quests);
+            Field icon = AbstractTab.class.getDeclaredField("renderStack");
+            icon.setAccessible(true);
+            registerDestination("customnpcs:factions", new InventoryTabFactions(), factions,
+                    "menu.factions", screens, icon);
+            registerDestination("customnpcs:quests", new InventoryTabQuests(), quests,
+                    "quest.quest", screens, icon);
+            for (Class<?> type : List.of(factions, quests)) {
+                Field width = type.getField("imageWidth");
+                Field height = type.getField("imageHeight");
+                // The upstream tab anchor includes each screen's offsets (not simply its
+                // centered image size). Read it from an unmodified native Inventory tab.
+                NativeInventoryTabs.registerPanel(type, screen -> {
+                    AbstractTab anchor = new InventoryTabVanilla().init(screen);
+                    try {
+                        return new Rect(anchor.getX() - 8, anchor.getY() + 27,
+                                width.getInt(screen), height.getInt(screen));
+                    } catch (IllegalAccessException e) {
+                        return null;
+                    }
+                });
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LogOnce.warnOnce("customnpcs-tabs:destinations",
+                    "Could not bridge CustomNPCs tab destinations: {}", e.toString());
+        }
+    }
+
+    private static void registerDestination(String id, AbstractTab nativeTab, Class<?> target,
+                                            String title, Set<Class<?>> screens, Field icon)
+            throws IllegalAccessException {
+        ItemStack stack = ((ItemStack) icon.get(nativeTab)).copy();
+        // customNpcsNativeTabs controls inserting Skills into CustomNPCs' own strip. It must
+        // not remove CustomNPCs' original destinations when L2 or Legendary hosts that strip.
+        NativeInventoryTabs.register(new NativeInventoryTabs.Destination(id, stack::copy,
+                Component.translatable(title), nativeTab::onTabClicked, target::isInstance,
+                nativeTab::shouldAddToList, screens));
     }
 
     /**
@@ -238,7 +291,8 @@ public final class CustomNpcsTabsClientIntegration {
         // L2Tabs and Legendary Tabs already render a Skills tab natively. Adding a second copy
         // here would recreate exactly the duplication this integration exists to remove. Their
         // own suppression covers the strip, so this only has to stay out of the way.
-        if (L2TabsIntegration.isNativeTabsActive() || LegendaryTabsIntegration.isNativeTabsActive()) {
+        if (NativeInventoryTabs.hasStrip("l2tabs", screen)
+                || NativeInventoryTabs.hasStrip("legendarytabs", screen)) {
             CustomNpcsIntegration.setNativeTabPresent(false);
             return;
         }
@@ -246,6 +300,14 @@ public final class CustomNpcsTabsClientIntegration {
         List<AbstractTab> existing = new ArrayList<>();
         for (GuiEventListener listener : screen.children()) {
             if (listener instanceof RunicSkillsCustomNpcsTab ours) {
+                if (screen instanceof InventoryScreen inventory) {
+                    for (GuiEventListener child : screen.children()) {
+                        if (child instanceof AbstractTab tab) {
+                            tab.setX(inventory.getGuiLeft() + STRIP_INSET_X + tab.id * TAB_PITCH);
+                            tab.setY(inventory.getGuiTop() + STRIP_INSET_Y - TAB_PITCH);
+                        }
+                    }
+                }
                 activeTab = ours;
                 activeScreen = screen;
                 CustomNpcsIntegration.setNativeTabPresent(true);

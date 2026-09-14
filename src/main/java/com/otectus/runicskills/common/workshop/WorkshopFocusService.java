@@ -1,6 +1,7 @@
 package com.otectus.runicskills.common.workshop;
 
 import com.otectus.runicskills.handler.HandlerCommonConfig;
+import com.otectus.runicskills.common.util.GameTimeWindow;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -313,14 +314,27 @@ public final class WorkshopFocusService {
         if (focus == null) return null;
         ServerLevel level = player.serverLevel();
         int radius = HandlerCommonConfig.HANDLER.instance().tconstructWorkshopFocusRadius;
-        if (!level.dimension().equals(focus.dimension())
+        if (level.getServer().getTickCount() >= focus.expiresAtTick()
+                || !level.dimension().equals(focus.dimension())
                 || !withinRadius(player, focus.controller(), radius)
                 || !level.isLoaded(focus.controller())
                 || !controllers.test(level, focus.controller())) {
             drop(player.getUUID());
             return null;
         }
-        Focus refreshed = focus.withBonus(measure(player));
+        // A dismantled or unloaded casting block releases its association instead of reserving
+        // the position (and the player's limited association slots) until the whole focus ends.
+        List<BlockPos> associations = focus.associations().stream()
+                .filter(pos -> level.isLoaded(pos) && castingBlocks.test(level, pos))
+                .toList();
+        Focus refreshed;
+        if (associations.size() != focus.associations().size()) {
+            drop(player.getUUID());
+            refreshed = new Focus(focus.player(), focus.dimension(), focus.controller(), associations,
+                    focus.expiresAtTick(), NEXT_REVISION.getAndIncrement(), measure(player));
+        } else {
+            refreshed = focus.withBonus(measure(player));
+        }
         store(refreshed);
         return refreshed;
     }
@@ -378,7 +392,7 @@ public final class WorkshopFocusService {
         if (server == null || BY_PLAYER.isEmpty()) return;
         long tick = server.getTickCount();
         // A tick count that went backwards is a second world in the same JVM; treat it as due.
-        if (tick >= lastRevalidatedTick && tick - lastRevalidatedTick < REVALIDATE_INTERVAL_TICKS) {
+        if (!GameTimeWindow.ready(tick, lastRevalidatedTick, REVALIDATE_INTERVAL_TICKS)) {
             return;
         }
         lastRevalidatedTick = tick;

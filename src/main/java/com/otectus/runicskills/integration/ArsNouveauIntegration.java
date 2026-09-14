@@ -178,7 +178,7 @@ public class ArsNouveauIntegration {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onSpellDamageSchoolbridge(SpellDamageEvent.Pre event) {
         if (!isActive()) return;
-        if (!IronsSpellbooksIntegration.isModLoaded()) return;
+        if (!IronsSpellbooksIntegration.isActive()) return;
         if (!(event.caster instanceof Player caster) || caster.isCreative()) return;
         if (event.context == null || event.context.getSpell() == null) return;
         Spell spell = event.context.getSpell();
@@ -219,32 +219,26 @@ public class ArsNouveauIntegration {
         if (!spellContainsSchool(spell, school)) return current;
         var inst = caster.getAttribute(issAttr);
         if (inst == null) return current;
-        // ISS *_spell_power attributes are unit percentages (0.20 = +20%).
-        float issValue = (float) inst.getValue();
-        float bleed = issValue * (percent / 100.0f);
-        return current * (1.0f + bleed);
+        return DamageMath.safeAmount(current,
+                current * ArsSpellMath.schoolBridgeMultiplier(inst.getValue(), percent));
     }
 
     /**
-     * Unified Arcana — on a successful Ars cast, refund a percent of the
-     * Source cost to the caster's ISS mana pool. Effectively lets a
-     * high-level player top-up ISS mana via Ars casts.
+     * Unified Arcana observes the native payment rather than each spell resolution. A projectile,
+     * AoE or repeating spell can resolve many times after paying once; resolving is not payment.
      */
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onSpellResolveUnifiedArcana(SpellResolveEvent.Post event) {
+    public static void onManaPaid(net.minecraft.server.level.ServerPlayer caster, double before, double after) {
         if (!isActive()) return;
-        if (!IronsSpellbooksIntegration.isModLoaded()) return;
-        if (!(event.shooter instanceof Player caster) || caster.isCreative()) return;
+        if (!IronsSpellbooksIntegration.isActive()) return;
+        if (caster.isCreative() || caster.isSpectator()
+                || caster instanceof net.minecraftforge.common.util.FakePlayer) return;
         if (RegistryPerks.UNIFIED_ARCANA == null
                 || !RegistryPerks.UNIFIED_ARCANA.get().isEnabled(caster)) return;
 
-        int cost = event.spell != null ? event.spell.getCost() : 0;
-        if (cost <= 0) return;
-        float refund = cost * (HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaPercent / 100.0f);
+        float refund = ArsSpellMath.paidRefund(before, after,
+                HandlerCommonConfig.HANDLER.instance().xUnifiedArcanaPercent);
         if (refund <= 0) return;
-        io.redspace.ironsspellbooks.api.magic.MagicData magic =
-                io.redspace.ironsspellbooks.api.magic.MagicData.getPlayerMagicData(caster);
-        if (magic != null) magic.addMana(refund);
+        IronsSpellbooksIntegration.grantMana(caster, refund);
     }
 
     // ── Mana Cost Reduction: Arcane Efficiency Perk ──
@@ -257,8 +251,7 @@ public class ArsNouveauIntegration {
 
         if (RegistryPerks.ARCANE_EFFICIENCY != null && RegistryPerks.ARCANE_EFFICIENCY.get().isEnabled(player)) {
             int percent = HandlerCommonConfig.HANDLER.instance().arsArcaneEfficiencyPercent;
-            int reducedCost = (int) (event.currentCost * (1.0 - percent / 100.0));
-            event.currentCost = Math.max(reducedCost, 0);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, percent, 0);
         }
 
         // ── Phase 2b: Form Focus: Projectile / Self + Wild Manipulation ──
@@ -271,16 +264,14 @@ public class ArsNouveauIntegration {
         if (form == MethodProjectile.INSTANCE
                 && RegistryPerks.ARS_FORM_PROJECTILE != null
                 && RegistryPerks.ARS_FORM_PROJECTILE.get().isEnabled(player)) {
-            int reduced = (int) (event.currentCost * (1.0 - c.arsFormProjectilePercent / 100.0));
-            event.currentCost = Math.max(reduced, 1);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, c.arsFormProjectilePercent, 1);
         }
 
         // Form Focus: Self — cost reduction for self-form spells
         if (form == MethodSelf.INSTANCE
                 && RegistryPerks.ARS_FORM_SELF != null
                 && RegistryPerks.ARS_FORM_SELF.get().isEnabled(player)) {
-            int reduced = (int) (event.currentCost * (1.0 - c.arsFormSelfPercent / 100.0));
-            event.currentCost = Math.max(reduced, 1);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, c.arsFormSelfPercent, 1);
         }
 
         // Wild Manipulation — cost reduction for any spell containing a
@@ -290,8 +281,7 @@ public class ArsNouveauIntegration {
         if (RegistryPerks.ARS_WILD_MANIPULATION != null
                 && RegistryPerks.ARS_WILD_MANIPULATION.get().isEnabled(player)
                 && spellContainsSchool(spell, SpellSchools.MANIPULATION)) {
-            int reduced = (int) (event.currentCost * (1.0 - c.arsWildManipulationPercent / 100.0));
-            event.currentCost = Math.max(reduced, 1);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, c.arsWildManipulationPercent, 1);
         }
 
         // ── Phase 2c: per-school cost reductions (Hedgewitch, Conjurer) ──
@@ -300,14 +290,12 @@ public class ArsNouveauIntegration {
                 && RegistryPerks.ARS_HEDGEWITCH.get().isEnabled(player)
                 && spellContainsSchool(spell, SpellSchools.ELEMENTAL_WATER)) {
             double hwCostPercent = RegistryPerks.ARS_HEDGEWITCH.get().getActiveValue(player)[0];
-            int reduced = (int) (event.currentCost * (1.0 - hwCostPercent / 100.0));
-            event.currentCost = Math.max(reduced, 1);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, hwCostPercent, 1);
         }
         if (RegistryPerks.ARS_CONJURER != null
                 && RegistryPerks.ARS_CONJURER.get().isEnabled(player)
                 && spellContainsSchool(spell, SpellSchools.CONJURATION)) {
-            int reduced = (int) (event.currentCost * (1.0 - c.arsConjurerPercent / 100.0));
-            event.currentCost = Math.max(reduced, 1);
+            event.currentCost = ArsSpellMath.discountedCost(event.currentCost, c.arsConjurerPercent, 1);
         }
 
         // Arcane Scholar - "Ars Nouveau spell complexity limit increased".
@@ -324,7 +312,7 @@ public class ArsNouveauIntegration {
             int glyphs = Math.max(0, spell.recipe.size() - 1);
             int perGlyph = Math.round(c.arcaneScholarAmplifier);
             if (glyphs > 0 && perGlyph > 0) {
-                event.currentCost = Math.max(event.currentCost - glyphs * perGlyph, 1);
+                event.currentCost = ArsSpellMath.scholarlyCost(event.currentCost, glyphs, perGlyph);
             }
         }
     }

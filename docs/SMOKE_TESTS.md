@@ -192,3 +192,20 @@ Earlier revisions routed failures to `COMMENT_TRIAGE.md`; that file stopped bein
 
 **Sections 1 through 6 have never had their Result cells filled in.** They are kept because the
 regressions they cover are real, but an empty cell means "not run", not "passed".
+
+## 2.1.2 audit additions
+
+Before release, supplement the existing checklist with two real clients on the same
+2.1.2 server. Automated execution is recorded in [the audit report](AUDIT_RESULTS_2026_09.md).
+
+| Check | Expected behavior |
+| --- | --- |
+| Join a protocol-15 server with a protocol-14 client | Clear negotiation refusal; no unknown-message crash |
+| Install skill artwork JSON plus the matching resource pack | Both clients show identical skill overview/detail/background art after join and `/reload` |
+| Remove the artwork JSON, then reconnect to another server | Default art returns; no previous-world override leaks |
+| Remove/reload the client resource pack | Missing textures use normal skill art; restoring the pack restores custom art |
+| Lower a trained skill or raise passive requirements, then reload | Unmet passive ranks become dormant with explanatory tooltip; saved allocations are retained |
+| Repeated stonecutter selections, normal take, shift take, nearly full inventory | Preview stays native; only committed consumed inputs earn bonus outputs |
+| Share Tinkers focus, expire it, remove an associated basin/table | Expiry and ownership apply to both players; destroyed association stops receiving bonuses |
+| Use Ars/ISS paid, free and multi-target spells | Unified Arcana pays once per actual mana debit; Schoolbridge needs positive school investment |
+| Fire, unload and reload a Trueshot/Barrage projectile | Launch bonuses do not replay; stored aim survives; Barrage bonus produces observable health damage |

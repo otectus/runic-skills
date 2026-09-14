@@ -1,4 +1,4 @@
-"""Regenerate the source-level 2.1.0 content trace without loading optional mods.
+"""Regenerate the current source-level content trace without loading optional mods.
 
 This inventories executable references, not runtime test results. See the generated
 document's scope statement before treating a reference as proof of a working mechanic.
@@ -6,6 +6,7 @@ document's scope statement before treating a reference as proof of a working mec
 from pathlib import Path
 import json
 import re
+from collections import defaultdict
 
 ROOT = Path(__file__).resolve().parents[1]
 JAVA = ROOT / 'src/main/java/com/otectus/runicskills'
@@ -14,7 +15,8 @@ TOKEN = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?
 
 
 def uncomment(text, strings=True):
-    return TOKEN.sub(lambda m: m[0] if strings and m[0][0] in '\"\'' else ' ' * len(m[0]), text)
+    return TOKEN.sub(lambda m: m[0] if strings and m[0][0] in '\"\''
+                     else ''.join('\n' if c == '\n' else ' ' for c in m[0]), text)
 
 
 SOURCES = {p: uncomment(p.read_text(encoding='utf-8')) for p in sorted(JAVA.rglob('*.java'))}
@@ -24,14 +26,24 @@ RUNTIME = {p: code for p, code in SOURCES.items()
 STRIPPED_RUNTIME = {p: uncomment(code, strings=False) for p, code in RUNTIME.items()}
 CONFIG = SOURCES[JAVA / 'handler/HandlerCommonConfig.java']
 DEFAULTS = dict(re.findall(r'public\s+\w+(?:\[\])?\s+(\w+)\s*=\s*([^;]+);', CONFIG))
+REFERENCES = defaultdict(dict)
+ID_REFERENCES = defaultdict(dict)
+for path, code in STRIPPED_RUNTIME.items():
+    if path.stem in ('TConstructPowers', 'RunicAttributeModifiers', 'RegistryPassives', 'RunicSkills'):
+        continue
+    for match in re.finditer(r'\b(Registry\w+)\.(\w+)\b', code):
+        REFERENCES[match.groups()].setdefault(path, code.count('\n', 0, match.start()) + 1)
+    for match in re.finditer(r'"([a-z0-9_:]+)"', RUNTIME[path]):
+        ID_REFERENCES[match[1]].setdefault(path, RUNTIME[path].count('\n', 0, match.start()) + 1)
 
 
 def cell(text):
     return re.sub(r'\s+', ' ', str(text)).replace('|', '\\|').strip()
 
 
-def link(path, label=None):
-    return f'[{label or path.stem}](../{path.relative_to(ROOT).as_posix()})'
+def link(path, label=None, line=None):
+    anchor = f'#L{line}' if line else ''
+    return f'[{label or path.stem}](../{path.relative_to(ROOT).as_posix()}{anchor})'
 
 
 def declarations(kind, registry):
@@ -45,15 +57,11 @@ def configs(body):
 
 
 def references(registry, constant, path_id=None):
-    needle = re.compile(r'\b' + registry + r'\.' + constant + r'\b')
-    result = []
-    for path, body in RUNTIME.items():
-        if path.stem in (registry, 'TConstructPowers', 'RunicAttributeModifiers', 'RegistryPassives', 'RunicSkills'):
-            continue
-        code = STRIPPED_RUNTIME[path]
-        if needle.search(code) or (path_id and f'"{path_id}"' in body):
-            result.append(link(path))
-    return result
+    found = dict(REFERENCES.get((registry, constant), {}))
+    if path_id:
+        for path, line in ID_REFERENCES.get(path_id, {}).items():
+            found.setdefault(path, line)
+    return [link(path, line=line) for path, line in sorted(found.items()) if path.stem != registry]
 
 
 def sites(registry, constant, path_id=None):
@@ -82,7 +90,7 @@ def build():
     passives = declarations('Passive', 'RegistryPassives')
     powers = declarations('Power', 'RegistryPowers')
     out = [
-        '# 2.1.0 content trace', '',
+        '# Current content trace (September 2026)', '',
         'Generated from the current Java registrations, configuration defaults, English descriptions, '
         'and gameplay source references by `tools/content_trace.py`. Regenerate after changing content.', '',
         f'The full optional-mod catalogue has **10 Skills, {len(perks)} Perks, {len(passives)} Passives, '
@@ -129,7 +137,11 @@ def build():
         '- **Presentation:** `RunicSkillsScreen`, `PowersScreen`, `PerkTooltip` and `PassiveTooltip` '
         'consume the same descriptions and values. Texture inventories and native-resolution image '
         'validation are independent of this behavior trace.', '',
-        '## Behavioral regressions corrected in this pass', '',
+        '## Validation and review limits', '',
+        'Current findings, executed test profiles and outstanding client/pack checks are recorded in '
+        '[the September audit](AUDIT_RESULTS_2026_09.md). Historical test classes below retain their '
+        'original names; their existence is not a claim that every optional profile was rerun.', '',
+        '## Existing behavioral regressions', '',
         '`GameplayStabilizationGameTest` covers Counter Attack surviving the pre-damage swing event '
         'and consuming only a landed melee hit; forced critical damage; mining bonuses on obsidian and '
         'hoes; post-mitigation Last Stand with its advertised protection window; saved survival/Chaos Roll '
@@ -207,7 +219,23 @@ def build():
                    f'| {availability}; {cooldown} '
                    f'| {cell(LANG.get(f"power.runicskills.{path_id}.description", "see registered translation"))} '
                    f'| {sites("RegistryPowers", constant, path_id)} |')
-    destination = ROOT / 'docs/CONTENT_TRACE_2.1.0.md'
+    out += ['', '## Owned attributes', '',
+            'Each passive above installs its stable UUID through `RegistryAttributes.modifierAttributes`. '
+            'This table independently lists every Runic attribute and its runtime readers.', '',
+            '| Attribute | Registration | Runtime readers |', '| --- | --- | --- |']
+    for constant, body in declarations('Attribute', 'RegistryAttributes'):
+        out.append(f'| `{constant.lower()}` | {cell(body)} | {sites("RegistryAttributes", constant)} |')
+    out += ['', '## Optional bootstrap entry points', '',
+            'These classes are reached by the mod-presence-checked reflective bootstrap. Additional '
+            'config and capability gates live in the linked classes. Data-driven four-mod adapters, '
+            'attribute providers, lock providers and client integrations are covered by '
+            '[the integration review](AUDIT_INTEGRATIONS_UI_2026_09.md) and '
+            '[the Tinkers review](AUDIT_CRAFTING_TINKERS_2026_09.md).', '',
+            '| Presence gate | Entry point |', '| --- | --- |']
+    for modid, fqcn in re.findall(r'tryLoadIntegration\("([^"]+)",\s*"([^"]+)"\)', SOURCES[JAVA / 'RunicSkills.java']):
+        path = ROOT / 'src/main/java' / (fqcn.replace('.', '/') + '.java')
+        out.append(f'| `{modid}` | {link(path)} |')
+    destination = ROOT / 'docs/CONTENT_TRACE.md'
     destination.write_text('\n'.join(out) + '\n', encoding='utf-8')
     print(f'{destination.relative_to(ROOT)}: 10 skills, {len(perks)} perks, {len(passives)} passives, {len(powers)} powers')
 

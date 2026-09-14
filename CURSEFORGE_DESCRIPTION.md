@@ -32,7 +32,9 @@ Each skill unlocks its own branch of abilities and stat upgrades:
 | **Wisdom** | Lore, focus, farming, arcane insight | 37 |
 | **Building** | Mining, ore yield, salvaging, block work | 35 |
 
-Your total level is the sum of all ten, and a server can cap it.
+Your total level is the sum of all ten, and a server can cap it. The progression editor offers presets and an automatic budget that lets every skill reach its maximum.
+
+**Pack Mule** is a three-rank Strength perk: carry ordinary items in stacks of 128, 192 or 256 in your inventory and offhand. Special items and storage containers keep their own limits.
 
 ---
 

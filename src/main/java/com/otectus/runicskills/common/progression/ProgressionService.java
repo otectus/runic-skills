@@ -43,6 +43,7 @@ import net.minecraftforge.common.MinecraftForge;
 public final class ProgressionService {
 
     private ProgressionService() {}
+    private static final java.util.Set<java.util.UUID> CHANGING = new java.util.HashSet<>();
 
     /** Why a change is being made. Recorded for logs and passed to subscribers' reasoning. */
     public enum Cause {
@@ -64,7 +65,9 @@ public final class ProgressionService {
         /** The requested level is what the player already has. */
         NO_CHANGE,
         /** A subscriber cancelled {@link SkillLevelUpEvent}, or a script vetoed the level-up. */
-        CANCELLED
+        CANCELLED,
+        REENTRANT,
+        GLOBAL_CAP
     }
 
     /**
@@ -109,6 +112,12 @@ public final class ProgressionService {
         int target = clampToConfiguredRange(requested);
         if (target == previous) return Outcome.unchanged(previous, Denial.NO_CHANGE);
 
+        if (target > previous && cause != Cause.COMMAND && cause != Cause.RESPEC
+                && (long) capability.getGlobalLevel() + target - previous > LevelCaps.global()) {
+            return Outcome.unchanged(previous, Denial.GLOBAL_CAP);
+        }
+        if (!CHANGING.add(player.getUUID())) return Outcome.unchanged(previous, Denial.REENTRANT);
+        try {
         // One event for every path, raising or lowering, so a subscriber that vetoes progression
         // cannot be bypassed by using a command instead of the screen.
         if (MinecraftForge.EVENT_BUS.post(new SkillLevelUpEvent(player, skill, previous, target))) {
@@ -140,6 +149,7 @@ public final class ProgressionService {
         capability.setSkillLevel(skill, target);
         reconcile(player, skill, previous, target);
         return new Outcome(true, previous, target, Denial.NONE);
+        } finally { CHANGING.remove(player.getUUID()); }
     }
 
     /**
