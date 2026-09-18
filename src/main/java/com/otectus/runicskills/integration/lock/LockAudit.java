@@ -56,7 +56,7 @@ public final class LockAudit {
         var cfg = HandlerCommonConfig.HANDLER.instance();
         var snapshot = HandlerSkill.snapshot();
         JsonObject root = new JsonObject();
-        root.addProperty("schema", 1); root.addProperty("runic_version", "2.2.0"); root.addProperty("protocol", "16");
+        root.addProperty("schema", 1); root.addProperty("runic_version", "2.2.0"); root.addProperty("protocol", com.otectus.runicskills.network.ServerNetworking.protocolVersion());
         root.addProperty("revision", snapshot.revision()); root.addProperty("registered_item_count", ForgeRegistries.ITEMS.getKeys().size());
         root.addProperty("per_skill_cap", cfg.skillMaxLevel); root.addProperty("global_cap_mode", cfg.globalLevelCapMode);
         root.addProperty("effective_global_cap", LevelCaps.global()); root.addProperty("locks_enabled", cfg.enableItemLocks);
@@ -88,6 +88,8 @@ public final class LockAudit {
             row.addProperty("resolution", "live stack and action; /skills tinkers inspect hand and /skills locks inspect"); providers.add(row);
         }
         root.add("providers", providers);
+        root.add("automatic_gates", automaticGates());
+        root.add("apprentice_codex", codexLedger());
         Map<String, List<LockResolution>> claims = new TreeMap<>();
         snapshot.audit().forEach(row -> claims.computeIfAbsent(row.item(), id -> new ArrayList<>()).add(row));
         Map<String, JsonArray> recipes = new HashMap<>();
@@ -128,7 +130,20 @@ public final class LockAudit {
             Map<String, Integer> effective = requirements(id.toString());
             row.add("effective_requirements", JSON.toJsonTree(effective)); row.addProperty("minimum_global_level", minimumGlobal(effective));
             row.addProperty("winner", snapshot.sources().getOrDefault(id.toString(), "unhandled"));
+            row.addProperty("winning_layer", snapshot.sourceOf(GateTarget.legacy(id.toString())).key());
+            // Why a reviewed or metadata-derived Iron's book gate is the number it is. Spec 5.3:
+            // the balance table is data-driven and the audit carries the reason for every change.
+            String reason = IronsSpellbooksLockProvider.reasons().get(id.toString());
+            if (reason != null) row.addProperty("profile_reason", reason);
             row.addProperty("explicit_exemption", snapshot.rules().containsKey(id.toString()) && effective.isEmpty());
+            // The typed, action-scoped rules for this id and the evidence behind any inferred one.
+            // Exported per item rather than only in aggregate because the question an operator
+            // actually asks is "why is THIS gated", and an aggregate cannot answer it.
+            JsonArray typed = new JsonArray();
+            for (GateRule rule : snapshot.typedRulesFor(GateTarget.item(id))) typed.add(typedRule(rule));
+            if (!typed.isEmpty()) row.add("typed_rules", typed);
+            com.otectus.runicskills.integration.lock.auto.AutoGateEngine.catalog()
+                    .evidenceFor("item:" + id).ifPresent(e -> row.add("inference_evidence", evidence(e)));
             row.add("candidates", JSON.toJsonTree(claims.getOrDefault(id.toString(), List.of())));
             row.add("recipes", recipes.getOrDefault(id.toString(), new JsonArray()));
             JsonArray warnings = new JsonArray();
@@ -147,6 +162,122 @@ public final class LockAudit {
         root.add("dormant_or_missing_configured_ids", absent);
         return root;
     }
+    /** One typed rule, in the same spelling the datapack schema uses. */
+    private static JsonObject typedRule(GateRule rule) {
+        JsonObject row = new JsonObject();
+        row.addProperty("target", rule.target().toString());
+        row.addProperty("kind", rule.target().kind().key());
+        row.addProperty("layer", rule.source().key());
+        row.addProperty("rule_id", rule.ruleId());
+        row.addProperty("scaling", rule.scaling());
+        row.addProperty("confidence", rule.confidence());
+        row.addProperty("allow", rule.allow());
+        JsonArray actions = new JsonArray();
+        rule.actions().stream().map(Enum::name).sorted().forEach(actions::add);
+        row.add("actions", actions);
+        row.add("requirements", JSON.toJsonTree(rule.requirements()));
+        return row;
+    }
+
+    /**
+     * The full evidence record for one candidate, abstentions included.
+     *
+     * <p>Spec §8.5: an exhaustive audit with explicit abstentions satisfies coverage more honestly
+     * than arbitrary gates on unrelated content. So the rejected alternatives and the reason are
+     * exported for a candidate that produced nothing as well as for one that produced a rule —
+     * "why is this NOT gated" is the harder question and the one with no other answer.
+     */
+    private static JsonObject evidence(com.otectus.runicskills.integration.lock.auto.GateEvidence row) {
+        JsonObject object = new JsonObject();
+        object.addProperty("target", row.target());
+        object.addProperty("role", row.role().key());
+        object.addProperty("outcome", row.outcome().key());
+        object.addProperty("evidence_confidence", row.confidence());
+        object.addProperty("role_confidence", row.roleConfidence());
+        object.addProperty("feature_coverage", row.featureCoverage());
+        object.addProperty("neighbor_similarity", row.neighborSimilarity());
+        object.addProperty("neighbor_agreement", row.neighborAgreement());
+        object.addProperty("neighbor_deviation", row.deviation());
+        object.addProperty("confidence_is", "evidence quality, not a measured chance of being correct");
+        object.add("chosen_anchors", JSON.toJsonTree(row.chosenAnchors()));
+        object.add("rejected_alternatives", JSON.toJsonTree(row.rejectedAlternatives()));
+        object.add("reference_requirements", JSON.toJsonTree(row.referenceRequirements()));
+        JsonArray actions = new JsonArray();
+        row.actions().stream().map(Enum::name).sorted().forEach(actions::add);
+        object.add("actions", actions);
+        object.addProperty("reason", row.reason());
+        return object;
+    }
+
+    /**
+     * The Apprentice's Codex content ledger: every registered entry, its role and its outcome.
+     *
+     * <p>Exported whole, exemptions included. Spec §6.6 asks for an outcome per entry, and the
+     * entries that are deliberately ungated are the half no other view shows: a rule appears in the
+     * item rows above, an exemption appears nowhere unless it is printed here.
+     */
+    private static JsonObject codexLedger() {
+        JsonObject object = new JsonObject();
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        object.addProperty("installed", ApprenticeCodexLockProvider.isModLoaded());
+        object.addProperty("enabled", cfg.enableApprenticeCodexIntegration);
+        object.addProperty("automation_policy", cfg.codexAutomationGatePolicy);
+        object.add("outcome_counts", JSON.toJsonTree(ApprenticeCodexLockProvider.ledgerCounts()));
+        JsonArray entries = new JsonArray();
+        for (var row : ApprenticeCodexLockProvider.ledger().values()) {
+            JsonObject entry = new JsonObject();
+            entry.addProperty("target", row.target());
+            entry.addProperty("role", row.role());
+            entry.addProperty("outcome", row.outcome().key());
+            entry.add("reference_requirements", JSON.toJsonTree(row.requirements()));
+            JsonArray actions = new JsonArray();
+            row.actions().stream().map(Enum::name).sorted().forEach(actions::add);
+            entry.add("actions", actions);
+            entry.addProperty("reason", row.reason());
+            entries.add(entry);
+        }
+        object.add("entries", entries);
+        return object;
+    }
+
+    /** The generated catalog itself: status, digest, fingerprints and every abstention. */
+    private static JsonObject automaticGates() {
+        var catalog = com.otectus.runicskills.integration.lock.auto.AutoGateEngine.catalog();
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        JsonObject object = new JsonObject();
+        object.addProperty("enabled", cfg.enableAutoGates);
+        object.addProperty("mode", cfg.autoGateMode);
+        object.addProperty("minimum_confidence", cfg.autoGateMinimumConfidence);
+        object.addProperty("status", com.otectus.runicskills.integration.lock.auto.AutoGateEngine.status());
+        object.addProperty("generation", catalog.generation());
+        object.addProperty("digest", catalog.digest());
+        object.addProperty("frozen", catalog.frozen());
+        object.addProperty("diagnostics", catalog.diagnostics());
+        object.add("input_fingerprints", JSON.toJsonTree(catalog.fingerprints()));
+        object.add("outcome_counts", JSON.toJsonTree(catalog.outcomeCounts()));
+        JsonArray rules = new JsonArray();
+        for (GateRule rule : catalog.rules()) rules.add(typedRule(rule));
+        object.add("inferred_rules", rules);
+        JsonArray authored = new JsonArray();
+        for (GateRule rule : GateRuleIndex.get().rules()) authored.add(typedRule(rule));
+        object.add("authored_gate_rules", authored);
+        JsonArray exclusions = new JsonArray();
+        GateRulesLoader.inferenceExclusions().stream().map(GateTarget::toString).sorted()
+                .forEach(exclusions::add);
+        object.add("inference_exclusions", exclusions);
+        JsonArray abstentions = new JsonArray();
+        for (var row : catalog.evidence()) {
+            if (row.outcome().producedRule()) continue;
+            if (row.outcome() == com.otectus.runicskills.integration.lock.auto.GateEvidence.Outcome.EXCLUDED_ROLE
+                    || row.outcome() == com.otectus.runicskills.integration.lock.auto.GateEvidence.Outcome.ALREADY_DECIDED) {
+                continue; // Counted above; listing every ingredient would bury the interesting ones.
+            }
+            abstentions.add(evidence(row));
+        }
+        object.add("undetermined_and_below_threshold", abstentions);
+        return object;
+    }
+
     private static boolean cycles(String start, Map<String, Set<String>> graph) {
         Set<String> seen = new HashSet<>(); Deque<String> queue = new ArrayDeque<>(graph.getOrDefault(start, Set.of()));
         while (!queue.isEmpty()) {

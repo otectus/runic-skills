@@ -5,6 +5,7 @@ import com.otectus.runicskills.common.util.CapabilityBounds;
 import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.common.equipment.RequirementDecision;
 import com.otectus.runicskills.common.util.LockCheck;
+import com.otectus.runicskills.integration.lock.GateTarget;
 import com.otectus.runicskills.integration.lock.LockAction;
 import com.otectus.runicskills.integration.lock.LockProviderRegistry;
 import com.otectus.runicskills.handler.HandlerSkill;
@@ -151,6 +152,65 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      * {@link com.otectus.runicskills.common.powers.PowerCooldownDebt}.
      */
     public Map<String, Long> tcPowerCooldowns = new HashMap<>();
+
+    /**
+     * Client-only: whether the player this capability belongs to holds Titan's Grip, as told by the
+     * server.
+     *
+     * <p>The rest of this class is the owner's own data, synced to the owner alone. This one flag is
+     * about somebody else's player: a client has to decide whether to show a two-handed wielder's
+     * shield ({@code TwoHandedExemption}, {@code MixPlayerOffhandSlot}) and the capability it has
+     * for that wielder is the default one attached at entity construction, not the wielder's real
+     * data. {@code TitansGripSyncCP} sets this on the entity it addresses.
+     *
+     * <p>{@code transient} in the literal sense as well as the marker: no serialization path writes
+     * or reads it, nothing sends it back to the server, and on the server it is never set at all —
+     * there the real perk state answers, so server behaviour is identical with this field present or
+     * absent. It dies with the entity that owns the capability, which is exactly the lifetime a
+     * remote player's presentation state should have.
+     */
+    private transient boolean remoteTitansGrip = false;
+
+    /**
+     * Server-only: the last Titan's Grip value broadcast to this player's trackers.
+     *
+     * <p>Titan's Grip state is recomputed at every capability sync, and those happen for reasons
+     * that have nothing to do with this perk — a cooldown starting, a Power window closing, a title
+     * being set. Comparing against the last value sent turns "sync happened" into "the answer
+     * changed", so the broadcast costs one packet per actual change rather than one per sync.
+     *
+     * <p>{@code false} is also the client-side default, so the initial state needs no packet at all;
+     * a fresh capability (login, respawn clone) agrees with every client that has not been told
+     * otherwise.
+     */
+    private transient boolean titansGripSent = false;
+
+    /** Client-side: whether the server says this player holds Titan's Grip. Always false server-side. */
+    public boolean remoteTitansGrip() {
+        return this.remoteTitansGrip;
+    }
+
+    /** Set by {@code TitansGripSyncCP} on the client. */
+    public void setRemoteTitansGrip(boolean value) {
+        this.remoteTitansGrip = value;
+    }
+
+    /**
+     * Records {@code held} as broadcast and reports whether that was a change.
+     *
+     * @return {@code true} when the value differs from the last one recorded, i.e. when a packet is
+     *         actually worth sending
+     */
+    public boolean markTitansGripSent(boolean held) {
+        if (this.titansGripSent == held) return false;
+        this.titansGripSent = held;
+        return true;
+    }
+
+    /** The last value {@link #markTitansGripSent} accepted. Diagnostics and tests. */
+    public boolean titansGripSent() {
+        return this.titansGripSent;
+    }
 
     private Map<String, Integer> mapSkills() {
         Map<String, Integer> map = new HashMap<>();
@@ -522,7 +582,37 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         Boolean stackVerdict = stackLockVerdict(player, item, action, true);
         if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
-        return id == null || canUse(player, id);
+        if (id == null) return true;
+        Boolean typed = typedVerdict(player, GateTarget.item(id), action, true);
+        return typed != null ? typed : canUse(player, id);
+    }
+
+    /**
+     * Resolves an action against the server-built snapshot, including independent legacy defaults.
+     * Clients use the same synced rules; neither side enforces the flattened tooltip projection.
+     * Spell gates obey their own master switch, with legacy spell entries still tied to item locks.
+     */
+    public Boolean typedVerdict(Player player, GateTarget target, LockAction action, boolean notify) {
+        if (target == null) return null;
+        boolean serverSide = !player.level().isClientSide();
+        var cfg = HandlerCommonConfig.HANDLER.instance();
+        boolean master = target.kind() == GateTarget.Kind.SPELL ? cfg.enableSpellLocks : cfg.enableItemLocks;
+        if (!master) return Boolean.TRUE;
+        var snapshot = serverSide ? HandlerSkill.snapshot() : HandlerSkill.clientSnapshot();
+        if (snapshot == null) return null;
+        var verdict = snapshot.typedVerdict(target, action, cfg.enableItemLocks);
+        if (!verdict.decided()) {
+            // The snapshot includes independent legacy fallbacks. Its flattened display table
+            // must never invent a requirement for an action (or registry domain) absent here.
+            return target.kind() == GateTarget.Kind.SPELL && !verdict.terminal() ? null : Boolean.TRUE;
+        }
+        var rule = verdict.rule();
+        if (rule.allow()) return Boolean.TRUE;
+        if (LockCheck.meetsRequirements(rule.requirements(), this::safeLevel)) return Boolean.TRUE;
+        if (notify && player instanceof net.minecraft.server.level.ServerPlayer) {
+            SkillOverlayCP.send(player, target.legacyKey());
+        }
+        return Boolean.FALSE;
     }
 
     /**
@@ -572,7 +662,9 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         Boolean stackVerdict = stackLockVerdict(player, item, action, false);
         if (stackVerdict != null) return stackVerdict;
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(item.getItem());
-        return id == null || canUse(player, id.toString(), false);
+        if (id == null) return true;
+        Boolean typed = typedVerdict(player, GateTarget.item(id), action, false);
+        return typed != null ? typed : canUse(player, id.toString(), false);
     }
 
     /**
@@ -584,7 +676,8 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
      * stack-aware providers first and falls through to exactly this rule when none claims the item.
      */
     public boolean canUseItem(Player player, ResourceLocation resourceLocation) {
-        return canUse(player, resourceLocation);
+        Boolean verdict = typedVerdict(player, GateTarget.item(resourceLocation), LockAction.USE, true);
+        return verdict == null || verdict;
     }
 
     public boolean canUseSpecificID(Player player, String specificID){
@@ -592,13 +685,32 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
     }
 
     public boolean canUseBlock(Player player, Block block) {
+        return canUseBlock(player, block, null);
+    }
+
+    /**
+     * The block's own verdict for one action: operating it, placing it, or harvesting it.
+     *
+     * <p>The untyped table cannot express any of those separately — one entry there refuses every
+     * interaction with the id — so a typed block rule is consulted first and, when one exists, is
+     * the whole answer. A {@code null} action asks the historical question and gets the historical
+     * answer, which is what every existing caller of the single-argument form wants.
+     */
+    public boolean canUseBlock(Player player, Block block, LockAction action) {
         ResourceLocation id = ForgeRegistries.BLOCKS.getKey(block);
-        return id == null || canUse(player, id);
+        if (id == null) return true;
+        if (action != null) {
+            Boolean typed = typedVerdict(player, GateTarget.block(id), action, true);
+            if (typed != null) return typed;
+        }
+        return canUse(player, id);
     }
 
     public boolean canUseEntity(Player player, Entity entity) {
         ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        return id == null || canUse(player, id);
+        if (id == null) return true;
+        Boolean typed = typedVerdict(player, GateTarget.entity(id), LockAction.USE, true);
+        return typed != null ? typed : canUse(player, id);
     }
 
     private boolean canUse(Player player, ResourceLocation resource) {
@@ -609,30 +721,12 @@ public class SkillCapability implements INBTSerializable<CompoundTag> {
         return canUse(player, restrictionID, true);
     }
 
-    /**
-     * Single source of truth for the lock decision. Short-circuits when item locks are disabled,
-     * looks up the item's requirements, and delegates the level comparison to the pure, unit-tested
-     * {@link LockCheck#meetsRequirements}. When {@code notify} is true and the requirement is not met,
-     * the server tells the client to show the lock overlay.
-     */
+    /** Historical id-only calls consult independent legacy rules, never scoped display entries. */
     private boolean canUse(Player player, String restrictionID, boolean notify) {
-        if (!HandlerCommonConfig.HANDLER.instance().enableItemLocks) return true;
-        List<Skills> skill = HandlerSkill.getValue(restrictionID);
-        if (skill == null || skill.isEmpty()) return true;
-
-        Map<String, Integer> required = new HashMap<>();
-        for (Skills skills : skill) {
-            if (skills.getSkill() != null) {
-                required.put(skills.getSkill().getName(), skills.getSkillLvl());
-            }
-        }
-
-        if (LockCheck.meetsRequirements(required, this::safeLevel)) return true;
-
-        if (notify && player instanceof net.minecraft.server.level.ServerPlayer) {
-            SkillOverlayCP.send(player, restrictionID);
-        }
-        return false;
+        GateTarget target = GateTarget.legacy(restrictionID);
+        if (target == null) return true;
+        Boolean verdict = typedVerdict(player, target, LockAction.USE, notify);
+        return verdict == null || verdict;
     }
 
     public CompoundTag serializeNBT() {

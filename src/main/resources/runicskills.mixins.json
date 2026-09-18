@@ -25,9 +25,11 @@
     "tide.MixTideBaitLifecycle",
     "tide.MixTideBaitContents",
     "MixItemStack",
+    "MixItemStackCount",
     "MixGuardDamage",
     "MixLivingEntity",
     "MixPlayer",
+    "MixPlayerOffhandSlot",
     "MixPowderSnowBlock",
     "MixShulkerBullet",
     "MixVillager",
@@ -85,6 +87,7 @@
     "simplyswords.MixMimicryTransition",
     "simplyswords.MixMimicryTimeline",
     "simplyswords.MixNativeShieldDisable",
+    "spartanweaponry.MixTwoHandedWeaponTrait",
     "tom.MixCounterspellCommit",
     "tom.MixArmorKeyInput",
     "tom.MixPaidArmorCommit",
@@ -100,7 +103,8 @@
     "MixInvWrapper",
     "MixPackMuleDrops",
     "MixPackMulePacketListener",
-    "MixSuspiciousStewItem"
+    "MixSuspiciousStewItem",
+    "apprenticecodex.MixSpellDispenserCastHelper"
   ],
   "injectors": {
     "defaultRequire": 1

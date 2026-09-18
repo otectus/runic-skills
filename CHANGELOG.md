@@ -1,5 +1,115 @@
 # Changelog
 
+## [2.2.2] - 2026-09-17 — Icon refresh
+
+Protocol **18**, unchanged from 2.2.1, requires matching client and server builds. Progression IDs,
+saved configuration and existing worlds are unaffected. This is the first published build to carry
+the 2.1.2, 2.2.0 and 2.2.1 changes below, none of which shipped separately; read their notes before
+upgrading a live world, in particular the 2.2.1 automatic gates, which are on by default and can be
+reviewed first with `/skills locks preview`.
+
+- Replace every icon: the 586 perk, passive and skill-rank icons under `textures/skill` and all 111
+  Power icons are redrawn as shaded full-colour art at the same 16×16 size and file names, so no
+  model, atlas, registration or datapack change is involved.
+- Pin the icon catalogue (`tools/icongen/catalogue.json`) to the shipped art and update
+  `RunicIconIntegrityTest` for the new style. Icons must still be 16×16 with binary alpha, unique
+  and equal to their pinned pixel hash; the limited-palette rule (at most 12 colours) and the
+  250-opaque-pixel cutoff are gone. The `tools/icongen` generator no longer reproduces the shipped
+  skill and Power sets; `tools/icongen/repin_catalogue.py` records the hashes of the checked-in art.
+
+## [2.2.1] - 2026-09-17 — Compatibility, typed gates and automatic gating (unpublished)
+
+Protocol **18** requires matching client and server builds. Configuration sync now sends
+scoped enforcement rules and independent legacy fallbacks in the same atomic revision as the
+configuration and display table. Progression IDs, saved configuration and existing worlds remain
+compatible.
+
+**Existing saves:** automatic gates are on by default and can add requirements to content that was
+previously ungated. Review the change before a live world with
+`/skills locks preview` and `/skills locks coverage`, exclude what you do not want, or set
+`enableAutoGates = false`.
+
+- Fix gate precedence: manual requirements and explicit allows now win over scoped datapack and
+  generated rules, including previously frozen automatic catalogs. Action-specific rules fall back
+  only to independent legacy defaults, so an equip-only rule cannot also block using or crafting an
+  otherwise unrestricted item.
+- Synchronize action and registry-domain decisions to clients. Holding equipment with an unmet
+  attack-only requirement no longer causes the client to reject unrelated mining or block use.
+- Check the crafting action when filtering recipe output, matching result pickup. Automatic use
+  gates no longer hide craftable bows or shields when `autoGateCrafting` is off.
+- Rebuild live automatic gates after `/skillsreload` and when inference settings change, so
+  exclusions, domain toggles and action settings take effect without restarting.
+- Coexist with Bigger Stacks instead of corrupting counts. A stack-count representation provider
+  selects one owner of the `Count`/`BigCount` serialization from the loading mod list; Runic Skills'
+  two count hooks moved into a separate `MixItemStackCount` that is not applied when a supported
+  external provider owns the representation. Durability, enchantment-display and recovery hooks are
+  unaffected. Pack Mule capacity is deferred rather than layered on a foreign provider, and
+  `/skills locks representation` reports which provider is active and why. Fixes the
+  `@ModifyConstant` collision on the creative-slot stack limit that aborted class transformation and
+  crashed the server during item registration when both mods were installed.
+- Resolve item, block and spell gates through a typed seam. `GateTarget`, `GateSource` and
+  `LockOwnership` replace string matching, a provider that owns a namespace is asked before generic
+  defaults, and `/skills locks explain` reports the winning layer with its evidence.
+- Raise the Iron's Spells 'n Spellbooks baseline to **3.16.3**. 3.15 is no longer supported. A
+  runtime profile additionally needs irons_lib 2.1.0 and Curios 5.14.1, both of which 3.16.3
+  declares mandatory.
+- Gate spellbooks by capacity, not by name. The registry-path keyword tiers are gone; books resolve
+  through a reviewed table checked against the 3.16.3 artifact, then a chassis metadata profile,
+  then a conservative anchor, then abstention.
+- Gate spells separately from the book that holds them. An explicit rule always wins before any
+  formula; `ironsSpellGateModel` selects the metadata model or the legacy level formula, and
+  `enableSpellLocks` waives every spell requirement without touching a book's equipment gate. A
+  spell's base level is now snapshotted at the source, so an upgraded spell no longer reports the
+  scaled level as its own.
+- Add universal automatic gates for unconfigured content, **on by default**. Requirements are
+  inferred only where no manual rule, curated profile, native adapter or existing integration has
+  already decided the same target and action. Sixteen settings cover domains, actions, confidence,
+  exclusions and the `LIVE`/`FROZEN` catalog mode; packs can author their own rules under
+  `data/<namespace>/runicskills/gates/*.json`. New commands: `/skills locks explain`,
+  `preview`, `coverage`, `apply-preview` and an extended `inspect` for blocks and spells.
+- Add an Apprentice's Codex integration (`enableApprenticeCodexIntegration`). Codex books,
+  spellguns, swingcast weapons and devices are gated on the same terms as the rest of the
+  catalogue, and a refused spellgun cast spends no mana and no ammunition. A new mixin on Codex's
+  spell dispenser covers the one casting path that posts no event; `codexAutomationGatePolicy`
+  decides what it does — the default `DEVICE` gates the player's interaction with the machine and
+  leaves its own casting untouched.
+- Make Titan's Grip do what it says: a two-handed weapon can be wielded alongside a shield. The
+  perk's description promised this since it was written and nothing implemented it, and with Better
+  Combat installed even its damage bonus was dead — that mod's mixin on `Player.getItemBySlot`
+  reports an empty off-hand for anyone holding a two-handed weapon, so the perk's own `off-hand is
+  occupied` test could never be true. A single exemption seam (`TwoHandedExemption`) now answers
+  "perk taken, two-handed weapon in hand, shield in the off-hand" for every hook: the off-hand is
+  revealed to every consumer at once, so the shield renders, raises and blocks, and Spartan
+  Weaponry's two-handed penalties (Mining Fatigue and its damage reduction) are suppressed for that
+  player only — without them, revealing the shield would have made the perk a downgrade. Whether a
+  weapon is two-handed now comes from Better Combat's weapon attributes or Spartan's item trait
+  instead of a hand-written list of Spartan weapon families, which covered no Better Combat weapon
+  and no Spartan add-on.
+  - The damage bonus is melee-only; it no longer applies to arrows, thrown weapons or spells.
+  - The perk registers when Better Combat **or** Spartan Weaponry is installed. It no longer
+    registers on Spartan Shields / Fire / Cataclysm-only packs, none of which adds a two-handed
+    weapon; an existing save keeps a harmless unknown perk entry.
+  - Gladiator and One-Handed read the real off-hand too. Gladiator was silently off for two-handed
+    builds and now also accepts any shield-blocking item rather than only `ShieldItem` subclasses;
+    One-Handed was paying out to two-handed builds holding a shield, which inverted the perk.
+  - On a pack with Spartan Weaponry but without Better Combat, the damage bonus no longer pays out
+    for any non-empty off-hand: the off-hand item must be one that can block, as a shield does. A
+    halberd held alongside a torch or a totem no longer receives the bonus.
+  - One-Handed now requires a genuinely empty off-hand. A two-handed build carrying any off-hand
+    item that Better Combat used to hide — including a Titan's Grip shield build — no longer
+    receives its bonus.
+  - The wielder's perk state is synced to the clients tracking them, so other players see the
+    shield too. One boolean per change, sent on `PlayerEvent.StartTracking` and whenever the value
+    moves; the weapon and shield halves of the rule need no packet because vanilla equipment sync
+    already replicates them.
+  - Spartan Weaponry 1.20.1-3.2.1 is a new compile-only dependency, with a `-PspartanProfile=true`
+    runtime reproduction profile. No Spartan class is loaded on an installation without the mod. An
+    older Spartan Weaponry is refused at load when present: the optional dependency declares
+    `[3.2.1,)`.
+- New documentation: the [2.2.1 compatibility ledger](docs/COMPATIBILITY_LEDGER_2.2.1.md),
+  [automatic gates](docs/AUTOMATIC_GATES.md) and the
+  [Apprentice's Codex integration](docs/APPRENTICE_CODEX.md).
+
 ## [2.2.0] - 2026-09-14 — Progression and Pack Mule (unpublished)
 
 - Add Pack Mule, a three-rank Strength perk for ordinary inventory stacks of 128, 192 and 256. Containers and special items retain their own limits.

@@ -50,6 +50,51 @@ import java.util.UUID;
 public class IronsSpellbooksIntegration {
     private static final ThreadLocal<Boolean> EXPLICIT_MANA_GRANT = ThreadLocal.withInitial(() -> false);
 
+    /**
+     * Installs the spellbook chassis reader on the way in.
+     *
+     * <p>This class is instantiated by {@code RunicSkills.tryLoadIntegration("irons_spellbooks", …)},
+     * which is the only place that has already proved Iron's is present. The lock provider cannot
+     * reach {@code integration.irons} itself — it is registered from an always-loaded static
+     * initialiser — so the dependency runs this way round: the gated class installs itself into the
+     * ungated one.
+     */
+    public IronsSpellbooksIntegration() {
+        // Coverage only: the automatic gate engine records which adapter owns each spell and never
+        // produces a competing estimate for one. Registered here, behind the same presence gate as
+        // the metadata adapter, so the always-loaded engine never names an io.redspace type.
+        com.otectus.runicskills.integration.lock.auto.SpellCatalog.register("irons_spellbooks",
+                com.otectus.runicskills.integration.irons.IronsSpellGate::spellIds);
+        try {
+            com.otectus.runicskills.integration.irons.IronsBookMetadata.install();
+        } catch (RuntimeException | LinkageError e) {
+            // An Iron's whose container API moved must cost the pack its book metadata, not its
+            // spell perks: the lock provider falls back to the curated table and its conservative
+            // anchor, and everything else in this class still works.
+            RunicSkills.getLOGGER().warn("Iron's spellbook metadata adapter could not be installed; "
+                    + "book gates fall back to the curated table", e);
+        }
+    }
+
+    /**
+     * The native level each player last had resolved for a spell, before bonus levels.
+     *
+     * <p>{@code SpellPreCastEvent.getSpellLevel()} is the level that reaches the cast, and Iron's
+     * calls {@code AbstractSpell.getLevelFor(spellData.getLevel(), player)} immediately before
+     * {@code attemptInitiateCast} — so by the time the pre-cast event fires, every gear bonus and
+     * every perk that adds spell levels is already folded in. Gating on that number means a perk
+     * that grants +2 spell levels makes a spell the player was legitimately casting a moment ago
+     * refuse to cast (spec §10.2). {@code ModifySpellLevelEvent} is where the unmodified level is
+     * still visible, so it is captured there and read back here.
+     *
+     * <p>Bounded by the player set and cleared on logout and server stop; one entry per player.
+     */
+    private static final Map<UUID, NativeLevel> NATIVE_LEVELS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** One captured pre-bonus level: which spell, what it started at, what it became, and when. */
+    private record NativeLevel(String spellId, int baseLevel, int effectiveLevel, long gameTime) {
+    }
+
     /** A priced refund is not natural regeneration; do not add the level-scaled flat regen bonus. */
     public static void grantMana(Player player, float amount) {
         if (!isActive() || !Float.isFinite(amount) || amount <= 0) return;
@@ -86,43 +131,197 @@ public class IronsSpellbooksIntegration {
 
     // ── Phase 1: Spell Gating + Existing Lock Item Check ──
 
+    /**
+     * Captures the spell level before anything adds to it.
+     *
+     * <p>{@code LOWEST} so every other handler — including this class's own
+     * {@link #onModifySpellLevel} and Iron's native gear bonuses — has already run, which makes
+     * {@code getLevel()} the final effective level and {@code getBaseLevel()} the level the player
+     * actually learned. Recording both is what lets {@link #onSpellPreCast} tell a cast that came
+     * through this resolution from one that did not.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onCaptureNativeSpellLevel(ModifySpellLevelEvent event) {
+        if (!isActive()) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (player.level().isClientSide) return;
+        AbstractSpell spell = event.getSpell();
+        if (spell == null) return;
+        NATIVE_LEVELS.put(player.getUUID(), new NativeLevel(spell.getSpellId(), event.getBaseLevel(),
+                event.getLevel(), player.level().getGameTime()));
+    }
+
+    /**
+     * The level this cast should be judged on: the one the player selected, not the one their gear
+     * and perks inflated it to.
+     *
+     * <p>Falls back to the event's own level when no capture matches — a cast routed around
+     * {@code getLevelFor} has no bonus to strip, so the event level <em>is</em> the native one.
+     */
+    private static int nativeSpellLevel(Player player, SpellPreCastEvent event) {
+        NativeLevel captured = NATIVE_LEVELS.get(player.getUUID());
+        if (captured == null) return event.getSpellLevel();
+        boolean matches = captured.spellId().equals(event.getSpellId())
+                && captured.effectiveLevel() == event.getSpellLevel()
+                && Math.abs(player.level().getGameTime() - captured.gameTime()) <= 1;
+        return matches ? captured.baseLevel() : event.getSpellLevel();
+    }
+
+    /**
+     * The spell gate, resolved in precedence order and enforced before anything is spent.
+     *
+     * <p>Cancelling here costs the player nothing. Iron's posts this event after its own pre-cast
+     * conditions and before {@code initiateCast}, so no mana has been deducted, no cooldown
+     * started, and no scroll consumed at the point the cancel lands — which is the whole reason
+     * this is the boundary rather than {@code SpellOnCastEvent}, where the mana cost is already on
+     * the table.
+     *
+     * <h2>Order (spec §10.3)</h2>
+     * <ol>
+     *   <li>{@code enableSpellLocks}. Off waives every Runic requirement on a cast, explicit ones
+     *       included. It does not waive the book's separate equipment gate, which is enforced on
+     *       equip and has its own switch.</li>
+     *   <li>An explicit rule for this spell id, which is terminal — allow or deny. This is the
+     *       composition defect §10.3 names: the generated formula used to run <em>first</em>, so a
+     *       pack that deliberately permitted a spell still had it refused by a formula the
+     *       permission was written to override.</li>
+     *   <li>The selected generator, and only that one. {@code METADATA} reads the spell's native
+     *       rarity and position in its own progression; {@code LEGACY_LEVEL} is the shipped
+     *       {@code base + (level - 1) * scale}. They are alternatives: taking the maximum or the
+     *       sum of two independent estimates would stack them into a requirement neither model
+     *       proposed.</li>
+     * </ol>
+     */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onSpellPreCast(SpellPreCastEvent event) {
         if (!isActive()) return;
         Player player = event.getEntity();
 
         String spellId = event.getSpellId();
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
 
-        if (HandlerCommonConfig.HANDLER.instance().logSpellIds) {
+        if (cfg.logSpellIds) {
             player.sendSystemMessage(Component.literal(String.format("[Runic Skills] >> Spell ID: %s", spellId)));
         }
 
         if (player.isCreative()) return;
+        if (!allowsCast(player, spellId, nativeSpellLevel(player, event), true)) {
+            event.setCanceled(true);
+        }
+    }
+
+    /**
+     * Whether {@code player} may cast {@code spellId} at {@code nativeLevel}, in precedence order.
+     *
+     * <p>Extracted from the pre-cast subscription because the subscription is not the only route
+     * that has to ask. Apprentice's Codex's {@code SpellDispenserCastHelper} reimplements the cast
+     * loop and posts no Iron's event at all, so the dispenser adapter has to reach the same decision
+     * by the same rules — and a second copy of this chain would be a second set of answers the day
+     * one of them was updated and the other was not.
+     *
+     * <p>{@code notify} is what separates the two callers. A player casting by hand gets the
+     * overlay that names the requirement; a machine's owner is not standing there to read it, so the
+     * machine reports its own refusal through its own diagnostic instead.
+     *
+     * @param nativeLevel the level the player selected, before gear and perk bonuses
+     */
+    public static boolean allowsCast(Player player, String spellId, int nativeLevel, boolean notify) {
+        if (player == null || spellId == null || spellId.isBlank()) return true;
+        HandlerCommonConfig cfg = HandlerCommonConfig.HANDLER.instance();
+        if (!cfg.enableSpellLocks) return true;
 
         SkillCapability provider = SkillCapability.get(player);
-        if (provider == null) return;
+        if (provider == null) return true;
 
-        // School-based gating: check Magic skill level against spell level formula
-        if (HandlerCommonConfig.HANDLER.instance().ironsEnableSchoolGating) {
+        // 2a. A typed spell rule from the gate schema (spec 13.3). It depends on the spell master
+        //     checked above and NOT on enableItemLocks: a typed spell rule is part of the new spell
+        //     domain, and making it answer to the item master would put it back in the very domain
+        //     the typed schema exists to leave (spec 13.2). Terminal, allow or deny, for the same
+        //     reason the legacy explicit branch below is.
+        ResourceLocation typedSpellId = ResourceLocation.tryParse(spellId);
+        if (typedSpellId != null) {
+            Boolean typed = provider.typedVerdict(player,
+                    com.otectus.runicskills.integration.lock.GateTarget.spell(typedSpellId),
+                    com.otectus.runicskills.integration.lock.LockAction.CAST, notify);
+            if (typed != null) return typed;
+        }
+
+        // 2. An authored rule decides on its own. An explicit Allow is terminal: nothing below may
+        //    reinstate a requirement a pack deliberately lifted.
+        //
+        //    Only while it is actually in force, though. A legacy spell id lives in the same table
+        //    as every item rule and keeps its historical dependency on enableItemLocks (spec
+        //    §13.2), so with that master off the rule is inert — and an inert rule must not go on
+        //    suppressing the generator it was written to replace.
+        if (cfg.enableItemLocks
+                && com.otectus.runicskills.handler.HandlerSkill.provenanceOf(spellId).explicit()) {
+            return provider.canUseSpecificID(player, spellId);
+        }
+
+        // 3. Exactly one generator, over the level the player selected rather than the level their
+        //    perks and gear turned it into.
+        if (!cfg.ironsEnableSchoolGating) return true;
+        int requiredLevel = generatedRequirement(cfg, spellId, nativeLevel);
+        if (requiredLevel > 0) {
             Skill magicSkill = RegistrySkills.MAGIC.get();
-            int magicLevel = provider.getSkillLevel(magicSkill);
-            int spellLevel = event.getSpellLevel();
-            int requiredLevel = (int) (HandlerCommonConfig.HANDLER.instance().ironsBaseSpellGatingLevel
-                    + (spellLevel - 1) * HandlerCommonConfig.HANDLER.instance().ironsSpellLevelScaleFactor);
-
-            if (magicLevel < requiredLevel) {
-                // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
-                NoticeOverlayCP.send(player, "overlay.runicskills.spell_gated",
-                        magicSkill.getKey(), String.valueOf(requiredLevel));
-                event.setCanceled(true);
-                return;
+            if (provider.getSkillLevel(magicSkill) < requiredLevel) {
+                if (notify) {
+                    // Over-GUI banner (was sendSystemMessage -> chat, hidden behind open screens).
+                    NoticeOverlayCP.send(player, "overlay.runicskills.spell_gated",
+                            magicSkill.getKey(), String.valueOf(requiredLevel));
+                }
+                return false;
             }
         }
 
-        // Existing individual spell lock item check
-        if (!provider.canUseSpecificID(player, spellId)) {
-            event.setCanceled(true);
+        // A generated rule for the spell id itself, from the lock table rather than from a formula.
+        return provider.canUseSpecificID(player, spellId);
+    }
+
+    /**
+     * The requirement the configured generator proposes, or 0 when it has nothing to say.
+     *
+     * <p>{@code METADATA} abstaining does not fall through to {@code LEGACY_LEVEL}: they are
+     * alternatives chosen by the operator, and quietly substituting the other one would mean the
+     * setting does not describe what is enforced. An abstention is reported and the cast proceeds
+     * to the remaining explicit checks.
+     */
+    private static int generatedRequirement(HandlerCommonConfig cfg, String spellId, int nativeLevel) {
+        if ("LEGACY_LEVEL".equals(cfg.ironsSpellGateModel)) {
+            return (int) (cfg.ironsBaseSpellGatingLevel
+                    + (nativeLevel - 1) * cfg.ironsSpellLevelScaleFactor);
         }
+        java.util.OptionalInt metadata =
+                com.otectus.runicskills.integration.irons.IronsSpellGate.requirement(spellId, nativeLevel);
+        return metadata.orElse(0);
+    }
+
+    /**
+     * Says which gate refused a spellbook, when one did.
+     *
+     * <p>{@link com.otectus.runicskills.handler.HandlerCurios} does the enforcing and sends the
+     * generic lock overlay; this only relabels it for books, because "you cannot equip this
+     * spellbook" and "you cannot cast this spell" are different refusals with different remedies
+     * and the player has no way to tell them apart from one shared message. {@code LOWEST} so the
+     * decision has already been taken — this observes a denial, it never causes one.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onSpellbookEquipDenied(top.theillusivec4.curios.api.event.CurioEquipEvent event) {
+        if (!isActive()) return;
+        if (event.getResult() != net.minecraftforge.eventbus.api.Event.Result.DENY) return;
+        if (!(event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player)) return;
+        net.minecraft.world.item.ItemStack stack = event.getStack();
+        if (stack == null || stack.isEmpty()) return;
+        ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (id == null) return;
+        var required = com.otectus.runicskills.handler.HandlerSkill.getValue(id.toString());
+        if (required == null || required.isEmpty()) return;
+        if (!com.otectus.runicskills.integration.lock.IronsSpellbooksLockProvider.isBook(id.getPath())) return;
+        var highest = required.stream().max(java.util.Comparator.comparingInt(
+                com.otectus.runicskills.common.model.Skills::getSkillLvl)).orElse(null);
+        if (highest == null) return;
+        NoticeOverlayCP.send(player, "overlay.runicskills.book_gated",
+                highest.getKey(), String.valueOf(highest.getSkillLvl()));
     }
 
     // ── Phase 3: Mana Efficiency Perk ──
@@ -471,6 +670,7 @@ public class IronsSpellbooksIntegration {
         spellweaverCount.remove(uuid);
         spellweaverLastCast.remove(uuid);
         arcaneReprieveLastUse.remove(uuid);
+        NATIVE_LEVELS.remove(uuid);
     }
 
     /**
@@ -481,6 +681,7 @@ public class IronsSpellbooksIntegration {
         spellweaverCount.clear();
         spellweaverLastCast.clear();
         arcaneReprieveLastUse.clear();
+        NATIVE_LEVELS.clear();
     }
 
     /**

@@ -1423,8 +1423,13 @@ public class RegistryPerks {
                     HandlerCommonConfig.HANDLER.instance().cleaveRequiredLevel,
                     HandlerResources.CLEAVE_PERK
             ));
+    // Registered when either mod that can make a weapon two-handed is installed: Better Combat,
+    // which decides it from its weapon-attribute datapack, or Spartan Weaponry, which decides it
+    // from an item trait. The other Spartan family members (Shields, Fire, Cataclysm) no longer
+    // qualify on their own — none of them adds a two-handed weapon, so the perk had nothing to
+    // apply to there. A save that already recorded the perk keeps a harmless unknown entry.
     public static final RegistryObject<Perk> TITANS_GRIP =
-            !SpartanIntegration.isAnyLoaded()
+            !(SpartanIntegration.isWeaponryLoaded() || BetterCombatPresence.isModLoaded())
             ? null : registerPerk("titans_grip", () -> register(
                     "titans_grip",
                     RegistrySkills.STRENGTH,

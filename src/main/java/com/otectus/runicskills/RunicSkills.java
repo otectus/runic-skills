@@ -146,6 +146,10 @@ public class RunicSkills {
         // has to subscribe ITSELF to the MOD bus, because tryLoadIntegration registers on the FORGE
         // bus and modifier registration is a MOD-bus event. See TConstructBootstrap.
         tryLoadIntegration("tconstruct",       "com.otectus.runicskills.integration.tconstruct.TConstructBootstrap");
+        // Apprentice's Codex. The gates are published by the always-loaded lock registry; this
+        // bootstrap exists so the jp.aquafactory types the automation policy needs are resolved on
+        // installations that have the mod and nowhere else.
+        tryLoadIntegration("apprenticecodex",  "com.otectus.runicskills.integration.apprenticecodex.CodexBootstrap");
         // Installs the ProgressionHooks vetoes that post RunicSkillsEvents.skillLevelUp. Reflective
         // for the usual reason, and because a KubeJS whose event API moved must degrade to "scripts
         // do not gate progression" rather than to "the mod does not load".
@@ -166,6 +170,18 @@ public class RunicSkills {
         // above: presence decides registration, the toggle decides behaviour, checked live.
         if (SpartanIntegration.isAnyLoaded())
             MinecraftForge.EVENT_BUS.register(new SpartanIntegration());
+
+        // Titan's Grip's weapon test. Two mods can call a stack two-handed and they decide it from
+        // unrelated data, so each contributes a source and common code asks TwoHandedWielding
+        // rather than either of them. Reflective for the usual reason: these two classes are the
+        // only ones that name net.bettercombat and com.oblivioussp, and neither may be resolved on
+        // an installation without the mod that declares it.
+        com.otectus.runicskills.common.combat.TwoHandedWielding.installSource(
+                BetterCombatPresence.MOD_ID,
+                "com.otectus.runicskills.integration.bettercombat.BetterCombatTwoHanded");
+        com.otectus.runicskills.common.combat.TwoHandedWielding.installSource(
+                "spartanweaponry",
+                "com.otectus.runicskills.integration.spartanweaponry.SpartanTwoHanded");
         if (IceAndFireIntegration.isModLoaded())
             MinecraftForge.EVENT_BUS.register(new IceAndFireIntegration());
         if (CataclysmIntegration.isModLoaded())

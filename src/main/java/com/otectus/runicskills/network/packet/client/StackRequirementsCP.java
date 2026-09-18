@@ -13,16 +13,24 @@ public record StackRequirementsCP(int menu, int slot, long request, int state, i
     public record View(boolean allowed, Map<String, Integer> requirements, List<String> rules, List<String> uncertainty) {
         public View { requirements = Map.copyOf(requirements); rules = List.copyOf(rules); uncertainty = List.copyOf(uncertainty); }
     }
-    public StackRequirementsCP { views = Map.copyOf(views); }
+    public StackRequirementsCP {
+        views = Map.copyOf(views);
+        if (views.keySet().stream().anyMatch(action -> !action.appliesToStack()))
+            throw new IllegalArgumentException("Stack inspection cannot answer a spell or block action");
+    }
     public StackRequirementsCP(FriendlyByteBuf buffer) {
         this(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarLong(), buffer.readVarInt(), buffer.readInt(), read(buffer));
     }
     private static Map<LockAction, View> read(FriendlyByteBuf buffer) {
         int count = buffer.readVarInt();
-        if (count < 0 || count > LockAction.values().length) throw new DecoderException("Invalid stack action count");
+        // Derived from the stack-answerable actions, not from every action that exists: a peer
+        // claiming a view for CAST or a block action is describing something a stack inspection
+        // never produces, and the bound is the place that notices.
+        if (count < 0 || count > LockAction.stackActionCount()) throw new DecoderException("Invalid stack action count");
         var result = new EnumMap<LockAction, View>(LockAction.class);
         for (int i = 0; i < count; i++) {
             var action = buffer.readEnum(LockAction.class); boolean allowed = buffer.readBoolean();
+            if (!action.appliesToStack()) throw new DecoderException("Non-stack action in stack inspection");
             int size = buffer.readVarInt();
             if (size < 0 || size > ESkill.values().length) throw new DecoderException("Invalid stack requirements");
             Map<String, Integer> requirements = new TreeMap<>();

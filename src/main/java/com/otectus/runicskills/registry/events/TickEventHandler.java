@@ -66,7 +66,11 @@ public class TickEventHandler {
         // a clientbound attribute packet every tick, per player, for perks that rarely change
         // state (RS-010).
         if (RegistryPerks.ONE_HANDED != null) {
-            new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ATTACK_DAMAGE, (float) RegistryPerks.ONE_HANDED.get().getActiveValue(serverPlayer)[0], RegistryAttributes.ONE_HANDED_UUID).amplifyAttribute((serverPlayer.getOffhandItem().getCount() == 0 && RegistryPerks.ONE_HANDED.get().isEnabled(serverPlayer)));
+            // Read the real off-hand, not getOffhandItem: Better Combat's mixin on getItemBySlot
+            // reports an empty off-hand for anyone holding a two-handed weapon, which turned
+            // One-Handed — a perk for fighting with a hand free — into an unconditional bonus for
+            // two-handed builds, shield and all.
+            new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ATTACK_DAMAGE, (float) RegistryPerks.ONE_HANDED.get().getActiveValue(serverPlayer)[0], RegistryAttributes.ONE_HANDED_UUID).amplifyAttribute((com.otectus.runicskills.common.combat.TwoHandedWielding.realOffhand(serverPlayer).isEmpty() && RegistryPerks.ONE_HANDED.get().isEnabled(serverPlayer)));
         }
         if (RegistryPerks.DIAMOND_SKIN != null) {
             new RegistryAttributes.RegisterAttribute(serverPlayer, Attributes.ARMOR, (float) RegistryPerks.DIAMOND_SKIN.get().getActiveValue(serverPlayer)[1], RegistryAttributes.DIAMOND_SKIN_UUID).amplifyAttribute((serverPlayer.isShiftKeyDown() && RegistryPerks.DIAMOND_SKIN.get().isEnabled(serverPlayer)));

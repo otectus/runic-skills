@@ -99,7 +99,9 @@ Works in single-player, LAN and on dedicated servers, using the same jar everywh
 
 **Deep integrations** — perks, events or whole systems that hook another mod directly:
 
-- **Iron's Spells 'n Spellbooks** — all nine magic schools, spell gating, summon hooks, and the entire Powers system
+- **Iron's Spells 'n Spellbooks** (3.16.3+) — all nine magic schools, the entire Powers system, summon hooks, spellbooks gated by how much magic they can actually hold, and spells gated separately from the book carrying them
+- **Apprentice's Codex** — its books, spellguns, swingcast weapons and devices are gated on the same terms as everything else, and a refused spellgun shot costs no mana and no ammunition
+- **Bigger Stacks** — the two mods no longer fight over how a stack count is stored. Bigger Stacks keeps the counts, Runic Skills stands down, and Pack Mule waits rather than stacking a second multiplier on top
 - **Ars Nouveau** — spell damage, mana regeneration, glyph mastery
 - **Apotheosis / Apothic Attributes** — affix, gem and socket perks, an enchantment-cap boost, gem-rarity gating on socketing, and a much wider stat pool for passives
 - **FTB Quests** — six native task types, so quests can require skill levels, total level, perk ranks, passive levels or titles
@@ -107,7 +109,7 @@ Works in single-player, LAN and on dedicated servers, using the same jar everywh
 - **L2Tabs / Legendary Tabs (2.0+)** — the Skills tab joins their strip instead of drawing over it
 - **Farmer's Delight and the Let's Do series, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared**, and the gun mods (**TacZ**, **Scorched Guns 2**, **PointBlank (Vic's)**, **Crayfish Gun Mod**) — food, combat and firearm perks
 
-**Automatic gear gating** — 33 mod families get their weapons, tools and armour level-gated with no configuration at all, through a mix of hand-tuned rules and namespace scanning: Ice and Fire, Spartan Weaponry, Samurai Dynasty, Jewelcraft, Locks Reforged, Epic Knights, Aquaculture, Dragonsteel, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared, and many more. If a classification gets one item wrong, you can exempt that single item instead of switching a whole mod off.
+**Automatic gear gating** — since 2.2.1 this is universal: anything the mod has no rule for is classified and gated on its own merits, and you can see exactly what it decided, and why, with `/skills locks preview`, `/skills locks explain` and `/skills locks coverage` before it ever affects a live world. Turn the whole inferred layer off with `enableAutoGates = false`. On top of that, 33 mod families get their weapons, tools and armour level-gated by hand-tuned rules: Ice and Fire, Spartan Weaponry, Samurai Dynasty, Jewelcraft, Locks Reforged, Epic Knights, Aquaculture, Dragonsteel, Cataclysm, Mowzie's Mobs, Starcatcher, Overgeared, and many more. If a classification gets one item wrong, you can exempt that single item instead of switching a whole mod off.
 
 > **Stated honestly:** the perks that depend on Apotheosis, Ars Nouveau, Iron's Spells, Ice and Fire, Samurai Dynasty, Locks Reforged and Siege Machines compile against those mods, but have not yet been run against them end to end. They should work; they are not yet verified.
 

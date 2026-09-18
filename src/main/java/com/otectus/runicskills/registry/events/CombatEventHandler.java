@@ -5,6 +5,8 @@ import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.combat.CombatDiagnostics;
 import com.otectus.runicskills.common.combat.DamageContext;
 import com.otectus.runicskills.common.combat.DamageMath;
+import com.otectus.runicskills.common.combat.TwoHandedExemption;
+import com.otectus.runicskills.common.combat.TwoHandedWielding;
 import com.otectus.runicskills.common.util.ProcRoll;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.ApothicAttributesIntegration;
@@ -418,6 +420,12 @@ public class CombatEventHandler {
         // derived from a hit that was scaled once (see DamageContext).
         if (!DamageContext.allowsStandardOutgoingModifiers()) return;
 
+        // Whether this is the player's own melee swing rather than something they merely caused:
+        // an arrow, a thrown potion, a summon's bite and a spell all name the player as the source
+        // entity but not as the direct one. Only the hooks that describe a weapon in the player's
+        // hands may read this.
+        boolean melee = event.getSource().getDirectEntity() == player;
+
         float dmg = event.getAmount();
         float bonus = 0.0f;
 
@@ -586,8 +594,13 @@ public class CombatEventHandler {
         // GLADIATOR — bonus melee damage while a shield is held in the offhand. The lang text mentions
         // "shield bash", a Spartan Shields / Better Combat mechanic with no vanilla event to hook;
         // gating on an equipped shield is the non-invasive equivalent of an aggressive shield-fighter.
+        // The off-hand is read through TwoHandedWielding, not getOffhandItem: Better Combat's mixin
+        // on getItemBySlot reports an empty off-hand for anyone holding a two-handed weapon, which
+        // silently switched this perk off for the players most likely to have it. The test also
+        // broadened from ShieldItem to anything that can perform SHIELD_BLOCK, so modded shields
+        // that do not subclass vanilla's (Spartan Shields' tower shields among them) now count.
         if (RegistryPerks.GLADIATOR != null && RegistryPerks.GLADIATOR.get().isEnabled(player)
-                && player.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem) {
+                && TwoHandedWielding.isBlockable(TwoHandedWielding.realOffhand(player))) {
             double pct = RegistryPerks.GLADIATOR.get().getActiveValue(player)[0];
             bonus += dmg * (float) (pct / 100.0);
         }
@@ -602,18 +615,18 @@ public class CombatEventHandler {
             }
         }
 
-        // TITANS_GRIP — bonus damage when wielding a heavy/two-handed Spartan weapon with an occupied
-        // offhand (the "two-handed weapon alongside a shield" fantasy). Truly bypassing Spartan's own
-        // offhand restriction would require a mixin into Spartan internals and is intentionally out of
-        // scope; this rewards the described playstyle without an invasive hook. Perk only registers
-        // when Spartan is loaded (see RegistryPerks.TITANS_GRIP).
-        if (RegistryPerks.TITANS_GRIP != null && RegistryPerks.TITANS_GRIP.get().isEnabled(player)
-                && !player.getOffhandItem().isEmpty()) {
-            ResourceLocation wid = ForgeRegistries.ITEMS.getKey(player.getMainHandItem().getItem());
-            if (wid != null && "spartanweaponry".equals(wid.getNamespace()) && isHeavySpartanWeapon(wid.getPath())) {
-                double pct = HandlerCommonConfig.HANDLER.instance().titansGripPercent;
-                bonus += dmg * (float) (pct / 100.0);
-            }
+        // TITANS_GRIP — the damage half of the perk. The mechanical half (the shield is visible and
+        // usable at all, and Spartan's two-handed penalties do not fire) lives in
+        // MixPlayerOffhandSlot and MixTwoHandedWeaponTrait; all three ask TwoHandedExemption, so the
+        // bonus is paid exactly when the exemption is in force — perk taken, a genuinely two-handed
+        // weapon in hand, a shield in the off-hand. That replaces a registry-path match against a
+        // hand-written list of Spartan weapon families, which missed every Better Combat weapon and
+        // every Spartan add-on, and an `offhand is not empty` test that Better Combat made
+        // permanently false. Melee-only: an arrow loosed from a two-handed longbow is not the
+        // "weapon alongside a shield" the perk describes (RUNIC_SKILLS_AUDIT.md:2430).
+        if (RegistryPerks.TITANS_GRIP != null && melee && TwoHandedExemption.applies(player)) {
+            double pct = HandlerCommonConfig.HANDLER.instance().titansGripPercent;
+            bonus += dmg * (float) (pct / 100.0);
         }
 
         if (bonus > 0.0f) {
@@ -695,14 +708,6 @@ public class CombatEventHandler {
             if (owner != null) return false;
         }
         return other.isAttackable();
-    }
-
-    /** Heavy / two-handed Spartan Weaponry weapons that Titan's Grip applies to. */
-    private static boolean isHeavySpartanWeapon(String path) {
-        return path.contains("greatsword") || path.contains("battleaxe") || path.contains("warhammer")
-                || path.contains("battle_hammer") || path.contains("halberd") || path.contains("pike")
-                || path.contains("glaive") || path.contains("lance") || path.contains("longbow")
-                || path.contains("heavy_crossbow") || path.contains("quarterstaff") || path.contains("scythe");
     }
 
     private static boolean isTrophyTarget(LivingEntity target) {

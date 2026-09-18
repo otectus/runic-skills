@@ -70,6 +70,15 @@ public final class LockGen {
         return out;
     }
 
+    /** All registered block ids whose namespace equals {@code namespace}. */
+    public static List<ResourceLocation> blocksInNamespace(String namespace) {
+        List<ResourceLocation> out = new ArrayList<>();
+        for (ResourceLocation id : ForgeRegistries.BLOCKS.getKeys()) {
+            if (namespace.equals(id.getNamespace())) out.add(id);
+        }
+        return out;
+    }
+
     // "staff" is a MAGIC_KW, but a few melee weapons embed it (Spartan's quarterstaff, battlestaff).
     // Treat those as weapons, not magic implements.
     private static boolean isMeleeStaff(String p) {

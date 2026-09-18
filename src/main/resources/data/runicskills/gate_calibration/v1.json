@@ -1,0 +1,1376 @@
+{
+  "_comment": [
+    "Reviewed calibration corpus for the universal automatic gate engine (spec sections 8.2 and 8.4).",
+    "Versioned, and read once from the jar rather than through the datapack reload: it is a built-in",
+    "profile, and a pack that disagrees writes an ordinary lock rule or a data/<ns>/runicskills/gates",
+    "rule, both of which outrank everything this file produces.",
+    "",
+    "Three kinds of row, and the difference matters:",
+    "  runic_builtin_default  - a requirement this mod has shipped as a reviewed built-in default.",
+    "  irons_book_profile     - a reviewed Iron's spellbook gate, carried over from",
+    "                           data/runicskills/irons/book_profiles.json. Intelligence is the shared",
+    "                           0.6 ratio that provider applies, stated here so the anchor is complete.",
+    "  explicit_ungated       - content that deliberately requires nothing. These are NOT filler: they",
+    "                           are what stops a wooden sword inheriting a golden sword's requirement",
+    "                           because the cheapest gated anchor was the nearest one available.",
+    "",
+    "NOTHING here may come from the engine's own output. CalibrationCorpus.isEngineSource refuses any",
+    "row whose source is an inference provenance string, so an exported catalog cannot be pasted back",
+    "in and become its own training data. That is the defect that produced the old keyword book table,",
+    "one generation removed.",
+    "",
+    "The harvest_block anchors exist only for autoGateHarvestBlocks, which is OFF by default. They are",
+    "not new balance: each gated row is the Building level of the cheapest vanilla pickaxe that can",
+    "drop the block, which this mod has shipped as a reviewed built-in default since the lock table",
+    "existed. The stone tier is ungated for the same reason its pickaxe is.",
+    "",
+    "Levels are at the reference per-skill cap of 32 with multiplier 1. Feature ranges are FIXED: they",
+    "are not recomputed from whatever is installed, so one unusually strong modded item cannot",
+    "renormalise a server's balance."
+  ],
+  "calibration_version": 1,
+  "reference_cap": 32,
+  "weights": {
+    "structural": 0.45,
+    "intrinsic": 0.35,
+    "recipe": 0.15,
+    "tokens": 0.05
+  },
+  "thresholds": {
+    "role_confidence": 0.85,
+    "max_neighbors": 5,
+    "min_anchors": 3,
+    "secondary_support": 0.6,
+    "recipe_nudge": 2,
+    "agreement_scale": 8
+  },
+  "roles": {
+    "armor": {
+      "features": {
+        "armor": {
+          "min": 0,
+          "max": 12,
+          "weight": 0.3
+        },
+        "toughness": {
+          "min": 0,
+          "max": 5,
+          "weight": 0.15
+        },
+        "knockback_resistance": {
+          "min": 0,
+          "max": 1,
+          "weight": 0.1
+        },
+        "durability": {
+          "min": 0,
+          "max": 800,
+          "weight": 0.15
+        },
+        "enchantment_value": {
+          "min": 0,
+          "max": 25,
+          "weight": 0.1
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.2
+        }
+      },
+      "fallback": {
+        "endurance": 4
+      }
+    },
+    "shield": {
+      "features": {
+        "durability": {
+          "min": 0,
+          "max": 800,
+          "weight": 0.4
+        },
+        "enchantment_value": {
+          "min": 0,
+          "max": 25,
+          "weight": 0.2
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.4
+        }
+      },
+      "fallback": {
+        "endurance": 2,
+        "constitution": 2
+      }
+    },
+    "melee_weapon": {
+      "features": {
+        "attack_damage": {
+          "min": 0,
+          "max": 12,
+          "weight": 0.3
+        },
+        "attack_speed": {
+          "min": 0,
+          "max": 4,
+          "weight": 0.1
+        },
+        "tier": {
+          "min": 0,
+          "max": 5,
+          "weight": 0.2
+        },
+        "durability": {
+          "min": 0,
+          "max": 2100,
+          "weight": 0.15
+        },
+        "enchantment_value": {
+          "min": 0,
+          "max": 25,
+          "weight": 0.05
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.2
+        }
+      },
+      "fallback": {
+        "strength": 4
+      }
+    },
+    "mining_tool": {
+      "features": {
+        "tier": {
+          "min": 0,
+          "max": 5,
+          "weight": 0.3
+        },
+        "mining_speed": {
+          "min": 0,
+          "max": 10,
+          "weight": 0.15
+        },
+        "durability": {
+          "min": 0,
+          "max": 2100,
+          "weight": 0.15
+        },
+        "attack_damage": {
+          "min": 0,
+          "max": 12,
+          "weight": 0.1
+        },
+        "enchantment_value": {
+          "min": 0,
+          "max": 25,
+          "weight": 0.05
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.25
+        }
+      },
+      "fallback": {
+        "building": 4
+      }
+    },
+    "ranged_weapon": {
+      "features": {
+        "durability": {
+          "min": 0,
+          "max": 800,
+          "weight": 0.35
+        },
+        "enchantment_value": {
+          "min": 0,
+          "max": 25,
+          "weight": 0.2
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.45
+        }
+      },
+      "fallback": {
+        "dexterity": 4
+      }
+    },
+    "spell_focus": {
+      "features": {
+        "capacity": {
+          "min": 0,
+          "max": 12,
+          "weight": 0.35
+        },
+        "free_capacity": {
+          "min": 0,
+          "max": 12,
+          "weight": 0.15
+        },
+        "attribute_modifiers": {
+          "min": 0,
+          "max": 4,
+          "weight": 0.2
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.3
+        }
+      },
+      "fallback": {
+        "magic": 4
+      }
+    },
+    "workstation_block": {
+      "features": {
+        "block_entity": {
+          "min": 0,
+          "max": 1,
+          "weight": 0.3
+        },
+        "tag_matches": {
+          "min": 0,
+          "max": 1,
+          "weight": 0.4
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.3
+        }
+      },
+      "fallback": {
+        "building": 4
+      }
+    },
+    "harvest_block": {
+      "features": {
+        "tier": {
+          "min": 0,
+          "max": 4,
+          "weight": 0.6
+        },
+        "tag_matches": {
+          "min": 0,
+          "max": 1,
+          "weight": 0.2
+        },
+        "recipe_evidence": {
+          "min": 0,
+          "max": 6,
+          "weight": 0.2
+        }
+      },
+      "fallback": {}
+    }
+  },
+  "anchors": [
+    {
+      "kind": "block",
+      "id": "minecraft:ancient_debris",
+      "role": "harvest_block",
+      "subrole": "tier_3",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires a diamond pickaxe to drop. Ranked at minecraft:diamond_pickaxe's own reviewed Building 16 for the same reason as the iron tier."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:anvil",
+      "role": "workstation_block",
+      "skills": {
+        "building": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:barrel",
+      "role": "workstation_block",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated foundational workstation. Gating it would remove the route by which every other requirement is earned."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:beacon",
+      "role": "workstation_block",
+      "skills": {
+        "building": 20
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:blast_furnace",
+      "role": "workstation_block",
+      "skills": {
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:brewing_stand",
+      "role": "workstation_block",
+      "skills": {
+        "wisdom": 12,
+        "magic": 12,
+        "intelligence": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:cartography_table",
+      "role": "workstation_block",
+      "skills": {
+        "building": 12,
+        "intelligence": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:chest",
+      "role": "workstation_block",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated foundational workstation. Gating it would remove the route by which every other requirement is earned."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:chipped_anvil",
+      "role": "workstation_block",
+      "skills": {
+        "building": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:copper_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:crafting_table",
+      "role": "workstation_block",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated foundational workstation. Gating it would remove the route by which every other requirement is earned."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:crying_obsidian",
+      "role": "harvest_block",
+      "subrole": "tier_3",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires a diamond pickaxe to drop. Ranked at minecraft:diamond_pickaxe's own reviewed Building 16 for the same reason as the iron tier."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:damaged_anvil",
+      "role": "workstation_block",
+      "skills": {
+        "building": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_copper_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_diamond_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_emerald_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_gold_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_iron_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_lapis_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:deepslate_redstone_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:diamond_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:emerald_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:enchanting_table",
+      "role": "workstation_block",
+      "skills": {
+        "magic": 12
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:furnace",
+      "role": "workstation_block",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated foundational workstation. Gating it would remove the route by which every other requirement is earned."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:gold_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:grindstone",
+      "role": "workstation_block",
+      "skills": {
+        "building": 16,
+        "intelligence": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:iron_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:lapis_ore",
+      "role": "harvest_block",
+      "subrole": "tier_1",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Harvestable with a stone pickaxe, and stone tools are themselves reviewed as ungated: the cheapest tool that drops this block requires nothing, so neither does the block. Present so the stone tier is estimated from comparable ungated content rather than from the cheapest gated tier above it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:lectern",
+      "role": "workstation_block",
+      "skills": {
+        "intelligence": 6,
+        "building": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:loom",
+      "role": "workstation_block",
+      "skills": {
+        "building": 8,
+        "intelligence": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:netherite_block",
+      "role": "harvest_block",
+      "subrole": "tier_3",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires a diamond pickaxe to drop. Ranked at minecraft:diamond_pickaxe's own reviewed Building 16 for the same reason as the iron tier."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:obsidian",
+      "role": "harvest_block",
+      "subrole": "tier_3",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires a diamond pickaxe to drop. Ranked at minecraft:diamond_pickaxe's own reviewed Building 16 for the same reason as the iron tier."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:redstone_ore",
+      "role": "harvest_block",
+      "subrole": "tier_2",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Requires an iron pickaxe to drop. minecraft:iron_pickaxe is a reviewed built-in default at Building 8, and a harvest gate is the same progression fact stated about the block: the level that earns the cheapest tool which can take it."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:smithing_table",
+      "role": "workstation_block",
+      "skills": {
+        "building": 20,
+        "intelligence": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:smoker",
+      "role": "workstation_block",
+      "skills": {
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "block",
+      "id": "minecraft:stonecutter",
+      "role": "workstation_block",
+      "skills": {
+        "building": 6,
+        "strength": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for the item form of this workstation, carried over as the block-operation anchor."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:blaze_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 20,
+        "intelligence": 12
+      },
+      "source": "irons_book_profile",
+      "reason": "10 slots, fire spell power +0.1 and +200 max mana. A full school package; obtained from a 1% blaze drop, which is early for the power it carries but is a drop rate rather than a progression step."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:copper_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 8,
+        "intelligence": 5
+      },
+      "source": "irons_book_profile",
+      "reason": "5 slots, no attribute modifiers, crafted from copper ingots + string + paper. The entry-level chassis and the anchor the other rows are ranked against."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:diamond_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 16,
+        "intelligence": 10
+      },
+      "source": "irons_book_profile",
+      "reason": "10 slots and +100 max mana, crafted from diamond + enchanted book + magic cloth + hogskin. Drops gold's cast-time penalty and adds two slots: a verified upgrade, so a clear step up."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:dragonskin_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 24,
+        "intelligence": 14
+      },
+      "source": "irons_book_profile",
+      "reason": "12 slots, ender spell power +0.1 and +200 max mana, crafted from six dragonskin + obsidian + a ruined book. Byte-for-byte the ice spellbook's chassis and stat package with a different school, so it is ranked EQUAL to ice rather than above it. The proposed 26 treated a verified sidegrade as an upgrade; shipping it as a metadata profile instead would have split one sidegrade pair across two layers and produced two different numbers for the same item."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:druidic_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 20,
+        "intelligence": 12
+      },
+      "source": "irons_book_profile",
+      "reason": "10 slots, nature spell power +0.1 and +200 max mana: the same chassis as blaze with a different school, so deliberately the same requirement rather than an invented ranking between two sidegrades."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:gold_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 12,
+        "intelligence": 7
+      },
+      "source": "irons_book_profile",
+      "reason": "8 slots, +50 max mana and +15% cast time, crafted from arcane essence + hogskin. First book with attributes, and the cast-time cost is why it does not outrank diamond."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:ice_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 24,
+        "intelligence": 14
+      },
+      "source": "irons_book_profile",
+      "reason": "12 slots, ice spell power +0.1 and +200 max mana, crafted from mithril scrap + three ice venom vials + a ruined book. The most demanding acquisition chain of the verified books."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:iron_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 10,
+        "intelligence": 6
+      },
+      "source": "irons_book_profile",
+      "reason": "6 slots, no attribute modifiers, crafted from chains + leather + paper. One clear step above copper on capacity alone."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:netherite_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 22,
+        "intelligence": 13
+      },
+      "source": "irons_book_profile",
+      "reason": "12 slots, +20% cooldown reduction and +200 max mana, crafted from netherite + ruined book + blood vial + lightning bottle. Late-game acquisition and a general-purpose benefit rather than one school."
+    },
+    {
+      "kind": "item",
+      "id": "irons_spellbooks:villager_spell_book",
+      "role": "spell_focus",
+      "skills": {
+        "magic": 22,
+        "intelligence": 13
+      },
+      "source": "irons_book_profile",
+      "reason": "10 slots, holy spell power +0.1, cast time +0.1 and +200 max mana. Three modifiers on a diamond-sized chassis, acquired by priest trade."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:bow",
+      "role": "ranged_weapon",
+      "skills": {
+        "dexterity": 4,
+        "strength": 2
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:chainmail_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {
+        "endurance": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:chainmail_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {
+        "endurance": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:chainmail_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:chainmail_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {
+        "endurance": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:crossbow",
+      "role": "ranged_weapon",
+      "skills": {
+        "dexterity": 6,
+        "strength": 4
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {
+        "strength": 16,
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. An axe is a hybrid: the same level of Strength to swing it and Building to dig with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {
+        "endurance": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {
+        "endurance": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {
+        "endurance": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {
+        "building": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:diamond_sword",
+      "role": "melee_weapon",
+      "skills": {
+        "strength": 16
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {
+        "strength": 6,
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. An axe is a hybrid: the same level of Strength to swing it and Building to dig with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {
+        "endurance": 6,
+        "magic": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. Gold carries a magic requirement beside its endurance one, at the same level."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {
+        "endurance": 6,
+        "magic": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. Gold carries a magic requirement beside its endurance one, at the same level."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 6,
+        "magic": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. Gold carries a magic requirement beside its endurance one, at the same level."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {
+        "endurance": 6,
+        "magic": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. Gold carries a magic requirement beside its endurance one, at the same level."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {
+        "building": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:golden_sword",
+      "role": "melee_weapon",
+      "skills": {
+        "strength": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {
+        "strength": 8,
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. An axe is a hybrid: the same level of Strength to swing it and Building to dig with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {
+        "endurance": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {
+        "endurance": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {
+        "endurance": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {
+        "building": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:iron_sword",
+      "role": "melee_weapon",
+      "skills": {
+        "strength": 8
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:leather_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter armour. Present so low-tier armour is estimated from comparable ungated content rather than from the cheapest gated tier."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:leather_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter armour. Present so low-tier armour is estimated from comparable ungated content rather than from the cheapest gated tier."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:leather_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter armour. Present so low-tier armour is estimated from comparable ungated content rather than from the cheapest gated tier."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:leather_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter armour. Present so low-tier armour is estimated from comparable ungated content rather than from the cheapest gated tier."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {
+        "strength": 24,
+        "building": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default. An axe is a hybrid: the same level of Strength to swing it and Building to dig with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_boots",
+      "role": "armor",
+      "subrole": "feet",
+      "skills": {
+        "endurance": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_chestplate",
+      "role": "armor",
+      "subrole": "chest",
+      "skills": {
+        "endurance": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {
+        "building": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_leggings",
+      "role": "armor",
+      "subrole": "legs",
+      "skills": {
+        "endurance": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {
+        "building": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {
+        "building": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:netherite_sword",
+      "role": "melee_weapon",
+      "skills": {
+        "strength": 24
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:shield",
+      "role": "shield",
+      "skills": {
+        "endurance": 2,
+        "constitution": 2
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:stone_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool-weapon."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:stone_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:stone_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:stone_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:stone_sword",
+      "role": "melee_weapon",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter weapon; a new player must be able to earn Strength with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:trident",
+      "role": "melee_weapon",
+      "skills": {
+        "strength": 20,
+        "dexterity": 18
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:turtle_helmet",
+      "role": "armor",
+      "subrole": "head",
+      "skills": {
+        "endurance": 6,
+        "dexterity": 6
+      },
+      "source": "runic_builtin_default",
+      "reason": "Reviewed Runic built-in default for this item, shipped since the lock table existed."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:wooden_axe",
+      "role": "melee_weapon",
+      "subrole": "axe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool-weapon."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:wooden_hoe",
+      "role": "mining_tool",
+      "subrole": "hoe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:wooden_pickaxe",
+      "role": "mining_tool",
+      "subrole": "pickaxe",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:wooden_shovel",
+      "role": "mining_tool",
+      "subrole": "shovel",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter tool; a new player must be able to earn Building with it."
+    },
+    {
+      "kind": "item",
+      "id": "minecraft:wooden_sword",
+      "role": "melee_weapon",
+      "skills": {},
+      "source": "explicit_ungated",
+      "reason": "Deliberately ungated starter weapon; a new player must be able to earn Strength with it."
+    }
+  ]
+}

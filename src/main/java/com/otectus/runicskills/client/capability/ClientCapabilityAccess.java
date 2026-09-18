@@ -2,9 +2,7 @@ package com.otectus.runicskills.client.capability;
 
 import com.otectus.runicskills.client.gui.OverlaySkillGui;
 import com.otectus.runicskills.common.capability.SkillCapability;
-import com.otectus.runicskills.common.model.Skills;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
-import com.otectus.runicskills.handler.HandlerSkill;
 import com.otectus.runicskills.registry.RegistryCapabilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -13,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Client-side bridge for obtaining the local player's {@link SkillCapability}.
@@ -45,13 +41,12 @@ public final class ClientCapabilityAccess {
         if (cap == null) return true;
         ResourceLocation key = ForgeRegistries.ITEMS.getKey(item.getItem());
         if (key == null) return true;
-        List<Skills> skills = HandlerSkill.getValue(key.toString());
-        if (skills == null) return true;
-        for (Skills s : skills) {
-            if (cap.getSkillLevel(s.getSkill()) < s.getSkillLvl()) {
-                OverlaySkillGui.showWarning(key.toString());
-                return false;
-            }
+        Boolean typed = cap.typedVerdict(Minecraft.getInstance().player,
+                com.otectus.runicskills.integration.lock.GateTarget.item(key),
+                com.otectus.runicskills.integration.lock.LockAction.USE, false);
+        if (Boolean.FALSE.equals(typed)) {
+            OverlaySkillGui.showWarning(key.toString());
+            return false;
         }
         return true;
     }

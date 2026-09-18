@@ -13,10 +13,28 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Capacity belongs to an explicit inventory owner and destination, never to an Item singleton. */
+/**
+ * Capacity belongs to an explicit inventory owner and destination, never to an Item singleton.
+ *
+ * <p>Foreign policy comes first (reference document §4.5). Whatever another mod has decided about an
+ * item — a larger limit, a smaller one, an exclusion, a specialized slot — is the answer, and Pack
+ * Mule only ever considers an ordinary item that is still sitting at the vanilla 64 in a slot the
+ * player owns. When another mod owns the count representation at all, the perk is deferred rather
+ * than layered on top of it; {@code /skills locks representation} reports that it was and why.
+ */
 public final class PlayerStackPolicy {
     private PlayerStackPolicy() {}
+    /** Why Pack Mule capacity is unavailable, or empty when it is available. */
+    public static String deferralReason() {
+        var provider = StackRepresentationProvider.selected();
+        return provider.grantsPackMuleCapacity() ? ""
+                : "another mod owns the stack representation (" + provider + "): "
+                        + StackRepresentationProvider.selectionDetail();
+    }
     public static int rank(Player owner) {
+        // External-policy-first: ask before the perk, the config or the capability, so no caller can
+        // reach a Runic-granted capacity through a path that skipped this question.
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return 0;
         if (owner == null || owner instanceof FakePlayer || !HandlerCommonConfig.HANDLER.instance().enablePackMule
                 || !RegistryPerks.PACK_MULE.isPresent() || !RegistryPerks.PACK_MULE.get().isEnabled(owner)) return 0;
         var perk = RegistryPerks.PACK_MULE.get();
@@ -26,6 +44,12 @@ public final class PlayerStackPolicy {
         return rank;
     }
     public static boolean eligible(ItemStack stack) {
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return false;
+        // An effective maximum that is not the vanilla 64 was decided by somebody else — a foreign
+        // provider expanding it, a lower native limit, a nonstackable item — and stands as it is.
+        // The checks below are what keeps this from being inferred from getMaxStackSize() alone:
+        // an externally stackable container, spellbook or capability carrier is still not ordinary
+        // cargo just because its current maximum happens to read 64.
         if (stack.isEmpty() || stack.getMaxStackSize() != 64 || stack.isDamageableItem()) return false;
         if (stack.getTag() != null && (stack.getTag().contains("BlockEntityTag") || stack.getTag().contains("Items"))) return false;
         if (stack.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()
@@ -54,6 +78,10 @@ public final class PlayerStackPolicy {
     }
     /** Only a normal player slot can grow. Subclasses' narrower limits remain authoritative. */
     public static int capacity(Slot slot, ItemStack stack, int nativeLimit) {
+        // The slot's own answer is final when the perk is deferred. Without this, an item a foreign
+        // provider stacks to a thousand would drag a 64-limited slot up with it, which is this mod
+        // raising a limit it no longer has any business raising.
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return nativeLimit;
         if (!(slot.container instanceof Inventory inventory) || !playerSlot(inventory, slot.getContainerSlot())
                 || nativeLimit < 64) return nativeLimit;
         return Math.max(nativeLimit, capacity(inventory.player, stack));

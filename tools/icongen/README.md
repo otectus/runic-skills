@@ -43,7 +43,16 @@ in the generated PNGs.
 - `powers.py`: school/tier registry parser and semantic Power renderer.
 - `build.py`: complete generator, registry comparison, and image verification.
 - `catalogue.json`: reviewed output inventory, mechanic explanations and decoded
-  RGBA SHA-256 hashes. Generated together with the icons.
+  RGBA SHA-256 hashes. It pins what actually ships.
+- `repin_catalogue.py`: re-pins `catalogue.json` to the shipped PNGs.
+
+Since 2.2.2 the shipped skill and Power icon sets are checked-in art, not
+generator output. `build.py` and `powers.py` do not reproduce them and running
+either over `src/main/resources/assets/runicskills/textures/skill/` or
+`textures/power/` would overwrite the shipped art. They remain here as the
+generator of the 2.1.0 to 2.2.1 sets. When a shipped icon is replaced or added,
+re-pin the catalogue hashes with `python tools/icongen/repin_catalogue.py`
+(`--check` verifies without writing) rather than regenerating.
 
 ## Workflow
 

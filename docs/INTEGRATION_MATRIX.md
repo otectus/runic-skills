@@ -56,7 +56,7 @@ and the only remedy was disabling the mod's locks entirely. See `LockGenTest`.
 
 | Provider | Namespace | Why standalone |
 | --- | --- | --- |
-| `IronsSpellbooksLockProvider` | `irons_spellbooks` | registry scan (books/staves/scrolls/armor/rings/orbs); no ISS API imports, so the registry can hold it when ISS is absent |
+| `IronsSpellbooksLockProvider` | `irons_spellbooks` | registry scan; spellbooks resolve through the reviewed table then the chassis metadata profile, other gear (staves/scrolls/armor/rings/orbs) still by keyword. No ISS API imports, so the registry can hold it when ISS is absent |
 | `StarcatcherLockProvider` | `starcatcher` | rods and reusable tackle; ordinary bait and catches stay unlocked |
 | `OvergearedLockProvider` | `overgeared` | hammers, tongs, blueprints and forged gear; crafting components stay unlocked |
 | `RecentEquipmentLockProvider(SIMPLY_SWORDS)` | `simplyswords` | finished weapon classes, including named relics |
@@ -67,6 +67,92 @@ and the only remedy was disabling the mod's locks entirely. See `LockGenTest`.
 The recent providers are registered once per `IntegrationModule` and default on. Each honors
 its `AutomaticEquipmentGates` flag, integration mode and discovered mod/item opt-outs. Their
 reference levels scale to the configured skill cap; see [progression settings](PROGRESSION_GATING.md).
+
+## Iron's spellbook gates (2.2.1)
+
+Baseline artifact: `irons_spellbooks` **1.20.1-3.16.3** (CurseForge file `8680180`). The 3.15
+pin is gone; the runtime test profile also pulls `irons_lib 1.20.1-2.1.0` and Curios `5.14.1`,
+which 3.16.3 declares mandatory.
+
+A spellbook's **equipment** gate and a spell's **cast** gate are separate rules. Inscribing or
+erasing an ordinary spell does not move the book's gate, and an allowed book holding one spell the
+player cannot cast still casts everything else in it.
+
+Book gates resolve in this order, first answer winning:
+
+1. **Reviewed table** — `data/runicskills/irons/book_profiles.json`. Ten rows, each checked against
+   the 3.16.3 recipes and item registrations, each carrying the evidence it was decided on. The
+   audit export prints that evidence as `profile_reason`.
+2. **Chassis metadata** — `3 * freeSlots + presetSlots + 2 * modifiers`, halved onto the reviewed
+   scale. Read from a detached inspection stack, never from a player's book. Covers every book the
+   table leaves out, every addon book, and anything Iron's adds later.
+3. **Conservative anchor** — Magic 8, the reviewed copper value, when the chassis cannot be read.
+   Published with an `:undetermined` source so the audit reports it as a guess.
+4. **Abstain** — a book with no capacity and no attributes gets no rule at all.
+
+Reviewed rows at cap 32 and multiplier 1 (Intelligence trails Magic at 0.6):
+
+| Book | Magic | Why |
+| --- | --- | --- |
+| `copper_spell_book` | 8 | 5 slots, no modifiers; the anchor |
+| `iron_spell_book` | 10 | 6 slots, no modifiers |
+| `gold_spell_book` | 12 | 8 slots, +50 mana, +15% cast time — the cast-time cost is why it sits below diamond |
+| `diamond_spell_book` | 16 | 10 slots, +100 mana, no cast-time penalty |
+| `blaze_spell_book` | 20 | 10 slots, fire power +0.1, +200 mana |
+| `druidic_spell_book` | 20 | blaze's chassis, nature school — deliberately equal |
+| `villager_spell_book` | 22 | 10 slots, three modifiers, priest trade |
+| `netherite_spell_book` | 22 | 12 slots, +20% cooldown reduction, +200 mana |
+| `ice_spell_book` | 24 | 12 slots, ice power +0.1, +200 mana; hardest verified acquisition |
+| `dragonskin_spell_book` | 24 | ice's chassis, ender school — equal, not the proposed 26 |
+
+Five books the earlier proposal covered are deliberately **not** in the table and use the metadata
+profile instead: `wimpy` (no capacity — inert, so no rule), `legendary` (12 slots but no attributes
+and no recipe or loot entry; it is unobtainable in survival and stat-inferior), `rotten` (its spell
+resistance is an upside, not the drawback the proposal priced, and it is an ingredient of the
+druidic book), and `evoker` (7 slots of which only 4 are free). `necronomicon` and `cursed_doll`
+were never in the proposal and use the metadata profile too.
+
+## Iron's spell-cast gates (2.2.1)
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `enableSpellLocks` | `true` | Master switch for every requirement on a cast, explicit rules included. Never waives a book's equipment gate. Absent in pre-2.2.1 files, where it defaults on. |
+| `ironsSpellGateModel` | `METADATA` | Which generator proposes a requirement. `METADATA` uses the spell's native rarity and its position within its own level range; `LEGACY_LEVEL` uses `ironsBaseSpellGatingLevel + (level - 1) * ironsSpellLevelScaleFactor`. |
+| `ironsEnableSchoolGating` | `true` | Whether the selected generator runs at all. Explicit spell rules still apply when it is off. |
+
+The two models are alternatives, never combined: the maximum or sum of two independent estimates
+is a requirement neither proposed. `METADATA` anchors Magic at Common 4, Uncommon 8, Rare 14,
+Epic 20, Legendary 26 and rises within a band across the levels sharing that rarity, stopping one
+short of the next band. A rarity this build cannot map abstains rather than falling through to an
+extreme.
+
+Two ordering fixes ship with it. An **explicit rule for a spell now resolves before the generated
+formula**, so a pack that deliberately permits a spell is no longer refused by the formula the
+permission was written to override. And the gate reads the **selected** spell level rather than the
+effective one: Iron's passes `getLevelFor(...)` into the cast, so gear and perk bonuses were
+already folded in, and a perk that granted +2 spell levels made previously castable spells refuse.
+
+A denied cast costs nothing. `SpellPreCastEvent` fires before mana is deducted, before a cooldown
+starts and before a scroll is consumed, so cancelling there leaves all three — and the book's
+contents — untouched.
+
+## Typed gate providers (2.2.1)
+
+A third kind of provider, beside the id-only and stack-aware ones. A `TypedGateProvider` publishes
+**action-scoped** rules: `EQUIP`/`USE`/`ATTACK` on an item, `INTERACT_BLOCK` on a block. That is the
+only way to gate *operating* a workstation without also forbidding breaking it, which one entry in
+the action-blind id table can never express (§12.1). Its rules sit above the keyword generators and
+below anything a person authored, and item rules also populate the untyped table so the client
+tooltips and synchronisation still see them.
+
+| Provider | Namespace | What it publishes |
+| --- | --- | --- |
+| `ApprenticeCodexLockProvider` | `apprenticecodex` | 116 typed rules over 186 reviewed entries: spell containers ranked by their real capacity through the Iron's chassis reader, reviewed role anchors for gear, and `INTERACT_BLOCK` gates on seven workstations. Names no Codex or Iron's type, so it loads on a server that has neither. See [`APPRENTICE_CODEX.md`](APPRENTICE_CODEX.md) |
+
+`ApprenticeCodexLockProvider` also claims the `apprenticecodex` namespace through `LockOwnership`
+whenever the mod is installed — deliberately regardless of `enableApprenticeCodexIntegration`, so
+switching the integration off leaves Codex content ungated instead of handing it to the universal
+estimator (§6.3).
 
 ## Stack-aware providers
 
@@ -137,3 +223,8 @@ types.
 - `LockProviderRegistryTest` (JUnit) — the same invariant under `test`, plus unique/non-blank ids.
 - `LockGenTest` (JUnit) — keyword classification, including the false positives that word-boundary
   matching and the never-gear list exist to prevent.
+- `checkSidedImports` (Gradle, in `check`) — a `jp.aquafactory` import outside
+  `integration/apprenticecodex/`, `mixin/apprenticecodex/` or `gametest/codex/` fails the build, on
+  the same terms as the `slimeknights` guard: an optional mod's class named anywhere the JVM can
+  reach without it installed is a `NoClassDefFoundError` waiting for the first pack that does not
+  run it.

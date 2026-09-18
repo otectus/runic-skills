@@ -2,9 +2,21 @@
 
 An RPG-style progression mod for Minecraft 1.20.1 Forge. Spend earned vanilla XP to level ten skills, unlock perks and passives, gate equipment behind skill thresholds, and earn titles for world milestones.
 
-Current development: **2.2.0**, with 508 perks, 38 passives and 111 Powers across the full optional catalogue.
-See the [complete content trace](docs/CONTENT_TRACE.md), [2.2.0 implementation and validation](docs/IMPLEMENTATION_2.2.0.md),
-and [upgrade notes](docs/MIGRATING_TO_2.2.0.md). This working build has not been published.
+Current development: **2.2.2**, with 508 perks, 38 passives and 111 Powers across the full optional catalogue.
+See the [complete content trace](docs/CONTENT_TRACE.md), [automatic gates](docs/AUTOMATIC_GATES.md),
+the [2.2.1 compatibility ledger](docs/COMPATIBILITY_LEDGER_2.2.1.md), [2.2.0 implementation and validation](docs/IMPLEMENTATION_2.2.0.md),
+and [upgrade notes](docs/MIGRATING_TO_2.2.0.md). 2.2.2 is a published build; it carries the 2.1.2, 2.2.0 and 2.2.1 changes, which did not ship separately.
+
+**2.2.2:** every perk, passive, skill-rank and Power icon is redrawn as shaded full-colour art at
+the same size and file names.
+
+**2.2.1:** Runic Skills now coexists with Bigger Stacks instead of fighting it for the stack count,
+resolves item, block and spell gates through a typed seam, and gates unconfigured content
+automatically — on by default, and reviewable before it reaches a live world with
+`/skills locks preview`, `/skills locks explain` and `/skills locks coverage`. Iron's Spells 'n
+Spellbooks moves to **3.16.3**, with spellbooks gated by capacity rather than by name and spells
+gated separately from the book holding them. Apprentice's Codex is integrated. Protocol **18**
+requires matching client and server builds.
 
 **2.2.0:** Pack Mule raises ordinary player stacks to 128/192/256. The config editor now commits
 a detached draft with visible failure and conflict handling. Progression presets can let every
@@ -98,7 +110,7 @@ Total level is the sum of all ten; a global cap (`playersMaxGlobalLevel`) can be
 
 ### Players
 1. Install **Minecraft Forge 47.3.0+** for Minecraft **1.20.1**.
-2. Drop the built `runicskills-2.2.0.jar` into your `mods/` folder. Published builds are available from [releases](https://github.com/otectus/runic-skills/releases).
+2. Drop the built `runicskills-2.2.2.jar` into your `mods/` folder. Published builds are available from [releases](https://github.com/otectus/runic-skills/releases).
 3. Optionally install **[YACL (Yet Another Config Lib v3)](https://modrinth.com/mod/yacl)** version 3.5.0+ — it powers the in-game configuration screen. Without it the mod runs normally and the Configure button explains that the screen needs YACL; every setting remains editable in `config/RunicSkills/`.
 4. Optionally install any of the supported integration mods (see below) — Runic Skills auto-detects them and enables relevant perks/passives/lock-items.
 
@@ -117,7 +129,7 @@ that prevented world loading. The report distinguishes tested behavior from rema
 
 ### Server operators
 - Drop the same jar on the dedicated server. YACL is **not** required server-side (1.1.0+; pre-1.1.0 the mod required YACL on the server even though the docs said otherwise).
-- Syncs skill, perk, passive, title state and skill artwork to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=16`). Old clients fail fast instead of desyncing.
+- Syncs skill, perk, passive, title state and skill artwork to clients via a versioned custom Forge network channel (`PROTOCOL_VERSION=18`). Old clients fail fast instead of desyncing.
 - Optional ops-only commands in `/skills`, `/titles`, `/globallimit` (see [Commands](#commands)).
 
 ---
@@ -130,7 +142,7 @@ Runic Skills detects installed mods at runtime and enables matching content with
 |---|---|
 | **KubeJS** / Rhino | Server-side progression events can observe or veto skill level-ups, including advancement-based progression rules. **Not** content registration: see the note below. |
 | **Ars Nouveau** | 11 form/school perks (Form Focus: Projectile/Touch/Self, Wild Manipulation, per-school Hedgewitch/Emberforged/Stormcaller/Geomancer/Conjurer/Abjurer/Arcane Weaver) on top of the existing spell-damage scaling, mana regen passives, glyph mastery, and familiar gating |
-| **Irons Spellbooks** | 37 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch — including the blood-school perks Blood-mancer / Blood-Warded / Blood Catalyst and Blood Fury), summon perks (Lord of the Dead, Life Leech Bound), plus Spell Echo, Arcane Shield, and Magic-level spell gating |
+| **Irons Spellbooks** (`1.20.1-3.16.3`+) | 37 magic-tree perks: generic mana/casting (Wellspring, Quickening, Reservoir, Tempo, Spellweaver, Mana Bulwark, Arcane Reprieve, Mana Surge…), per-school triplets (X-mancer / X-Warded / X-Catalyst for all nine schools including Eldritch — including the blood-school perks Blood-mancer / Blood-Warded / Blood Catalyst and Blood Fury), summon perks (Lord of the Dead, Life Leech Bound), plus Spell Echo, Arcane Shield, and Magic-level spell gating. Spellbooks are gated by capacity and spells are gated separately from the book that holds them; see [Iron's spellbook gates](docs/INTEGRATION_MATRIX.md) |
 | **Apotheosis** | Affix gating, gem attunement, socket bonus interactions, Socket Virtuoso (+N sockets), Affix Affinity (scales with Rare+ affix-item count), Apothic Apprentice (higher-tier +N sockets, stacks with Socket Virtuoso), Gem-Threaded Armor (Endurance: flat ARMOR per equipped socket), Spellsocket (Magic: +effective spell level per N equipped sockets), Resonant Affixes (Magic: ISS spell-damage per Rare+ affix item), Apotheosis Wisdom (enchantment-cap boost via Placebo's GetEnchantmentLevelEvent), plus gem rarity gating — socketing a gem requires a Fortune level scaled by the gem's rarity (uncommon→4, rare→10, epic→18, mythic→26, ancient→32), toggled by `apothEnableGemRarityGating` (default on) |
 | **Apothic Attributes** | Extended attribute pool for passives plus 10 combat perks (Apothic Critical Mastery, Vampiric Fangs, Reaper's Edge, Evasive, Arrow Mastery, Earthbreaker, Apothic Scholar, Spectral Ward, Ghostbound, Heart of the Healer) |
 | **Cross-mod synergy** | 6 Schoolbridges (Iron's school spell-power bleeds into matching Ars school damage), Unified Arcana (Ars casts refund ISS mana), Triple Threat (+% mana/regen/spell-power when Iron's + Ars + Apotheosis all loaded), Affix Focus (+ISS spell levels when 4+ Rare Apoth items equipped) |
@@ -149,6 +161,8 @@ Runic Skills detects installed mods at runtime and enables matching content with
 | **L2Tabs** | Registers the Skills tab in L2Tabs' strip (priority 3500) |
 | **Legendary Tabs** (Sfiomn) | Registers a native `TabBase` for the Legendary Tabs sidebar (priority configurable) |
 | **CustomNPCs** | Skills tab joins CustomNPCs' inventory tab strip |
+| **Apprentice's Codex** (`0.9.7.1`) | Codex books, spellguns, swingcast weapons and devices are gated on the same terms as the rest of the catalogue; the spell dispenser's autonomous casting follows `codexAutomationGatePolicy` — see the [Apprentice's Codex integration](docs/APPRENTICE_CODEX.md) |
+| **Bigger Stacks** (`1.20.1-2026.06.17`) | Runic Skills hands the stack-count representation over instead of installing a second one. Pack Mule capacity is deferred while that provider is active; `/skills locks representation` says which provider owns counts and why — see the [compatibility ledger](docs/COMPATIBILITY_LEDGER_2.2.1.md) |
 | **FTB Quests** (since 1.3.0) | Six native task types (`skill_level`, `global_level`, `perk_rank`, `passive_level`, `title_unlocked`, `title_selected`) — see the [FTB Quests integration](#ftb-quests-integration) section |
 
 If you're a mod author and want Runic Skills to integrate with your mod, open an issue or a PR — each integration is a single Java class with an `isModLoaded()` gate, see [`src/main/java/com/otectus/runicskills/integration/`](src/main/java/com/otectus/runicskills/integration/).
@@ -272,6 +286,8 @@ Example task SNBT / JSON:
 
 | Runic Skills | Minecraft | Forge | Java | Network protocol | FTB Quests Forge (optional) |
 |---|---|---|---|---|---|
+| 2.2.2 | 1.20.1 | 47.3.0+ | 17 | 18 | `[2001.4,2002.0)` |
+| 2.2.1 | 1.20.1 | 47.3.0+ | 17 | 18 | `[2001.4,2002.0)` |
 | 2.2.0 | 1.20.1 | 47.3.0+ | 17 | 16 | `[2001.4,2002.0)` |
 | 2.1.1 | 1.20.1 | 47.3.0+ | 17 | 14 | `[2001.4,2002.0)` |
 | 2.0.7 | 1.20.1 | 47.3.0+ | 17 | 12 | `[2001.4,2002.0)` |
@@ -292,13 +308,19 @@ client and the server must be on the same one. 2.0.1 changed the shape of the Po
 added a configuration field, both of which live inside protocol 10, so it could not keep that number
 without a 2.0.0 peer agreeing on the version and then misreading the wire.
 
+**2.2.1 and 2.2.2 require protocol 18 on both sides.** Configuration sync includes action-scoped item,
+block and spell rules and independent legacy fallbacks, installed atomically with the configuration
+and display table. Existing progression IDs, configuration and saves remain compatible. Automatic gates are on by default and can add requirements to content a world
+previously left ungated — review the change with `/skills locks preview` and
+`/skills locks coverage`, or set `enableAutoGates = false`.
+
 **2.2.0 requires protocol 16 on both sides.** Extended stack counts, paired config/lock revisions,
 and authoritative stack inspection require matching builds. Existing progression IDs remain stable.
 Normalize extended stacks before removing or downgrading the mod; see the upgrade notes.
 
 The 2.1.1 four-mod catalogue implements all 32 perks and 24 Powers. See the [implementation record](docs/FOUR_MOD_INTEGRATION_2.1.1.md) for supported native paths, validation and remaining release checks.
 
-Aqua Attunement requires the separate `runicskills-tom-compat-2.2.0.jar`, built with
+Aqua Attunement requires the separate `runicskills-tom-compat-2.2.2.jar`, built with
 `gradlew.bat tomCompatJar` under `build/compat-libs/`. Install the companion with the
 matching core and pinned T.O./Iron's Spellbooks versions on both sides; see the
 [T.O. companion guide](docs/integrations/tom-aqua-attunement.md).
@@ -379,7 +401,7 @@ datapack-driven, and every number is configurable.
 
 ## Server / multiplayer notes
 
-- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=16`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
+- **Protocol version** — the custom Forge network channel uses `PROTOCOL_VERSION=18`; clients on an older Runic Skills version will be rejected at join with a named error. Running a mixed-version modpack server is not supported.
 - **Config sync** — the server is authoritative for the common config. On join, the server pushes its values to each client; the local `runicskills.common.json5` on the client is read for display defaults only.
 - **Title display** — titles are composed as a name prefix in `PlayerEvent.NameFormat`. **Nothing writes to a player's vanilla custom name**, so a nickname, chat, team or tab-list mod keeps ownership of the name and its styling; a name written by a pre-2.0.0 version is cleared once on login. `titlesUseCustomName` is deprecated and ignored — the conflict it existed to work around can no longer occur. Turn the prefix off entirely with `displayTitlesAsPrefix=false`.
 

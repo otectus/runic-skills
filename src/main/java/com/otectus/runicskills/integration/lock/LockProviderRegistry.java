@@ -43,8 +43,27 @@ public final class LockProviderRegistry {
      */
     private static final List<StackLockProvider> STACK_PROVIDERS = new ArrayList<>();
 
+    /**
+     * Providers that publish typed, action-scoped rules (2.2.1).
+     *
+     * <p>A third list for the same reason there is a second one: these answer a different question.
+     * An id-only provider produces one verdict per registry entry, and a typed provider produces
+     * rules that name the actions they are about — which is the only way to gate operating a
+     * workstation without also forbidding breaking it.
+     */
+    private static final List<TypedGateProvider> TYPED_PROVIDERS = new ArrayList<>();
+
+    /**
+     * Content ownership, consulted before any generic id default is installed.
+     *
+     * <p>Held as an immutable value replaced wholesale rather than a mutable list, so a rule build
+     * reading it concurrently with a late integration registering a claim sees one consistent table.
+     */
+    private static volatile LockOwnership ownership = LockOwnership.empty();
+
     static {
         registerDefaults();
+        registerDefaultOwnership();
     }
 
     private LockProviderRegistry() {
@@ -68,6 +87,97 @@ public final class LockProviderRegistry {
     /** Immutable snapshot of the stack-aware providers, in registration order. */
     public static synchronized List<StackLockProvider> stackProviders() {
         return Collections.unmodifiableList(new ArrayList<>(STACK_PROVIDERS));
+    }
+
+    /** Registers a typed rule provider. Order of registration is preserved as iteration order. */
+    public static synchronized void registerTypedProvider(TypedGateProvider provider) {
+        if (provider != null) TYPED_PROVIDERS.add(provider);
+    }
+
+    /** Immutable snapshot of the typed rule providers, in registration order. */
+    public static synchronized List<TypedGateProvider> typedProviders() {
+        return Collections.unmodifiableList(new ArrayList<>(TYPED_PROVIDERS));
+    }
+
+    /**
+     * Claims a set of content ids for {@code ownerId}, so no other generator's id default can
+     * preempt the owner's live view of them.
+     *
+     * <p>The predicate is evaluated every time a rule table is built, never at registration, so it
+     * may consult {@code ModList} and the game registries: this method is reachable from a static
+     * initialiser that runs long before either is ready.
+     */
+    public static synchronized void registerOwnership(String ownerId, Predicate<String> claims) {
+        if (ownerId == null || ownerId.isBlank() || claims == null) return;
+        ownership = ownership.with(new LockOwnership.Claim(ownerId, claims));
+    }
+
+    /** The ownership table in force. */
+    public static LockOwnership ownership() {
+        return ownership;
+    }
+
+    /** The integration that owns {@code id}, or empty when it is unclaimed. */
+    public static Optional<String> ownerOf(String id) {
+        return ownership.ownerOf(id);
+    }
+
+    /**
+     * Whether a <em>generated</em> rule for {@code id} produced by {@code providerId} must be
+     * dropped because another integration owns that content. Explicit rules are never suppressed.
+     */
+    public static boolean suppressesGenerated(String providerId, String id) {
+        return ownership.suppressesGenerated(providerId, id);
+    }
+
+    /** Test seam: restores the shipped claims. */
+    static synchronized void resetOwnership() {
+        ownership = LockOwnership.empty();
+        registerDefaultOwnership();
+    }
+
+    private static void registerDefaultOwnership() {
+        // Tinkers' Construct owns its own namespace. TConstructRequirementResolver reads the real
+        // material tiers off the stack and declines the moment an id rule exists for the item, so a
+        // generic id default for tconstruct:pickaxe would not compete with the material profile —
+        // it would switch it off (spec §11.3). Addon modifiable tools in other namespaces are
+        // covered by the tag claim below, which is a no-op until item tags are loaded.
+        registerOwnership(com.otectus.runicskills.integration.TConstructPresence.MOD_ID,
+                id -> com.otectus.runicskills.integration.TConstructPresence.isModLoaded()
+                        && id.startsWith(com.otectus.runicskills.integration.TConstructPresence.MOD_ID + ":"));
+        registerOwnership(com.otectus.runicskills.integration.TConstructPresence.MOD_ID,
+                LockProviderRegistry::isModifiableTool);
+
+        // Apprentice's Codex owns its namespace whenever the mod is installed, and deliberately
+        // regardless of enableApprenticeCodexIntegration. Spec §6.3: turning the integration off
+        // must also stop the universal engine recreating the same Codex-specific restrictions
+        // behind the operator's back, so "off" means ungated rather than "gated by whatever the
+        // generic estimator would have guessed". The claim costs nothing when the mod is absent.
+        registerOwnership(ApprenticeCodexLockProvider.PROVIDER_ID,
+                id -> ApprenticeCodexLockProvider.isCodexContent(id));
+    }
+
+    /**
+     * Whether {@code id} is a Tinkers'-modifiable tool, asked without naming a Tinkers' class.
+     *
+     * <p>The tag id is a literal for the same reason {@code TConstructPresence} exists: everything
+     * that names {@code slimeknights.*} lives under {@code integration/tconstruct}, which
+     * {@code checkSidedImports} forbids the rest of the mod from importing, and this registry is
+     * always loaded. Returns false whenever tags are not available yet, which is the honest answer
+     * during registry construction and keeps pre-tag rule builds behaving exactly as before.
+     */
+    private static boolean isModifiableTool(String id) {
+        if (!com.otectus.runicskills.integration.TConstructPresence.isModLoaded()) return false;
+        net.minecraft.resources.ResourceLocation parsed = net.minecraft.resources.ResourceLocation.tryParse(id);
+        if (parsed == null) return false;
+        var item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(parsed);
+        if (item == null) return false;
+        try {
+            return new ItemStack(item).is(net.minecraft.tags.ItemTags.create(
+                    new net.minecraft.resources.ResourceLocation("tconstruct", "modifiable")));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     /**
@@ -144,6 +254,12 @@ public final class LockProviderRegistry {
         // their target mods' event-handler integration classes hard-reference the mod API, which must
         // not be eagerly resolved from this always-loaded static initializer.
         register(new IronsSpellbooksLockProvider());
+
+        // Apprentice's Codex (2.2.1). Typed rules only: a Codex gate is always a statement about a
+        // particular action — equipping a grimoire, firing a spellgun, operating a workbench — and
+        // publishing it into the action-blind id table as well would mean the gate on operating a
+        // workstation also forbade breaking it.
+        registerTypedProvider(new ApprenticeCodexLockProvider());
 
         // Registry-driven (discovered) providers for the long tail of installed + documented mods.
         // Base level ~ gameplay weight. All gated by disabledDiscoveredLockMods + scaled by

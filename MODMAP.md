@@ -39,14 +39,14 @@ com.otectus.runicskills.client.vfx                   6 files
 com.otectus.runicskills.common.actions               4 files
 com.otectus.runicskills.common.advancements          2 files
 com.otectus.runicskills.common.capability            3 files
-com.otectus.runicskills.common.combat                3 files
+com.otectus.runicskills.common.combat                6 files
 com.otectus.runicskills.common.command               13 files
 com.otectus.runicskills.common.command.arguments     2 files
 com.otectus.runicskills.common.crafting              13 files
 com.otectus.runicskills.common.durability            7 files
 com.otectus.runicskills.common.effects               2 files
 com.otectus.runicskills.common.equipment             6 files
-com.otectus.runicskills.common.inventory             4 files
+com.otectus.runicskills.common.inventory             5 files
 com.otectus.runicskills.common.model                 1 file
 com.otectus.runicskills.common.perk                  1 file
 com.otectus.runicskills.common.powers                6 files
@@ -63,26 +63,33 @@ com.otectus.runicskills.config.snapshot              4 files
 com.otectus.runicskills.config.storage               4 files
 com.otectus.runicskills.event                        5 files
 com.otectus.runicskills.handler                      9 files
-com.otectus.runicskills.integration                  43 files
+com.otectus.runicskills.integration                  44 files
+com.otectus.runicskills.integration.apprenticecodex  2 files
+com.otectus.runicskills.integration.bettercombat     1 file
 com.otectus.runicskills.integration.common           17 files
-com.otectus.runicskills.integration.lock             16 files
+com.otectus.runicskills.integration.irons            2 files
+com.otectus.runicskills.integration.lock             30 files
+com.otectus.runicskills.integration.lock.auto        14 files
 com.otectus.runicskills.integration.quests           3 files
 com.otectus.runicskills.integration.quests.tasks     7 files
 com.otectus.runicskills.integration.simplyswords     11 files
+com.otectus.runicskills.integration.spartanweaponry  1 file
 com.otectus.runicskills.integration.tconstruct       25 files
 com.otectus.runicskills.integration.tconstruct.addons 11 files
 com.otectus.runicskills.integration.tide             19 files
 com.otectus.runicskills.integration.tom              14 files
 com.otectus.runicskills.kubejs                       2 files
 com.otectus.runicskills.kubejs.events                6 files
-com.otectus.runicskills.mixin                        47 files
+com.otectus.runicskills.mixin                        49 files
+com.otectus.runicskills.mixin.apprenticecodex        1 file
 com.otectus.runicskills.mixin.simplyswords           19 files
+com.otectus.runicskills.mixin.spartanweaponry        1 file
 com.otectus.runicskills.mixin.tconstruct             10 files
 com.otectus.runicskills.mixin.tconstruct.addons      5 files
 com.otectus.runicskills.mixin.tide                   8 files
 com.otectus.runicskills.mixin.tom                    5 files
 com.otectus.runicskills.network                      2 files
-com.otectus.runicskills.network.packet.client        18 files
+com.otectus.runicskills.network.packet.client        19 files
 com.otectus.runicskills.network.packet.common        9 files
 com.otectus.runicskills.registry                     15 files
 com.otectus.runicskills.registry.content             2 files
@@ -196,6 +203,9 @@ Also: `sounds.json` present.
 Run `check_mod.py` for a full consistency check (missing models, lang keys, textures).
 
 <!-- MODMAP:AUTO:END — everything below is hand-maintained and preserved -->
+
+
+
 
 
 

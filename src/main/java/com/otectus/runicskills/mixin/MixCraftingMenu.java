@@ -51,7 +51,7 @@ public abstract class MixCraftingMenu {
         if (result.isEmpty()) return;
 
         SkillCapability capability = SkillCapability.get(player);
-        if (capability == null || capability.canUseItemSilent(serverPlayer, result)) return;
+        if (capability == null || capability.canUseItemSilent(serverPlayer, result, com.otectus.runicskills.integration.lock.LockAction.CRAFT)) return;
 
         resultContainer.setItem(0, ItemStack.EMPTY);
         // Vanilla has already told the client what it computed, and recorded that it did. Both have

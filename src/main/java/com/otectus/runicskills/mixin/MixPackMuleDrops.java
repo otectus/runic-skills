@@ -8,6 +8,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 
+/**
+ * A tossed stack reaches the ground, or comes back to its owner.
+ *
+ * <p>Applied under every stack representation despite the name. The split is driven by the item's
+ * own current maximum, so a foreign provider that stacks an item to a thousand simply drops it whole
+ * — and the recovery branch runs at any count, including a single item whose {@code ItemTossEvent}
+ * another mod cancelled. Gating this on Pack Mule would turn a refused drop into a deleted one.
+ */
 @Mixin(Player.class)
 public abstract class MixPackMuleDrops {
     @WrapMethod(method = "drop(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/entity/item/ItemEntity;")

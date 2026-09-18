@@ -13,6 +13,7 @@ public final class IronsGameTests {
         if (ModList.get().isLoaded("irons_spellbooks")) {
             event.register(Class.forName("com.otectus.runicskills.gametest.irons.SpellPowerGameTest"));
             event.register(Class.forName("com.otectus.runicskills.gametest.irons.SchoolPowerStabilizationGameTest"));
+            event.register(Class.forName("com.otectus.runicskills.gametest.irons.SpellGateGameTest"));
         }
     }
 }

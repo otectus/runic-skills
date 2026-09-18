@@ -29,6 +29,35 @@ public class StackRequirementGameTest {
 
     private static final String EMPTY = "empty";
 
+    @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
+    public static void scopedCraftAllowKeepsNativeMiningRequirement(GameTestHelper helper) {
+        ServerPlayer player = TinkerFixtures.player(helper, "tc_scoped_craft");
+        SkillCapability capability = TinkerFixtures.capabilityOf(player);
+        capability.setSkillLevel(RegistrySkills.TINKERING.get(), 1);
+        capability.setSkillLevel(RegistrySkills.ENDURANCE.get(), 1);
+        ItemStack tool = TinkerFixtures.pickaxeOfTier(4);
+        var original = com.otectus.runicskills.integration.lock.GateRuleIndex.get().rules();
+        try {
+            var target = com.otectus.runicskills.integration.lock.GateTarget.item(ForgeRegistries.ITEMS.getKey(tool.getItem()));
+            com.otectus.runicskills.integration.lock.GateRuleIndex.install(java.util.List.of(
+                    com.otectus.runicskills.integration.lock.GateRule.allow(target, java.util.Set.of(LockAction.CRAFT),
+                            com.otectus.runicskills.integration.lock.GateSource.EXPLICIT_RULE, "gametest:tc_craft")));
+            withLocksOn(() -> {
+                com.otectus.runicskills.handler.HandlerSkill.getSkill();
+                if (!capability.canUseItemSilent(player, tool, LockAction.CRAFT)) {
+                    throw new GameTestAssertException("explicit crafting allow was lost");
+                }
+                if (capability.canUseItemSilent(player, tool, LockAction.MINE)) {
+                    throw new GameTestAssertException("crafting allow suppressed native material mining requirement");
+                }
+            });
+        } finally {
+            com.otectus.runicskills.integration.lock.GateRuleIndex.install(original);
+            com.otectus.runicskills.handler.HandlerSkill.getSkill();
+        }
+        helper.succeed();
+    }
+
     /** Locks off: the resolver declines every native tool, so the id path decides as it always did. */
     @GameTest(template = EMPTY, templateNamespace = RunicSkills.MOD_ID)
     public static void withLocksOffNothingIsClaimed(GameTestHelper helper) {

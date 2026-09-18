@@ -10,7 +10,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/** Protocol 16: ordinary counts keep their byte; -128 introduces a bounded positive VarInt. */
+/**
+ * Protocol 16: ordinary counts keep their byte; -128 introduces a bounded positive VarInt.
+ *
+ * <p>Applied only while Runic Skills owns the network representation — see
+ * {@link com.otectus.runicskills.common.inventory.StackRepresentationProvider}. The accepted range
+ * is asked of the selected provider rather than assumed, so the bound this codec enforces and the
+ * bound it can write are the same number by construction.
+ */
 @Mixin(FriendlyByteBuf.class)
 public abstract class MixFriendlyByteBuf {
     @WrapOperation(method = "writeItemStack", remap = false, at = @At(value = "INVOKE", remap = true,
@@ -25,7 +32,7 @@ public abstract class MixFriendlyByteBuf {
     @ModifyVariable(method = "readItem", at = @At("STORE"), ordinal = 0)
     private int runicskills$readCount(int legacy) {
         int count = legacy == -128 ? ((FriendlyByteBuf) (Object) this).readVarInt() : legacy;
-        if (count < 1 || count > StackCapacityMath.MAX_SERIALIZED_COUNT || (legacy == -128 && count < 128))
+        if (!StackCapacityMath.representable(count) || (legacy == -128 && count < 128))
             throw new DecoderException("Invalid extended item count: " + count);
         return count;
     }

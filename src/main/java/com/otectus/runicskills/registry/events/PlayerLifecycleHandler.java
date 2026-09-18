@@ -129,6 +129,10 @@ public class PlayerLifecycleHandler {
     public void onServerStopped(final ServerStoppedEvent event) {
         RunicSkills.server = null;
         com.otectus.runicskills.integration.common.IntegrationRules.reset();
+        // A second world in the same JVM must not inherit the first one's generated catalog or its
+        // datapack gate rules; both are built from that world's registries, tags and recipes.
+        com.otectus.runicskills.integration.lock.auto.AutoGateEngine.reset();
+        com.otectus.runicskills.integration.lock.GateRuleIndex.clear();
         // Reset every static tick baseline. These are keyed on server.getTickCount(), which
         // restarts at 0 with the server — so in a single JVM that hosts more than one world (a
         // singleplayer player returning to the main menu and loading a different save), stale
@@ -229,7 +233,35 @@ public class PlayerLifecycleHandler {
         // slimeknights type, and a rule file that a server cannot yet resolve is skipped by its own
         // requires_mods rather than by never being read.
         event.addListener(new com.otectus.runicskills.common.rules.TConstructRulesLoader());
+        // The typed gate schema (spec 13.3). Registered unconditionally for the same reason as the
+        // loader above: it names no optional mod's class, a rule for a mod this server does not run
+        // is skipped by its own requires_mods, and a pack that ships rules for three mods must load
+        // identically on a server that has one of them.
+        event.addListener(new com.otectus.runicskills.integration.lock.GateRulesLoader());
+        // Tags, recipes and the typed rules have all just been replaced, so any generated catalog
+        // built from the previous ones is stale. Marked rather than rebuilt here: the rebuild wants
+        // the server thread and the resolved higher-priority layers, and it gets both inside the
+        // rules build that onDatapackSync triggers immediately afterwards.
+        event.addListener((ResourceManagerReloadListener)
+                manager -> com.otectus.runicskills.integration.lock.auto.AutoGateEngine.requestRebuild());
     }
+
+    /**
+     * The first build that can see real registries, tags and recipes.
+     *
+     * <p>{@code OnDatapackSyncEvent} covers {@code /reload} and login, but Forge does not fire it
+     * when a server first starts, so without this the inferred layer would not exist until somebody
+     * reloaded. Spec 7.2 is explicit that discovery runs after registries and the relevant server
+     * tags, recipes and native registries are ready, and this is the first moment all of those are
+     * true.
+     */
+    @SubscribeEvent
+    public void onServerStarted(final net.minecraftforge.event.server.ServerStartedEvent event) {
+        com.otectus.runicskills.integration.lock.auto.AutoGateEngine.requestRebuild();
+        com.otectus.runicskills.handler.HandlerSkill.getSkill();
+    }
+
+
 
     /** Vanilla /reload must refresh the same client decisions as login and /skillsreload. */
     @SubscribeEvent

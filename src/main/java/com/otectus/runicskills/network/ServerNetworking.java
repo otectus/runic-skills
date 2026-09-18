@@ -52,8 +52,22 @@ public class ServerNetworking {
     // 2.1.1: four-mod configuration fields, capability evidence and owned Guard presentation.
     // 2.1.2: bounded, authoritative skill artwork snapshots for multiplayer clients.
     // 2.2.0: integer stack counts, atomic resolved-lock/config chunks and stack inspection.
-    private static final String PROTOCOL_VERSION = "16";
+    // 2.2.1: LockAction gains CAST and the three block actions. StackRequirementsCP writes the
+    // action as an ordinal and now refuses any action a stack cannot answer, so a 16 peer and a 17
+    // peer disagree about what the ordinals in that packet may be; the pair is refused instead.
+    // The resolved-lock/config chunk shape is unchanged, so the byte budget is unchanged too.
+    // Also new at 17, and taken inside the same bump rather than as a second one: TitansGripSyncCP,
+    // one entity id plus one boolean, which is what lets a client draw somebody else's Titan's Grip
+    // shield. A 16 peer is already refused, so the added message id needs no further negotiation
+    // change.
+    // 18: ConfigSyncCP atomically includes scoped enforcement rules and independent legacy fallbacks.
+    private static final String PROTOCOL_VERSION = "18";
     public static SimpleChannel instance;
+
+    /** The protocol version in force, for diagnostics and the lock audit export. */
+    public static String protocolVersion() {
+        return PROTOCOL_VERSION;
+    }
 
     /**
      * Channel-acceptance predicate (since 1.2.0). Wraps the previous {@code PROTOCOL_VERSION::equals}
@@ -131,6 +145,9 @@ public class ServerNetworking {
         instance.registerMessage(packetId++, TideJournalSP.class, TideJournalSP::toBytes, TideJournalSP::new, TideJournalSP::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         instance.registerMessage(packetId++, TideJournalCP.class, TideJournalCP::toBytes, TideJournalCP::new, TideJournalCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         instance.registerMessage(packetId++, SkillVisualsSyncCP.class, SkillVisualsSyncCP::toBytes, SkillVisualsSyncCP::new, SkillVisualsSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        // Per-entity presentation, like GuardStateCP above it: the perk state of a player somebody
+        // else's client is drawing. See TitansGripSyncCP and common.combat.TitansGripSync.
+        instance.registerMessage(packetId++, TitansGripSyncCP.class, TitansGripSyncCP::toBytes, TitansGripSyncCP::new, TitansGripSyncCP::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void sendToServer(Object message) {

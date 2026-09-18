@@ -4,6 +4,8 @@ import com.otectus.runicskills.RunicSkills;
 import com.otectus.runicskills.common.capability.SkillCapability;
 import com.otectus.runicskills.common.inventory.InventoryReconciliation;
 import com.otectus.runicskills.common.inventory.PlayerStackPolicy;
+import com.otectus.runicskills.common.inventory.StackCapacityMath;
+import com.otectus.runicskills.common.inventory.StackRepresentationProvider;
 import com.otectus.runicskills.registry.RegistryPerks;
 import com.otectus.runicskills.registry.RegistrySkills;
 import io.netty.buffer.Unpooled;
@@ -31,6 +33,22 @@ public class PackMuleGameTest {
         cap.setPerkRank(RegistryPerks.PACK_MULE.get(), rank);
         return p;
     }
+    /**
+     * Ends a Pack-Mule-capacity test early when the perk is deferred.
+     *
+     * <p>The tests below assert the 128/192/256 grant. Under a foreign stack representation that
+     * grant does not exist — reference document §4.5 — so those numbers describe a rule this
+     * installation does not have, and asserting them would be asserting the bug. What must be true
+     * instead is checked by {@link #stackRepresentationOwnershipMatchesTheInstalledMods}: no second
+     * codec, no multiplication of a foreign maximum, a reported reason, and conservation through a
+     * cancelled toss and ordinary chest clicks.
+     */
+    static boolean capacityDeferred(GameTestHelper h) {
+        if (StackRepresentationProvider.selected().grantsPackMuleCapacity()) return false;
+        h.assertTrue(!PlayerStackPolicy.deferralReason().isEmpty(), "capacity deferred without a reported reason");
+        h.succeed();
+        return true;
+    }
     @GameTest(template = "empty")
     public static void countsRoundTripWithMetadataAndFollowingFields(GameTestHelper h) {
         for (int count : new int[]{0, 1, 16, 63, 64, 65, 127, 128, 129, 191, 192, 193, 255, 256}) {
@@ -53,6 +71,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void ranksPickupAndTwoOwnersRemainIndependent(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         for (int rank = 0; rank <= 3; rank++) {
             ServerPlayer p = player(h, "pack_rank_" + rank, rank);
             for (int i = 0; i <= rank; i++) p.getInventory().add(new ItemStack(Items.STONE, 64));
@@ -67,6 +86,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void nativeChestClicksConserveAndRespectStorage(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         ServerPlayer p = player(h, "pack_chest", 3);
         SimpleContainer chest = new SimpleContainer(27);
         ChestMenu menu = ChestMenu.threeRows(77, p.getInventory(), chest);
@@ -88,6 +108,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void wrappersSimulateWithoutMutationAndFullRespecRetainsCounts(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         ServerPlayer p = player(h, "pack_wrapper", 3);
         PlayerInvWrapper wrapper = new PlayerInvWrapper(p.getInventory());
         ItemStack source = new ItemStack(Items.STONE, 257);
@@ -106,6 +127,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void deathCaptureAndCanceledTossPreserveAllCargo(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         ServerPlayer p = player(h, "pack_death", 3);
         p.getInventory().setItem(0, new ItemStack(Items.STONE, 256));
         var drops = new java.util.ArrayList<net.minecraft.world.entity.item.ItemEntity>();
@@ -166,6 +188,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void creativeCloneThrowAndMenuCloseRespectOwner(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         ServerPlayer p = player(h, "pack_clone", 3);
         var menu = ChestMenu.threeRows(81, p.getInventory(), new SimpleContainer(27)); p.containerMenu = menu;
         menu.getSlot(0).set(new ItemStack(Items.STONE, 64));
@@ -239,6 +262,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void nativeCraftingPaysForAll256Outputs(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         ServerPlayer p = player(h, "pack_craft", 3);
         var pos = h.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
         h.getLevel().setBlock(pos, net.minecraft.world.level.block.Blocks.CRAFTING_TABLE.defaultBlockState(), 3);
@@ -256,6 +280,7 @@ public class PackMuleGameTest {
     }
     @GameTest(template = "empty")
     public static void malformedCountsAndCreativeForgeryCannotGrantItems(GameTestHelper h) {
+        if (capacityDeferred(h)) return;
         var unsupported = new ItemStack(Items.STONE).save(new CompoundTag());
         unsupported.putInt("Count", Integer.MAX_VALUE); unsupported.getCompound("tag").putString("identity", "foreign count");
         var recovery = com.otectus.runicskills.common.inventory.StackDataRecovery.preserveInvalid(unsupported);
@@ -304,6 +329,80 @@ public class PackMuleGameTest {
         p.inventoryMenu.clicked(0,0,ClickType.QUICK_MOVE,p);
         h.assertTrue(p.getInventory().items.stream().filter(s->s.is(Items.OAK_PLANKS)).mapToInt(ItemStack::getCount).sum()==256
                 && p.inventoryMenu.getSlot(1).getItem().isEmpty(),"2x2 native payments lost or duplicated output");
+        h.succeed();
+    }
+    /**
+     * Who owns the count representation, and that Pack Mule's on/off behaviour does not depend on
+     * the answer changing underneath it.
+     *
+     * <p>The Runic branch is the shipped default and is asserted outright: the representation is
+     * Runic, both count hooks are live, the bound is the Runic one, and rank 0 and rank 3 differ
+     * only in granted capacity. {@code countsRoundTripWithMetadataAndFollowingFields} above proves
+     * both halves of the hook split actually applied — it saves and reads NBT and writes and reads
+     * a packet at 128 and above, which is exactly what {@code MixItemStackCount} and
+     * {@code MixFriendlyByteBuf} are for.
+     *
+     * <p>The delegated branch is guarded on the other mod being present, so this test is meaningful
+     * in the default profile and in a {@code -PbiggerStacksProfile=true} run without being two
+     * tests that contradict each other.
+     */
+    @GameTest(template = "empty")
+    public static void stackRepresentationOwnershipMatchesTheInstalledMods(GameTestHelper h) {
+        var provider = StackRepresentationProvider.selected();
+        h.assertTrue(!StackRepresentationProvider.selectionDetail().isBlank(), "no selection diagnostic");
+        if (!net.minecraftforge.fml.ModList.get().isLoaded("biggerstacks")) {
+            h.assertTrue(provider == StackRepresentationProvider.RUNIC, "unexpected owner " + provider);
+            h.assertTrue(provider.ownsNbtCount() && provider.ownsNetworkCount(), "Runic count hooks inactive");
+            h.assertTrue(provider.maxRepresentableCount() == StackCapacityMath.MAX_SERIALIZED_COUNT, "Runic bound changed");
+            h.assertTrue(PlayerStackPolicy.deferralReason().isEmpty(), "Pack Mule deferred with no foreign provider");
+            ServerPlayer off = player(h, "pack_repr_off", 0);
+            ServerPlayer on = player(h, "pack_repr_on", 3);
+            h.assertTrue(PlayerStackPolicy.capacity(off, new ItemStack(Items.STONE)) == 64, "rank 0 capacity");
+            h.assertTrue(PlayerStackPolicy.capacity(on, new ItemStack(Items.STONE)) == 256, "rank 3 capacity");
+            h.assertTrue(StackRepresentationProvider.selected() == provider, "the perk changed the wire format");
+        } else {
+            h.assertTrue(!provider.ownsNbtCount() && !provider.ownsNetworkCount(),
+                    "a second count codec was installed alongside Bigger Stacks");
+            h.assertTrue(!provider.grantsPackMuleCapacity() && !PlayerStackPolicy.deferralReason().isEmpty(),
+                    "Pack Mule was layered on a foreign provider without a reported reason");
+            ServerPlayer delegated = player(h, "pack_repr_delegated", 3);
+            ItemStack stone = new ItemStack(Items.STONE);
+            h.assertTrue(PlayerStackPolicy.capacity(delegated, stone) == stone.getMaxStackSize(),
+                    "foreign native maximum was multiplied");
+            h.assertTrue(StackCapacityMath.representable(StackCapacityMath.MAX_SERIALIZED_COUNT + 1L),
+                    "a supported external count was judged by the Runic limit");
+            // Deferring the perk must not cost the invariants that have nothing to do with it.
+            // MixPackMuleDrops and MixInventory's death-drop hook stay applied for exactly this:
+            // a refused toss still comes back to its owner, whole.
+            ServerPlayer tossed = player(h, "pack_repr_toss", 3);
+            tossed.getInventory().setItem(0, new ItemStack(Items.STONE, 256));
+            Object cancel = new Object() {
+                @net.minecraftforge.eventbus.api.SubscribeEvent
+                public void toss(net.minecraftforge.event.entity.item.ItemTossEvent event) {
+                    if (event.getPlayer() == tossed) event.setCanceled(true);
+                }
+            };
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(cancel);
+            try { tossed.drop(tossed.getInventory().removeItemNoUpdate(0), true); }
+            finally { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(cancel); }
+            InventoryReconciliation.restore(tossed);
+            h.assertTrue(tossed.getInventory().items.stream().mapToInt(ItemStack::getCount).sum() == 256,
+                    "a cancelled toss lost cargo under a foreign representation");
+            // Ordinary container traffic still conserves, with the foreign limits in charge.
+            ServerPlayer clicker = player(h, "pack_repr_clicks", 3);
+            SimpleContainer chest = new SimpleContainer(27);
+            ChestMenu menu = ChestMenu.threeRows(84, clicker.getInventory(), chest);
+            clicker.containerMenu = menu;
+            menu.setCarried(new ItemStack(Items.STONE, 256));
+            int initial = total(menu);
+            var random = new java.util.Random(221);
+            ClickType[] kinds = {ClickType.PICKUP, ClickType.QUICK_MOVE, ClickType.SWAP, ClickType.PICKUP_ALL};
+            for (int i = 0; i < 500; i++) {
+                menu.clicked(random.nextInt(menu.slots.size()), random.nextInt(2),
+                        kinds[random.nextInt(kinds.length)], clicker);
+                h.assertTrue(total(menu) == initial, "click conservation under a foreign representation at " + i);
+            }
+        }
         h.succeed();
     }
     static int total(ChestMenu menu) {

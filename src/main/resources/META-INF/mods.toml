@@ -127,12 +127,14 @@ description='''${mod_description}'''
 # metadata, and is open-ended upward: a lower bound is a fact, an upper bound would be a guess.
 
 # Iron's Spells 'n Spellbooks. The largest API surface here by far — spell events, the attribute
-# registry, MagicData, and the whole Powers dispatcher. 3.15.0 is the floor because that is where
-# SpellCooldownAddedEvent appeared, which the Phase-1a perks subscribe to.
+# registry, MagicData, and the whole Powers dispatcher. 1.20.1-3.16.3 is the floor as of 2.2.1:
+# the book metadata adapter reads ISpellContainer / SpellBook#getMaxSpellSlots on that baseline,
+# and 3.15 is no longer supported. Refusing an older build at load is the honest failure; the
+# alternative is a NoSuchMethodError the first time a book is inspected.
 [[dependencies."${mod_id}"]]
     modId = "irons_spellbooks"
     mandatory = false
-    versionRange = "[1.20.1-3.15.0,)"
+    versionRange = "[1.20.1-3.16.3,)"
     ordering = "AFTER"
     side = "BOTH"
 # Placebo — Apotheosis's library, used directly for GetEnchantmentLevelEvent and DynamicHolder.
@@ -154,6 +156,15 @@ description='''${mod_description}'''
     modId = "bettercombat"
     mandatory = false
     versionRange = "[1.8.5,)"
+    ordering = "AFTER"
+    side = "BOTH"
+# Spartan Weaponry — MixTwoHandedWeaponTrait suppresses its two-handed penalties for a player
+# holding Titan's Grip, and the perk's weapon test reads its two-handed trait. Loading AFTER it is
+# what lets the @Pseudo mixin find the class.
+[[dependencies."${mod_id}"]]
+    modId = "spartanweaponry"
+    mandatory = false
+    versionRange = "[3.2.1,)"
     ordering = "AFTER"
     side = "BOTH"
 # L2Tabs — the inventory tab strip. Client-only, like Legendary Tabs.

@@ -26,9 +26,15 @@ public record InspectStackSP(int menu, int slot, long request) {
         if (container.containerId != menu || slot < 0 || slot >= container.slots.size() || !container.stillValid(player)) return null;
         var stack = container.getSlot(slot).getItem();
         var decisions = new EnumMap<LockAction, StackRequirementsCP.View>(LockAction.class);
-        if (HandlerCommonConfig.HANDLER.instance().enableItemLocks) for (LockAction action : LockAction.values())
+        // Only the actions a stack can answer. The typed CAST/*_BLOCK actions added in 2.2.1 are
+        // statements about a spell definition or the block being acted on, so resolving them here
+        // would add four always-absent views per inspection and grow this packet by two thirds for
+        // nothing (spec 14.2: review the byte budget, do not raise the counts).
+        if (HandlerCommonConfig.HANDLER.instance().enableItemLocks) for (LockAction action : LockAction.values()) {
+            if (!action.appliesToStack()) continue;
             LockProviderRegistry.resolveStack(player, stack, action).ifPresent(d -> decisions.put(action,
                     new StackRequirementsCP.View(d.allowed(), d.requirements(), d.matchedRuleIds(), d.unsupportedFacts())));
+        }
         return new StackRequirementsCP(menu, slot, request, container.getStateId(), StackRequirementsCP.fingerprint(stack), decisions);
     }
 }

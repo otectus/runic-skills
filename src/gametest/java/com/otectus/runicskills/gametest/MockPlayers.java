@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -34,7 +36,37 @@ import java.util.UUID;
  */
 public final class MockPlayers {
 
+    /**
+     * The channel each player built here writes to, so a test can read what was actually sent.
+     *
+     * <p>{@code Connection} keeps its channel private and offers no getter, and the two factories
+     * below are the only places the {@link EmbeddedChannel} exists. Recording it here is what lets a
+     * test about a send assert on the send itself rather than on a proxy for it — see
+     * {@code TitansGripGameTest}, where the product call under test is a
+     * {@code PacketDistributor} dispatch and the queue is the only place its result is visible on a
+     * server with no real client attached.
+     *
+     * <p>Keyed by profile UUID, not by the player: {@code Entity.equals} compares network ids, and
+     * a server recycles those, so a map keyed by the entity could hand a test the channel of a
+     * player that logged out earlier in the batch. {@link #logOut} drops the entry, which is also
+     * what keeps a batch's worth of queued login packets from accumulating.
+     */
+    private static final Map<UUID, EmbeddedChannel> CHANNELS = new HashMap<>();
+
     private MockPlayers() {}
+
+    /**
+     * The in-memory outbound queue of a player built by this class, or {@code null} for any other
+     * player.
+     *
+     * <p>Every packet the server writes to that player lands in
+     * {@link EmbeddedChannel#outboundMessages()} unencoded, in order. A test that wants to observe
+     * one send should clear the queue immediately before the call, because a logged-in player has
+     * already been sent a great deal.
+     */
+    public static EmbeddedChannel channelOf(ServerPlayer player) {
+        return player == null ? null : CHANNELS.get(player.getUUID());
+    }
 
     /**
      * A server player in the test level, holding a working in-memory packet sink.
@@ -51,7 +83,7 @@ public final class MockPlayers {
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         // Registering the connection as the channel's only handler fires channelActive, and that is
         // what assigns Connection.channel and the protocol attribute the send path reads back.
-        new EmbeddedChannel(connection);
+        CHANNELS.put(profile.getId(), new EmbeddedChannel(connection));
         // The listener's constructor assigns itself to player.connection.
         new ServerGamePacketListenerImpl(level.getServer(), connection, player);
         return player;
@@ -79,7 +111,7 @@ public final class MockPlayers {
         ServerPlayer player = new ServerPlayer(level.getServer(), level, profile);
 
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
+        CHANNELS.put(profile.getId(), new EmbeddedChannel(connection));
         level.getServer().getPlayerList().placeNewPlayer(connection, player);
         return player;
     }
@@ -89,5 +121,6 @@ public final class MockPlayers {
         if (player != null && player.getServer() != null) {
             player.getServer().getPlayerList().remove(player);
         }
+        if (player != null) CHANNELS.remove(player.getUUID());
     }
 }

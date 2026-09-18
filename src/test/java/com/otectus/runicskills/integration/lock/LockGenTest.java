@@ -89,4 +89,26 @@ class LockGenTest {
             assertFalse(locked(path), path + " must not be classified as gear");
         }
     }
+
+    @Test
+    void ironsBooksLeaveTheKeywordPathEntirely() {
+        // 2.2.1: spellbook chassis are resolved by the curated table and the metadata profile, so
+        // the Iron's provider must route them away from keyword classification before it runs.
+        // These are the paths that used to fall through bookTier() to a flat 8.
+        for (String path : List.of("wimpy_spell_book", "ice_spell_book", "dragonskin_spell_book",
+                "villager_spell_book", "necronomicon_spell_book", "cursed_doll_spell_book")) {
+            assertTrue(IronsSpellbooksLockProvider.isBook(path), path + " must be resolved as a book");
+        }
+    }
+
+    @Test
+    void ironsNonBookGearStaysOnTheKeywordPath() {
+        // Staves, scrolls, orbs, jewellery and mage armour carry no capacity metadata to read, so
+        // their registry paths remain the only description of them there is.
+        for (String path : List.of("wizard_staff", "fire_scroll", "upgrade_orb",
+                "wizard_helmet", "affinity_ring")) {
+            assertFalse(IronsSpellbooksLockProvider.isBook(path),
+                    path + " must not be treated as a spellbook chassis");
+        }
+    }
 }

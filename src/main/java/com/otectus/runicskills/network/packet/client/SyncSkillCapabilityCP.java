@@ -1,6 +1,7 @@
 package com.otectus.runicskills.network.packet.client;
 
 import com.otectus.runicskills.common.capability.SkillCapability;
+import com.otectus.runicskills.common.combat.TitansGripSync;
 import com.otectus.runicskills.network.ServerNetworking;
 
 import java.util.function.Supplier;
@@ -48,6 +49,11 @@ public class SyncSkillCapabilityCP {
         SkillCapability cap = SkillCapability.get(player);
         if (cap == null) return;
         ServerNetworking.sendToPlayer(new SyncSkillCapabilityCP(cap.serializeNBT()), serverPlayer);
+        // Titan's Grip is the one piece of this payload other people's clients need, because they
+        // are the ones deciding whether to draw this player's shield. Every path that can change it
+        // already arrives here, so this is the one place it has to be noticed; the call sends
+        // nothing unless the value actually moved.
+        TitansGripSync.broadcast(serverPlayer);
     }
 }
 

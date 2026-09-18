@@ -48,6 +48,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Slot.class)
 public abstract class MixSlot {
 
+    /**
+     * Pack Mule's destination limit. This class also carries the item-lock refusal below, so it is
+     * never skipped for a stack mod's sake; instead
+     * {@link com.otectus.runicskills.common.inventory.PlayerStackPolicy#capacity(Slot, ItemStack, int)}
+     * returns the slot's own answer untouched whenever the perk is deferred, which is what keeps
+     * this from raising a limit another provider decided.
+     */
     @com.llamalad7.mixinextras.injector.ModifyReturnValue(
             method = "getMaxStackSize(Lnet/minecraft/world/item/ItemStack;)I", at = @At("RETURN"))
     private int runicskills$playerCapacity(int nativeLimit, ItemStack stack) {

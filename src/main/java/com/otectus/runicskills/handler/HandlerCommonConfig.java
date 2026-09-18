@@ -1775,7 +1775,7 @@ public class HandlerCommonConfig {
     @Clamp(min = 1, max = 32)
     public int cleaveMaxTargets = 6;
 
-    @SerialEntry(comment = "Titan's Grip perk bonus damage percent when wielding a heavy/two-handed Spartan weapon with an occupied offhand")
+    @SerialEntry(comment = "Titan's Grip perk bonus damage percent on a melee hit while wielding a two-handed weapon (Better Combat weapon attributes or the Spartan Weaponry two-handed trait) together with a shield")
     @AutoGen(category = "common", group = "perks")
     @IntField(min = 0, max = 100)
     @Clamp(min = 0, max = 100)
@@ -4976,6 +4976,128 @@ public class HandlerCommonConfig {
     public float ironsLevelMultiplier = 1.0f;
 
     // Iron's Spells 'n Spellbooks Integration - Spell Gating
+    @SerialEntry(comment = "Master switch for every Runic requirement on a spell CAST, explicit rules included. Off waives all of them; it never waives a book's separate equipment requirement. Absent in files written before 2.2.1, which default it on, so adding it changes nothing on its own.")
+    @AutoGen(category = "common", group = "irons_spells")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableSpellLocks = true;
+
+    @SerialEntry(comment = "Which generator decides a spell's requirement when no explicit rule covers it. METADATA uses the spell's own native level and rarity; LEGACY_LEVEL uses ironsBaseSpellGatingLevel + (level - 1) * ironsSpellLevelScaleFactor. They are alternatives, never combined. Unknown values fall back to METADATA.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"METADATA", "LEGACY_LEVEL"}, fallback = "METADATA")
+    @AutoGen(category = "common", group = "irons_spells")
+    @dev.isxander.yacl3.config.v2.api.autogen.StringField
+    public String ironsSpellGateModel = "METADATA";
+
+    // Automatic gates for unconfigured content (2.2.1). Scope: this group adds requirements only
+    // where no higher-priority layer decided the same target and action. It never disables the
+    // spellbook equipment fix, a manual rule, or a deliberately enabled integration -- those have
+    // their own switches and /skills locks coverage reports which of them are still on.
+    @SerialEntry(comment = "Automatic gates for unconfigured content. Discovers items, blocks and supported spell registries and adds requirements ONLY where a manual rule, a curated profile, a native adapter or an existing integration has not already decided the same target and action. Off removes the inferred layer after the next successful reload and nothing else.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableAutoGates = true;
+
+    @SerialEntry(comment = "Discover relevant unconfigured equipment and items.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateItems = true;
+
+    @SerialEntry(comment = "Discover recognised workstations and utility blocks. A block is only recognised through the reviewed runicskills:auto_gate/workstation tag; having a block entity is not enough on its own.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateBlocks = true;
+
+    @SerialEntry(comment = "Infer spell requirements through supported native spell adapters. A spell domain belongs to the mod that registered it, so this never competes with that mod's own adapter; it records the outcome for coverage instead.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateSpells = true;
+
+    @SerialEntry(comment = "Add NEW inferred crafting requirements. Off by default: equipment can be crafted, traded and stored before it can be used. Explicit crafting rules a pack already wrote are unaffected either way.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateCrafting = false;
+
+    @SerialEntry(comment = "Add inferred block PLACEMENT requirements. Off by default; operation gates on the placed block remain available.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGatePlacement = false;
+
+    @SerialEntry(comment = "Add inferred target-block HARVEST requirements beyond existing rules. Off by default; gating the tool doing the harvesting remains available.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateHarvestBlocks = false;
+
+    @SerialEntry(comment = "Evidence threshold an inferred requirement must reach before it is enforced. Describes evidence quality (role certainty, feature coverage, neighbour similarity and agreement), NOT a measured chance of being correct. A role established only by a name never reaches it.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @FloatField(min = 0.0f, max = 1.0f)
+    @Clamp(min = 0.0, max = 1.0)
+    public float autoGateMinimumConfidence = 0.75f;
+
+    @SerialEntry(comment = "Use the reviewed conservative low-tier profile when a role is well established but tier evidence is incomplete.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateUseRoleFallbacks = true;
+
+    @SerialEntry(comment = "Use bounded recipe and upgrade evidence. Uses the cheapest supported acquisition route, never the most expensive one, and can move an estimate by at most two reference levels.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateRecipeEvidence = true;
+
+    @SerialEntry(comment = "Allow your own manual rules to become calibration examples. Off by default because one item deliberately set to level 100 is a decision, not a reference point. When on, at most 16 rows per namespace are used and the engine's own output is never accepted.")
+    @AutoGen(category = "common", group = "auto_gates")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean autoGateLearnFromManualRules = false;
+
+    @SerialEntry(comment = "Namespaces universal inference must not touch (e.g. [\"create\", \"ae2\"]). Suppresses a generated gate; it is not a permission and does not lift an explicit rule.")
+    // No group= on this @AutoGen: YACL's ListGroupImpl rejects a list option that declares one
+    // ("lists act as groups") and aborts the whole config screen on the first offender. Enforced by
+    // ./gradlew checkYaclAutogen, same as the five older list fields above.
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> autoGateExcludedNamespaces = new java.util.ArrayList<>();
+
+    @SerialEntry(comment = "Exact item ids universal inference must not touch. The item tag runicskills:auto_gate/excluded does the same thing from a datapack.")
+    // No group= on this @AutoGen: YACL's ListGroupImpl rejects a list option that declares one
+    // ("lists act as groups") and aborts the whole config screen on the first offender. Enforced by
+    // ./gradlew checkYaclAutogen, same as the five older list fields above.
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> autoGateExcludedItems = new java.util.ArrayList<>();
+
+    @SerialEntry(comment = "Exact block ids universal inference must not touch.")
+    // No group= on this @AutoGen: YACL's ListGroupImpl rejects a list option that declares one
+    // ("lists act as groups") and aborts the whole config screen on the first offender. Enforced by
+    // ./gradlew checkYaclAutogen, same as the five older list fields above.
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> autoGateExcludedBlocks = new java.util.ArrayList<>();
+
+    @SerialEntry(comment = "Exact spell ids universal inference must not touch.")
+    // No group= on this @AutoGen: YACL's ListGroupImpl rejects a list option that declares one
+    // ("lists act as groups") and aborts the whole config screen on the first offender. Enforced by
+    // ./gradlew checkYaclAutogen, same as the five older list fields above.
+    @AutoGen(category = "common")
+    @ListGroup(controllerFactory = StringListGroup.class, valueFactory = StringListGroup.class)
+    public List<String> autoGateExcludedSpells = new java.util.ArrayList<>();
+
+    @SerialEntry(comment = "LIVE rebuilds the generated catalog from current inputs on the ordinary reload lifecycle. FROZEN keeps a catalog you accepted with /skills locks apply-preview, so content added later stays undetermined rather than receiving an unreviewed prediction. Unknown values fall back to LIVE.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"LIVE", "FROZEN"}, fallback = "LIVE")
+    @AutoGen(category = "common", group = "auto_gates")
+    @dev.isxander.yacl3.config.v2.api.autogen.StringField
+    public String autoGateMode = "LIVE";
+
+    // Apprentice's Codex (2.2.1). Active only when Codex and its required native dependencies are
+    // present; absent, both settings are inert and no jp.aquafactory class is ever resolved.
+    @SerialEntry(comment = "Reviewed Apprentice's Codex support: spell-container gates read from the item's real capacity, reviewed role anchors for its gear, and operation gates on its workstations. Off leaves Codex content ungated rather than handing it to the universal estimator, so switching the integration off cannot recreate the same restrictions under another name.")
+    @AutoGen(category = "common", group = "apprentice_codex")
+    @Boolean(formatter = Boolean.Formatter.ON_OFF)
+    public boolean enableApprenticeCodexIntegration = true;
+
+    @SerialEntry(comment = "How a spell dispenser's autonomous casting is treated. DEVICE gates the player actions on the device - placing, configuring and operating it - and lets the machine's own casting rules run, marking those executions AUTOMATION_EXEMPT. ONLINE_OWNER additionally requires a verified, currently online owner to meet the spell's own requirement; an owner who cannot be resolved or is offline pauses the device with a diagnostic instead of silently allowing or denying it. Unknown values fall back to DEVICE.")
+    @com.otectus.runicskills.config.storage.StringChoices(value = {"DEVICE", "ONLINE_OWNER"}, fallback = "DEVICE")
+    @AutoGen(category = "common", group = "apprentice_codex")
+    @dev.isxander.yacl3.config.v2.api.autogen.StringField
+    public String codexAutomationGatePolicy = "DEVICE";
+
     @SerialEntry(comment = "Enable automatic spell gating by Magic skill level based on spell level")
     @AutoGen(category = "common", group = "irons_spells")
     @Boolean(formatter = Boolean.Formatter.ON_OFF)

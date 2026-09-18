@@ -3,6 +3,7 @@ package com.otectus.runicskills.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.otectus.runicskills.common.inventory.PlayerStackPolicy;
+import com.otectus.runicskills.common.inventory.StackRepresentationProvider;
 import com.otectus.runicskills.common.inventory.StackCapacityMath;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -11,11 +12,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * Player-inventory insertion under Pack Mule, and death-drop ownership.
+ *
+ * <p>Mixed duties, so the class stays applied whoever owns the stack representation. The three
+ * capacity hooks cancel vanilla and substitute their own arithmetic, which would also step over a
+ * foreign provider's {@code Inventory.getMaxStackSize()} rewrite — each returns without cancelling
+ * when the perk is deferred. {@code runicskills$deathDrops} is not a capacity hook: it keeps a stack
+ * that is larger than its own native maximum from vanishing on death, and it hands a refused drop
+ * back to its owner, which matters under every provider and at every count.
+ */
 @Mixin(Inventory.class)
 public abstract class MixInventory {
     @Inject(method = "hasRemainingSpaceForItem", at = @At("HEAD"), cancellable = true)
     private void runicskills$remaining(ItemStack destination, ItemStack source, CallbackInfoReturnable<Boolean> cir) {
         Inventory inventory = (Inventory) (Object) this;
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return;
         if (source.getMaxStackSize() != 64) return;
         cir.setReturnValue(!destination.isEmpty() && ItemStack.isSameItemSameTags(destination, source)
                 && destination.isStackable() && destination.getCount() < PlayerStackPolicy.capacity(inventory.player, source));
@@ -23,6 +35,7 @@ public abstract class MixInventory {
     @Inject(method = "addResource(ILnet/minecraft/world/item/ItemStack;)I", at = @At("HEAD"), cancellable = true)
     private void runicskills$insert(int index, ItemStack source, CallbackInfoReturnable<Integer> cir) {
         Inventory inventory = (Inventory) (Object) this;
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return;
         ItemStack destination = inventory.getItem(index);
         if (source.getMaxStackSize() != 64 && source.getCount() <= source.getMaxStackSize()
                 && destination.getCount() <= destination.getMaxStackSize()) return;
@@ -39,6 +52,7 @@ public abstract class MixInventory {
     @WrapOperation(method = "placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;Z)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getMaxStackSize()I"))
     private int runicskills$returnCapacity(ItemStack stack, Operation<Integer> original) {
+        if (!StackRepresentationProvider.selected().grantsPackMuleCapacity()) return original.call(stack);
         return PlayerStackPolicy.capacity(((Inventory) (Object) this).player, stack);
     }
     @WrapOperation(method = "dropAll", at = @At(value = "INVOKE", target =

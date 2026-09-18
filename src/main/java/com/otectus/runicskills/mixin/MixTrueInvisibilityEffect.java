@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * and touch damage still break invis (preserves counterplay).
  *
  * @Pseudo + remap=false: ISS is an optional dependency. The mixin self-disables when the
- * target class isn't on the classpath. Target verified against ISS 7402504 (3.15.x):
+ * target class isn't on the classpath. Target re-verified against ISS 8680180 (1.20.1-3.16.3):
  * io.redspace.ironsspellbooks.effect.TrueInvisibilityEffect.onDealDamage(LivingHurtEvent).
  */
 @Pseudo

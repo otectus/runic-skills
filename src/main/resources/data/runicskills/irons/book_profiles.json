@@ -1,0 +1,82 @@
+{
+  "_comment": [
+    "Reviewed Iron's Spells 'n Spellbooks equipment gates: the curated layer (spec 11.2, order 4).",
+    "Read once from the jar at rule-build time, NOT through the datapack reload: this is a built-in",
+    "profile, and a pack that wants a different number writes an ordinary lock rule, which outranks",
+    "everything here. Values are Magic requirements at the reference cap of 32 and multiplier 1.",
+    "Intelligence is derived at the shared 0.6 ratio, so it is not repeated per row.",
+    "",
+    "Only rows verified against the irons_spellbooks 1.20.1-3.16.3 artifact ship here. The books",
+    "left out are not oversights: they are the ones whose proposed numbers the artifact contradicted,",
+    "or that no proposal covered. They get IronsBookGateMath's metadata profile, computed from the",
+    "same slot and modifier counts the reasons below cite. Deliberately absent, with why:",
+    "  wimpy_spell_book        - 0 slots and no modifiers. Nothing to gate; a requirement would be",
+    "                            decorative. Falls out of the metadata profile as inert.",
+    "  legendary_spell_book    - 12 slots but NO attribute modifiers, not fire resistant, and no",
+    "                            recipe or loot entry in 3.16.3: unobtainable in survival and",
+    "                            stat-inferior to ice/netherite. The proposed 18 ranked it on its name.",
+    "  rotten_spell_book       - 8 slots, SPELL_RESIST +100. The proposal priced the resistance as a",
+    "                            drawback; in 3.16.3 it is an upside. It is also an ingredient of the",
+    "                            druidic book, so gating it gates druidic's recipe.",
+    "  dragonskin_spell_book  - SHIPS, but at ice's value rather than the proposed 26. See its row.",
+    "                            The proposal ranked a sidegrade as an upgrade over ice; the",
+    "                            artifact shows one chassis with a different school attached.",
+    "  evoker_spell_book       - 7 total slots of which only 4 are free. The proposed 22 read the",
+    "                            constructor's capacity and ignored the locked preset spells.",
+    "  necronomicon_spell_book - 6 total / 2 free, dead king loot. No proposal covered it.",
+    "  cursed_doll_spell_book  - 10 slots and 3 modifiers. No proposal covered it."
+  ],
+  "reference_cap": 32,
+  "profiles": [
+    {
+      "item": "irons_spellbooks:copper_spell_book",
+      "magic": 8,
+      "reason": "5 slots, no attribute modifiers, crafted from copper ingots + string + paper. The entry-level chassis and the anchor the other rows are ranked against."
+    },
+    {
+      "item": "irons_spellbooks:iron_spell_book",
+      "magic": 10,
+      "reason": "6 slots, no attribute modifiers, crafted from chains + leather + paper. One clear step above copper on capacity alone."
+    },
+    {
+      "item": "irons_spellbooks:gold_spell_book",
+      "magic": 12,
+      "reason": "8 slots, +50 max mana and +15% cast time, crafted from arcane essence + hogskin. First book with attributes, and the cast-time cost is why it does not outrank diamond."
+    },
+    {
+      "item": "irons_spellbooks:diamond_spell_book",
+      "magic": 16,
+      "reason": "10 slots and +100 max mana, crafted from diamond + enchanted book + magic cloth + hogskin. Drops gold's cast-time penalty and adds two slots: a verified upgrade, so a clear step up."
+    },
+    {
+      "item": "irons_spellbooks:blaze_spell_book",
+      "magic": 20,
+      "reason": "10 slots, fire spell power +0.1 and +200 max mana. A full school package; obtained from a 1% blaze drop, which is early for the power it carries but is a drop rate rather than a progression step."
+    },
+    {
+      "item": "irons_spellbooks:druidic_spell_book",
+      "magic": 20,
+      "reason": "10 slots, nature spell power +0.1 and +200 max mana: the same chassis as blaze with a different school, so deliberately the same requirement rather than an invented ranking between two sidegrades."
+    },
+    {
+      "item": "irons_spellbooks:villager_spell_book",
+      "magic": 22,
+      "reason": "10 slots, holy spell power +0.1, cast time +0.1 and +200 max mana. Three modifiers on a diamond-sized chassis, acquired by priest trade."
+    },
+    {
+      "item": "irons_spellbooks:netherite_spell_book",
+      "magic": 22,
+      "reason": "12 slots, +20% cooldown reduction and +200 max mana, crafted from netherite + ruined book + blood vial + lightning bottle. Late-game acquisition and a general-purpose benefit rather than one school."
+    },
+    {
+      "item": "irons_spellbooks:ice_spell_book",
+      "magic": 24,
+      "reason": "12 slots, ice spell power +0.1 and +200 max mana, crafted from mithril scrap + three ice venom vials + a ruined book. The most demanding acquisition chain of the verified books."
+    },
+    {
+      "item": "irons_spellbooks:dragonskin_spell_book",
+      "magic": 24,
+      "reason": "12 slots, ender spell power +0.1 and +200 max mana, crafted from six dragonskin + obsidian + a ruined book. Byte-for-byte the ice spellbook's chassis and stat package with a different school, so it is ranked EQUAL to ice rather than above it. The proposed 26 treated a verified sidegrade as an upgrade; shipping it as a metadata profile instead would have split one sidegrade pair across two layers and produced two different numbers for the same item."
+    }
+  ]
+}

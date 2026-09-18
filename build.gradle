@@ -194,7 +194,9 @@ minecraft {
             def addons = (project.findProperty('tinkersAddons') ?: '').toString().split(',')
                     .collect { it.trim() }.findAll { !it.isEmpty() }.sort().join('-')
             def profile = "${project.findProperty('tinkersProfile') ?: 'absent'}-" +
-                    "${project.findProperty('ironsProfile') == 'true' ? 'irons' : 'no-irons'}-${addons}"
+                    "${project.findProperty('ironsProfile') == 'true' ? 'irons' : 'no-irons'}-" +
+                    "${project.findProperty('codexProfile') == 'true' ? 'codex-' : ''}" +
+                    "${project.findProperty('spartanProfile') == 'true' ? 'spartan-' : ''}${addons}"
             args '--world', "gametest-${profile.replaceAll('[^a-zA-Z0-9_-]', '_')}"
         }
 
@@ -310,6 +312,19 @@ repositories {
     flatDir{
         dirs 'libs'
     }
+
+    // Local mod artifacts for the optional runtime reproduction profiles (-PbiggerStacksProfile).
+    // A `flatDir` entry has no module identity, and ForgeGradle's deobfuscator silently leaves such
+    // a dependency unremapped — which would put a production, SRG-named jar into a Mojang-mapped
+    // development run and crash on its first native call. A pattern-layout Maven repository with
+    // `metadataSources { artifact() }` gives the same local file a real coordinate, which is what
+    // fg.deobf needs. Restricted to its own group so nothing else can resolve from here.
+    ivy {
+        url = uri("${projectDir}/libs")
+        patternLayout { artifact "[artifact]-[revision](-[classifier]).[ext]" }
+        metadataSources { artifact() }
+        content { includeGroup "local.mods" }
+    }
 }
 
 dependencies {
@@ -317,7 +332,12 @@ dependencies {
     // deduplicate the same Forge mod when its old and new jars come from different publishers.
     def runtimeAddonSlugs = (project.findProperty('tinkersAddons') ?: '').toString().split(',')
             .collect { it.trim() }.findAll { !it.isEmpty() }.toSet()
-    def ironsRuntime = project.findProperty('ironsProfile') == 'true'
+    // Apprentice's Codex declares irons_spellbooks, irons_lib, geckolib and curios mandatory, and
+    // every one of them is already selected by the Iron's profile. So -PcodexProfile turns that
+    // profile on rather than declaring a second, parallel set of coordinates: two independent
+    // selections of the same four mods is how a profile ends up testing a combination nobody ships.
+    def codexRuntime = project.findProperty('codexProfile') == 'true'
+    def ironsRuntime = project.findProperty('ironsProfile') == 'true' || codexRuntime
     def arsRuntime = runtimeAddonSlugs.contains('ars')
 
     minecraft 'net.minecraftforge:forge:' + minecraft_version + '-' + forge_version
@@ -366,9 +386,29 @@ dependencies {
     // BetterCombat implementation
     implementation fg.deobf('maven.modrinth:better-combat:1.8.5+1.20.1-forge')
 
-    // Compile against the lowest supported public API even when Ars selects a newer runtime.
+    // Spartan Weaponry 1.20.1-3.2.1. Compile-only: the only classes that name it are the
+    // two-handed trait source (integration/spartanweaponry) and the @Pseudo mixin that suppresses
+    // that trait's penalties (mixin/spartanweaponry), and both are reached only when the mod is
+    // loaded — the source reflectively, the mixin through RunicSkillsMixinPlugin. The immutable
+    // Modrinth version ID is used rather than the version string, which also names the mod's
+    // other loader/MC builds; 4U6gwadt is SpartanWeaponry-1.20.1-forge-3.2.1-all.jar.
+    // Spartan bundles jarjar mixinextras-forge 0.3.5; in the runtime profile below the service
+    // selects the newest implementation (this mod's 0.4.0), so two banners in a dev log are
+    // expected and not a conflict.
+    compileOnly fg.deobf("maven.modrinth:spartan-weaponry:4U6gwadt")
+    if (project.findProperty('spartanProfile') == 'true') {
+        // Runtime reproduction profile (-PspartanProfile=true), on the same terms as the Tinkers'
+        // and Codex profiles: the default dev client and gameTestServer stay Spartan-free, so the
+        // absence path is what CI exercises by default and the presence path is opt-in.
+        runtimeOnly fg.deobf("maven.modrinth:spartan-weaponry:4U6gwadt")
+    }
+
+    // Compile against the lowest supported public API even when a companion selects a newer
+    // runtime. Iron's 3.16.3 declares curios [5.14.1+1.20.1,), so the Iron's runtime profile has
+    // to raise this too or FML aborts mod loading before a single gametest runs; the compile pin
+    // deliberately stays at the lowest supported API.
     compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.9.1+1.20.1:api"))
-    runtimeOnly fg.deobf(arsRuntime
+    runtimeOnly fg.deobf(arsRuntime || ironsRuntime
             ? "maven.modrinth:curios:5.14.1+1.20.1"
             : "top.theillusivec4.curios:curios-forge:5.9.1+1.20.1")
 
@@ -396,13 +436,56 @@ dependencies {
     compileOnly fg.deobf("curse.maven:apothic-attributes-898963:5634071")
     compileOnly fg.deobf("curse.maven:apotheosis-313970:6461960")
 
-    // Iron's Spells 'n Spellbooks compatibility. Bumped from 5539243 (pre-3.15)
-    // to 7402504 (3.15.x) so Phase-1a perks can subscribe to SpellCooldownAddedEvent.
-    compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:7402504")
-    // Optional real-runtime verification of the 45 spell-school Powers, against the same
-    // 3.15.0 jar used for compilation. Off by default so absence remains a tested profile.
+    // Iron's Spells 'n Spellbooks compatibility. Bumped 5539243 (pre-3.15) -> 7402504 (3.15.x)
+    // for SpellCooldownAddedEvent, then -> 8680180 (1.20.1-3.16.3 Forge) for 2.2.1: the book
+    // metadata adapter reads ISpellContainer/SpellBook#getMaxSpellSlots on that baseline, and
+    // Apprentice's Codex requires irons_spellbooks >= 1.20.1-3.16.3. The 3.15 -> 3.16.3 API delta
+    // is additive on every symbol this mod names. File 8680204 is the 1.21.1 NeoForge build and
+    // must not be used here.
+    compileOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:8680180")
+    // Optional real-runtime verification of the 45 spell-school Powers and the book/spell gates,
+    // against the same 3.16.3 jar used for compilation. Off by default so absence stays a tested
+    // profile.
     if (ironsRuntime) {
-        runtimeOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:7402504")
+        runtimeOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:8680180")
+        // Iron's 3.16.3 split its shared code out into irons_lib and declares it mandatory
+        // ([1.20.1-2,1.20.1-3)). Nothing in this mod names an irons_lib class, so it is a runtime
+        // dependency of the profile only; without it FML refuses the mod list and the test server
+        // dies during mixin bootstrap rather than reporting a missing dependency.
+        runtimeOnly fg.deobf("maven.modrinth:irons-lib:1.20.1-2.1.0")
+    }
+
+    // Apprentice's Codex compatibility (2.2.1). Published on Modrinth, so the compile surface is a
+    // real coordinate and a fresh clone builds without the untracked jar in libs/ — no hand-written
+    // API mirror source set is needed for it, unlike Legendary Tabs or CustomNPCs. The immutable
+    // version ID is used rather than the version string "0.9.7.1", which names the 1.21.1 NeoForge
+    // build as well; lcCKcjxL is the 1.20.1 Forge file, byte-identical (SHA-256
+    // 4685141bdd7fe0319270167ebffd658b6c2d91c6eaef5a22adb72c427b9cf4da) to the artifact recorded in
+    // docs/COMPATIBILITY_LEDGER_2.2.1.md. Compile-only: the integration and its one @Pseudo mixin
+    // are reached through RunicSkills.tryLoadIntegration and RunicSkillsMixinPlugin respectively, so
+    // no jp.aquafactory type is ever resolved on an installation without Codex.
+    compileOnly fg.deobf("maven.modrinth:apprentices-codex:lcCKcjxL")
+    if (codexRuntime) {
+        // Iron's 3.16.3, irons_lib 2.1.0, Curios 5.14.1 and GeckoLib 4.8.4 all arrive through the
+        // Iron's profile switched on above; Codex declares every one of them mandatory.
+        runtimeOnly fg.deobf("maven.modrinth:apprentices-codex:lcCKcjxL")
+    }
+
+    // Bigger Stacks reproduction profile (-PbiggerStacksProfile=true). Runtime only, and never on
+    // any compile classpath: nothing in this mod names a Bigger Stacks class, the coexistence
+    // decision is taken from the loading mod list, and docs/COMPATIBILITY_LEDGER_2.2.1.md records
+    // the artifact this release read. `*.jar` is gitignored, so the file is absent from a fresh
+    // clone and the profile silently declines rather than breaking configuration.
+    // Resolved through the local.mods pattern repository declared above so fg.deobf can remap the
+    // production jar's SRG references for the Mojang-mapped development runtime.
+    def biggerStacksJar = file('libs/biggerstacks-1.20.1-2026.06.17-all.jar')
+    if (project.findProperty('biggerStacksProfile') == 'true') {
+        if (biggerStacksJar.exists()) {
+            runtimeOnly fg.deobf("local.mods:biggerstacks:1.20.1-2026.06.17:all")
+        } else {
+            logger.lifecycle("biggerStacksProfile requested but ${biggerStacksJar} is absent; " +
+                    "the profile is skipped. See docs/COMPATIBILITY_LEDGER_2.2.1.md for the exact artifact.")
+        }
     }
 
     // Tinker's Construct compatibility. Compile-only, and always against the STABLE pin: shared
@@ -801,6 +884,39 @@ tasks.register('checkSidedImports') {
     def gametestAddonAllowlist = [
             'src/gametest/java/com/otectus/runicskills/gametest/tconstruct/addons',
     ].collect { file(it).canonicalPath }
+
+    // Apprentice's Codex, on exactly the same terms as Tinkers' above: a jp.aquafactory import
+    // anywhere the JVM can reach without Codex installed is a NoClassDefFoundError waiting for the
+    // first pack that does not run it. The integration is reached through tryLoadIntegration and
+    // the one mixin is gated by RunicSkillsMixinPlugin, so those two packages plus the conditionally
+    // registered gametests are the whole reachable set.
+    def codexForbidden = [
+            ~/^\s*import\s+jp\.aquafactory\..*/,
+    ]
+    def codexAllowlist = [
+            'src/main/java/com/otectus/runicskills/integration/apprenticecodex',
+            'src/main/java/com/otectus/runicskills/mixin/apprenticecodex',
+    ].collect { file(it).canonicalPath }
+    def gametestCodexAllowlist = [
+            'src/gametest/java/com/otectus/runicskills/gametest/codex',
+    ].collect { file(it).canonicalPath }
+
+    // Spartan Weaponry, on the same terms. The mod is compile-only, so a com.oblivioussp import in
+    // common code compiles against the deobf jar here and then fails with NoClassDefFoundError on
+    // every installation that does not ship it. Three packages may name it: the two-handed trait
+    // source (reached through TwoHandedWielding.installSource), the @Pseudo mixin that suppresses
+    // the trait's penalties (gated in RunicSkillsMixinPlugin), and the conditionally registered
+    // gametests.
+    def spartanForbidden = [
+            ~/^\s*import\s+com\.oblivioussp\..*/,
+    ]
+    def spartanAllowlist = [
+            'src/main/java/com/otectus/runicskills/integration/spartanweaponry',
+            'src/main/java/com/otectus/runicskills/mixin/spartanweaponry',
+    ].collect { file(it).canonicalPath }
+    def gametestSpartanAllowlist = [
+            'src/gametest/java/com/otectus/runicskills/gametest/spartanweaponry',
+    ].collect { file(it).canonicalPath }
     // Gametests get the same treatment: Tinkers'-dependent tests live under gametest/tconstruct/
     // and are registered conditionally (TConstructGameTests), so nothing else there may name the
     // mod — an import elsewhere would load the class in the M0 run and fail the whole batch.
@@ -820,6 +936,8 @@ tasks.register('checkSidedImports') {
         def yaclViolations = []
         def tconstructViolations = []
         def addonViolations = []
+        def codexViolations = []
+    def spartanViolations = []
         javaRoot.eachFileRecurse { f ->
             if (!f.isFile() || !f.name.endsWith('.java')) return
             def path = f.canonicalPath
@@ -828,6 +946,8 @@ tasks.register('checkSidedImports') {
             def isYaclClient = yaclAllowlist.any { path == it || path.startsWith(it + File.separator) }
             def isTconstruct = tconstructAllowlist.any { path == it || path.startsWith(it + File.separator) }
             def isAddon = addonAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isCodex = codexAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isSpartan = spartanAllowlist.any { path == it || path.startsWith(it + File.separator) }
             f.eachLine { line, n ->
                 if (!isClient && forbidden.any { line ==~ it }) {
                     violations << "${f.path}:${n}: ${line.trim()}"
@@ -841,6 +961,12 @@ tasks.register('checkSidedImports') {
                 if (!isAddon && addonForbidden.any { line ==~ it }) {
                     addonViolations << "${f.path}:${n}: ${line.trim()}"
                 }
+                if (!isCodex && codexForbidden.any { line ==~ it }) {
+                    codexViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isSpartan && spartanForbidden.any { line ==~ it }) {
+                    spartanViolations << "${f.path}:${n}: ${line.trim()}"
+                }
             }
         }
         gametestRoot.eachFileRecurse { f ->
@@ -848,12 +974,20 @@ tasks.register('checkSidedImports') {
             def path = f.canonicalPath
             def isGametestTconstruct = gametestTconstructAllowlist.any { path == it || path.startsWith(it + File.separator) }
             def isGametestAddon = gametestAddonAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isGametestCodex = gametestCodexAllowlist.any { path == it || path.startsWith(it + File.separator) }
+            def isGametestSpartan = gametestSpartanAllowlist.any { path == it || path.startsWith(it + File.separator) }
             f.eachLine { line, n ->
                 if (!isGametestTconstruct && tconstructForbidden.any { line ==~ it }) {
                     tconstructViolations << "${f.path}:${n}: ${line.trim()}"
                 }
                 if (!isGametestAddon && addonForbidden.any { line ==~ it }) {
                     addonViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isGametestCodex && codexForbidden.any { line ==~ it }) {
+                    codexViolations << "${f.path}:${n}: ${line.trim()}"
+                }
+                if (!isGametestSpartan && spartanForbidden.any { line ==~ it }) {
+                    spartanViolations << "${f.path}:${n}: ${line.trim()}"
                 }
             }
         }
@@ -880,6 +1014,22 @@ tasks.register('checkSidedImports') {
                             "mixin/tconstruct/addons/ or gametest/tconstruct/addons/ (they would break\n" +
                             "every install that does not have that add-on):\n  " +
                             addonViolations.join('\n  '))
+        }
+        // Both of these were collected and never reported before 2.2.1: the Codex list existed
+        // with no throw at all, so the rule was decorative. Reported now, together.
+        if (!codexViolations.isEmpty()) {
+            throw new GradleException(
+                    "Apprentice's Codex imports outside integration/apprenticecodex/,\n" +
+                            "mixin/apprenticecodex/ or gametest/codex/ (they would break every\n" +
+                            "install that does not have Apprentice's Codex):\n  " +
+                            codexViolations.join('\n  '))
+        }
+        if (!spartanViolations.isEmpty()) {
+            throw new GradleException(
+                    "Spartan Weaponry imports outside integration/spartanweaponry/,\n" +
+                            "mixin/spartanweaponry/ or gametest/spartanweaponry/ (they would break\n" +
+                            "every install that does not have Spartan Weaponry):\n  " +
+                            spartanViolations.join('\n  '))
         }
     }
 }
@@ -1384,7 +1534,11 @@ tasks.register('checkMixinRemapping') {
     // The deobf Tinkers'/Mantle artifacts: MCP-named, so right for resolving the hierarchy and
     // useless for SRG names, which output.srg supplies. Declared lazily so the configuration is not
     // resolved at configuration time.
-    def targetArtifacts = { configurations.compileClasspath.files.findAll { it.name ==~ /(?i)^(TConstruct|Mantle)-.*\.jar$/ } }
+    // Apprentice's Codex is here for the same reason: MixSpellDispenserCastHelper targets a class
+    // that mod declares, and without its jar the selector is UNRESOLVED and downgraded to a warning
+    // by the @Pseudo rule below. With it on the list, a renamed or reshaped tryCast is a build
+    // failure instead of a hook that silently stops applying.
+    def targetArtifacts = { configurations.compileClasspath.files.findAll { it.name ==~ /(?i)^(TConstruct|Mantle|apprentices?[-_]codex|spartan[-_]?weaponry)-.*\.jar$/ } }
 
     // Configuration-time inputs so the task is up-to-date aware.
     inputs.dir mixinRoot

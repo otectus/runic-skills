@@ -47,6 +47,7 @@ public final class StackRequirementTooltip {
         if (!same || response == null || response.views().isEmpty()) return false;
         Set<String> sources = new LinkedHashSet<>();
         for (LockAction action : LockAction.values()) {
+            if (!action.appliesToStack()) continue;
             var view = response.views().get(action);
             if (view == null || (view.requirements().isEmpty() && view.uncertainty().isEmpty())) continue;
             var text = Component.translatable("tooltip.skill.stack_action." + action.name().toLowerCase(Locale.ROOT)).append(": ");

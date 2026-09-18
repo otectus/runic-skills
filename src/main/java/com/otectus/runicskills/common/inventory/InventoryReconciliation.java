@@ -102,7 +102,10 @@ public final class InventoryReconciliation {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer)
                 || event.player.tickCount % 20 != 0 || !event.player.isAlive()) return;
         restore(event.player);
-        normalize(event.player, false);
+        // Reconcile only capacity this mod granted. When another provider owns the representation
+        // Pack Mule is deferred, every limit on screen is somebody else's decision, and splitting
+        // their stacks once a second would be this mod enforcing a rule it does not own.
+        if (StackRepresentationProvider.selected().grantsPackMuleCapacity()) normalize(event.player, false);
     }
     @SubscribeEvent public static void clone(PlayerEvent.Clone event) {
         CompoundTag old = event.getOriginal().getPersistentData();

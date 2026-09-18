@@ -1,5 +1,6 @@
 package com.otectus.runicskills.mixin;
 
+import com.otectus.runicskills.common.inventory.StackRepresentationProvider;
 import com.otectus.runicskills.handler.HandlerCommonConfig;
 import com.otectus.runicskills.integration.tconstruct.TConstructHookLedger;
 import com.otectus.runicskills.integration.tconstruct.TConstructProfile;
@@ -119,6 +120,26 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
         int dot = mixinClassName.lastIndexOf('.');
         String simple = dot >= 0 ? mixinClassName.substring(dot + 1) : mixinClassName;
         return switch (simple) {
+            // Stack-count representation. Exactly one mod may encode a count into item NBT and item
+            // packets; two @Redirects on one instruction is a hard application failure and two
+            // @ModifyVariables on one store is a silently wrong count. The owner is decided once
+            // from the same pre-construct mod list used above, before either target transforms.
+            case "MixItemStackCount"         -> StackRepresentationProvider.selected().ownsNbtCount();
+            case "MixFriendlyByteBuf"        -> StackRepresentationProvider.selected().ownsNetworkCount();
+            // Pack Mule's capacity seams. Every hook in these three classes exists only to raise a
+            // player slot's limit, so when the perk is deferred they have nothing left to do — and
+            // leaving them applied is not neutral. MixPackMulePacketListener's @ModifyConstant on the
+            // 64 in handleSetCreativeModeSlot claims the same constant as Bigger Stacks'
+            // ServerGamePacketListenerImplMixin: Mixin skips the second modifier with a conflict
+            // WARN, its injector then fails its own (0/1) injection check, and class transformation
+            // aborts during Items.<clinit>. The other two substitute their own arithmetic for
+            // vanilla's, bypassing the Container.getMaxStackSize and IItemHandler.getSlotLimit
+            // rewrites a foreign provider may have installed. Mixins that also carry non-capacity
+            // duties — MixSlot's item locks, MixInventory's death-drop ownership recovery,
+            // MixPackMuleDrops' canceled-toss recovery — stay applied and neutralise their capacity
+            // branch internally instead.
+            case "MixPackMulePacketListener", "MixPackMuleMenu",
+                 "MixInvWrapper"             -> StackRepresentationProvider.selected().grantsPackMuleCapacity();
             case "MixCounterspellCommit", "MixArmorKeyInput", "MixPaidArmorCommit" -> verifiedTomCompanion();
             case "MixMimicryTransition", "MixMimicryTimeline", "MixNativeShieldDisable" -> verifiedMore();
             case "MixPaidSpellActions" -> verifiedTomCompanion();
@@ -129,6 +150,13 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
                  "MixNativeGemSummon", "MixNativeGemHealing", "MixPassiveGemEffect", "MixManualGemEffect", "MixGemMomentum" -> verifiedSwords();
             case "MixTideFishingRodItem", "MixTideCastLifecycle", "MixTideFishingHook", "MixTideBaitLifecycle", "MixTideBaitContents", "MixTideNormalWindow", "MixTideSpeciesRoll", "MixTideSpeciesWeight" -> verifiedTide();
             case "MixTargetFinder"           -> isModPresent("bettercombat");
+            // Titan's Grip's off-hand reveal. Better Combat is the mod that hides the slot, so
+            // the wrapper has a job whenever it is present; Spartan Weaponry hides nothing but is
+            // the other mod that makes a weapon two-handed, and the perk registers for either, so
+            // the hook has to exist on a Spartan-only install too — otherwise the reveal path and
+            // the penalty-suppression path would disagree about who holds the exemption.
+            case "MixPlayerOffhandSlot"      -> isModPresent("bettercombat") || isModPresent("spartanweaponry");
+            case "MixTwoHandedWeaponTrait"   -> isModPresent("spartanweaponry");
             case "MixArsSpellPayment"        -> isModPresent("ars_nouveau");
             case "MixGunItem"                -> isModPresent("pointblank");
             case "MixTrueInvisibilityEffect", "MixAbstractMagicProjectile",
@@ -136,6 +164,11 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
             case "MixSalvagingMenu", "MixReforgingResultSlot",
                  "MixApothEnchantmentMenu" -> isModPresent("apotheosis");
             case "MixPathingStuckHandler"    -> isModPresent("minecolonies");
+            // Apprentice's Codex's spell dispenser. Two conditions, not one: the mod has to be
+            // there, and the operator has to want the integration. enableApprenticeCodexIntegration
+            // is therefore a restart-required flag, for the same reason the Tinkers' one is — no
+            // config toggle can hot-unload a mixin, and pretending otherwise is worse than saying so.
+            case "MixSpellDispenserCastHelper" -> isModPresent("apprenticecodex") && codexEnabled();
             case "MixToolDamageUtil", "MixTinkerStationBlockEntity", "MixLazyResultContainer",
                  "MixToolHarvestLogic", "MixModifiableBowItem", "MixModifiableCrossbowItem",
                  "MixThrownTool", "MixThrowingModule", "MixMeltingModule",
@@ -150,6 +183,20 @@ public class RunicSkillsMixinPlugin implements IMixinConfigPlugin {
             case "MixToolEnergyUtil"         -> applyAddon(simple, "etstlib");
             default                          -> true;
         };
+    }
+
+    /**
+     * Whether the Apprentice's Codex integration is switched on, read through the server-safe
+     * config holder for the same reason {@link #tconstructEnabled()} is: this runs during class
+     * transformation on both distributions and the YACL types are client-only. A configuration that
+     * cannot be read at all leaves the integration on, which is the field's own default.
+     */
+    private static boolean codexEnabled() {
+        try {
+            return HandlerCommonConfig.HANDLER.instance().enableApprenticeCodexIntegration;
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
     }
 
     /** The three conditions every Tinkers'-targeting mixin shares, with the verdict recorded. */

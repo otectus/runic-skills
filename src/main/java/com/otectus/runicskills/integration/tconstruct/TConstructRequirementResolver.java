@@ -96,8 +96,9 @@ public final class TConstructRequirementResolver implements StackLockProvider {
         // An existing id lock outranks the automatic profile, and the id path already enforces it.
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId != null) {
-            var configured = HandlerSkill.getValue(itemId.toString());
-            if (configured != null) return Optional.empty();
+            var configured = HandlerSkill.snapshot().typedVerdict(
+                    com.otectus.runicskills.integration.lock.GateTarget.item(itemId), action);
+            if (configured.decided()) return Optional.empty();
         }
 
         if (!HandlerCommonConfig.HANDLER.instance().enableTConstructLockItems) return Optional.empty();

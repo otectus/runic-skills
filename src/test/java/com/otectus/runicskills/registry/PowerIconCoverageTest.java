@@ -66,7 +66,8 @@ class PowerIconCoverageTest {
         }
         assertTrue(missing.isEmpty(),
                 "Powers with no icon at assets/runicskills/textures/power/<id>.png: " + missing
-                        + " -- run `python tools/icongen/powers.py`");
+                        + " -- add the icon PNG under textures/power and pin it with"
+                        + " `python tools/icongen/repin_catalogue.py`");
     }
 
     @Test

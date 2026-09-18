@@ -31,9 +31,11 @@
     "2.1.1: shield and Mimicry combat rewards use English fallback until translated.",
     "2.1.1: native counterspell and paid armor rewards use English fallback until translated.",
     "2026-09 audit: the new dormant-passive allocation explanation uses English fallback until translated.",
-    "2.2.0: progression presets, transactional save feedback, Pack Mule, and server stack-inspection labels use explicit English fallback until translated."
+    "2.2.0: progression presets, transactional save feedback, Pack Mule, and server stack-inspection labels use explicit English fallback until translated.",
+    "2.2.1: the automatic-gate settings group is translated in every shipped locale; no new fallback debt.",
+    "2.2.1: the Apprentice's Codex settings group is translated in every shipped locale; no new fallback debt."
   ],
-  "englishKeyCount": 2630,
+  "englishKeyCount": 2653,
   "missingKeysPerLocale": {
     "ar_sa": 2085,
     "de_de": 2085,

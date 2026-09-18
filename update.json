@@ -1,8 +1,8 @@
 {
   "homepage": "https://github.com/otectus/runic-skills",
   "promos": {
-    "1.20.1-latest": "2.2.0",
-    "1.20.1-recommended": "2.2.0"
+    "1.20.1-latest": "2.2.2",
+    "1.20.1-recommended": "2.2.2"
   },
   "1.20.1": {
     "2.1.2": "Gameplay and customization audit: closes crafting and mana refund exploits, repairs progression and Power lifecycle behavior, restores multiplayer skill artwork, and hardens configuration/datapack reloads. Protocol 15: update clients and servers together; progression IDs and existing saves are retained. See docs/AUDIT_RESULTS_2026_09.md and docs/MIGRATING_TO_2.1.2.md.",
@@ -16,6 +16,8 @@
     "2.0.7": "See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.1.0": "Tinkers' Construct integration, gameplay and multiplayer stabilization, persistent Power cooldowns, and a complete runic icon refresh. Network protocol 13: update clients and servers together. See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/master/CHANGELOG.md",
     "2.1.1": "All 32 perks and 24 Powers implemented for Simply Swords, Simply More, T.O. and Tide, with verified native triggers, shared limits and dormant Power accounting. Protocol 14: update clients and servers together. See docs/FOUR_MOD_INTEGRATION_2.1.1.md for supported native paths and remaining client/provider validation.",
-    "2.2.0": "Pack Mule inventory stacks up to 256; consistent progression, effect recursion fixes, transactional configuration and automatic level budgets. Protocol 16 requires matching builds. Normalize extended stacks before downgrade/removal. See docs/IMPLEMENTATION_2.2.0.md."
+    "2.2.0": "Pack Mule inventory stacks up to 256; consistent progression, effect recursion fixes, transactional configuration and automatic level budgets. Protocol 16 requires matching builds. Normalize extended stacks before downgrade/removal. See docs/IMPLEMENTATION_2.2.0.md.",
+    "2.2.1": "Coexists with Bigger Stacks instead of corrupting stack counts, resolves item/block/spell gates through a typed seam, raises the Iron's Spells 'n Spellbooks baseline to 3.16.3 with capacity-based book gates and separate spell gates, adds universal automatic gates for unconfigured content (on by default) and an Apprentice's Codex integration. Protocol 18 requires matching client and server builds; scoped gates now sync with configuration and preserve manual overrides. Automatic gates can add requirements to previously ungated content; review with /skills locks preview. See docs/AUTOMATIC_GATES.md and docs/COMPATIBILITY_LEDGER_2.2.1.md.",
+    "2.2.2": "Icon refresh: every perk, passive, skill-rank and Power icon is redrawn as shaded full-colour art at the same size and file names. Protocol 18, unchanged from 2.2.1. First published build carrying the 2.1.2, 2.2.0 and 2.2.1 changes: automatic gates are on by default and can add requirements to previously ungated content; review with /skills locks preview. See CHANGELOG.md at https://github.com/otectus/runic-skills/blob/main/CHANGELOG.md"
   }
 }

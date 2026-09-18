@@ -23,11 +23,23 @@ public final class StackDataRecovery {
         owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.runicskills.pack_mule.exported"));
         return file;
     }
+    /**
+     * Quarantines a saved count this mod's own representation cannot carry, before vanilla's
+     * catch-and-return-EMPTY can discard the record.
+     *
+     * <p>Only while Runic Skills owns the NBT representation. A count written by a foreign provider
+     * is that provider's data in that provider's format: it is not corrupt because it is larger than
+     * a Runic limit (reference document §4.4), and exporting a copy of every large stack a storage
+     * mod legitimately wrote would be noise, not recovery. When the owner is unknown this mod also
+     * stays out of the way — it neither validates nor rewrites, so nothing is lost either way.
+     */
     public static Path preserveInvalid(CompoundTag tag) {
+        StackRepresentationProvider provider = StackRepresentationProvider.selected();
+        if (!provider.ownsNbtCount()) return null;
         if (!tag.contains("Count", Tag.TAG_INT) || tag.getString("id").isBlank()
                 || tag.getString("id").equals("minecraft:air")) return null;
         int count = tag.getInt("Count");
-        if (count > 0 && count <= StackCapacityMath.MAX_SERIALIZED_COUNT) return null;
+        if (StackCapacityMath.representable(count, provider)) return null;
         try {
             byte[] bytes = tag.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
             String hash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
