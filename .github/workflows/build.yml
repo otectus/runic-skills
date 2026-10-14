@@ -42,7 +42,7 @@ jobs:
       # exit with the detail buried in the Gradle log (RS-115).
       - name: Publish test results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-results
           path: |
@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload jar
         if: success()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: runicskills-jar
           path: build/libs/*.jar
@@ -128,7 +128,7 @@ jobs:
 
       - name: Upload server log
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dedicated-server-log
           path: server.log
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload fresh-build log and test results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fresh-clone-build
           path: |
@@ -249,7 +249,7 @@ jobs:
           cat "hash-${{ matrix.replica }}.txt"
 
       - name: Upload hash
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: repro-hash-${{ matrix.replica }}
           path: hash-${{ matrix.replica }}.txt
@@ -319,7 +319,7 @@ jobs:
 
       - name: Upload GameTest log
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gametest-log
           path: gametest.log
@@ -380,7 +380,7 @@ jobs:
 
       - name: Upload GameTest log
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gametest-tinkers-${{ matrix.profile }}-log
           path: gametest-tinkers-${{ matrix.profile }}.log
@@ -388,7 +388,7 @@ jobs:
 
       - name: Upload jar
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: runicskills-jar-tinkers-${{ matrix.profile }}
           path: build/libs/*.jar
